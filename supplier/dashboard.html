@@ -2068,6 +2068,22 @@ return '<td style="color:'+(credited?'#047857':'#94a3b8')+';font-weight:700">'+f
 (credited?'<div style="font-size:.6rem;font-weight:800;color:#16a34a">credited</div>'
 :'<div style="font-size:.6rem;font-weight:700;color:#b45309">pending</div>')+'</td>'}
 function renderOrders(){
+/* 2026-09-20 — FIX "orders vanish after a refresh".
+   supRestorePage() (the hash-restore IIFE) runs while `sup` is still null,
+   because loadS() has not been called yet at that point in the boot. nav('orders')
+   therefore hit renderOrders() -> allOrdersList() -> myOrders() ->
+   supplierOrders(sup.id) and threw
+       TypeError: Cannot read properties of null (reading 'id')
+   The throw was swallowed by nav()'s try/catch, so the Order List silently
+   rendered EMPTY until the 10s interval (or a manual click on All Orders)
+   called renderOrders() again - by which time sup WAS loaded. That is exactly
+   the reported symptom: refresh -> empty, click All Orders -> orders appear.
+   Fix: renderOrders() loads the supplier itself if it has not been loaded yet.
+   loadS() is idempotent (it just re-reads the row from localStorage), so this
+   is safe to call on every render, and if the session really is gone we bail
+   out instead of throwing. */
+if(!sup){try{loadS()}catch(e){}}
+if(!sup)return;
 var o=allOrdersList(),q=(document.getElementById('oq')||{value:''}).value.toLowerCase(),h='';
 o=supSortNewestFirst(o);
 var shown=[];
