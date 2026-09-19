@@ -582,6 +582,26 @@ img{max-width:100%;display:block}
  .catpage{padding:15px 14px}
  .catpage h1{font-size:1.1rem}
 }
+/* 2026-09-20 — BUG FIX: on a phone the product grid showed 5-6 cards squeezed
+   into ONE row and destroyed the my-shop design.
+
+   ROOT CAUSE: applyHomepageBlock() (a few hundred lines above) writes an INLINE
+   style on #pgrid: pg.style.gridTemplateColumns = 'repeat(' + n + ',1fr)', where
+   n is the shop owner's chosen "products per row" (default 6). An inline style
+   beats every normal stylesheet rule, so the existing
+   `@media(max-width:768px){ .pgrid{grid-template-columns:repeat(2,1fr)} }`
+   rule never won on a phone — the grid stayed at 6 columns.
+
+   THE FIX: this rule sits on exactly the SAME 768px breakpoint the design
+   already used, and uses !important so it outranks the inline style. So a phone
+   and a small tablet now render 2 cards per row — literally the number the
+   design always asked for — while every width above 768px is untouched and the
+   shop owner's own per-row choice still applies on desktop/tablet.
+   No other rule, layout or design is changed. */
+@media(max-width:768px){
+ .pgrid,.catpage .pgrid,.pgrid.cs-grid{grid-template-columns:repeat(2,1fr)!important;gap:10px!important}
+ .pgrid .pc,.catpage .pgrid .pc,.pgrid.cs-grid .pc{width:auto!important;min-width:0!important}
+}
 </style>
 
 <style id="reseller-hamburger-fix">
