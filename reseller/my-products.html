@@ -843,7 +843,37 @@ function mpFillSubSubs() {
    shows "Product created successfully!" but the DB stays empty). After the fix
    each image is typically 80-250 KB and ten of them fit comfortably. */
 var PRODUCT_IMG_MAX = 1200;     /* longest side in px                          */
-var PRODUCT_IMG_QUALITY = 0.7;   /* JPEG quality (ignored for PNG inputs)        */
+var PRODUCT_IMG_QUALITY = 0.7;   /* JPEG quality                                 */
+
+/* 2026-09-19 — My Products upload policy (PREMIUM RESELLERS ONLY).
+   SCOPE: this file only. admin/products.html and supplier/dashboard.html keep
+   their own limits — they are deliberately NOT touched here.
+     * a reseller may add UNLIMITED products
+     * but at most 6 IMAGES per product
+     * and every image must end up at most 2 MB
+   The 6-image cap applies to NEW uploads only: a product that already holds
+   7-10 images keeps all of them when it is edited, so no existing data is lost. */
+var MP_MAX_IMAGES = 6;
+var MP_MAX_BYTES  = 2 * 1024 * 1024;   /* 2 MB, measured on the real image bytes */
+
+/* Size of the REAL bytes behind a data: URL. base64 is ~33% bigger than the
+   bytes it encodes, so the 2 MB rule is measured on the image, not the string. */
+function mpBytesOf(dataUrl) {
+    try {
+        var s = String(dataUrl == null ? '' : dataUrl);
+        var i = s.indexOf(',');
+        var b64 = i >= 0 ? s.slice(i + 1) : s;
+        b64 = b64.replace(/=+$/, '');
+        return Math.floor(b64.length * 3 / 4);
+    } catch (e) { return 0; }
+}
+function mpSizeLabel(bytes) {
+    try {
+        var b = Number(bytes) || 0;
+        if (b >= 1024 * 1024) return (b / (1024 * 1024)).toFixed(1) + ' MB';
+        return Math.max(1, Math.round(b / 1024)) + ' KB';
+    } catch (e) { return 'খুব বড়'; }
+}
 function compressImage(dataUrl, maxLen, quality, cb) {
     var img = new Image();
     img.onload = function () {
@@ -853,9 +883,20 @@ function compressImage(dataUrl, maxLen, quality, cb) {
         var canvas = document.createElement('canvas');
         canvas.width = cw; canvas.height = ch;
         var ctx = canvas.getContext('2d');
+        if (!ctx) { cb(dataUrl); return; }
+        /* 2026-09-19 — the output is ALWAYS JPEG, including for a PNG input.
+           Why: a 2 MB PNG used to be kept as PNG (the old code only compressed
+           JPEG), so it landed in the store as ~2.7 MB of base64. As JPEG at
+           q=0.7 the same picture is ~200 KB.
+           PNG transparency: a canvas starts transparent and JPEG has no alpha,
+           so without filling first the transparent area would come out BLACK.
+           White keeps a product photo looking exactly as it did on the shop. */
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, cw, ch);
         ctx.drawImage(img, 0, 0, cw, ch);
-        var isPng = /^data:image\/png/i.test(dataUrl);
-        var out = isPng ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', quality);
+        var out = '';
+        try { out = canvas.toDataURL('image/jpeg', quality); } catch (e) { out = ''; }
+        if (!out || out === 'data:,') out = String(dataUrl);
         cb(out);
     };
     img.onerror = function () { cb(dataUrl); };   /* fall back to the original */
@@ -865,27 +906,55 @@ function mpPickImg(inp) {
     var files = inp.files ? Array.prototype.slice.call(inp.files) : [];
     inp.value = '';
     if (!files.length) return;
-    var room = PRODUCT_MAX_IMAGES - mpImages.length;
-    if (room <= 0) { showToast('সর্বোচ্চ ' + PRODUCT_MAX_IMAGES + 'টি image যোগ করা যাবে।', 'warning'); return; }
-    if (files.length > room) showToast('শুধু প্রথম ' + room + 'টি image যোগ করা হয়েছে (সর্বোচ্চ ' + PRODUCT_MAX_IMAGES + 'টি)।', 'warning');
+    var room = MP_MAX_IMAGES - mpImages.length;
+    if (room <= 0) { showToast('সর্বোচ্চ ' + MP_MAX_IMAGES + 'টি image যোগ করা যাবে।', 'warning'); return; }
+    if (files.length > room) showToast('শুধু প্রথম ' + room + 'টি image যোগ করা হয়েছে (সর্বোচ্চ ' + MP_MAX_IMAGES + 'টি)।', 'warning');
     files = files.slice(0, room);
     var pending = files.length;
     for (var i = 0; i < files.length; i++) {
         (function (f) {
             if (!/^image\//.test(f.type)) { pending--; if (!pending) mpRenderImages(); return; }
+            /* 2026-09-19 — refuse an oversized file BEFORE reading it, so one
+               15 MB phone photo can never reach the store at all. */
+            if (f.size && f.size > MP_MAX_BYTES) {
+                showToast('"' + (f.name || 'image') + '" ' + mpSizeLabel(f.size) + ' — ২ MB-এর বেশি। এই image যোগ করা যাবে না।', 'warning');
+                pending--; if (!pending) mpRenderImages(); return;
+            }
             var r = new FileReader();
             r.onload = function () {
                 /* compress before storing so localStorage doesn't overflow */
                 compressImage(String(r.result), PRODUCT_IMG_MAX, PRODUCT_IMG_QUALITY, function (compressed) {
-                    if (mpImages.length < PRODUCT_MAX_IMAGES) mpImages.push(compressed);
-                    pending--;
-                    if (!pending) mpRenderImages();
+                    mpAccept(compressed, function () { pending--; if (!pending) mpRenderImages(); });
                 });
             };
             r.onerror = function () { pending--; if (!pending) mpRenderImages(); };
             r.readAsDataURL(f);
         })(files[i]);
     }
+}
+/* 2026-09-19 — accept an image only when it satisfies BOTH rules: at most
+   MP_MAX_IMAGES images and at most MP_MAX_BYTES each. A file that was under
+   2 MB can still come out oversized in rare cases (a huge PNG), so instead of
+   throwing a perfectly good photo away we quietly shrink it once or twice.
+   Resolution never drops below 800px on the longest side — this is a size
+   guard, not a quality downgrade. */
+function mpAccept(dataUrl, done) {
+    var passes = [[PRODUCT_IMG_MAX, PRODUCT_IMG_QUALITY], [1000, 0.62], [800, 0.55]];
+    var step = 0;
+    (function tryOne(d) {
+        if (mpBytesOf(d) <= MP_MAX_BYTES) {
+            if (mpImages.length < MP_MAX_IMAGES) mpImages.push(d);
+            done();
+            return;
+        }
+        if (step >= passes.length - 1) {
+            showToast('এই image টি ২ MB-এর মধ্যে আনা যায়নি — যোগ করা হয়নি।', 'warning');
+            done();
+            return;
+        }
+        step++;
+        compressImage(d, passes[step][0], passes[step][1], tryOne);
+    })(dataUrl);
 }
 function mpRenderImages() {
     var grid = document.getElementById('mpImgGrid');
@@ -916,9 +985,9 @@ function mpRenderImages() {
         grid.innerHTML = h;
     }
     var c = document.getElementById('mpImgCount');
-    if (c) c.textContent = mpImages.length + ' / ' + PRODUCT_MAX_IMAGES;
+    if (c) c.textContent = mpImages.length + ' / ' + MP_MAX_IMAGES;
     var add = document.getElementById('mpImgAdd');
-    if (add) add.className = 'imgadd' + (mpImages.length >= PRODUCT_MAX_IMAGES ? ' off' : '');
+    if (add) add.className = 'imgadd' + (mpImages.length >= MP_MAX_IMAGES ? ' off' : '');
 }
 /* ---- drag & drop reordering (this request) ----
    Index-based, not element-based: mpImages is the single source of truth and
@@ -1227,7 +1296,7 @@ function mpSum() {
         ['Stock', String(stock) + (stock > 0 ? '' : ' (out of stock)')],
         ['Sizes', sz.length ? sEsc(sz.join(', ')) : '\u2014'],
         ['Colors', cl.length ? sEsc(cl.join(', ')) : '\u2014'],
-        ['Images', mpImages.length + ' / ' + PRODUCT_MAX_IMAGES]
+        ['Images', mpImages.length + ' / ' + MP_MAX_IMAGES]
     ];
     var h = '';
     for (var i = 0; i < rows.length; i++) h += '<div class="r"><b>' + rows[i][0] + '</b><span>' + rows[i][1] + '</span></div>';
