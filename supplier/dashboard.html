@@ -454,7 +454,15 @@ tr.ord-sel-row{background:#f0fdfa}
 <button type="button" class="sup-warn-btn" onclick="supWarnOpen()">
     <i class="fas fa-triangle-exclamation"></i> সাপ্লায়ারদের জন্য সতর্কবার্তা
 </button>
-<div class="card"><div class="chead"><h4>Orders</h4></div>
+<div class="card"><div class="chead"><h4>Orders</h4><div id="oq" contenteditable="true" role="searchbox" aria-label="Search orders" data-ph="Order ID / product name" style="min-width:190px;padding:9px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.85rem;background:#fff;outline:none;color:#0f172a" oninput="renderOrders()"></div></div>
+<!-- 2026-09-20 — a search box the BROWSER CANNOT autofill.
+     It is a <div contenteditable>, not an <input>. Chrome / Edge / Safari
+     password managers only recognise <input>, <textarea> and <select>, so
+     there is nothing here for them to fill in — no amount of autocomplete=
+     / data-lpignore / data-1p-ignore was ever going to stop them on an
+     <input>. It filters on ORDER ID or PRODUCT NAME only; an email-shaped
+     query intentionally matches nothing. -->
+<style>#oq:empty:before{content:attr(data-ph);color:#94a3b8}#oq:focus{border-color:#4f46e5}</style>
 <!-- 2026-09-15 — the supplier sees the same Returned / Delivered totals the admin
      does, valued at the ADMIN BUY-IN PRICE (their own payout basis). -->
 <div id="supRetSum" style="display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px">
@@ -2067,6 +2075,42 @@ var credited=(st==='delivered');
 return '<td style="color:'+(credited?'#047857':'#94a3b8')+';font-weight:700">'+formatCurrency(e)+
 (credited?'<div style="font-size:.6rem;font-weight:800;color:#16a34a">credited</div>'
 :'<div style="font-size:.6rem;font-weight:700;color:#b45309">pending</div>')+'</td>'}
+/* 2026-09-20 — the All Orders search term.
+   The box is a <div contenteditable id="oq"> (see the markup) because a
+   browser password manager cannot autofill anything that is not an <input>,
+   <textarea> or <select>. So read textContent, with .value as a fallback in
+   case an older/other theme still renders it as an <input>.
+   An email-shaped query is deliberately turned into a term that matches
+   nothing: this box searches ORDER ID and PRODUCT NAME only, never an
+   e-mail address. */
+function supOrderQuery(){
+  try{
+    var el=document.getElementById('oq');
+    if(!el)return '';
+    var v=(el.value!==undefined&&el.value!==null)?String(el.value):String(el.textContent||'');
+    v=String(v||'').trim().toLowerCase();
+    if(!v)return '';
+    /* never let a saved e-mail / anything with an @ or a space-less domain
+       behave like a search term */
+    if(v.indexOf('@')!==-1)return ' nomatch ';
+    return v;
+  }catch(e){return ''}
+}
+/* Does this order match the search term? Order ID, or any of MY product
+   names inside the order. Nothing else. */
+function supOrderMatches(x,q){
+  if(!q)return true;
+  try{
+    if(String(x.id||'').toLowerCase().indexOf(q)!==-1)return true;
+    var items=(x&&x.items&&x.items.length)?x.items:[x];
+    for(var i=0;i<items.length;i++){
+      var it=items[i]||{};
+      var nm=String(it.name||it.productName||'').toLowerCase();
+      if(nm.indexOf(q)!==-1)return true;
+    }
+  }catch(e){}
+  return false;
+}
 function renderOrders(){
 /* 2026-09-20 — FIX "orders vanish after a refresh".
    supRestorePage() (the hash-restore IIFE) runs while `sup` is still null,
@@ -2084,7 +2128,7 @@ function renderOrders(){
    out instead of throwing. */
 if(!sup){try{loadS()}catch(e){}}
 if(!sup)return;
-var o=allOrdersList(),q=(document.getElementById('oq')||{value:''}).value.toLowerCase(),h='';
+var o=allOrdersList(),q=supOrderQuery(),h='';
 o=supSortNewestFirst(o);
 var shown=[];
 for(var i=0;i<o.length;i++){var x=o[i];
@@ -2097,7 +2141,7 @@ for(var i=0;i<o.length;i++){var x=o[i];
    uses supSelectable() (which already does the right thing) for the lock
    icon. A row that disappears from "All Orders" the moment a click
    changes its status was a bug, not a feature. */
-if(q&&String(x.id).toLowerCase().indexOf(q)===-1)continue;
+if(!supOrderMatches(x,q))continue;
 shown.push(x);
 var serial=Number(x.__supSer)||0;
 /* Selection is UNLOCKED — every shippable order can be ticked, whatever stage
@@ -2298,7 +2342,7 @@ return order;
 }
 function renderOrdMerge(){
 var tb=document.getElementById('ordMergeBody');if(!tb)return;
-var q=(document.getElementById('oq')||{value:''}).value.toLowerCase();
+var q=supOrderQuery();
 var rows=supMergeRows(),h='',merged=0,totalQty=0;
 for(var i=0;i<rows.length;i++){
 var r=rows[i];
@@ -2623,7 +2667,12 @@ window.saveWh=function(){showToast('Warehouse saved!','success')};
 function sout(){try{if(typeof setOnline==='function'&&sup)setOnline(sup.id,false)}catch(e){}sessionStorage.clear();if(typeof clearPersistentSession==='function')clearPersistentSession();window.location.href='index.html'}
 window.sout=sout;window.sout=sout;
 // boot
-function paintOrderBadge(){try{var n=(typeof supplierOrderBadgeCount==='function')?supplierOrderBadgeCount(sup.id):0;var el=document.querySelector('.smenu a[data-p="orders"] .orders-badge');if(el){el.textContent=n;el.style.display=n>0?'inline-block':'none';}}catch(e){}try{if(typeof smgBadge==='function')smgBadge();}catch(e){}}if(loadS()){setOnline(sup.id,true);setInterval(function(){setOnline(sup.id,true)},60000);render();fillCatSel();paintOrderBadge();try{supResetColSize()}catch(e0){}setInterval(function(){renderProducts();renderOrders();renderTx&&renderTx();paintOrderBadge()},10000);}else{sessionStorage.clear();window.location.replace('index.html')}
+function paintOrderBadge(){try{var n=(typeof supplierOrderBadgeCount==='function')?supplierOrderBadgeCount(sup.id):0;var el=document.querySelector('.smenu a[data-p="orders"] .orders-badge');if(el){el.textContent=n;el.style.display=n>0?'inline-block':'none';}}catch(e){}try{if(typeof smgBadge==='function')smgBadge();}catch(e){}}if(loadS()){setOnline(sup.id,true);setInterval(function(){setOnline(sup.id,true)},60000);render();/* 2026-09-20 — paint the Order List NOW. It used to wait for the 10s
+   setInterval below, so after a refresh the supplier stared at an empty
+   "All Orders" table for up to 10-15 seconds before the rows appeared.
+   loadS() has already run here, so sup is available and renderOrders()
+   (which now also self-heals via its own !sup guard) can paint at once. */
+try{renderOrders()}catch(e){}fillCatSel();paintOrderBadge();try{supResetColSize()}catch(e0){}setInterval(function(){renderProducts();renderOrders();renderTx&&renderTx();paintOrderBadge()},10000);}else{sessionStorage.clear();window.location.replace('index.html')}
 
 /* ==========================================================================
    SUPPLIER REFERRAL PANEL
