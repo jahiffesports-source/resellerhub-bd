@@ -7616,25 +7616,23 @@ function offerProgress(o, resellerId) {
     var st = getOfferState(o.id, resellerId);
     var count = 0, deadline = 0;
     if (st && st.startedAt) {
-        /* 2026-09-20 — BUG FIX: an offer read 0/2 while the reseller had ALREADY
-           delivered 2 orders, so the Claim button never appeared.
-           ROOT CAUSE: the lower bound was st.startedAt, the moment the reseller
-           pressed "Start". A reseller who delivered BEFORE pressing Start — the
-           normal case, you deliver and then look at your offers — had every one
-           of those orders silently dropped, so progress stayed at 0 forever.
-           FIX: the window opens at the OFFER's own publish date when there is
-           one, so anything delivered since the offer existed counts. Falling
-           back to startedAt keeps old rows without a createdAt unchanged. */
-        var fromRaw = new Date(st.startedAt).getTime();
-        var pub = offerStartMs(o);
-        var from = fromRaw;
-        if (!isNaN(fromRaw) && pub > 0) from = Math.min(fromRaw, pub);
-        else if (!isNaN(fromRaw)) from = fromRaw;
-        else from = pub;
+        /* 2026-09-20 — BUG FIX v2.
+           v1 used `min(startedAt, offerStartMs)` as the lower bound. That fixed
+           the "user pressed Start after delivering" case but broke the "user
+           delivered yesterday, offer was created TODAY" case (pub = today =
+           startedAt = today, so yesterday's orders stayed outside the window).
+           The reseller's expectation is the offer's mental model: "I delivered
+           N orders, the offer says deliver N orders, I want to claim." Past
+           performance has to count.
+           NEW rule: NO lower bound. Count every eligible delivered order up to
+           the deadline (min(now, startedAt + windowDays)). The deadline is the
+           only time gate — without it the offer would never expire.
+           The order-supplier check (orderCountsForOffer) still keeps reseller-
+           uploaded-only orders out. */
         deadline = offerDeadlineMs(o, st);
         var now = Date.now();
         var to = deadline ? Math.min(deadline, now) : now;
-        if (!isNaN(from)) count = resellerDeliveredOrdersBetween(resellerId, from, to);
+        count = resellerDeliveredOrdersBetween(resellerId, 0, to);
     }
     var pct = target > 0 ? Math.min(100, Math.round(count * 100 / target)) : 0;
     return {
