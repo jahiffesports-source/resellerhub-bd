@@ -674,8 +674,8 @@ body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; 
   </div>
   <div class="gwrap"><i class="fas fa-inbox"></i><span id="mpImgMsg">No images yet. Click "Add Image" to upload.</span></div>
   <div class="imggrid" id="mpImgGrid"></div>
-  <input type="file" id="mpImgFile" accept="image/*" style="display:none" onchange="mpPickImg(this)">
-  <div class="hint" style="font-size:.68rem;color:#94a3b8;margin-top:6px">ছবি টেনে (drag) অন্য জায়গায় ছাড়লেও সাজাতে পারবেন — একেবারে প্রথমে ছাড়লে সেটিই main হয়ে যাবে। ★ চেপে যেকোনো ছবিকে main করতে পারেন; ← → দিয়ে সাজান; ✕ দিয়ে সরান।</div>
+  <input type="file" id="mpImgFile" accept="image/*" multiple style="display:none" onchange="mpPickImg(this)">
+  <div class="hint" style="font-size:.68rem;color:#94a3b8;margin-top:6px">একবারে একসাথে ৬টি পর্যন্ত ছবি সিলেক্ট করতে পারবেন; এর বেশি সিলেক্ট করলেও প্রথম ৬টিই নেওয়া হবে। ছবি টেনে (drag) অন্য জায়গায় ছাড়লেও সাজাতে পারবেন — একেবারে প্রথমে ছাড়লে সেটিই main হয়ে যাবে। ★ চেপে যেকোনো ছবিকে main করতে পারেন; ← → দিয়ে সাজান; ✕ দিয়ে সরান।</div>
 </div>
 
 <!-- TAB 2 — PRICING -->
@@ -908,29 +908,35 @@ function mpPickImg(inp) {
     if (!files.length) return;
     var room = MP_MAX_IMAGES - mpImages.length;
     if (room <= 0) { showToast('সর্বোচ্চ ' + MP_MAX_IMAGES + 'টি image যোগ করা যাবে।', 'warning'); return; }
-    if (files.length > room) showToast('শুধু প্রথম ' + room + 'টি image যোগ করা হয়েছে (সর্বোচ্চ ' + MP_MAX_IMAGES + 'টি)।', 'warning');
+    if (files.length > room) showToast('সর্বোচ্চ ' + MP_MAX_IMAGES + 'টি image যোগ করা যায় — প্রথম ' + room + 'টি নেওয়া হয়েছে।', 'warning');
     files = files.slice(0, room);
-    var pending = files.length;
-    for (var i = 0; i < files.length; i++) {
-        (function (f) {
-            if (!/^image\//.test(f.type)) { pending--; if (!pending) mpRenderImages(); return; }
-            /* 2026-09-19 — refuse an oversized file BEFORE reading it, so one
-               15 MB phone photo can never reach the store at all. */
-            if (f.size && f.size > MP_MAX_BYTES) {
-                showToast('"' + (f.name || 'image') + '" ' + mpSizeLabel(f.size) + ' — ২ MB-এর বেশি। এই image যোগ করা যাবে না।', 'warning');
-                pending--; if (!pending) mpRenderImages(); return;
-            }
-            var r = new FileReader();
-            r.onload = function () {
-                /* compress before storing so localStorage doesn't overflow */
-                compressImage(String(r.result), PRODUCT_IMG_MAX, PRODUCT_IMG_QUALITY, function (compressed) {
-                    mpAccept(compressed, function () { pending--; if (!pending) mpRenderImages(); });
-                });
-            };
-            r.onerror = function () { pending--; if (!pending) mpRenderImages(); };
-            r.readAsDataURL(f);
-        })(files[i]);
-    }
+    /* 2026-09-19 — ONE AT A TIME, on purpose.
+       Selecting 20-30 photos used to start that many FileReader + canvas jobs
+       at once; the decode spike is what tore the image grid apart (and it is
+       brutal on a phone). Reading sequentially keeps memory flat, shows each
+       picture as soon as it is ready and cannot leave the grid half-built. */
+    var i = 0;
+    (function next() {
+        if (i >= files.length) { mpRenderImages(); return; }
+        var f = files[i++];
+        if (!/^image\//.test(f.type)) { next(); return; }
+        /* refuse an oversized file BEFORE reading it, so one 15 MB phone photo
+           can never reach the store at all. */
+        if (f.size && f.size > MP_MAX_BYTES) {
+            showToast('"' + (f.name || 'image') + '" ' + mpSizeLabel(f.size) + ' — ২ MB-এর বেশি। এই image যোগ করা যাবে না।', 'warning');
+            next();
+            return;
+        }
+        var r = new FileReader();
+        r.onload = function () {
+            /* compress before storing so localStorage doesn't overflow */
+            compressImage(String(r.result), PRODUCT_IMG_MAX, PRODUCT_IMG_QUALITY, function (compressed) {
+                mpAccept(compressed, function () { mpRenderImages(); next(); });
+            });
+        };
+        r.onerror = next;
+        r.readAsDataURL(f);
+    })();
 }
 /* 2026-09-19 — accept an image only when it satisfies BOTH rules: at most
    MP_MAX_IMAGES images and at most MP_MAX_BYTES each. A file that was under
