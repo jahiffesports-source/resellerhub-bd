@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supplier Shop - ResellerHub BD</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body {font-family:'Inter',sans-serif;background:#fafafa;color:#1e293b;padding-bottom:60px; overflow-x:hidden; }
+.cover{height:170px;background:repeating-linear-gradient(45deg,#0d9b6c 0 22px,#0a8560 22px 44px);position:relative}
+.cover.done{background:repeating-linear-gradient(45deg,#0d9b6c 0 22px,#0a8560 22px 44px)}
+.wrap{max-width:1200px;margin:0 auto;padding:0 16px}
+.logo-row{display:flex;align-items:flex-end;gap:16px;margin-top:-34px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid #eee}
+.logo{width:68px;height:68px;border-radius:50%;background:#fff;border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:800;color:#0d9b6c;overflow:hidden}
+.logo img{width:100%;height:100%;object-fit:cover}
+.linfo h1{font-size:1.25rem;font-weight:800}
+.linfo small{color:#64748b;font-size:.78rem;display:block}
+.stats{margin-left:auto;display:flex;gap:18px;align-items:center}
+.stat{text-align:center;font-size:.75rem;color:#64748b;font-weight:600}
+.stat b{display:block;font-size:1.05rem;color:#1e293b}
+.follow{background:#ec4899;color:#fff;border:none;padding:9px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-size:.85rem}
+.follow:hover{background:#db2777}
+.pills{display:flex;gap:8px;overflow-x:auto;padding:14px 0}
+.pill{padding:7px 18px;border:1.5px solid #e2e8f0;border-radius:8px;background:#fff;font-size:.8rem;font-weight:600;cursor:pointer;white-space:nowrap;color:#475569}
+.pill.active{background:#ec4899;border-color:#ec4899;color:#fff}
+.listhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.listhead h3{font-size:1rem}.listhead h3 span{color:#94a3b8;font-weight:500}
+.listhead input{padding:8px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.85rem;width:220px}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+.pcard{background:#fff;border-radius:10px;overflow:hidden;border:1px solid #f1f5f9;transition:.2s;cursor:pointer}
+.pcard:hover{box-shadow:0 8px 20px rgba(0,0,0,.1);transform:translateY(-2px)}
+.pimg{height:150px;background:#f8fafc;position:relative;overflow:hidden}
+.pimg img{width:100%;height:100%;object-fit:cover}
+.pbody{padding:10px}
+.pbody h5{font-size:.74rem;line-height:1.35;margin-bottom:6px;min-height:34px}
+.soldby{display:inline-flex;align-items:center;gap:3px;background:#fdf2f8;color:#db2777;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:4px;margin-bottom:5px}
+.prow{display:flex;justify-content:space-between;align-items:center}
+.price{font-weight:800;font-size:.9rem}
+.cartb{width:26px;height:26px;border-radius:6px;background:#ec4899;color:#fff;border:none;cursor:pointer;font-size:.7rem}
+.empty{grid-column:1/-1;text-align:center;padding:50px;color:#94a3b8}.empty i{font-size:2.5rem;display:block;margin-bottom:10px;opacity:.4}
+.pagi{display:flex;justify-content:center;gap:6px;margin:22px 0}
+.pagi button{width:34px;height:34px;border:1.5px solid #e2e8f0;background:#fff;border-radius:8px;cursor:pointer;font-weight:600;font-size:.8rem}
+.pagi button.on{background:#ec4899;border-color:#ec4899;color:#fff}
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;box-shadow:0 -3px 12px rgba(0,0,0,.08);z-index:300;padding:7px 4px calc(7px + env(safe-area-inset-bottom))}
+.mob-nav a{color:#94a3b8;text-decoration:none;font-size:.6rem;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 8px;flex:1}
+.mob-nav a i{font-size:1.05rem}.mob-nav a.on{color:#ec4899}
+@media(max-width:1024px){.grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:768px){body{padding-bottom:64px}.grid{grid-template-columns:repeat(2,1fr)}.mob-nav{display:flex}.stats{margin-left:0;width:100%}}
+</style>
+<link rel="stylesheet" href="rstyle.css"><style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<div class="cover" id="cover"></div>
+<div class="wrap">
+<div class="logo-row">
+<div class="logo" id="sLogo">S</div>
+<div class="linfo"><h1 id="sName">Shop</h1><small id="sMeta"></small></div>
+<div class="stats">
+<div class="stat"><b id="sCount">0</b> products</div>
+<div class="stat"><b id="sRate">0.0</b> rating</div>
+<div class="stat"><b id="sFol">0</b> followers</div>
+<button class="follow" onclick="followShop()"><i class="fas fa-plus"></i> Follow</button>
+</div>
+</div>
+<div class="pills" id="shopPills"></div>
+<div class="listhead">
+<h3>All Products <span>(<span id="cCount">0</span>)</span></h3>
+<input id="q" placeholder="Search products..." oninput="render()">
+</div>
+<div class="grid" id="grid"></div>
+<div class="pagi" id="pagi"></div>
+</div>
+
+<nav class="mob-nav">
+<a href="dashboard.html"><i class="fas fa-home"></i>Home</a>
+<a href="products.html" class="on"><i class="fas fa-box"></i>Products</a>
+<a href="order.html"><i class="fas fa-cart-plus"></i>Order</a>
+<a href="my-orders.html"><i class="fas fa-list"></i>Orders</a>
+<a href="profile.html"><i class="fas fa-user"></i>Profile</a>
+</nav>
+
+<script src="../app.js"></script><script>(function(){function paint(){try{var b=document.getElementById("ordersBadge");var uid=sessionStorage.getItem("user_id");if(!uid)return;if(sessionStorage.getItem("user_type")!=="reseller")return;var n=(typeof resellerNewOrderCount==="function")?resellerNewOrderCount(uid):0;if(b){b.textContent=n;b.style.display=n>0?"inline-block":"none";}var lb=document.getElementById("ordersBadgeLabel");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+(function(){
+var uid=sessionStorage.getItem('user_id');
+if(!uid||sessionStorage.getItem('user_type')!=='reseller'){window.location.replace('login.html');return}
+var params=new URLSearchParams(location.search);
+var sid=parseInt(params.get('sid'))||5001;
+var sups=getData(DB_KEYS.SUPPLIERS),sup=null;
+for(var i=0;i<sups.length;i++){if(sups[i].id===sid){sup=sups[i];break}}
+if(!sup){document.body.innerHTML='<div style="text-align:center;padding:80px"><h2>Shop not found</h2><a href="products.html">Back to products</a></div>';return}
+var activeCat='',page=1,PER=12;
+document.getElementById('sName').textContent=sup.shopName;
+document.getElementById('sMeta').textContent=sup.sid+' • '+(sup.address||'Bangladesh');
+document.getElementById('sCount').textContent=0;
+/* 2026-09-15 — the rating is COMPUTED from this supplier's own reviews. It used
+   to read `sup.rating ? ... : '5.0'`, so a supplier with no reviews showed a
+   perfect 5.0. With no reviews the honest answer is 0.0. */
+(function(){
+    var el=document.getElementById('sRate'); if(!el) return;
+    var rs=(typeof supplierRatingSummary==='function')?supplierRatingSummary(sup.id):{avg:0,count:0};
+    el.textContent=rs.count?rs.avg.toFixed(1):'0.0';
+})();
+var fkey='rh_followers_'+sup.id;var fols=[];try{fols=JSON.parse(localStorage.getItem(fkey)||'[]')}catch(e){}
+document.getElementById('sFol').textContent=fols.length;
+var me=parseInt(sessionStorage.getItem('user_id'));
+var fbtn=document.querySelector('.follow');
+if(fols.indexOf(me)!==-1){fbtn.innerHTML='<i class="fas fa-check"></i> Following';fbtn.style.background='#10b981'}
+var lb=document.getElementById('sLogo');
+lb.innerHTML=sup.shopLogo?'<img src="'+sup.shopLogo+'">':(sup.shopName||'S').charAt(0).toUpperCase();
+if(sup.shopCover)document.getElementById('cover').style.background='url('+sup.shopCover+') center/cover';
+var cart=getData(DB_KEYS.CATEGORIES);
+var cats=[];var prods=getData(DB_KEYS.PRODUCTS).filter(function(p){return p.supplierId===sup.id});
+document.getElementById('sCount').textContent=prods.length;
+for(var c=0;c<prods.length;c++){if(cats.indexOf(prods[c].category)===-1)cats.push(prods[c].category)}
+function renderPills(){var h='<div class="pill'+(activeCat===''?' active':'')+'" onclick="setCat(\'\')">All Products</div>';for(var i=0;i<cats.length;i++){h+='<div class="pill'+(activeCat===cats[i]?' active':'')+'" onclick="setCat(\''+cats[i].replace(/'/g,"\\'")+'\')">'+cats[i]+'</div>'}document.getElementById('shopPills').innerHTML=h}
+window.setCat=function(c){activeCat=c;page=1;renderPills();render()};
+/* 2026-09-15 — the search box is `<input oninput="render()">`, and an inline handler
+   runs in GLOBAL scope. `render` was declared inside this page's IIFE, so typing in
+   the search box threw "render is not defined" and nothing happened. Exposed the
+   same way its siblings setCat / goPage already are. */
+window.render=render;
+function catP(k){return k?page:1}
+function render(){
+var q=(document.getElementById('q').value||'').toLowerCase();
+var list=[];for(var i=0;i<prods.length;i++){var p=prods[i];var ok=true;if(activeCat&&p.category!==activeCat)ok=false;if(q&&p.name.toLowerCase().indexOf(q)===-1)ok=false;if(ok)list.push(p)}
+document.getElementById('cCount').textContent=list.length;
+var pages=Math.max(1,Math.ceil(list.length/PER));if(page>pages)page=pages;
+var slice=list.slice((page-1)*PER,page*PER);
+var h='';
+for(var j=0;j<slice.length;j++){var p=slice[j];
+var imgs=p.images&&p.images.length?p.images:(p.image?[p.image]:[]);
+var img=imgs.length?'<img src="'+imgs[0]+'">':'<i class="fas fa-box" style="font-size:2.5rem;color:#cbd5e1"></i>';
+h+='<div class="pcard" onclick="location.href=\'product.html?id='+p.id+'\'"><div class="pimg">'+img+'</div><div class="pbody"><h5>'+p.name+'</h5><span class="soldby"><i class="fas fa-badge-check"></i> saleed by '+(p.supplierName||sup.shopName)+'</span><div class="prow"><span class="price">'+formatCurrency(p.price)+'</span><button class="cartb" onclick="event.stopPropagation();orderIt('+p.id+')"><i class="fas fa-cart-plus"></i></button></div></div></div>'}
+document.getElementById('grid').innerHTML=h||'<div class="empty"><i class="fas fa-box-open"></i>No products in this category</div>';
+var ph='';if(pages>1){ph+='<button onclick="goPage('+(page-1)+')">&lt;</button>';for(var pg=1;pg<=pages;pg++){ph+='<button class="'+(pg===page?'on':'')+'" onclick="goPage('+pg+')">'+pg+'</button>'}ph+='<button onclick="goPage('+(page+1)+')">Next &gt;</button>'}
+document.getElementById('pagi').innerHTML=ph}
+window.goPage=function(n){var pages=Math.max(1,Math.ceil(listLen()/PER));if(n<1||n>pages)return;page=n;render();window.scrollTo(0,0)};
+function listLen(){var q=(document.getElementById('q').value||'').toLowerCase();var n=0;for(var i=0;i<prods.length;i++){var p=prods[i];var ok=true;if(activeCat&&p.category!==activeCat)ok=false;if(q&&p.name.toLowerCase().indexOf(q)===-1)ok=false;if(ok)n++}return n}
+window.orderIt=function(id){sessionStorage.setItem('rh_preview_order',JSON.stringify({productId:id,qty:1}));window.location.href='order.html?product='+id};
+window.followShop=function(){
+var key='rh_followers_'+sup.id;
+var fols=[];try{fols=JSON.parse(localStorage.getItem(key)||'[]')}catch(e){}
+var me=parseInt(sessionStorage.getItem('user_id'));
+if(fols.indexOf(me)!==-1){fols=fols.filter(function(x){return x!==me});showToast('Unfollowed','info')}
+else{fols.push(me);showToast('Following '+sup.shopName+'!','success')}
+localStorage.setItem(key,JSON.stringify(fols));
+var btn=event.target.closest('button');
+btn.innerHTML=fols.indexOf(me)!==-1?'<i class="fas fa-check"></i> Following':'<i class="fas fa-plus"></i> Follow';
+btn.style.background=fols.indexOf(me)!==-1?'#10b981':'#ec4899';
+document.getElementById('sFol').textContent=fols.length};
+renderPills();render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product - My Shop</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--ac:#e91e63;--acd:#ad1457}
+/* PART 2 — "check before receiving" note (replaces any return-policy text) */
+.chk-note{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;border-radius:11px;padding:11px 14px;font-size:.78rem;font-weight:700;line-height:1.6;margin:12px 0}
+.chk-note i{margin-right:6px}
+/* PART 12, 13 — responsive product video */
+.vidwrap{margin:16px 0;border:1px solid #eef2f7;border-radius:14px;overflow:hidden;background:#fff}
+.vidt{padding:11px 15px;font-size:.78rem;font-weight:900;color:#334155;border-bottom:1px solid #eef2f7}
+.vidt i{color:#dc2626;margin-right:6px}
+.vidbox{position:relative;width:100%;padding-top:56.25%}
+.vidbox iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+html{height:100%}
+/* Part 5 — the footer must sit at the very bottom on a product page too.
+   Root cause: the page had no full-height structure at all, so on a SHORT
+   product (few details, no reviews) the document ended above the viewport and
+   the footer "rose" with white space underneath it. Fixed structurally with a
+   flex column — NOT with `position:fixed` (that would cover the last content
+   row on a long page):
+     body  → flex column, at least the viewport tall
+     .wrap → flex:1 0 auto  (absorbs the slack, pushing the rest down)
+     .foot → flex:0 0 auto  (keeps its own height, pinned last)
+   Long pages are unaffected — the column simply grows and scrolls. */
+body {font-family:'Inter',sans-serif;background:#fff;color:#111;padding-bottom:60px;display:flex;flex-direction:column;min-height:100vh;min-height:100dvh; overflow-x:hidden; }
+a{text-decoration:none;color:inherit}button{font-family:inherit;cursor:pointer}
+img{max-width:100%;display:block}
+@keyframes fup{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* Header */
+.hdr{background:#0a0a0a;position:sticky;top:0;z-index:200;box-shadow:0 4px 18px rgba(0,0,0,.3)}
+.hdr-in{width:70%;max-width:2400px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;gap:18px}
+/* ===== Nav (white category bar) ===== */
+.nav{background:#fff;border-bottom:1px solid #eee;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.nav-in{width:70%;max-width:2400px;margin:0 auto;padding:0 22px;display:flex;justify-content:center;gap:34px;overflow-x:auto;flex-wrap:nowrap;position:relative}
+/* #1 — the Main Category menu was scaled to ~70% of its previous size.
+   Part 2 (this request) — it is now ~20% LARGER again and spread wider:
+     label .68rem → .82rem (+21%), gap 26px → 34px (+31%), pad 11/3 → 13/5.
+   Applied here as well as on my-shop.html, because these two pages carry
+   hand-duplicated header/nav CSS and must stay visually identical. */
+/* `--navc-ink` is set on .nav by the theme block below, so the category links
+   stay legible on any Category Color (dark strip -> white links). */
+.nav-in a{font-size:.82rem;font-weight:800;letter-spacing:.8px;color:var(--navc-ink,#222);padding:13px 5px;white-space:nowrap;border-bottom:1.8px solid transparent;cursor:pointer;transition:color .15s}
+.nav-in a:hover{color:var(--ac)}
+.nav-in a.on{color:var(--navc-ink,#0a0a0a);border-color:var(--navc-ink,#0a0a0a)}
+.nav-in a.off{color:#e11d48}
+
+.brand{display:flex;align-items:center;gap:11px;cursor:pointer;flex:none}
+.brand .bimg{width:46px;height:46px;padding:3px;border-radius:9px;background:#fff;color:#0a0a0a;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;overflow:hidden}
+.brand .bimg.hasimg{width:auto;min-width:0;max-width:none;height:auto;padding:0;background:transparent;box-shadow:none;border-radius:0;overflow:visible}
+.brand .bimg.hasimg img{width:auto;height:auto;max-width:38px;max-height:38px;display:block;padding:0;background:transparent}
+/* Logo (#2/#3) — controlled box + `contain` so any logo (wide / tall / square /
+   transparent) fits centred without stretching or cropping. */
+.brand .bimg img{height:auto;width:auto;max-width:38px;max-height:38px;object-fit:contain;background:transparent;display:block;padding:0}
+.brand .btxt{font-weight:900;font-size:1.05rem;color:#fff}
+.srch{flex:1;max-width:560px;margin:0 auto;display:flex;background:#1d1d1d;border-radius:30px;padding:5px 6px 5px 20px;align-items:center;border:1.5px solid #2a2a2a;transition:border-color .2s}
+.srch:focus-within{border-color:var(--ac)}
+/* 2026-09-17 — the small search icon was grey (#8a8a8a) on the dark bar.
+   The user asked for it white on every page that has this bar. */
+.srch i{color:#fff;margin-right:10px}
+.srch input{flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:.88rem}
+.srch input::placeholder{color:#7a7a7a}
+/* 2026-09-17 — the round search button was pink (var(--ac)) with a white
+   icon. The user asked for a WHITE button with a BLACK icon. The small
+   icon inside the input (`.srch i`) stays white, as requested earlier. */
+.srch button{width:38px;height:38px;border:none;border-radius:50%;background:#fff;color:#fff;cursor:pointer}
+.srch button i{color:#000;margin-right:0}
+.hcta{display:flex;align-items:center;gap:11px}
+.chip{display:flex;align-items:center;gap:8px;border:1.5px solid #fff;border-radius:12px;padding:9px 14px;color:#fff;font-weight:800;font-size:.82rem;cursor:pointer;background:transparent;flex:none}
+.chip.acc{gap:7px}
+.chip.acc .acc-t{font-size:.78rem}
+.chip.acc.on{background:rgba(255,255,255,.18)}
+@media(max-width:600px){ .chip.acc .acc-t{display:none} .chip.acc{padding:9px 11px} }
+.chip .cb{background:#fff;color:#0a0a0a;width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.72rem;position:relative}
+.chip .cb .ct{position:absolute;top:-8px;right:-8px;background:#e11d48;color:#fff;font-size:.55rem;font-weight:800;min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;border:1.5px solid #0a0a0a}
+
+/* ===== Part 1 — header 10% LARGER (DESKTOP ONLY) =====
+   This page carries its OWN copy of the header CSS, so the +10% must be applied
+   here too or the header would visibly differ between the shop home and a
+   product page. Values are this page's metrics scaled by ~10%
+   (padding 14/22→15/24, gap 18→20, logo 46→51, title 1.05→1.16rem,
+   search 560→616 + button 38→42, chips 9/14→10/15 + 24→26).
+   Scoped to min-width:769px so mobile AND tablet keep their own header design. */
+@media(min-width:769px){
+  .hdr-in{padding:15px 24px;gap:20px}
+  .brand .bimg{width:51px;height:51px;font-size:1.21rem}
+  /* logo image: same cap everywhere — 38px base, 43px on desktop (matches my-shop.html) */
+  .brand .bimg.hasimg img,.brand .bimg img,.foot .fbimg.hasimg img,.foot .fbimg img{max-width:43px;max-height:43px}
+  .brand .btxt{font-size:1.16rem}
+  .srch{max-width:616px;padding:6px 7px 6px 22px}
+  .srch input{font-size:.97rem}
+  .srch button{width:42px;height:42px}
+  .chip{padding:10px 15px;font-size:.9rem}
+  .chip .cb{width:26px;height:26px;font-size:.79rem}
+}
+/* Layout */
+.wrap{width:80%;max-width:2400px;margin:0 auto;padding:18px 22px 30px}
+/* Part 6 — the layout containers were capped at `max-width:1680px`, so on a
+   2560px monitor the 80% content resolved to only 66% of the viewport. The
+   widths were always correct; the CAP was the problem. Raised to 2400px. */
+/* Part 5 — the content column absorbs the leftover viewport height so the
+   footer is always pushed to the bottom. Declared on its own line to override
+   the shared width rule above. */
+.wrap{flex:1 0 auto}
+.pd{display:grid;grid-template-columns:1.15fr 1fr;gap:30px;align-items:start}
+.gal{position:relative}
+.gm{background:#f8fafc;border-radius:8px;overflow:hidden;height:440px;display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:3rem;cursor:zoom-in;position:relative}
+/* Part 3 — main product photo is CONTAINED so the whole product is visible.
+   `cover` scaled it up to fill the 440px box and cropped the overflow, which is
+   exactly the "excessively zoomed, product cut off" complaint. The light
+   backdrop keeps a tall photo from sitting in a stark white void. */
+.gm img{width:100%;height:100%;object-fit:contain;object-position:center;background:#f8fafc}
+.garr{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:#fff;border:1px solid #e5e5e5;box-shadow:0 2px 8px rgba(0,0,0,.12);font-size:.85rem;color:#111;z-index:2}
+.garr.l{left:10px}.garr.r{right:10px}
+.gcnt{position:absolute;bottom:10px;right:14px;background:rgba(0,0,0,.65);color:#fff;font-size:.68rem;font-weight:700;padding:3px 11px;border-radius:14px;z-index:2}
+.gth{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.gth .t{width:60px;height:60px;border-radius:6px;border:2px solid #e8e8e8;overflow:hidden;cursor:pointer;background:#f8fafc;display:flex;align-items:center;justify-content:center;color:#cbd5e1}
+.gth .t.on{border-color:#111}
+/* Thumbnails match the main image (contain) so the strip shows the real
+   product instead of a cropped centre slice. */
+.gth .t img{width:100%;height:100%;object-fit:contain;background:#f8fafc}
+/* Info side */
+.crumb{font-size:.7rem;color:#666;margin-bottom:8px;font-weight:600}
+.crumb b{color:#111}
+.pd h1{font-size:1.5rem;font-weight:800;line-height:1.3;margin-bottom:6px}
+.rater{font-size:.78rem;color:#f59e0b;font-weight:800;margin-bottom:8px}
+.rater small{color:#94a3b8;font-weight:600;margin-left:6px}
+.prc{margin:10px 0}
+.prc .now{font-size:1.6rem;font-weight:900}
+.prc .old{color:#999;text-decoration:line-through;font-weight:600;margin-left:10px;font-size:1rem}
+.prc .off{background:#e11d48;color:#fff;font-size:.62rem;font-weight:800;padding:4px 9px;border-radius:6px;margin-left:9px;vertical-align:2px}
+.sku{font-size:.78rem;color:#64748b;margin:8px 0}
+.sku b{color:#111}
+.act-row{display:flex;gap:10px;align-items:stretch;margin:14px 0}
+.qs{display:flex;align-items:center;border:1.5px solid #d9d9d9;border-radius:8px;overflow:hidden}
+.qs button{width:42px;height:46px;border:none;background:#fff;font-size:1rem;color:#111}
+.qs input{width:54px;text-align:center;border:none;font-weight:800;font-size:.95rem;outline:none}
+.acart{flex:1;border-radius:8px;border:none;background:#0a0a0a;color:#fff;font-weight:800;font-size:.9rem;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.acart:hover{background:#222}
+.bbtn{width:100%;border-radius:8px;border:none;background:#0a0a0a;color:#fff;font-weight:800;font-size:.95rem;padding:14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;margin-top:8px}
+.bbtn:hover{background:#222}
+.trust{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}
+/* Variants: size + color */
+.varsec{margin:12px 0;padding:12px 14px;background:#fafafa;border-radius:10px;border:1px solid #f1f5f9}
+.varsec b{display:flex;align-items:center;gap:6px;font-size:.78rem;font-weight:800;color:#111;margin-bottom:8px}
+.varsec b .req{color:#e11d48}
+.size-row{display:flex;flex-wrap:wrap;gap:6px}
+.size-chip{padding:8px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.78rem;font-weight:800;background:#fff;color:#475569;cursor:pointer;transition:all .15s;min-width:46px;text-align:center}
+.size-chip:hover{border-color:var(--ac);color:var(--ac);transform:translateY(-1px)}
+.size-chip.on{background:linear-gradient(135deg,var(--ac),var(--acd));color:#fff;border-color:transparent;box-shadow:0 4px 10px rgba(233,30,99,.3)}
+.size-chip.out{opacity:.4;cursor:not-allowed;text-decoration:line-through}
+.color-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.color-chip{width:34px;height:34px;border-radius:50%;border:2px solid #e2e8f0;cursor:pointer;transition:all .15s}
+.color-chip:hover{transform:scale(1.1);box-shadow:0 4px 10px rgba(0,0,0,.15)}
+.color-chip.on{border-color:#111;box-shadow:0 0 0 2px #fff,0 0 0 4px var(--ac)}
+.stk{font-size:.74rem;color:#64748b;margin-top:8px}
+.stk b{color:#16a34a}
+.vrow{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;background:#fff;border-radius:6px;margin-top:4px;font-size:.78rem;border:1px solid #f1f5f9}
+.vrow b{color:#111}
+.vrow .px{color:var(--ac);font-weight:800}
+.trust span{font-size:.66rem;font-weight:800;color:#9d174d;background:#fdf2f8;border:1px solid #fbcfe8;padding:6px 10px;border-radius:10px}
+.trust i{margin-right:4px;color:var(--ac)}
+/* Description + Information tabs (RESTORED) */
+.ditabs{margin-top:22px;background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(15,23,42,.06);overflow:hidden}
+.dinav{display:flex;border-bottom:1px solid #f1f5f9}
+.dinav div{flex:1;padding:14px;text-align:center;font-weight:800;font-size:.85rem;color:#64748b;cursor:pointer;transition:all .2s;border-bottom:3px solid transparent}
+.dinav div.on{color:#0a0a0a;border-color:#0a0a0a;background:#fafafa}
+.dinav div:hover{color:#0a0a0a}
+.dipane{padding:22px;font-size:.9rem;line-height:1.8;color:#334155;min-height:160px}
+.dipane b{color:#111}
+.dipane ul{padding-left:20px;margin:8px 0}
+.dipane li{margin-bottom:6px}
+.dipane li:before{content:'✦';color:var(--ac);margin-right:9px;font-size:.7rem}
+.dihide{display:none}
+.ytwrap{margin-top:14px;border-radius:10px;overflow:hidden;background:#000;position:relative;padding-bottom:56.25%;height:0}
+.ytwrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
+.ytthumb{position:relative;border-radius:10px;overflow:hidden;background:#000;cursor:pointer;margin-top:14px}
+.ytthumb img{width:100%;height:280px;object-fit:cover;display:block}
+.ytthumb span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.ytthumb .pb{width:62px;height:62px;border-radius:50%;background:#e62117;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.ytthumb .lbl{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.72);color:#fff;font-size:.6rem;font-weight:800;padding:4px 10px;border-radius:6px;letter-spacing:1px;pointer-events:none}
+/* Related */
+.rel-sec{width:80%;max-width:2400px;margin:34px auto 0;padding:0 22px 24px}
+.rel-t{font-size:1.56rem;font-weight:800;margin-bottom:14px;letter-spacing:-.2px;text-align:center;display:block}
+/* #9/#14 — 6 per row on desktop; the grid steps down on smaller screens but
+   the card layout never breaks. */
+.rel{display:grid;grid-template-columns:repeat(6,1fr);gap:13px}
+.rc{background:#fff;border:1px solid #eef2f7;border-radius:14px;overflow:hidden;box-shadow:0 1px 5px rgba(15,23,42,.05);cursor:pointer;display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s}
+.rc:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(15,23,42,.11)}
+/* #10 — the EXACT same image container as Reseller Panel → My Products
+   (.mp-p .im): 140px tall, #f8fafc, object-fit:contain. Every recommendation
+   image is therefore identical in size and alignment. */
+.rc .rim{position:relative;height:210px;background:#f8fafc;display:flex;align-items:center;justify-content:center;overflow:hidden}
+/* Part 3 — contain, to match the comment above and the main product photo.
+   The rule had drifted to `cover`, which zoomed and cropped each recommendation
+   card; these are product images, so the whole product must stay visible. */
+.rc .rim img{width:100%;height:100%;object-fit:contain;object-position:center;background:#f8fafc;transition:transform .4s}
+.rc:hover .rim img{transform:scale(1.05)}
+.rc .offer{position:absolute;top:8px;right:8px;background:#fff;border:1px solid #eee;color:#111;font-size:.6rem;font-weight:800;padding:3px 9px;border-radius:14px}
+.rc .rbd{padding:11px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
+.rc .rn{font-size:.78rem;font-weight:800;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc .rp{font-size:.84rem;font-weight:900;color:#4338ca}
+.rc .rp s{color:#94a3b8;font-weight:500;margin-left:7px;font-size:.72rem}
+/* #11 — every card carries its own Buy Now button */
+.rc .rbn{width:100%;margin-top:auto;border:none;border-radius:9px;padding:8px 6px;font-size:.72rem;font-weight:800;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#4f46e5,#4338ca);color:#fff;min-height:34px}
+.rc .rbn:hover{filter:brightness(1.08)}
+.rel-empty{grid-column:1/-1;padding:26px;text-align:center;color:#94a3b8;font-size:.85rem}
+/* Footer */
+/* item 16 — the EXACT same footer as my-shop.html (markup + CSS + data binding).
+   Copied verbatim so the product page and the shop home page can never drift apart. */
+.pol-ov{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px}
+.pol-box{background:#fff;border-radius:16px;max-width:640px;width:100%;max-height:84vh;display:flex;flex-direction:column;box-shadow:0 30px 70px rgba(0,0,0,.4)}
+.pol-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #eef2f7}
+.pol-hd b{font-size:1.05rem;font-weight:900;color:#0f172a}
+.pol-hd button{border:none;background:none;font-size:1.6rem;line-height:1;color:#94a3b8;cursor:pointer}
+.pol-bd{padding:18px 20px;overflow-y:auto;font-size:.88rem;line-height:1.85;color:#334155}
+.foot{background:#0a0a0a;color:#b5b5b5;margin-top:36px;position:relative;overflow:hidden;flex:0 0 auto}
+.foot .wm{position:absolute;left:0;right:0;bottom:-50px;text-align:center;font-size:11rem;font-weight:900;color:rgba(255,255,255,.025);letter-spacing:14px;pointer-events:none;white-space:nowrap;line-height:.8}
+.foot-main{width:80%;max-width:2400px;margin:0 auto;padding:48px 22px 30px;display:grid;grid-template-columns:1.2fr 1.3fr 1fr 1fr;gap:34px;font-size:.78rem;position:relative;z-index:2}
+.foot .fbimg{width:68px;height:68px;padding:8px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:#111;overflow:hidden;margin-bottom:18px;box-shadow:0 4px 10px rgba(255,255,255,.08)}
+.foot .fbimg.hasimg{width:auto;min-width:0;max-width:none;height:auto;padding:0;background:transparent;box-shadow:none;border-radius:0;overflow:visible}
+.foot .fbimg.hasimg img{width:auto;height:auto;max-width:38px;max-height:38px;display:block;padding:0;background:transparent}
+/* Footer logo (#4) — same saved logo as the header; no duplicate upload. */
+.foot .fbimg img{height:auto;width:auto;max-width:38px;max-height:38px;object-fit:contain;background:transparent;display:block;padding:0}
+.foot h6{color:#fff;font-size:.78rem;font-weight:800;margin:0 0 12px;display:flex;align-items:center;gap:8px;letter-spacing:.3px}
+.foot h6 i{color:var(--ac);font-size:.8rem}
+.foot p,.foot a.fl{display:block;color:#9a9a9a;margin:0 0 9px;line-height:1.7}
+.foot a.fl:hover{color:#fff;cursor:pointer}
+.foot-bot{width:80%;max-width:2400px;margin:0 auto;padding:18px 22px;border-top:1px solid #1f1f1f;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-size:.72rem;position:relative;z-index:2}
+.foot-bot b{color:#fff}
+.wap{display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;font-weight:800;font-size:.74rem;padding:9px 20px;border-radius:22px;box-shadow:0 4px 10px rgba(37,211,102,.3);transition:transform .15s;cursor:pointer}
+.wap:hover{transform:translateY(-2px)}
+.soc{display:flex;gap:9px}
+.soc a{width:34px;height:34px;border-radius:50%;background:#1d1d1d;border:1px solid #333;display:flex;align-items:center;justify-content:center;color:#fff;transition:all .15s}
+.soc a:hover{background:var(--ac);border-color:var(--ac);transform:translateY(-2px)}
+@media(max-width:900px){ .foot-main{grid-template-columns:1fr 1fr} }
+@media(max-width:560px){ .foot-main{grid-template-columns:1fr;gap:26px} .foot-bot{flex-direction:column;text-align:center} .foot .wm{font-size:5rem;letter-spacing:6px} }
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0a0a0a;color:#fff;padding:12px 26px;border-radius:12px;font-size:.85rem;font-weight:700;display:none;z-index:500;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+/* ---------- #5-#8 mobile bottom navigation (same bar as the shop home) ----------
+   Mobile only (<=600px); a tablet is not treated as mobile. */
+.ms-bnav{display:none;position:fixed;left:0;right:0;bottom:0;z-index:400;
+  background:rgba(255,255,255,.97);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  box-shadow:0 -4px 18px rgba(15,23,42,.14);padding:7px 4px calc(7px + env(safe-area-inset-bottom))}
+.ms-bnav a{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  text-decoration:none;color:#64748b;font-size:.62rem;font-weight:800;padding:6px 2px;min-height:52px;cursor:pointer}
+.ms-bnav a i{font-size:1.15rem;line-height:1}
+.ms-bnav a:active{background:#f1f5f9;border-radius:10px}
+.ms-bnav a.bn-wa{color:#25d366}
+.ms-bnav .bn-ct{position:absolute;top:2px;right:calc(50% - 22px);min-width:17px;height:17px;padding:0 4px;border-radius:9px;
+  background:#ef4444;color:#fff;font-size:.6rem;font-weight:900;display:flex;align-items:center;justify-content:center}
+@media(max-width:600px){
+  .ms-bnav{display:flex}
+  body{padding-bottom:74px}
+}
+.toast.on{display:block}
+.zov{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;z-index:900;cursor:zoom-out}
+.zov img{max-width:92vw;max-height:92vh;border-radius:8px}
+@media(max-width:1440px){.rel{grid-template-columns:repeat(5,1fr)}}
+@media(max-width:1200px){.rel{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:1100px){.rel{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:860px){.rel{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.rel{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:1100px){ .wrap,.hdr-in,.rel-sec,.foot-main,.foot-bot{width:94%} }
+@media(max-width:768px){
+  .hdr-in{gap:10px;padding:10px 14px;flex-wrap:wrap}
+  .srch{order:3;max-width:100%;margin:0;flex:1 1 100%}
+  .pd{grid-template-columns:1fr;gap:20px}
+  .gm{height:340px}
+  .rel{grid-template-columns:repeat(2,1fr)}
+  /* #10 — keep the image height identical to My Products on mobile too */
+  .rc .rim{height:140px}
+  .brand .btxt{display:none}
+  .dinav div{font-size:.78rem;padding:12px 6px}
+}
+
+/* ===== #40-#48 Mobile header (MOBILE ONLY — desktop untouched) =====
+   Layout:  [Brand Logo]   [Brand/Business Name]   [Account]
+   The cart indicator is driven by the REAL cart (rh_mycart_<rid>), so it
+   appears only after Add to Cart and never after Buy Now. */
+@media(max-width:600px){
+  .hdr-in{padding:10px 12px;gap:8px}
+  /* Part 6 — the reseller LOGO is hidden on mobile and the centred business name
+     replaces it, so the header reads: [Hamburger] [Business Name] [Account].
+     This page used to keep the logo at 40px on mobile; it now matches the shop
+     home exactly (desktop still shows the logo — see the base rules above). */
+  .brand{display:none}
+  .srch{display:none}
+  /* the hamburger (shown by the drawer block below) is pinned first in the row */
+  .hdr-in > #msBurger{order:0;flex:none}
+  .hdr-mid{display:block;flex:1;min-width:0;text-align:center;overflow:hidden;order:1}
+  .hdr-mid .bname{display:block;font-size:.9rem;font-weight:900;color:#fff;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* right side: cart (when it has items) then Account, always pinned right */
+  .hcta{gap:8px;order:2;margin-left:auto;flex:none}
+  .hcta .chip.acc .acc-t{display:none}
+  .ms-cart-empty{display:none!important}
+  .hcta .chip.acc{width:40px;height:40px;justify-content:center;padding:0}
+  .hcta .chip.acc i{font-size:1.05rem}
+}
+/* Part 6/7 — the centred name is MOBILE ONLY. It is declared inside a min-width
+   query rather than as a bare rule placed after the mobile block, because a
+   later `display:none` at equal specificity would otherwise win over the
+   `display:block` inside the max-width query and hide the name on mobile. */
+@media(min-width:601px){ .hdr-mid{display:none} }
+
+/* ===== #4 mobile floating cart (MOBILE ONLY) =====
+   Desktop keeps the cart in the header and ALWAYS shows it.
+   On mobile the header cart is hidden and this floating button is used; it is
+   driven by the REAL cart (rh_mycart_<rid>), so Buy Now never triggers it. */
+#msFloatCart{display:none;position:fixed;right:16px;bottom:150px;z-index:895;
+  width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#2563eb,#1e40af);color:#fff;
+  box-shadow:0 10px 26px rgba(37,99,235,.42);align-items:center;justify-content:center;font-size:1.25rem}
+#msFloatCart .n{position:absolute;top:-2px;right:-2px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;
+  background:#ef4444;color:#fff;font-size:.64rem;font-weight:900;display:flex;align-items:center;justify-content:center}
+@media(max-width:600px){
+  #msFloatCart.on{display:flex}
+  #msFloatCart{bottom:164px}
+}
+@media(min-width:601px){ #msFloatCart{display:none!important} }
+
+/* ===== #7/#8/#10/#11 Mobile hamburger + hierarchical categories (MOBILE ONLY) ===== */
+#msBurger{display:none;background:none;border:none;color:#fff;font-size:1.25rem;cursor:pointer;padding:6px;flex:none}
+#msDrawer{display:none;position:fixed;inset:0;z-index:940;background:rgba(15,23,42,.45)}
+#msDrawer.on{display:block}
+#msPanel{position:absolute;left:0;top:0;bottom:0;width:86%;max-width:330px;background:#fff;display:flex;flex-direction:column;
+  box-shadow:6px 0 26px rgba(15,23,42,.25)}
+#msPanel .ph{background:linear-gradient(135deg,#2563eb,#1e3a8a);color:#fff;padding:13px 14px;display:flex;align-items:center;gap:10px}
+#msPanel .ph b{font-size:.92rem}
+#msPanel .pb{flex:1;overflow-y:auto;padding:8px}
+.msRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #f1f5f9;
+  font-size:.88rem;font-weight:700;color:#0f172a;cursor:pointer}
+.msRow:hover{background:#f8fafc}
+#msBack{display:none;background:none;border:none;color:#fff;font-size:.82rem;font-weight:800;cursor:pointer;padding:0}
+@media(max-width:600px){
+  #msBurger{display:block}
+  .nav{display:none!important}          /* #11 — no line-by-line menu on mobile */
+  .hcta .chip#msCartChip{display:none!important}  /* #4 — cart never in the mobile header */
+}
+@media(min-width:601px){
+  #msBurger,#msDrawer{display:none!important}
+}
+</style>
+<style id="reseller-hamburger-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   Every reseller page hides the hamburger with ".hamburger{display:none}", but most
+   pages never turn it back ON at mobile width — only products.html did. So on a phone
+   there was no way to open the sidebar on Products, Orders, Wallet, Withdrawals,
+   Courier, Messages, Support, Profile, Referral or Website Integration.
+   This shows the SAME existing button (onclick="menuToggle()") at mobile width only.
+   It is an ADDED block and lives entirely inside a max-width query, so the DESKTOP
+   LAYOUT IS UNCHANGED. */
+@media (max-width:768px){
+  .hamburger { display:block !important; }
+}
+</style>
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+    <div class="hdr-in">
+        <div class="brand" onclick="goShop()">
+            <div class="bimg" id="hLogo">S</div>
+            <div class="btxt" id="hName">MY SHOP</div>
+        </div>
+        <div class="srch">
+            <i class="fas fa-search"></i>
+            <input placeholder="Search products..." onkeydown="if(event.key==='Enter')goShop()">
+            <button onclick="goShop()"><i class="fas fa-search"></i></button>
+        </div>
+        <div class="hcta">
+            <div onclick="goCart()" class="chip" id="msCartChip"><span>TK <b id="chipTot">0</b></span><span class="cb"><i class="fas fa-bag-shopping"></i><span class="ct" id="cartCt">0</span></span></div>
+            <!-- Customer Account — this shop only -->
+            <div onclick="goAccount()" class="chip acc" title="My Account"><i class="fas fa-user"></i><span class="acc-t" id="accLbl">Account</span></div>
+        </div>
+    </div>
+</div>
+
+<nav class="nav"><div class="nav-in" id="hdrNav"></div></nav>
+<div class="wrap">
+    <div class="pd" id="pd"></div>
+    <!-- Description + Information tabs (RESTORED) -->
+    <div class="ditabs" id="ditabs">
+        <div class="dinav" id="dinav">
+            <div class="on" onclick="dtab(0)">Description</div>
+            <div onclick="dtab(1)">Information</div>
+            <div onclick="dtab(2)">Reviews</div>
+        </div>
+        <div class="dipane" id="dpane"></div>
+    </div>
+</div>
+
+<div class="rel-sec"><div class="rel-t">You may also like</div><div class="rel" id="rel"></div></div>
+
+<!-- item 16 — identical footer to my-shop.html (same classes, same columns, same binding ids) -->
+<div class="foot">
+    <div class="wm" id="fwm">MY SHOP</div>
+    <div class="foot-main">
+        <div>
+            <div class="fbimg" id="fLogo">S</div>
+            <h6><i class="fas fa-phone"></i> Phone Number</h6><p id="fPhone2"></p>
+            <h6><i class="fas fa-envelope"></i> Email Address</h6><p id="fEmailH"></p>
+        </div>
+        <div>
+            <h6><i class="fas fa-location-dot"></i> OUR SHOWROOM</h6>
+            <p style="margin:0 0 14px"><b style="color:#fff" id="fShopN">My Shop</b><br><span id="fAddr2"></span></p>
+            <h6 style="margin-top:14px"><i class="fas fa-clock"></i> ORDER TIME</h6>
+            <p style="margin:0">Everyday 9:00 AM — 10:00 PM<br>Cash on Delivery all over Bangladesh</p>
+        </div>
+        <div>
+            <h6><i class="fas fa-link"></i> QUICK LINKS</h6>
+            <a class="fl" href="javascript:void(0)" onclick="scrollToSec('prodSec')">All Products</a>
+            <a class="fl" href="javascript:void(0)" onclick="scrollToSec('dealRow')">Flash Deals</a>
+            <a class="fl" href="javascript:void(0)" onclick="scrollToSec('contactSec')">Contact Us</a>
+            <a class="fl" href="javascript:void(0)" onclick="goCart()">Checkout</a>
+        </div>
+        <div>
+            <h6><i class="fas fa-shield-heart"></i> POLICY</h6>
+            <a class="fl" onclick="shopPolicyOpen('delivery')">DELIVERY POLICY</a>
+            <a class="fl" onclick="shopPolicyOpen('return')">RETURN POLICY</a>
+            <a class="fl" onclick="shopPolicyOpen('privacy')">PRIVACY POLICY</a>
+            <a class="fl" onclick="shopPolicyOpen('about')">ABOUT US</a>
+        </div>
+    </div>
+    <div class="foot-bot">
+        <span>© 2026 <b style="color:#fff" id="fName2">My Shop</b> All rights reserved</span>
+        <span>Powered by <b style="color:var(--ac)">ResellerHub BD</b> | resellerhubbd.com | 01997904792</span>
+        <span style="display:flex;gap:10px;align-items:center">
+            <a class="wap" id="fwa2" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+            <span class="soc"><a id="fFb2" target="_blank"><i class="fab fa-facebook-f"></i></a><a id="fIg" target="_blank"><i class="fab fa-instagram"></i></a><a id="msTk" target="_blank" style="display:none"><i class="fab fa-tiktok"></i></a><a id="fWa3" target="_blank"><i class="fab fa-whatsapp"></i></a></span>
+        </span>
+    </div>
+</div>
+
+<div class="zov" id="zov" onclick="this.style.display='none'"><img id="zovImg" src=""></div>
+<div class="toast" id="toast"></div>
+
+<script src="../app.js"></script><script>(function(){function paint(){try{var b=document.getElementById("ordersBadge");var uid=sessionStorage.getItem("user_id");if(!uid)return;if(sessionStorage.getItem("user_type")!=="reseller")return;var n=(typeof resellerNewOrderCount==="function")?resellerNewOrderCount(uid):0;if(b){b.textContent=n;b.style.display=n>0?"inline-block":"none";}var lb=document.getElementById("ordersBadgeLabel");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+var rid=new URLSearchParams(location.search).get('rid');
+var pid=new URLSearchParams(location.search).get('id');
+var shop=null,product=null,gi=0;
+window._im=[];
+
+function findShop(){
+    var list=getData(DB_KEYS.RESELLERS)||[];
+    if(!list.length){try{var s=(typeof STYLEX_ACCOUNT!=='undefined')?STYLEX_ACCOUNT:{id:1,name:'Stylex Shopping',email:'stylexshopping@gmail.com',password:'Stylexshopping@26',isPermanent:true,role:'owner',balance:15000,shop_name:'Stylex Shopping',shop_phone:'01997904792',shop_color:'#e91e63'};list=[s];setData(DB_KEYS.RESELLERS,list)}catch(e){}}
+    if(!list.length)return;
+    /* An explicit ?rid= is AUTHORITATIVE. If it does not resolve we must NOT
+       fall through to someone else's shop — that silently turned every
+       storefront into the first reseller in the list (Stylex). */
+    if(rid){
+        var hitRid=false;
+        for(var i=0;i<list.length;i++){if(String(list[i].id)===String(rid)){shop=list[i];hitRid=true;break}}
+        if(!hitRid){shop=null;return}                 /* -> "Shop not found" */
+        return;
+    }
+    /* No rid in the URL: a logged-in reseller always sees THEIR OWN shop — this
+       must win over a stale "last visited" id, otherwise opening My Shop from
+       the panel showed whichever shop was opened first (Stylex). */
+    try{
+        var ut=sessionStorage.getItem('user_type');var uid=sessionStorage.getItem('user_id');
+        if(ut==='reseller'&&uid){for(var k=0;k<list.length;k++){if(String(list[k].id)===String(uid)){shop=list[k];return}}}
+    }catch(e){}
+    /* NEW TAB (2026-09-15) — sessionStorage is per-tab, so a product page opened
+       in a new tab has no session even while the reseller is logged in elsewhere.
+       Restore from the signed "Remember Login" token, which lives in localStorage
+       and is therefore shared across tabs. It can only resolve to the id inside
+       the visitor's OWN token — never to another reseller's shop. */
+    try{
+        if(typeof restorePersistentSession==='function'){
+            var ru=restorePersistentSession('reseller');
+            if(ru&&ru.id){
+                for(var m=0;m<list.length;m++){if(String(list[m].id)===String(ru.id)){shop=list[m];rid=String(ru.id);return}}
+            }
+        }
+    }catch(e){}
+    /* NO silent fallback any more — identical to my-shop.html. A bare product
+       page with no rid and no session used to fall back to the last visited
+       shop and then to the first approved reseller, which is always Stylex
+       (id 1, index 0). An unknown storefront now shows "Shop not found". */
+}
+/* BUSINESS NAME FIRST — identical to the shop home page. The personal owner
+   name (shop.name) may only be used when NO business name exists at all, so a
+   product page can never show "Rahim"/"Zahid" instead of the shop name. */
+/* Part 2 — delegate to the ONE canonical resolver in app.js so this page can
+   never drift from the shop home again. Business name first; the owner's
+   personal name (`shop.name`) is only used when no business name exists. */
+/* 2026-09-17 — the shop's business name, available IMMEDIATELY.
+   bname() depends on `shop`, which findShop() fills during boot; until then it fell
+   back to the literal string 'My Shop', so the header and footer read "My Shop"
+   while the page was still loading. This reads the reseller record straight from
+   localStorage by the id in the URL, so the real business name is there from the
+   very first paint. Returns '' rather than a placeholder when nothing is found. */
+function bnameNow(rid){
+    try{
+        var list=getData(DB_KEYS.RESELLERS)||[];
+        var id=String(rid||'');
+        for(var i=0;i<list.length;i++){
+            if(String(list[i].id)===id){
+                try{ var n=resellerBusinessName(list[i]); if(n) return n; }catch(e){}
+                return list[i].shop_name||list[i].shopName||list[i].businessName||list[i].name||'';
+            }
+        }
+    }catch(e){}
+    return '';
+}
+function bname(){try{return resellerBusinessName(shop)}catch(e){return(shop&&(shop.shop_name||shop.businessName||shop.name))||bnameNow(rid)||''}}
+function blogo(){return(shop&&(shop.shop_logo||shop.shopLogo||shop.logo))||''}
+function digits(ph){var d=String(ph||'').replace(/\D/g,'');if(d.charAt(0)==='0')d='88'+d;return d}
+function retail(p){return Number(p.customer_price)||Math.round((Number(p.price)||0)*1.8)}
+/* Selling price of the CURRENT selection — a variant may carry its own price. */
+function retailNow(){
+    if(!product)return 0;
+    if(productVariantsActive(product)&&productOwnerType(product)==='reseller'){
+        var vp=Number(variantPriceFor(product,selSize,selColor))||0;
+        if(vp>0)return vp;
+    }
+    return retail(product);
+}
+/* Stock available for the CURRENT selection (variant aware). */
+function stockNow(){return product?variantStockFor(product,selSize,selColor):0}
+function goCart(){if(!shop){toast('Shop not found!');return}location.href='my-shop-checkout.html?rid='+rid}
+/* Customer Account — opens THIS shop's account area */
+function goAccount(){location.href='my-shop-account.html?rid='+rid}
+function renderAccountChip(){
+  var el=document.getElementById('accLbl'),chip=el?el.parentNode:null;
+  if(!el||!chip)return;
+  var c=null; try{c=shopCurrentCustomer(rid)}catch(e){}
+  if(c){ el.textContent=(String(c.name||'').split(' ')[0])||'Account'; chip.classList.add('on'); chip.title='My Account — '+String(c.name||''); }
+  else { el.textContent='Account'; chip.classList.remove('on'); chip.title='Login / Register'; }
+}
+/* item 16 — the footer is shared byte-for-byte with my-shop.html, and its Quick Links
+   call scrollToSec(). That function only makes sense on the shop home page, so here it
+   is a compatible shim: it takes the visitor back to the shop home, anchored to the
+   section she asked for. Same markup, same behaviour, no duplicated footer. */
+function scrollToSec(sec){location.href='my-shop.html?rid='+rid+(sec?('#'+sec):'')}
+/* kept as an alias so any older link keeps working */
+function backToShop(sec){scrollToSec(sec)}
+function goShop(){location.href='my-shop.html?rid='+rid}
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(function(){t.classList.remove('on')},2600)}
+
+function imgs(){
+    /* 2026-09-15 — resolve each stored value through prodImgSrc() HERE, at the
+       single source, so the main image, the gallery and the thumbnails can never
+       render an unresolved `@img:` marker (which the browser would request as a
+       file named "@img:i..." and log ERR_FILE_NOT_FOUND). An unresolvable image
+       becomes '' and the renderers already fall back to their placeholder. */
+    var a=[];
+    if(product.images&&product.images.length){for(var i=0;i<product.images.length;i++)a.push(prodImgSrc(product.images[i]))}
+    var main=prodImgSrc(product.image);
+    if(main&&a.indexOf(main)===-1)a.unshift(main);
+    if(!a.length)a.push('');
+    return a;
+}
+function ytId(u){
+    var s=String(u||'').trim();if(!s)return'';
+    if(/^[A-Za-z0-9_-]{11}$/.test(s))return s;
+    var m=s.match(/[?&]v=([A-Za-z0-9_-]{11})/);if(m)return m[1];
+    m=s.match(/youtu\.be\/([A-Za-z0-9_-]{11})/);if(m)return m[1];
+    m=s.match(/shorts\/([A-Za-z0-9_-]{11})/);if(m)return m[1];
+    m=s.match(/embed\/([A-Za-z0-9_-]{11})/);if(m)return m[1];
+    m=s.match(/([A-Za-z0-9_-]{11})/);return m?m[1]:'';
+}
+function ytEmbed(){
+    var id=ytId(product.youtube);if(!id)return'';
+    return '<div class="ytwrap"><iframe src="https://www.youtube-nocookie.com/embed/'+id+'?rel=0&modestbranding=1" allow="accelerometer;encrypted-media;picture-in-picture" allowfullscreen></iframe></div>';
+}
+function ytThumb(){
+    var id=ytId(product.youtube);if(!id)return'';
+    return '<div class="ytthumb" onclick="this.outerHTML=ytEmbed()"><img src="https://img.youtube.com/vi/'+id+'/hqdefault.jpg"><span><span class="pb"><i class="fas fa-play"></i></span></span><span class="lbl">PRODUCT VIDEO</span></div>';
+}
+function dtab(i){
+    var t=document.querySelectorAll('#dinav div');for(var k=0;k<t.length;k++)t[k].classList.toggle('on',k===i);
+    if(i===0)document.getElementById('dpane').innerHTML=buildDescription();
+    else if(i===1)document.getElementById('dpane').innerHTML=buildInfo();
+    else document.getElementById('dpane').innerHTML=buildReviews();
+}
+function buildDescription(){
+    var h='<b>Product Description</b><br><br>'+(product.description||'Quality product. Order now with cash on delivery — fast delivery within 48 hours, easy 7-day return, and 100% authentic guarantee.');
+    h+=ytThumb();
+    return h;
+}
+function buildInfo(){
+    var h='<b>Product Information</b><br><ul>';
+    h+='<li><b>Category:</b> '+(product.category||'-')+'</li>';
+    if(product.sku)h+='<li><b>SKU:</b> '+product.sku+'</li>';
+    if(product.brand)h+='<li><b>Brand:</b> '+product.brand+'</li>';
+    if(product.material)h+='<li><b>Material:</b> '+product.material+'</li>';
+    if(product.weight)h+='<li><b>Weight:</b> '+product.weight+'</li>';
+    h+='<li><b>Delivery:</b> Inside Dhaka 48hrs / Outside Dhaka 3-5 days</li>';
+    h+='<li><b>Payment:</b> Cash on Delivery (bKash / Nagad / Rocket / Bank)</li>';
+    h+='</ul>';
+    h+=ytEmbed();
+    return h;
+}
+function buildReviews(){
+    var rs=getData('rh_reviews')||[];var mine=[];
+    for(var i=0;i<rs.length;i++){if(String(rs[i].productId)===String(product.id))mine.push(rs[i])}
+    if(!mine.length)return'<b>Customer Reviews</b><br><br>No reviews yet. Be the first to order and review!';
+    var h='<b>Customer Reviews ('+mine.length+')</b><br><br>';
+    for(var j=0;j<mine.length;j++){
+        var r=mine[j];
+        var st='';for(var s=0;s<5;s++)st+='<i class="fas fa-star" style="color:'+(s<r.rating?'#fbbf24':'#e5e7eb')+';font-size:.78rem;margin-right:2px"></i>';
+        h+='<div style="padding:10px 0;border-bottom:1px solid #f4f4f6"><b>'+r.name+'</b> '+st+'<div style="margin-top:5px">'+r.text+'</div><small style="color:#94a3b8">'+formatDate(r.date)+'</small></div>';
+    }
+    return h;
+}
+
+function render(){
+    /* (#40) only products this shop is allowed to show */
+    var ps=[];
+    try{ps=shopProducts(rid)}catch(e){ps=getData(DB_KEYS.PRODUCTS)||[]}
+    for(var i=0;i<ps.length;i++){if(String(ps[i].id)===String(pid)){product=ps[i];break}}
+    if(!shop||!product){
+        document.getElementById('pd').innerHTML='<div style="text-align:center;padding:80px 16px;grid-column:1/-1"><i class="fas fa-box-open" style="font-size:3rem;color:#cbd5e1"></i><h2 style="margin:14px 0 6px">Product not found</h2><a href="my-shop.html?rid='+rid+'" style="color:#111;font-weight:800">&larr; Back to shop</a></div>';
+        document.getElementById('ditabs').style.display='none';
+        return;
+    }
+    /* 2026-09-17 — SEO (this request). Sets the tab title, the meta description,
+       the keywords and the social share card from the product's own SEO fields,
+       falling back to the product name/description when they are blank. */
+    try { applyProductSeo(product, bname()); } catch (e) { }
+    var lg=blogo();
+    rhSetLogo(document.getElementById('hLogo'),lg,bname().charAt(0));
+    renderAccountChip();
+    var hn=document.getElementById('hName');if(hn)hn.textContent=bname();
+    /* item 16 — footer data binding, identical to my-shop.html */
+    rhSetLogo(document.getElementById('fLogo'),lg,bname().charAt(0));
+    var bn=bname();
+    var fn2=document.getElementById('fName2');if(fn2)fn2.textContent=bn;
+    var wm=document.getElementById('fwm');if(wm)wm.textContent=bn.toUpperCase();
+    var ph=(shop.shop_phone||shop.phone||'01997904792');
+    var fp2=document.getElementById('fPhone2');if(fp2)fp2.textContent=ph;
+    var fe=document.getElementById('fEmailH');if(fe)fe.textContent=shop.email||'resellerhubbd@gmail.com';
+    var fsn=document.getElementById('fShopN');if(fsn)fsn.textContent=bn;
+    var fa2=document.getElementById('fAddr2');if(fa2)fa2.textContent=shop.shop_address||shop.address||'Bangladesh';
+    var wa='https://wa.me/'+digits(ph);
+    var fwa=document.getElementById('fwa2');if(fwa)fwa.href=wa;
+    var fw3=document.getElementById('fWa3');if(fw3)fw3.href=wa;
+    var ffb=document.getElementById('fFb2');if(ffb)ffb.href=shop.shop_fb||shop.facebook||'#';
+    var fig=document.getElementById('fIg');if(fig)fig.href=shop.shop_fb||shop.facebook||'#';
+    var cc=0,ct=0;
+    try{var cl=JSON.parse(localStorage.getItem('rh_mycart_'+rid)||'[]');for(var i=0;i<cl.length;i++){cc+=cl[i].qty;ct+=cl[i].resale*cl[i].qty}}catch(e){}
+    document.getElementById('cartCt').textContent=cc;
+    document.getElementById('chipTot').textContent=ct;
+    window._im=imgs();
+    var r=retail(product);var old=Math.round(r*1.25);var off=product.discount||20;
+    var imgHTML=window._im[0]?'<img src="'+window._im[0]+'">':'<div style="background:linear-gradient(135deg,#f9a8d4,#a855f7);width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:4rem"><i class="fas fa-box"></i></div>';
+    var g='<div class="gal"><div class="gm" id="gm" onclick="zoom()">'+imgHTML+'</div>'+
+        (window._im.length>1?'<button class="garr l" onclick="gm(-1)"><i class="fas fa-chevron-left"></i></button><button class="garr r" onclick="gm(1)"><i class="fas fa-chevron-right"></i></button>':'')+
+        '<span class="gcnt" id="gcnt"></span><div class="gth" id="gth"></div></div>';
+    var rate=(4.5+(pid.length%5)*0.1).toFixed(1);
+    var info='<div>'+
+        '<div class="crumb"><i class="fas fa-house"></i> Home &nbsp;/&nbsp; '+(product.category||'Shop')+' &nbsp;/&nbsp; <b>'+product.name+'</b></div>'+
+        '<h1>'+product.name+'</h1>'+
+        '<div class="rater">★★★★★ '+rate+' <small>('+(product.stock||0)+' in stock)</small></div>'+
+        '<div class="prc"><span class="now" id="prcNow">৳'+r+'</span><span class="old">৳'+old+'</span><span class="off">-'+off+'%</span></div>'+
+        (product.sku?'<div class="sku"><b>SKU:</b> '+product.sku+'</div>':'')+
+        '<div id="varBox">'+renderVariants()+'</div>'+
+        '<div id="varGate"></div>'+
+        '<div class="act-row"><div class="qs"><button onclick="qch(-1)">&minus;</button><input id="qv" value="1" readonly><button onclick="qch(1)">+</button></div>'+
+        '<button class="acart" id="btnCart" onclick="addCart()"><i class="fas fa-bag-shopping"></i> Add to Cart</button></div>'+
+        '<button class="bbtn" id="btnBuy" onclick="buyNow()"><i class="fas fa-bolt"></i> Buy it now</button>'+
+        /* PART 2 — no 7-day return promise. Only "check before receiving". */
+        '<div class="trust"><span><i class="fas fa-hand-holding-dollar"></i>COD</span><span><i class="fas fa-truck-fast"></i>48hrs</span><span><i class="fas fa-hand-holding-dollar"></i>Check Before Receiving</span><span><i class="fas fa-shield-heart"></i>Authentic</span></div>'+
+        '<div class="chk-note"><i class="fas fa-circle-check"></i> ডেলিভারি ম্যানের সামনে প্রোডাক্ট দেখে/চেক করে নিন — সমস্যা থাকলে তখনই ফেরত দিতে পারবেন।</div>'+
+        (function(){
+            /* PART 12, 13 — validated YouTube embed (never raw HTML injection) */
+            var em = (typeof youtubeEmbedUrl === 'function') ? youtubeEmbedUrl(product.videoUrl || '') : '';
+            if (!em) return '';
+            return '<div class="vidwrap"><div class="vidt"><i class="fab fa-youtube"></i> Product Video</div>'+
+                   '<div class="vidbox"><iframe src="'+em+'" title="Product video" loading="lazy" allowfullscreen></iframe></div></div>';
+        })()+
+        '</div>';
+    document.getElementById('pd').innerHTML=g+info;
+    updateVarGate();
+    drawGal();
+    dtab(0);
+    renderRelated(ps);
+}
+function drawGal(){
+    var gm=document.getElementById('gm');
+    gm.innerHTML=window._im[gi]?'<img src="'+window._im[gi]+'">':'<div style="background:linear-gradient(135deg,#f9a8d4,#a855f7);width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:4rem"><i class="fas fa-box"></i></div>';
+    document.getElementById('gcnt').textContent=(gi+1)+' / '+window._im.length;
+    var gth=document.getElementById('gth');var h='';
+    for(var i=0;i<window._im.length;i++)h+='<div class="t'+(i===gi?' on':'')+'" onclick="setIm('+i+')">'+(window._im[i]?'<img src="'+window._im[i]+'">':'<i class="fas fa-box"></i>')+'</div>';
+    gth.innerHTML=h;
+}
+function gm(dd){var n=window._im.length;if(!n)return;gi=(gi+dd+n)%n;drawGal()}
+function setIm(i){gi=i;drawGal()}
+function zoom(){if(!window._im[gi])return;document.getElementById('zovImg').src=window._im[gi];document.getElementById('zov').style.display='flex'}
+
+var selSize='', selColor='';
+function getVariants(){
+    var s=[],c=[];
+    if(product.sizes){if(typeof product.sizes==='string')s=product.sizes.split(',').map(function(x){return x.trim()}).filter(Boolean);else s=product.sizes.slice()}
+    if(product.colors){if(typeof product.colors==='string')c=product.colors.split(',').map(function(x){return x.trim()}).filter(Boolean);else c=product.colors.slice()}
+    if(product.variants&&Array.isArray(product.variants)){
+        for(var i=0;i<product.variants.length;i++){
+            var v=product.variants[i];
+            if(v.sizes){var ss=String(v.sizes).split(',').map(function(x){return x.trim()}).filter(Boolean);for(var q=0;q<ss.length;q++){if(s.indexOf(ss[q])===-1)s.push(ss[q])}}
+            if(v.size&&s.indexOf(v.size)===-1)s.push(v.size);
+            if(v.name&&c.indexOf(v.name)===-1)c.push(v.name);
+            if(v.color&&c.indexOf(v.color)===-1)c.push(v.color);
+        }
+    }
+    /* No variant at all -> nothing to choose (the old 'Free Size' fallback
+       invented a fake Size option and made simple products un-orderable). */
+    return{s:s,c:c};
+}
+function renderVariants(){
+    var v=getVariants();
+    window._vs=v.s;window._vc=v.c;
+    var colorMap={Red:'#ef4444',Blue:'#3b82f6',Green:'#22c55e',Black:'#0a0a0a',White:'#f5f5f5',Yellow:'#eab308',Pink:'#ec4899',Orange:'#f97316',Purple:'#a855f7',Gray:'#6b7280',Brown:'#92400e',Beige:'#d4a574',Navy:'#1e3a8a'};
+    var h='';
+    if(v.s.length){
+        var total=0,stockBySize={};
+        if(productVariantsActive(product)){
+            for(var i=0;i<product.variants.length;i++){if(product.variants[i].size){var q=product.variants[i].stock||0;total+=q;stockBySize[product.variants[i].size]=(stockBySize[product.variants[i].size]||0)+q}}
+        }else{total=product.stock||0}
+        h+='<div class="varsec"><b><i class="fas fa-ruler-horizontal"></i> Size / Variant <span class="req">*</span></b><div class="size-row">';
+        for(var k=0;k<v.s.length;k++){
+            var sv=v.s[k];
+            var stk=stockBySize[sv]!==undefined?stockBySize[sv]:total;
+            var oo=stk<=0;
+            h+='<div class="size-chip'+(oo?' out':'')+(selSize===sv?' on':'')+'" onclick="pickSize('+k+')">'+sv+(oo?' (0)':'')+'</div>';
+        }
+        h+='</div>';
+        if(selSize&&stockBySize[selSize]!==undefined)h+='<div class="stk">Stock: <b>'+stockBySize[selSize]+' pcs</b> available in <b>'+selSize+'</b></div>';
+        h+='</div>';
+    }
+    if(v.c.length){
+        /* per-colour availability, only when the grid really carries stock */
+        var colorStock={};
+        if(productVariantsActive(product)){
+            for(var ci2=0;ci2<product.variants.length;ci2++){
+                var vcx=product.variants[ci2]||{};var cname=vcx.color||vcx.name||'';if(!cname)continue;
+                colorStock[cname]=(colorStock[cname]||0)+(Number(vcx.stock)||0);
+            }
+        }
+        h+='<div class="varsec"><b><i class="fas fa-palette"></i> Color</b><div class="color-row">';
+        for(var c=0;c<v.c.length;c++){
+            var cv=v.c[c];var hex=colorMap[cv]||cv.toLowerCase();
+            var cOut=productVariantsActive(product)&&colorStock[cv]!==undefined&&colorStock[cv]<=0;
+            h+='<div class="color-chip'+(selColor===cv?' on':'')+'" style="background:'+hex+(cOut?';opacity:.35':'')+'" title="'+cv+(cOut?' (out of stock)':'')+'" onclick="pickColorV('+c+')"></div>';
+        }
+        h+='</div>'+(selColor?'<div class="stk" style="margin-top:10px">Selected: <b>'+selColor+'</b></div>':'')+'</div>';
+    }
+    /* NOTE: the extra variant-list table that used to render here was removed
+       by request — it duplicated the Size / Variant + Color selectors above.
+       Size Variant and Color, and the underlying variant data, are untouched. */
+    return h;
+}
+function refreshVar(){
+    var b=document.getElementById('varBox');if(b)b.innerHTML=renderVariants();
+    var pn=document.getElementById('prcNow');if(pn)pn.textContent='৳'+retailNow();
+    updateVarGate();
+}
+/* ---- Mandatory variant gate (item 1) --------------------------------------
+   If the product exposes variants, size + colour MUST be chosen before the
+   product can be added to the cart or bought. Uses the shared guard in app.js
+   so the rule is identical everywhere orders are created.                    */
+function varCheck(){return (typeof validateVariantSelection==='function')?validateVariantSelection(product,window.selSize,window.selColor):{ok:true}}
+function varGateHtml(msg){
+    return '<div style="display:flex;align-items:center;gap:8px;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;padding:10px 13px;border-radius:10px;font-size:.82rem;font-weight:700;margin:10px 0 2px;line-height:1.45">'+
+           '<i class="fas fa-triangle-exclamation"></i><span>'+String(msg).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})+'</span></div>';
+}
+function updateVarGate(){
+    var chk=varCheck();
+    var msg=document.getElementById('varGate');
+    var bc=document.getElementById('btnCart'),bb=document.getElementById('btnBuy');
+    if(msg)msg.innerHTML=chk.ok?'':varGateHtml(chk.message);
+    var btns=[bc,bb];
+    for(var i=0;i<btns.length;i++){
+        if(!btns[i])continue;
+        if(chk.ok){btns[i].style.opacity='';btns[i].style.filter='';btns[i].style.cursor='pointer';btns[i].title='';}
+        else{btns[i].style.opacity='.5';btns[i].style.filter='grayscale(.6)';btns[i].style.cursor='not-allowed';btns[i].title=chk.message;}
+    }
+}
+function showVarError(chk){
+    toast(chk.message);
+    var m=document.getElementById('varGate');
+    if(m){m.innerHTML=varGateHtml(chk.message);m.scrollIntoView({behavior:'smooth',block:'center'});}
+}
+function pickSize(i){var v=getVariants();if(!v.s[i])return;var sv=v.s[i];selSize=(selSize===sv)?'':sv;refreshVar()}
+function pickColorV(i){var v=getVariants();if(!v.c[i])return;var cv=v.c[i];selColor=(selColor===cv)?'':cv;refreshVar()}
+window.selSize='';window.selColor='';
+function qch(dd){var inp=document.getElementById('qv');var v=(parseInt(inp.value)||0)+dd;if(v<1)v=1;if(v>(product.stock||99))v=product.stock||99;inp.value=v;
+    if(selSize&&productVariantsActive(product)){
+        var stockBySize={};
+        if(product.variants){for(var i=0;i<product.variants.length;i++){if(product.variants[i].size){var q=product.variants[i].stock||0;stockBySize[product.variants[i].size]=(stockBySize[product.variants[i].size]||0)+q}}}
+        var max=stockBySize[selSize]!==undefined?stockBySize[selSize]:product.stock||99;
+        if(v>max){inp.value=max;toast('Max stock for '+selSize+' is '+max)}
+    }
+}
+/* Stable id for the selected combination (never random, never reused).
+   Built by the shared helper so every page produces the same id (#18). */
+function variantIdOf(){
+    if(!product)return '';
+    return variantIdFor(product,selSize||'',selColor||'');
+}
+/* Legacy cart lines have no variant_id — rebuild it the same shared way. */
+function variantIdOfItem(it){
+    return itemVariantId(it);
+}
+function mkItem(q){
+    var isOwn=productOwnerType(product)==='reseller';
+    var rCost=product.reseller_price||product.price||0;var bCost=product.cost||product.buy_price||0;
+    var sell=retailNow();
+    /* own product -> the reseller's own buying cost; platform product -> wholesale */
+    var costP=isOwn?(Number(product.cost)||rCost||0):rCost;
+    /* (#13, #14, #18) ownership + historical prices travel with the line item so
+       the order can always be classified, priced and profited correctly. */
+    var it={productId:product.id,name:product.name,image:product.image||'',icon:product.icon||'fa-box',sku:product.sku||'',category:product.category||'',subSection:product.section||product.subSection||'',subSub:product.subSub||'',color:'',size:'',sizeQty:[{size:selSize||'Free Size',qty:q}],qty:q,price:rCost,cost:costP,buy_price:bCost,resale:sell,
+        selling_price:sell,cost_price:costP,
+        variant_id:variantIdOf(),variant_price:sell,
+        product_source:productOwnerType(product),
+        shop_id:isOwn?productOwnerId(product):null,
+        supplierId:product.supplierId||null,supplierName:product.supplierName||'',
+        product_owner_type:productOwnerType(product),
+        product_owner_id:productOwnerId(product),
+        ownerResellerId:isOwn?productOwnerId(product):null};
+    if(selSize)it.size=selSize;
+    if(selColor)it.color=selColor;
+    return it;
+}
+function addCart(){
+    var chk=varCheck();if(!chk.ok){showVarError(chk);return}
+    var q=parseInt(document.getElementById('qv').value)||1;if(q<1)q=1;
+    var avail=stockNow();
+    var c=[];try{c=JSON.parse(localStorage.getItem('rh_mycart_'+rid)||'[]')}catch(e){}
+    var vid=variantIdOf();
+    for(var i=0;i<c.length;i++){
+        /* same product AND same variant — a different variant is a separate line */
+        if(String(c[i].productId)===String(product.id)&&sameVariantId(variantIdOfItem(c[i]),vid)){
+            var have=Number(c[i].qty)||0;
+            if(avail>0&&have+q>avail){toast('Only '+avail+' pcs available');return}
+            c[i].qty=have+q;
+            localStorage.setItem('rh_mycart_'+rid,JSON.stringify(c));
+            publishCart(c);
+            pxAddToCart(q);toast('Cart updated — '+c[i].qty+' pcs');return;
+        }
+    }
+    if(avail>0&&q>avail){toast('Only '+avail+' pcs available');return}
+    c.push(mkItem(q));
+    localStorage.setItem('rh_mycart_'+rid,JSON.stringify(c));
+    publishCart(c);
+    document.getElementById('cartCt').textContent=c.length>0?c.reduce(function(a,b){return a+b.qty},0):0;
+    pxAddToCart(q);
+    toast('Added to cart!');
+}
+/* Publish the CURRENT cart so the reseller can see it in the customer's
+   message profile. The cart itself stays in this browser (`rh_mycart_<rid>`);
+   this only mirrors it into a bucket keyed by SHOP + the customer's phone, and
+   it writes nothing unless we know which phone to file it under — we never
+   guess or guess-share a cart. */
+function publishCart(list){
+    try{
+        if(typeof shopPublishCart!=='function')return;
+        var ph=currentCartPhone(); if(!ph)return;
+        shopPublishCart(rid, ph, list||[]);
+    }catch(e){}
+}
+/* Which phone does the cart belong to? A logged-in shop customer first; else
+   the phone the customer typed into the messaging widget. No phone -> no share. */
+function currentCartPhone(){
+    try{ var c=(typeof shopCurrentCustomer==='function')?shopCurrentCustomer(rid):null; if(c&&c.phone)return c.phone; }catch(e){}
+    try{ var g=localStorage.getItem('rh_shop_chat_phone_'+rid); if(g)return g; }catch(e){}
+    return '';
+}
+/* (#4) AddToCart event with full product parameters */
+function pxAddToCart(q){
+    try{
+        if(!shop||!product)return;
+        shopPixelTrack(shop.id,'AddToCart',{
+            content_ids:[String(product.id)],
+            content_name:product.name||'',
+            content_category:product.category||'',
+            content_type:'product',
+            contents:[{id:String(product.id),quantity:q,item_price:retail(product),name:product.name||'',category:product.category||'',variant:[selSize,selColor].filter(function(x){return !!x}).join(' / ')}],
+            value:retail(product)*q,
+            currency:'BDT',
+            num_items:q
+        });
+    }catch(e){}
+}
+function buyNow(){
+    var chk=varCheck();if(!chk.ok){showVarError(chk);return}
+    var q=parseInt(document.getElementById('qv').value)||1;if(q<1)q=1;
+    var avail=stockNow();
+    if(avail>0&&q>avail){toast('Only '+avail+' pcs available');return}
+    try{sessionStorage.setItem('rh_myshop_buynow',JSON.stringify(mkItem(q)))}catch(e){}
+    pxAddToCart(q);
+    location.href='my-shop-checkout.html?rid='+rid+'&buynow=1';
+}
+/* ---------- "You may also like" ----------
+   #5 — ONLY products of the SAME category as the product currently open.
+        No other category is ever mixed in; the old "fall back to everything"
+        branch is gone.
+   #6 — matches on the most specific relationship the data actually carries:
+        sub-sub (3) > sub (2) > main category (1). Nothing hardcoded — the
+        names come from the product rows themselves.
+   #15 — the pool is read LIVE through the existing shopVisibleProducts(rid)
+        rule, so a product uploaded later joins the pool automatically, and
+        #13's availability rules (stock / approval / active / category off)
+        are inherited instead of being reinvented. */
+function relCat(p){return String((p&&p.category)||'').trim()}
+function relSub(p){return String((p&&(p.subSection||p.section))||'').trim()}
+function relSubSub(p){return String((p&&p.subSub)||'').trim()}
+function renderRelated(ps){
+    var pool=[];
+    try{pool=shopVisibleProducts(rid)}catch(e){pool=ps||[]}
+    if(!pool||!pool.length)pool=ps||[];
+    var c=relCat(product),s=relSub(product),ss=relSubSub(product);
+    var scored=[];
+    for(var i=0;i<pool.length;i++){
+        var p=pool[i];
+        if(!p)continue;
+        if(String(p.id)===String(pid))continue;          /* #7 — never itself */
+        if(relCat(p)!==c)continue;                       /* #5 — same category only */
+        var score=1;
+        if(s&&relSub(p)===s)score=2;
+        if(score===2&&ss&&relSubSub(p)===ss)score=3;
+        scored.push({p:p,score:score,idx:i});
+    }
+    /* most specific first; stable, so equal scores keep the catalogue order */
+    scored.sort(function(a,b){ if(b.score!==a.score)return b.score-a.score; return a.idx-b.idx; });
+    var rel=[];
+    for(var t=0;t<scored.length&&rel.length<30;t++)rel.push(scored[t].p);   /* #8 — max 30 */
+    var h='';
+    for(var k=0;k<rel.length;k++){
+        var r2=rel[k];var rr=r2.customer_price||Math.round((Number(r2.price)||0)*1.8);var ro=Math.round(rr*1.25);
+        var u='my-shop-product.html?id='+encodeURIComponent(r2.id)+'&rid='+encodeURIComponent(rid);
+        h+='<div class="rc">'+
+            '<div class="rim" onclick="location.href=\''+u+'\'">'+(prodImgSrc(r2.image)?'<img src="'+esc(prodImgSrc(r2.image))+'" alt="'+esc(r2.name)+'">':'<i class="fas fa-box" style="font-size:2rem;color:#cbd5e1"></i>')+
+            '<span class="offer">Offer</span></div>'+
+            '<div class="rbd">'+
+            '<div class="rn" title="'+esc(r2.name)+'" onclick="location.href=\''+u+'\'">'+esc(r2.name)+'</div>'+
+            '<div class="rp"><b>৳'+rr+'</b><s>৳'+ro+'</s></div>'+
+            '<button class="rbn" onclick="relBuyNow(\''+esc(String(r2.id))+'\')"><i class="fas fa-bolt"></i> Buy Now</button>'+
+            '</div></div>';
+    }
+    document.getElementById('rel').innerHTML=h||'<div class="rel-empty">এই category-তে অন্য কোনো প্রোডাক্ট নেই।</div>';
+}
+/* #12 — a variant-based product goes to its own page, where the EXISTING
+   variant selector and validateVariantSelection() gate already live, so the
+   colour/size rules are never bypassed. A plain product uses the EXISTING
+   Buy Now → checkout flow. No new checkout system. */
+function relNeedsVariant(p){
+    if(!p)return false;
+    try{ if(typeof productVariantsActive==='function'&&productVariantsActive(p))return true; }catch(e){}
+    if(p.colors&&p.colors.length)return true;
+    if(p.sizes&&p.sizes.length)return true;
+    if(p.variants&&p.variants.length&&(p.variants[0].name||p.variants[0].size))return true;
+    return false;
+}
+function relMkItem(p,q){
+    if(!p)return null;
+    var isOwn=productOwnerType(p)==='reseller';
+    var rCost=p.reseller_price||p.price||0;
+    var bCost=p.cost||p.buy_price||0;
+    var sell=retail(p);
+    var costP=isOwn?(Number(p.cost)||rCost||0):rCost;
+    var vid=(typeof variantIdFor==='function')?variantIdFor(p,'',''):'';
+    /* mirrors mkItem() exactly — same fields, same ownership, same prices */
+    return {productId:p.id,name:p.name,image:p.image||'',icon:p.icon||'fa-box',sku:p.sku||'',
+        category:p.category||'',subSection:p.section||p.subSection||'',subSub:p.subSub||'',
+        color:'',size:'',sizeQty:[{size:'Free Size',qty:q}],qty:q,price:rCost,cost:costP,buy_price:bCost,
+        resale:sell,selling_price:sell,cost_price:costP,variant_id:vid,variant_price:sell,
+        product_source:productOwnerType(p),shop_id:isOwn?productOwnerId(p):null,
+        supplierId:p.supplierId||null,supplierName:p.supplierName||'',
+        product_owner_type:productOwnerType(p),product_owner_id:productOwnerId(p),
+        ownerResellerId:isOwn?productOwnerId(p):null};
+}
+window.relBuyNow=function(id){
+    var p=findProductById(id);
+    if(!p){toast('Product পাওয়া যায়নি');return}
+    if(relNeedsVariant(p)){ location.href='my-shop-product.html?id='+encodeURIComponent(id)+'&rid='+encodeURIComponent(rid); return; }
+    var stock=Number(p.stock)||0;
+    if(stock<=0){toast('This product is out of stock');return}
+    var it=relMkItem(p,1);
+    if(!it){toast('এই মুহূর্তে কেনা যাচ্ছে না');return}
+    try{sessionStorage.setItem('rh_myshop_buynow',JSON.stringify(it))}catch(e){}
+    location.href='my-shop-checkout.html?rid='+encodeURIComponent(rid)+'&buynow=1';
+};
+findShop();
+if(!rid&&shop){rid=String(shop.id);try{history.replaceState(null,'',location.pathname+'?id='+pid+'&rid='+rid)}catch(e){}}
+/* (#2) theme — this shop's own colours only */
+try{
+    var _t=getShopSettings(shop?shop.id:rid).theme||DEFAULT_SHOP_THEME;
+    document.documentElement.style.setProperty('--ac',_t.primary);
+    document.documentElement.style.setProperty('--acd',_t.primary);
+    document.documentElement.style.setProperty('--ac2',_t.secondary);
+    if(document.body)document.body.style.background=_t.background;
+    /* MAIN CATEGORY STRIP — same resolver as the shop home page. `.nav` is the
+       full-bleed 100% band; `.nav-in` (70%, centred) only holds the links. */
+    var _n=document.querySelector('.nav');
+    if(_n){
+        var _cc=(typeof shopCategoryColor==='function')?shopCategoryColor(shop?shop.id:rid):(_t.category||DEFAULT_SHOP_THEME.category);
+        if(!_cc)_cc=DEFAULT_SHOP_THEME.category;
+        _n.style.background=_cc;
+        _n.style.setProperty('--navc-ink',(typeof rhTextOnColor==='function')?rhTextOnColor(_cc):'#222');
+    }
+}catch(e){}
+/* (#47) disabled shop must not be browsable.
+   BUG FIX — rendered IN PLACE. `document.body.innerHTML = ...` blanks the page
+   while later inline script blocks are still executing, producing the reported
+   WHITE SCREEN (with raw JS leaking into the visible text). */
+function showShopOff(){
+    try{
+        var box=document.getElementById('shopMsg');
+        if(!box){ box=document.createElement('div'); box.id='shopMsg'; document.body.appendChild(box); }
+        box.innerHTML='<div style="max-width:520px;margin:60px auto;background:#fff;border-radius:20px;padding:60px 28px;text-align:center;box-shadow:0 10px 40px rgba(15,23,42,.12)"><i class="fas fa-store-slash" style="font-size:3.4rem;color:#cbd5e1;display:block;margin-bottom:16px"></i><h2 style="font-size:1.3rem;font-weight:900;margin-bottom:8px">Shop Unavailable</h2><p style="font-size:.85rem;color:#64748b">এই My Shop বর্তমানে বন্ধ আছে।</p><p style="margin-top:18px"><a href="../index.html" style="color:#111;font-weight:800">&larr; Go home</a></p></div>';
+        box.style.display='block';
+        var pd=document.getElementById('pd'); if(pd)pd.style.display='none';
+        var dit=document.getElementById('ditabs'); if(dit)dit.style.display='none';
+    }catch(e){}
+}
+try{
+    if(shop&&!isShopEnabled(shop.id)){
+        showShopOff();
+    } else { render(); }
+}catch(e){render();}
+/* (#4) ViewContent + PageView for this shop */
+try{ if(shop){ shopPixelInit(shop.id); } }catch(e){}
+try{
+    if(shop&&product){
+        shopPixelTrack(shop.id,'ViewContent',{
+            content_ids:[String(product.id)],
+            content_name:product.name||'',
+            content_category:product.category||'',
+            content_type:'product',
+            value:retail(product),
+            currency:'BDT'
+        });
+    }
+}catch(e){}
+
+/* ---------- #5-#8 mobile bottom navigation (Home | Product | Cart | WhatsApp) ----------
+   Present on the PRODUCT page too. Routes reuse the existing pages and the
+   shop's own WhatsApp link (#fwa2) — nothing new is invented. */
+function msBnavInit(){
+  var home='my-shop.html?rid='+rid, prod='my-shop.html?rid='+rid+'#pgrid';
+  var h=document.getElementById('bnHome'); if(h)h.href=home;
+  var p=document.getElementById('bnProd'); if(p)p.href=prod;
+  var w=document.getElementById('bnWa');
+  if(w){
+    var href='';
+    try{ var src=document.getElementById('fwa2'); var h1=src&&src.getAttribute('href'); if(h1&&h1!=='#')href=h1; }catch(e){}
+    /* fall back to the shop's own phone — the product page does not always run
+       the footer renderer, and the button must never end up as a dead "#" */
+    if(!href){
+      try{ var ph=(shop&&(shop.shop_phone||shop.phone))||''; var d=String(ph).replace(/\D/g,''); if(d.charAt(0)==='0')d='88'+d; if(d)href='https://wa.me/'+d; }catch(e){}
+    }
+    if(href)w.href=href;
+  }
+  msBnavCart();
+}
+function msBnavCart(){
+  var el=document.getElementById('bnCartCt'); if(!el)return;
+  var n=0;
+  try{ var cl=JSON.parse(localStorage.getItem('rh_mycart_'+rid)||'[]'); for(var i=0;i<cl.length;i++)n+=Number(cl[i].qty)||0; }catch(e){}
+  el.textContent=n; el.style.display=n>0?'flex':'none';
+}
+/* the <nav> sits after this <script>, so wait for the DOM before wiring it */
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', msBnavInit);
+else msBnavInit();
+</script>
+
+<!-- #6 — the same mobile-only bottom nav on the product detail page -->
+<nav class="ms-bnav" id="msBnav" aria-label="Shop navigation">
+    <a href="my-shop.html" id="bnHome"><i class="fas fa-house"></i><span>Home</span></a>
+    <a href="my-shop.html#pgrid" id="bnProd"><i class="fas fa-box"></i><span>Product</span></a>
+    <a href="javascript:void(0)" onclick="goCart()"><i class="fas fa-bag-shopping"></i><span>Cart</span><b class="bn-ct" id="bnCartCt" style="display:none">0</b></a>
+    <a href="#" id="bnWa" class="bn-wa" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></a>
+</nav>
+<script>
+/* My Shop customer chat — shop context for the widget */
+var RID_MS=(typeof rid!=='undefined'&&rid)?String(rid):(new URLSearchParams(location.search).get('rid')||'');
+function shopNameMs(){try{return resellerBusinessName((typeof shop!=='undefined')?shop:null)}catch(e){return 'Shop'}}
+</script>
+<script>
+/* ==== My Shop — Customer Chat widget (injected into my-shop.html + my-shop-product.html) ====
+   - floating message button on the right, always visible while browsing
+   - chat window with text + IMAGE attachment + optional ORDER selection
+   - every conversation is scoped to THIS shop (rid) in the data layer
+   ============================================================================ */
+function msChatEsc(s){return String(s===undefined||s===null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
+function msChatBox(){
+  var b=document.getElementById('msChat');
+  if(b)return b;
+  b=document.createElement('div'); b.id='msChat';
+  b.innerHTML=
+   '<style>'+
+   '.msc-btn{position:fixed;right:18px;bottom:18px;z-index:900;width:58px;height:58px;border-radius:50%;'+
+     'background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;cursor:pointer;'+
+     'box-shadow:0 8px 24px rgba(18,140,126,.4);display:flex;align-items:center;justify-content:center;font-size:1.5rem}'+
+   '.msc-btn:hover{transform:translateY(-2px)}'+
+   '.msc-btn .dot{position:absolute;top:2px;right:2px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;'+
+     'background:#ef4444;color:#fff;font-size:.62rem;font-weight:900;display:none;align-items:center;justify-content:center}'+
+   '.msc-win{position:fixed;right:18px;bottom:86px;z-index:901;width:340px;max-width:calc(100vw - 28px);'+
+     'background:#fff;border-radius:16px;box-shadow:0 18px 46px rgba(15,23,42,.28);overflow:hidden;display:none;'+
+     'flex-direction:column;max-height:min(560px,78vh)}'+
+   '.msc-win.on{display:flex}'+
+   '.msc-h{background:linear-gradient(135deg,#128c7e,#0d9488);color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}'+
+   /* #2 — Call | WhatsApp sit at the TOP of the existing popup */
+   '.msc-top{display:flex;gap:8px;padding:9px 10px;background:#f8fafc;border-bottom:1px solid #eef2f6}'+
+   '.msc-top a{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 6px;border-radius:10px;'+
+     'text-decoration:none;font-size:.76rem;font-weight:800;color:#fff}'+
+   '.msc-top a.call{background:linear-gradient(135deg,#2563eb,#1e40af)}'+
+   '.msc-top a.wa{background:linear-gradient(135deg,#25d366,#128c7e)}'+
+   '.msc-h b{font-size:.9rem}'+
+   '.msc-h button{background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;line-height:1}'+
+   '.msc-b{flex:1;overflow-y:auto;padding:12px;background:#f1f5f9;min-height:170px}'+
+   '.msc-m{max-width:82%;padding:8px 11px;border-radius:12px;margin-bottom:8px;font-size:.83rem;line-height:1.5;word-break:break-word}'+
+   '.msc-m.me{background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;margin-left:auto;border-bottom-right-radius:4px}'+
+   '.msc-m.you{background:#fff;border:1px solid #e2e8f0;border-bottom-left-radius:4px}'+
+   '.msc-m img{max-width:100%;border-radius:9px;display:block;margin-top:5px}'+
+   '.msc-m .t{display:block;font-size:.62rem;opacity:.75;margin-top:4px}'+
+   '.msc-m .ord{display:inline-block;margin-top:5px;background:rgba(255,255,255,.22);border-radius:7px;padding:2px 8px;font-size:.68rem;font-weight:800}'+
+   '.msc-f{border-top:1px solid #eef2f6;padding:9px;display:flex;gap:7px;align-items:center;background:#fff}'+
+   '.msc-f textarea{flex:1;min-height:40px;max-height:96px;padding:8px 11px;border:1.5px solid #e2e8f0;border-radius:10px;'+
+     'font-size:.83rem;font-family:inherit;resize:vertical}'+
+   '.msc-f textarea:focus{outline:none;border-color:#128c7e}'+
+   '.msc-ic{border:none;background:#f1f5f9;color:#475569;border-radius:10px;width:40px;height:40px;cursor:pointer;font-size:1rem;flex:none}'+
+   '.msc-send{border:none;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border-radius:10px;'+
+     'padding:9px 14px;cursor:pointer;font-weight:800;font-size:.8rem;flex:none}'+
+   '.msc-ord{margin:0 9px 9px;font-size:.72rem;color:#64748b}'+
+   '.msc-ord select{width:100%;padding:7px 9px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:.75rem;font-family:inherit}'+
+   /* Part 8 — MOBILE ONLY placement. The bar (#msBnav) is ~66px tall (+ safe
+      area) and `body{padding-bottom:74px}` clears it. The Message button used to
+      sit at bottom:14px — ON TOP of the bar, overlapping the WhatsApp item. It
+      now floats in the empty space ABOVE the bar (80px + safe area), so it never
+      overlaps WhatsApp and is still a separate floating button, not a 5th bar
+      item. Desktop (>600px) keeps its original bottom:18px / right:18px. */
+   '@media(max-width:600px){ .msc-btn{right:12px;bottom:calc(80px + env(safe-area-inset-bottom));width:52px;height:52px;font-size:1.3rem} .msc-win{right:10px;left:10px;width:auto;bottom:calc(140px + env(safe-area-inset-bottom))} }'+
+   '</style>'+
+   '<button class="msc-btn" id="mscBtn" onclick="msChatToggle()" title="Message"><i class="fas fa-comment-dots"></i><span class="dot" id="mscDot">0</span></button>'+
+   '<div class="msc-win" id="mscWin">'+
+     '<div class="msc-h"><b><i class="fas fa-headset"></i> <span id="mscTitle">Chat</span></b><button onclick="msChatToggle()">&times;</button></div>'+
+     '<div class="msc-top"><a class="call" id="mscCall" href="#"><i class="fas fa-phone"></i> Call</a>'+
+     '<a class="wa" id="mscWa" href="#" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a></div>'+
+     '<div class="msc-b" id="mscBody"></div>'+
+     '<div class="msc-ord" id="mscOrdWrap"></div>'+
+     '<div class="msc-f">'+
+       '<input type="file" id="mscFile" accept="image/*" style="display:none" onchange="msChatPick(this)">'+
+       '<button class="msc-ic" onclick="document.getElementById(\'mscFile\').click()" title="ছবি পাঠান"><i class="fas fa-image"></i></button>'+
+       '<textarea id="mscText" placeholder="আপনার মেসেজ লিখুন..."></textarea>'+
+       '<button class="msc-send" onclick="msChatSend()"><i class="fas fa-paper-plane"></i></button>'+
+     '</div>'+
+   '</div>';
+  document.body.appendChild(b);
+  return b;
+}
+var msConv=null, msPendingImg='';
+/* Guest identity is remembered per shop so the thread continues after a reload,
+   but it is still scoped to THIS shop (rid is part of the id). */
+function msGuestKey(){ return 'rh_shop_guest_'+String(RID_MS); }
+function msGuestGet(){
+  try{ var raw=localStorage.getItem(msGuestKey()); return raw?JSON.parse(raw):null; }catch(e){return null}
+}
+function msGuestSet(o){
+  try{ if(o) localStorage.setItem(msGuestKey(), JSON.stringify(o)); else localStorage.removeItem(msGuestKey()); }catch(e){}
+}
+function msChatIdentity(){
+  var c=null;
+  try{ c=shopCurrentCustomer(String(RID_MS)); }catch(e){}
+  if(c) return {id:c.id,name:c.name,phone:c.phone,guest:false,cust:c};
+  var g=msGuestGet();
+  if(g&&g.name&&g.phone) return {id:shopGuestId(String(RID_MS),g.phone),name:g.name,phone:g.phone,guest:true};
+  return null;
+}
+function msChatConv(){
+  try{
+    var idn=msChatIdentity();
+    if(!idn)return null;
+    msConv=shopChatStart(String(RID_MS),{id:idn.id,name:idn.name,phone:idn.phone});
+    return msConv;
+  }catch(e){return null}
+}
+function msChatToggle(){
+  var w=document.getElementById('mscWin'); if(!w)return;
+  w.classList.toggle('on');
+  if(w.classList.contains('on')){ msChatRender(); try{shopChatMarkRead(String(RID_MS),msConv?msConv.id:'','customer')}catch(e){} }
+}
+/* #15 — NO login required. A guest just gives name + phone + message. */
+function msChatGuestForm(){
+  var g=msGuestGet()||{};
+  return '<div style="padding:10px 2px 4px">'+
+    '<div style="font-size:.78rem;color:#475569;font-weight:700;margin-bottom:8px">আপনার নাম ও ফোন দিয়ে মেসেজ পাঠান — লগিন লাগবে না।</div>'+
+    '<input id="mscGName" placeholder="আপনার নাম" value="'+msChatEsc(g.name||'')+'" style="width:100%;padding:8px 11px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:.82rem;font-family:inherit;margin-bottom:7px">'+
+    '<input id="mscGPhone" placeholder="01XXXXXXXXX" value="'+msChatEsc(g.phone||'')+'" style="width:100%;padding:8px 11px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:.82rem;font-family:inherit;margin-bottom:7px">'+
+    '<a href="my-shop-account.html?rid='+encodeURIComponent(String(RID_MS))+'" style="font-size:.72rem;color:#128c7e;font-weight:700">অ্যাকাউন্ট থাকলে লগিন করুন</a>'+
+    '</div>';
+}
+function msChatRender(){
+  var body=document.getElementById('mscBody'); if(!body)return;
+  var c=msChatConv();
+  var t=document.getElementById('mscTitle');
+  if(t)t.textContent=(shopNameMs()||'Shop')+' — Chat';
+  if(!c){ body.innerHTML=msChatGuestForm(); msChatOrderOptions(null); return; }
+  /* #18 — the customer sees only what was sent AFTER the last End Chat; the
+     stored conversation (Admin/Reseller side) is never destroyed. */
+  var view=null; try{ view=shopChatCustomerView(c); }catch(e){}
+  var msgs=(view&&view.messages)?view.messages:(c.messages||[]);
+  var h='';
+  for(var i=0;i<msgs.length;i++){
+    var m=msgs[i];
+    var mine=m.from==='customer';
+    h+='<div class="msc-m '+(mine?'me':'you')+'">'+
+        (m.text?msChatEsc(m.text):'')+
+        (m.image?'<img src="'+msChatEsc(m.image)+'" alt="attachment">':'')+
+        (m.orderId?'<span class="ord"><i class="fas fa-receipt"></i> Order #'+msChatEsc(m.orderId)+'</span>':'')+
+        '<span class="t">'+msChatEsc(String(m.at||'').slice(11,16))+'</span></div>';
+  }
+  body.innerHTML=h||'<div style="text-align:center;color:#94a3b8;font-size:.82rem;padding:24px 10px">কোনো মেসেজ নেই। প্রশ্ন লিখে পাঠান — দোকানি উত্তর দেবে।</div>';
+  body.scrollTop=body.scrollHeight;
+  msChatOrderOptions(c);
+}
+/* #10 — the customer may attach one of their own orders */
+function msChatOrderOptions(c){
+  var wrap=document.getElementById('mscOrdWrap'); if(!wrap)return;
+  if(!c){ wrap.innerHTML=''; return; }
+  var list=[]; try{list=shopCustomerOrders(String(RID_MS),c)}catch(e){list=[]}
+  if(!list.length){ wrap.innerHTML=''; return; }
+  var s='<select id="mscOrd"><option value="">অর্ডার সিলেক্ট (ঐচ্ছিক)</option>';
+  for(var i=0;i<list.length;i++){
+    var sel=(c.orderId&&String(c.orderId)===String(list[i].id))?' selected':'';
+    s+='<option value="'+msChatEsc(list[i].id)+'"'+sel+'>Order #'+msChatEsc(list[i].id)+' — '+msChatEsc(list[i].status||'')+'</option>';
+  }
+  s+='</select>';
+  wrap.innerHTML=s;
+}
+window.msChatPick=function(inp){
+  var f=inp&&inp.files&&inp.files[0]; if(!f)return;
+  if(f.size>2*1024*1024){ msChatToast('ছবির সাইজ ২MB এর কম হতে হবে।'); inp.value=''; return; }
+  var r=new FileReader();
+  r.onload=function(){ msPendingImg=r.result; msChatSend(); inp.value=''; };
+  r.readAsDataURL(f);
+};
+window.msChatSend=function(){
+  var ta=document.getElementById('mscText');
+  var txt=ta?String(ta.value||'').trim():'';
+  var c=msChatConv();
+  /* guest path: name + phone are required, no account needed */
+  if(!c){
+    var gn=document.getElementById('mscGName'), gp=document.getElementById('mscGPhone');
+    var name=gn?String(gn.value||'').trim():'';
+    var phone=gp?String(gp.value||'').trim():'';
+    if(!name){ msChatToast('আপনার নাম দিন।'); if(gn)gn.focus(); return; }
+    if(!shopGuestPhone(phone)){ msChatToast('সঠিক ফোন নম্বর দিন।'); if(gp)gp.focus(); return; }
+    if(!txt&&!msPendingImg){ msChatToast('মেসেজ লিখুন।'); return; }
+    var g=shopChatStartGuest(String(RID_MS),name,phone);
+    if(!g.ok){ msChatToast(g.message||'পাঠানো যায়নি।'); return; }
+    msGuestSet({name:name,phone:shopGuestPhone(phone)});
+    c=g.conversation; msConv=c;
+  }
+  var os=document.getElementById('mscOrd');
+  var oid=os?String(os.value||''):'';
+  if(!txt&&!msPendingImg&&!oid){ return; }
+  var r=shopChatSend(String(RID_MS),c.id,'customer',txt,msPendingImg,oid);
+  if(!r.ok){ msChatToast(r.message||'পাঠানো যায়নি।'); return; }
+  if(ta)ta.value='';
+  msPendingImg='';
+  msChatRender();
+};
+function msChatToast(m){
+  var t=document.getElementById('toast');
+  if(t){ t.textContent=m; t.classList.add('on'); setTimeout(function(){t.classList.remove('on')},2200); }
+}
+/* #3/#4 — Call + WhatsApp reuse the SHOP's existing configured phone number
+   (the same one the footer/contact buttons use). Nothing is hardcoded. */
+function shopPhoneMs(){return (typeof shop!=='undefined'&&shop&&(shop.shop_phone||shop.phone))||''}
+function msChatFillContact(){
+  var ph=String(shopPhoneMs()||'');
+  var d=ph.replace(/\D/g,''); if(d.charAt(0)==='0')d='88'+d;
+  var c=document.getElementById('mscCall'), w=document.getElementById('mscWa');
+  if(c){ c.href = d ? ('tel:+'+d) : '#'; c.style.display = d?'flex':'none'; }
+  if(w){ w.href = d ? ('https://wa.me/'+d) : '#'; w.style.display = d?'flex':'none'; }
+}
+function msChatInit(){
+  msChatBox();
+  msChatFillContact();
+  var ta=document.getElementById('mscText');
+  if(ta)ta.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); msChatSend(); }});
+  /* unread badge from the reseller's replies */
+  setInterval(function(){
+    var c=null; try{c=shopCurrentCustomer(String(RID_MS))}catch(e){}
+    var dot=document.getElementById('mscDot'); if(!dot)return;
+    var n=0;
+    if(c){ var cv=shopChatFind(String(RID_MS),c.id);
+      if(cv){ for(var i=0;i<cv.messages.length;i++) if(cv.messages[i].from==='reseller'&&!cv.messages[i].read) n++; } }
+    dot.textContent=n; dot.style.display=n>0?'flex':'none';
+  },4000);
+}
+if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',msChatInit); else msChatInit();
+
+</script>
+<script>
+/* #16-#18 — the Product Page must show the SAME Main Category menu as the
+   Homepage. It was simply never rendered here before. It reads
+   shopMainCategories(rid) — the exact function the homepage uses — and each
+   link goes to the homepage's own category hash route. */
+function msNavFill(){
+  var box=document.getElementById('hdrNav'); if(!box)return;
+  var cats=[]; try{cats=shopMainCategories(String(rid))}catch(e){cats=[]}
+  var h='<a onclick="msGoHome()">HOME</a>';
+  for(var i=0;i<cats.length;i++){
+    var nm=String(cats[i].name);
+    h+='<a href="my-shop.html?rid='+encodeURIComponent(String(rid))+'#/category/'+encodeURIComponent(nm)+'">'+nm.toUpperCase().replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</a>';
+  }
+  h+='<a class="off" href="my-shop.html?rid='+encodeURIComponent(String(rid))+'">OFFER</a>';
+  box.innerHTML=h;
+}
+function msGoHome(){ location.href='my-shop.html?rid='+encodeURIComponent(String(rid)); }
+if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',msNavFill); else msNavFill();
+</script>
+<script>
+/* #30/#31 — footer social buttons open THIS shop's saved links.
+   Stored per reseller in the shop settings (never global). */
+function msSocialFill(){
+  var soc={facebook:'',instagram:'',tiktok:''};
+  try{ soc=shopSocial(String((typeof rid!=='undefined'&&rid)?rid:(new URLSearchParams(location.search).get('rid')||''))); }catch(e){}
+  function set(id,url){ var a=document.getElementById(id); if(!a)return;
+    if(url){ a.setAttribute('href',url); a.setAttribute('target','_blank'); a.setAttribute('rel','noopener'); a.style.display=''; }
+    else { a.setAttribute('href','#'); a.style.display='none'; } }
+  set('fFb2',soc.facebook); set('fIg',soc.instagram); set('msTk',soc.tiktok);
+}
+if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',msSocialFill); else msSocialFill();
+</script>
+<script>
+/* ===== #40-#48 mobile header (MOBILE ONLY) =====
+   - centred Brand/Business Name (dynamic, per reseller)
+   - cart chip visibility driven by the REAL cart:
+     Add to Cart -> rh_mycart_<rid> has items  -> SHOW
+     Buy Now     -> only rh_myshop_buynow      -> HIDE
+   Desktop markup/CSS is untouched by this script. */
+(function(){
+  var RIDH=(typeof rid!=='undefined'&&rid)?String(rid):(new URLSearchParams(location.search).get('rid')||'');
+  function escH(s){return String(s===undefined||s===null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
+  function bizName(){
+    var sh=(typeof shop!=='undefined')?shop:null;
+    try{ return resellerBusinessName(sh); }catch(e){ return (sh&&(sh.shop_name||sh.businessName||sh.name))||bnameNow(rid)||''; }
+  }
+  function ensureMid(){
+    if(document.querySelector('.hdr-mid'))return document.querySelector('.hdr-mid');
+    var brand=document.querySelector('.hdr-in .brand');
+    if(!brand)return null;
+    /* on mobile the brand text itself is redundant next to the centred name */
+    var txt=brand.querySelector('.btxt');
+    var d=document.createElement('div'); d.className='hdr-mid';
+    d.innerHTML='<span class="bname">'+escH(bizName())+'</span>';
+    if(brand.nextSibling) brand.parentNode.insertBefore(d,brand.nextSibling);
+    else brand.parentNode.appendChild(d);
+    return d;
+  }
+  function cartCount(){
+    var n=0;
+    try{ var cl=JSON.parse(localStorage.getItem('rh_mycart_'+RIDH)||'[]');
+         for(var i=0;i<cl.length;i++) n+=Number(cl[i].qty)||0; }catch(e){}
+    return n;
+  }
+  function ensureFloatCart(){
+    var b=document.getElementById('msFloatCart');
+    if(b)return b;
+    b=document.createElement('button');
+    b.id='msFloatCart'; b.type='button'; b.title='Cart';
+    b.setAttribute('aria-label','Cart');
+    b.innerHTML='<i class="fas fa-bag-shopping"></i><span class="n">0</span>';
+    b.onclick=function(){ location.href='my-shop-checkout.html?rid='+encodeURIComponent(RIDH); };
+    document.body.appendChild(b);
+    return b;
+  }
+  function syncCart(){
+    var n=cartCount();
+    /* #3 — the DESKTOP cart stays in the header and is ALWAYS visible.
+       Only on mobile is it hidden while empty (class is display:none <=600px). */
+    var chip=document.getElementById('msCartChip');
+    if(chip){ if(n>0) chip.classList.remove('ms-cart-empty'); else chip.classList.add('ms-cart-empty'); }
+    /* #4 — floating cart, mobile only, real-cart driven */
+    var fb=ensureFloatCart();
+    if(n>0){ fb.classList.add('on'); } else { fb.classList.remove('on'); }
+    var badge=fb.querySelector('.n'); if(badge)badge.textContent=n;
+    var ct=document.getElementById('cartCt'); if(ct)ct.textContent=n;
+    var cp=document.getElementById('chipTot');
+    if(cp){ var t=0; try{ var cl2=JSON.parse(localStorage.getItem('rh_mycart_'+RIDH)||'[]');
+             for(var j=0;j<cl2.length;j++) t+=(Number(cl2[j].resale)||0)*(Number(cl2[j].qty)||0); }catch(e){}
+      cp.textContent=t; }
+  }
+  function init(){ ensureMid(); syncCart(); }
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+  /* 2026-09-17 — RE-RENDER WHEN THE IMAGE CACHE IS READY.
+     This page renders once, at init. app.js loads the image store ASYNCHRONOUSLY,
+     and prodImgSrc() returns '' for an @img: reference until _rhImgCache holds the
+     bytes — so the main image, the gallery and the thumbnails were drawn as
+     placeholders and stayed that way. rhResolveImgTags() could not rescue them:
+     it only fixes <img src="@img:...">, and by then the page had a placeholder
+     <div>. Listening for the boot's event and re-rendering fixes that. */
+  function rerenderForImages(){ try { render(); renderRelated(shopProducts(rid)); } catch(e){} }
+  document.addEventListener('rh-images-ready', rerenderForImages);
+  /* app.js runs BEFORE this script, so the event may already have fired. */
+  if (window.__rhImagesReady) rerenderForImages();
+  window.addEventListener('storage', function(e){ if(!e.key||e.key.indexOf('rh_mycart_')===0) syncCart(); });
+  setInterval(syncCart, 3000);
+})();
+</script>
+<script>
+/* #7/#8/#10/#11 — MOBILE ONLY hierarchical category drawer.
+   Main -> Sub -> Sub-Sub -> Products, with Back at every level.
+   Desktop keeps its existing category bar (`.nav` is untouched above 600px). */
+(function(){
+  var RIDC=(typeof rid!=='undefined'&&rid)?String(rid):(new URLSearchParams(location.search).get('rid')||'');
+  function escS(x){return String(x===undefined||x===null?'':x).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
+  function mkEl(tag,cls,txt){var e=document.createElement(tag); if(cls)e.className=cls; if(txt!==undefined)e.textContent=txt; return e;}
+
+  function build(){
+    if(document.getElementById('msDrawer'))return;
+    var burger=document.createElement('button');
+    burger.id='msBurger'; burger.type='button'; burger.setAttribute('aria-label','Menu');
+    burger.innerHTML='<i class="fas fa-bars"></i>';
+    burger.onclick=openDrawer;
+    var hdr=document.querySelector('.hdr-in');
+    if(hdr && hdr.firstChild) hdr.insertBefore(burger, hdr.firstChild); else if(hdr) hdr.appendChild(burger); else document.body.appendChild(burger);
+
+    var ov=document.createElement('div'); ov.id='msDrawer';
+    ov.innerHTML='<div id="msPanel">'+
+      '<div class="ph"><button id="msBack" type="button"><i class="fas fa-arrow-left"></i> Back</button><b id="msPTitle">Categories</b>'+
+      '<button type="button" onclick="msCloseDrawer()" style="margin-left:auto;background:none;border:none;color:#fff;font-size:1.3rem;line-height:1">&times;</button></div>'+
+      '<div class="pb" id="msPB"></div></div>';
+    ov.addEventListener('click',function(e){ if(e.target===ov) msCloseDrawer(); });
+    document.body.appendChild(ov);
+    document.getElementById('msBack').onclick=function(){ msLevelUp(); };
+    renderMain();
+  }
+  var stack=[];  /* [{type:'main'|'sub'|'subsub', name, parent}] */
+
+  function openDrawer(){ var d=document.getElementById('msDrawer'); if(d){ d.classList.add('on'); render(); } }
+  window.msCloseDrawer=function(){ var d=document.getElementById('msDrawer'); if(d) d.classList.remove('on'); };
+
+  function title(){ var t=document.getElementById('msPTitle'); var b=document.getElementById('msBack');
+    var top=stack[stack.length-1];
+    if(t) t.textContent = top ? (top.name||'Categories') : 'Categories';
+    if(b) b.style.display = stack.length? 'block':'none';
+  }
+  function render(){
+    var top=stack[stack.length-1];
+    if(!top) return renderMain();
+    if(top.type==='main') return renderSubs(top.name);
+    if(top.type==='sub') return renderSubSubs(top.parent, top.name);
+    if(top.type==='subsub') return goProducts(top.parentMain, top.parent, top.name);
+  }
+  function renderMain(){
+    stack=[]; title();
+    var box=document.getElementById('msPB'); if(!box)return;
+    var cats=[]; try{cats=shopMainCategories(RIDC)}catch(e){cats=[]}
+    box.innerHTML='';
+    box.appendChild(rowEl('All Products', function(){ location.href='my-shop.html?rid='+encodeURIComponent(RIDC); }));
+    for(var i=0;i<cats.length;i++){
+      (function(nm){
+        box.appendChild(rowEl(nm, function(){ stack.push({type:'main',name:nm}); render(); }));
+      })(String(cats[i].name));
+    }
+  }
+  function renderSubs(main){
+    title();
+    var box=document.getElementById('msPB'); if(!box)return;
+    var subs=[]; try{subs=shopSubCategories(RIDC,main)}catch(e){subs=[]}
+    box.innerHTML='';
+    box.appendChild(rowEl('All '+main, function(){ goProducts(main,'',''); }));
+    for(var i=0;i<subs.length;i++){
+      (function(nm){
+        box.appendChild(rowEl(nm, function(){ stack.push({type:'sub',name:nm,parent:main}); render(); }));
+      })(String(subs[i].name||subs[i]));
+    }
+  }
+  function renderSubSubs(main, sub){
+    title();
+    var box=document.getElementById('msPB'); if(!box)return;
+    var ss=[]; try{ss=shopSubSubCategories(RIDC,main,sub)}catch(e){ss=[]}
+    box.innerHTML='';
+    box.appendChild(rowEl('All '+sub, function(){ goProducts(main,sub,''); }));
+    for(var i=0;i<ss.length;i++){
+      (function(nm){
+        box.appendChild(rowEl(nm, function(){ stack.push({type:'subsub',name:nm,parent:sub,parentMain:main}); render(); }));
+      })(String(ss[i].name||ss[i]));
+    }
+  }
+  function goProducts(main, sub, subsub){
+    var h='my-shop.html?rid='+encodeURIComponent(RIDC)+'#/category/'+encodeURIComponent(main);
+    if(sub) h+='/'+encodeURIComponent(sub);
+    if(subsub) h+='/'+encodeURIComponent(subsub);
+    location.href=h;
+    msCloseDrawer();
+  }
+function rowEl(label, onClick){
+    var r=mkEl('div'); r.className='msRow';
+    r.appendChild(mkEl('span',null,label));
+    r.appendChild(mkEl('i','fas fa-chevron-right'));
+    r.onclick=onClick; return r;
+}
+  function msLevelUp(){ stack.pop(); render(); }
+  window.msLevelUp=msLevelUp;
+
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',build); else build();
+})();
+</script>
+</body>
+</html>

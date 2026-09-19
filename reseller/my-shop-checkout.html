@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout - My Shop</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--ac:#e91e63;--acd:#ad1457}
+body {font-family:'Inter',sans-serif;background:#f5f6fa;color:#1e293b; overflow-x:hidden; }
+a{text-decoration:none}button{font-family:inherit;cursor:pointer}
+.hdr{background:#0a0a0a;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.hdr-in{width:70%;max-width:2400px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px}
+.hdr-in .blogo{width:38px;height:38px;padding:3px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;overflow:hidden;color:var(--ac)}
+/* 2026-09-18 (this request) — with a logo the card HUGS it: the width follows the
+   logo's own aspect ratio and the padding is even, so there is no white band on
+   either side. The square box above is kept for the no-logo initial. */
+.hdr-in .blogo.hasimg{width:auto;min-width:0;max-width:none;height:auto;padding:0;background:transparent;box-shadow:none;border-radius:0;overflow:visible}
+.hdr-in .blogo.hasimg img{width:auto;height:auto;max-width:38px;max-height:38px;display:block;padding:0;background:transparent}
+.hdr-in .blogo img{height:auto;width:auto;max-width:38px;max-height:38px;object-fit:contain;padding:0;background:transparent;display:block}
+.hdr-in b{font-size:1rem;font-weight:900}
+.hdr-in small{display:block;font-size:.62rem;opacity:.85;font-weight:700;letter-spacing:1px}
+.back{margin-left:auto;background:rgba(255,255,255,.18);color:#fff;padding:8px 16px;border-radius:20px;font-size:.75rem;font-weight:800}
+.wrap{max-width:76%;min-width:300px;margin:28px auto;padding:0 16px 50px;display:grid;grid-template-columns:1.15fr 1fr;gap:22px;align-items:start}
+.card{background:#fff;border-radius:16px;box-shadow:0 6px 24px rgba(15,23,42,.08);padding:26px}
+/* ---------- post-purchase confirmation screen ----------
+   Standalone centred card. It must NOT use `.wrap` (that is a 2-column grid
+   meant for the form) and must NOT use `.back` for its buttons (`.back` is the
+   header pill — translucent white on white text, invisible on a white card). */
+.donewrap{max-width:560px;margin:44px auto;padding:0 16px 60px}
+.done{background:#fff;border-radius:18px;box-shadow:0 8px 30px rgba(15,23,42,.1);padding:44px 26px;text-align:center}
+.done .ic{width:84px;height:84px;border-radius:50%;background:#dcfce7;color:#16a34a;display:flex;align-items:center;justify-content:center;font-size:2.4rem;margin:0 auto 18px;animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.done h2{font-size:1.35rem;font-weight:900;margin-bottom:8px}
+.done p{color:#64748b;font-size:.88rem;line-height:1.7}
+.done .oidbox{margin:14px 0}
+.done .oidlabel{display:block;font-size:.7rem;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#94a3b8;margin-bottom:5px}
+.done .oid{display:inline-block;background:#f1f5f9;color:var(--acd);font-weight:900;font-size:1rem;padding:9px 22px;border-radius:12px}
+.done .wanote{font-size:.8rem;font-weight:700;color:#475569}
+.done .wanote b{color:#16a34a}
+.dbtns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.dbtns a{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:1 1 0;min-width:150px;padding:13px 20px;border-radius:12px;font-weight:900;font-size:.85rem;color:#fff}
+.dbtns a:hover{filter:brightness(1.08)}
+.d-home{background:linear-gradient(135deg,var(--ac),var(--acd))}
+.d-wa{background:#25d366}
+.sec-t{font-size:1.05rem;font-weight:900;margin-bottom:16px;padding-left:13px;position:relative}
+.sec-t:before{content:'';position:absolute;left:0;top:4px;bottom:4px;width:5px;border-radius:4px;background:linear-gradient(180deg,var(--ac),var(--acd))}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:.76rem;font-weight:800;margin-bottom:6px;color:#334155}
+.fg label .rq{color:#e11d48}
+.fg input,.fg select,.fg textarea{width:100%;padding:12px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.9rem;font-family:inherit;background:#fff}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--ac)}
+.frow{display:flex;gap:12px;flex-wrap:wrap}
+.frow .fg{flex:1;min-width:140px}
+.zone{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.zone label{border:2px solid #e2e8f0;border-radius:11px;padding:13px;cursor:pointer;font-size:.8rem;font-weight:800;display:flex;align-items:center;gap:9px;color:#334155}
+.zone input{width:auto}
+.zone label.on{border-color:var(--ac);background:#fdf2f8;color:var(--acd)}
+.zone b{margin-left:auto;color:var(--ac)}
+.items .it{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid #f3f4f6;align-items:center}
+.items .it img,.items .it .ph{width:54px;height:54px;border-radius:10px;object-fit:cover;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#cbd5e1}
+.items .nm{flex:1;font-size:.8rem;font-weight:800}
+.items small{color:#64748b;font-weight:600}
+.items .pr{font-weight:900;color:var(--ac);font-size:.85rem}
+.stp{display:flex;align-items:center;border:1.5px solid #e2e8f0;border-radius:9px;overflow:hidden}
+.stp button{width:30px;height:34px;border:none;background:#f8fafc;font-size:.85rem;color:#334155;font-weight:800}
+.stp button:hover{background:#eef2f7}
+.stp span{min-width:32px;text-align:center;font-weight:800;font-size:.85rem}
+.rm{background:none;border:none;color:#e11d48;font-size:.9rem;padding:6px;cursor:pointer}
+.srow{display:flex;justify-content:space-between;font-size:.85rem;padding:7px 0;color:#475569;font-weight:600}
+.srow.tot{border-top:2px dashed #e2e8f0;margin-top:6px;padding-top:13px;font-size:1.05rem;font-weight:900;color:#0f172a}
+.srow.tot span:last-child{color:var(--ac)}
+.place{width:100%;margin-top:16px;padding:16px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--ac),var(--acd));color:#fff;font-weight:900;font-size:1rem;box-shadow:0 8px 22px rgba(233,30,99,.35)}
+.place:hover{filter:brightness(1.08)}
+.cod{margin-top:12px;text-align:center;font-size:.72rem;font-weight:800;color:#16a34a}
+.cod i{margin-right:5px}
+.pol-ov{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px}
+.pol-box{background:#fff;border-radius:16px;max-width:640px;width:100%;max-height:84vh;display:flex;flex-direction:column;box-shadow:0 30px 70px rgba(0,0,0,.4)}
+.pol-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #eef2f7}
+.pol-hd b{font-size:1.05rem;font-weight:900;color:#0f172a}
+.pol-hd button{border:none;background:none;font-size:1.6rem;line-height:1;color:#94a3b8;cursor:pointer}
+.pol-bd{padding:18px 20px;overflow-y:auto;font-size:.88rem;line-height:1.85;color:#334155}
+.foot{background:#0a0a0a;color:#b5b5b5;margin-top:30px}
+.foot-in{width:80%;max-width:2400px;margin:0 auto;padding:36px 24px 22px;display:grid;grid-template-columns:1.2fr 1.2fr 1fr;gap:28px;font-size:.76rem}
+.foot-in h6{color:#fff;font-size:.76rem;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.foot-in h6 i{color:var(--ac)}
+.foot-in p,.foot-in a{display:block;color:#9a9a9a;margin-bottom:7px;line-height:1.7}
+.foot-bot{width:80%;max-width:2400px;margin:0 auto;padding:15px 24px;border-top:1px solid #1f1f1f;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:.7rem}
+.foot-bot b{color:#fff}
+.wapill{display:inline-flex;align-items:center;gap:7px;background:#25d366;color:#fff;font-weight:800;font-size:.72rem;padding:8px 18px;border-radius:18px}
+.soc{display:flex;gap:8px}
+.soc a{width:30px;height:30px;border-radius:50%;background:#1d1d1d;border:1px solid #333;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.72rem}
+.empty{text-align:center;padding:60px 16px}
+.foot{text-align:center;font-size:.7rem;color:#94a3b8;padding:0 0 24px}
+.done{max-width:520px;margin:60px auto;text-align:center;background:#fff;border-radius:18px;padding:44px 26px;box-shadow:0 8px 30px rgba(15,23,42,.1)}
+.done .ic{width:84px;height:84px;border-radius:50%;background:#dcfce7;color:#16a34a;display:flex;align-items:center;justify-content:center;font-size:2.4rem;margin:0 auto 18px;animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.done h2{font-size:1.4rem;font-weight:900;margin-bottom:8px}
+.done p{color:#64748b;font-size:.88rem;line-height:1.7}
+.done .oid{display:inline-block;background:#fdf2f8;color:var(--acd);font-weight:900;padding:8px 22px;border-radius:12px;margin:14px 0}
+.done a{display:inline-block;margin:10px 6px 0;padding:12px 26px;border-radius:12px;font-weight:800;font-size:.85rem}
+.d-home{background:linear-gradient(135deg,var(--ac),var(--acd));color:#fff}
+.d-wa{background:#25d366;color:#fff}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:12px 24px;border-radius:12px;font-size:.85rem;font-weight:700;display:none;z-index:500}
+@media(max-width:768px){.wrap{grid-template-columns:1fr;max-width:100%}.foot-in{grid-template-columns:1fr}}
+
+/* #22-#24 — footer copied verbatim from the My Shop homepage */
+.foot{background:#0a0a0a;color:#b5b5b5;margin-top:36px;position:relative;overflow:hidden}
+.foot-main{width:70%;max-width:2400px;margin:0 auto;padding:48px 22px 30px;display:grid;grid-template-columns:1.2fr 1.3fr 1fr 1fr;gap:34px;font-size:.78rem;position:relative;z-index:2}
+.foot-bot{width:94%}
+.foot .fbimg{width:68px;height:68px;padding:8px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:#111;overflow:hidden;margin-bottom:18px;box-shadow:0 4px 10px rgba(255,255,255,.08)}
+/* a real logo -> the card hugs it instead of stretching to a fixed 90x68 */
+.foot .fbimg.hasimg{width:auto;min-width:0;max-width:none;height:auto;padding:0;background:transparent;box-shadow:none;border-radius:0;overflow:visible}
+.foot .fbimg.hasimg img{width:auto;height:auto;max-width:38px;max-height:38px;display:block;padding:0;background:transparent}
+.foot .fbimg img{height:auto;width:auto;max-width:38px;max-height:38px;object-fit:contain;background:transparent;display:block;padding:0}
+/* logo image: same cap everywhere — 38px base, 43px on desktop (matches my-shop.html) */
+@media(min-width:769px){ .hdr-in .blogo.hasimg img,.hdr-in .blogo img,.foot .fbimg.hasimg img,.foot .fbimg img{max-width:43px;max-height:43px} }
+.foot h6{color:#fff;font-size:.78rem;font-weight:800;margin:0 0 12px;display:flex;align-items:center;gap:8px;letter-spacing:.3px}
+.foot p,.foot a.fl{display:block;color:#9a9a9a;margin:0 0 9px;line-height:1.7}
+.foot a.fl:hover{color:#fff;cursor:pointer}
+.wap{display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;font-weight:800;font-size:.74rem;padding:9px 20px;border-radius:22px;box-shadow:0 4px 10px rgba(37,211,102,.3);transition:transform .15s;cursor:pointer}
+.wap:hover{transform:translateY(-2px)}
+.soc{display:flex;gap:9px}
+.soc a{width:34px;height:34px;border-radius:50%;background:#1d1d1d;border:1px solid #333;display:flex;align-items:center;justify-content:center;color:#fff;transition:all .15s}
+.soc a:hover{background:var(--ac);border-color:var(--ac);transform:translateY(-2px)}
+.foot .wm{position:absolute;left:0;right:0;bottom:-50px;text-align:center;font-size:11rem;font-weight:900;color:rgba(255,255,255,.025);letter-spacing:14px;pointer-events:none;white-space:nowrap;line-height:.8}
+</style>
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+    <div class="hdr-in">
+        <a class="blogo" id="hLogo" href="my-shop.html" style="text-decoration:none;display:flex;align-items:center;justify-content:center">S</a>
+        <div><a href="my-shop.html" id="msHomeLink" style="color:inherit;text-decoration:none"><b id="hName">My Shop</b></a><small>SECURE CHECKOUT</small></div>
+        <a class="back" id="backShop" href="#"><i class="fas fa-arrow-left"></i> Shop</a>
+    </div>
+</div>
+
+<!-- BUG FIX — the "shop not found / shop unavailable" states used to be rendered
+     with `document.body.innerHTML = ...`, which destroys the whole page while the
+     remaining inline script blocks are still executing. The result was the
+     reported WHITE SCREEN: a near-blank body plus raw JS source leaking into the
+     visible text. We now render those states into this dedicated container and
+     leave the page (and its scripts) intact. -->
+<div id="shopMsg" style="display:none"></div>
+
+<div id="formArea">
+    <div class="wrap">
+        <div class="card">
+            <div class="sec-t">Shipping Information</div>
+            <div class="frow">
+                <div class="fg"><label>Customer Name <span class="rq">*</span></label><input id="cName" placeholder="Your full name"></div>
+                <div class="fg"><label>Mobile Number <span class="rq">*</span></label><input id="cPhone" placeholder="01XXXXXXXXX" maxlength="11"></div>
+            </div>
+            <div class="frow">
+                <div class="fg"><label>District <span class="rq">*</span></label><select id="cDistrict"></select></div>
+                <!-- 2026-09-17 — was a free-text input. Now a dropdown fed by the chosen district. -->
+                <div class="fg"><label>Thana / Upazila <span class="rq">*</span></label><select id="cThana"><option value="">Select district first</option></select></div>
+            </div>
+            <div class="fg"><label>Full Address <span class="rq">*</span></label><textarea id="cAddress" rows="2" placeholder="House, road, area, landmark"></textarea></div>
+            <div class="fg"><label>Delivery Zone</label>
+                <div class="zone">
+                    <label id="zin" class="on"><input type="radio" name="zone" value="in" checked onchange="setZone()"> Inside City &nbsp;<b id="inRate"></b></label>
+                    <label id="zout"><input type="radio" name="zone" value="out" onchange="setZone()"> Outside City &nbsp;<b id="outRate"></b></label>
+                </div>
+            </div>
+            <div class="fg"><label>Order Note (optional)</label><input id="cNote" placeholder="Any special instruction"></div>
+        </div>
+
+        <div class="card">
+            <div class="sec-t">Your Order</div>
+            <div class="items" id="items"></div>
+            <div style="margin-top:12px">
+                <div class="srow"><span>Subtotal</span><span>৳<span id="sSub">0</span></span></div>
+                <div class="srow"><span>Delivery Charge</span><span>৳<span id="sShip">0</span></span></div>
+                <div class="srow tot"><span>Total (Cash on Delivery)</span><span>৳<span id="sTot">0</span></span></div>
+            </div>
+            <button class="place" onclick="placeOrder()"><i class="fas fa-circle-check"></i> Place Order — Cash on Delivery</button>
+            <div class="cod"><i class="fas fa-shield-heart"></i> Pay when you receive the product</div>
+        </div>
+    </div>
+    
+<div class="foot">
+    <div class="wm" id="fwm">MY SHOP</div>
+    <div class="foot-main">
+        <div>
+            <div class="fbimg" id="fLogo">S</div>
+            <h6><i class="fas fa-phone"></i> Phone Number</h6><p id="fPhone2"></p>
+            <h6><i class="fas fa-envelope"></i> Email Address</h6><p id="fEmailH"></p>
+        </div>
+        <div>
+            <h6><i class="fas fa-location-dot"></i> OUR SHOWROOM</h6>
+            <p style="margin:0 0 14px"><b style="color:#fff" id="fShopN">My Shop</b><br><span id="fAddr2"></span></p>
+            <h6 style="margin-top:14px"><i class="fas fa-clock"></i> ORDER TIME</h6>
+            <p style="margin:0">Everyday 9:00 AM — 10:00 PM<br>Cash on Delivery all over Bangladesh</p>
+        </div>
+        <div>
+            <h6><i class="fas fa-link"></i> QUICK LINKS</h6>
+            <a class="fl" href="javascript:void(0)" onclick="scrollToSec('prodSec')">All Products</a>
+            <a class="fl" href="javascript:void(0)" onclick="scrollToSec('dealRow')">Flash Deals</a>
+            <a class="fl" href="javascript:void(0)" onclick="scrollToSec('contactSec')">Contact Us</a>
+            <a class="fl" href="javascript:void(0)" onclick="goCart()">Checkout</a>
+        </div>
+        <div>
+            <h6><i class="fas fa-shield-heart"></i> POLICY</h6>
+            <a class="fl" onclick="shopPolicyOpen('delivery')">DELIVERY POLICY</a>
+            <a class="fl" onclick="shopPolicyOpen('return')">RETURN POLICY</a>
+            <a class="fl" onclick="shopPolicyOpen('privacy')">PRIVACY POLICY</a>
+            <a class="fl" onclick="shopPolicyOpen('about')">ABOUT US</a>
+        </div>
+    </div>
+    <div class="foot-bot">
+        <span>© 2026 <b style="color:#fff" id="fName2">My Shop</b> All rights reserved</span>
+        <span>Powered by <b style="color:var(--ac)">ResellerHub BD</b> | resellerhubbd.com | 01997904792</span>
+        <span style="display:flex;gap:10px;align-items:center">
+            <a class="wap" id="fwa2" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+            <span class="soc"><a id="fFb2" target="_blank"><i class="fab fa-facebook-f"></i></a><a id="fIg" target="_blank"><i class="fab fa-instagram"></i></a><a id="msTk" target="_blank" style="display:none"><i class="fab fa-tiktok"></i></a><a id="fWa3" target="_blank"><i class="fab fa-whatsapp"></i></a></span>
+        </span>
+    </div>
+</div>
+
+<!-- REMOVED: a legacy duplicate bottom bar used to live here.
+     `<nav class="mob-nav on">` carried the same Home / Products / Cart /
+     WhatsApp buttons, but `.mob-nav.on{display:flex}` was NOT inside any media
+     query — so those four buttons rendered on tablet and desktop too. It is
+     replaced by the single mobile-only bar (#msBnav) further down, which is
+     `display:none` by default and only shown under `@media(max-width:600px)`. -->
+</div>
+
+<!-- SUCCESS SCREEN — must stay a SIBLING of #formArea, never a child.
+     It used to be nested inside #formArea, and placeOrder() hides #formArea
+     before showing this block. A child of a display:none parent can never be
+     shown, so the customer got a header followed by a blank white page. -->
+<div id="doneArea" style="display:none">
+    <div class="donewrap">
+        <div class="done">
+            <div class="ic"><i class="fas fa-check"></i></div>
+            <h2>Thank you for buying from us!</h2>
+            <p>আপনার অর্ডারটি সফলভাবে গ্রহণ করা হয়েছে।<br>আমাদের টিম শীঘ্রই আপনাকে কল করে কনফার্ম করবে।</p>
+            <div class="oidbox">
+                <span class="oidlabel">Order ID</span>
+                <b class="oid" id="doneId">—</b>
+            </div>
+            <p class="wanote" id="doneWa"></p>
+            <div class="dbtns">
+                <a class="d-home" id="doneShop" href="#"><i class="fas fa-bag-shopping"></i> Continue Shopping</a>
+                <a class="d-wa" id="doneWaBtn" href="#" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../app.js"></script><script>(function(){function paint(){try{var b=document.getElementById("ordersBadge");var uid=sessionStorage.getItem("user_id");if(!uid)return;if(sessionStorage.getItem("user_type")!=="reseller")return;var n=(typeof resellerNewOrderCount==="function")?resellerNewOrderCount(uid):0;if(b){b.textContent=n;b.style.display=n>0?"inline-block":"none";}var lb=document.getElementById("ordersBadgeLabel");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+var DISTRICTS=["Dhaka","Faridpur","Gazipur","Gopalganj","Kishoreganj","Madaripur","Manikganj","Munshiganj","Narayanganj","Narsingdi","Rajbari","Shariatpur","Tangail","Bogura","Chapainawabganj","Joypurhat","Naogaon","Natore","Pabna","Rajshahi","Sirajganj","Dinajpur","Gaibandha","Kurigram","Lalmonirhat","Nilphamari","Panchagarh","Rangpur","Thakurgaon","Barguna","Barishal","Bhola","Jhalokati","Patuakhali","Pirojpur","Bandarban","Brahmanbaria","Chandpur","Chattogram","Cumilla","Cox's Bazar","Feni","Khagrachhari","Lakshmipur","Noakhali","Rangamati","Habiganj","Moulvibazar","Sunamganj","Sylhet","Bagerhat","Chuadanga","Jashore","Jhenaidah","Khulna","Kushtia","Magura","Meherpur","Narail","Satkhira","Jamalpur","Mymensingh","Netrokona","Sherpur"];
+var rid=new URLSearchParams(location.search).get('rid');
+var isBuyNow=new URLSearchParams(location.search).get('buynow')==='1';
+var shop=null, items=[], zone='in';
+/* BUG FIX (#24) — double-submit guard. A fast double-click (or a slow write)
+   used to create two identical orders. While a submit is in flight we ignore
+   further calls; the flag is cleared on every failure path so a retry still works. */
+var _placing=false;
+
+function findShop(){
+    var list=getData(DB_KEYS.RESELLERS)||[];
+    /* An explicit ?rid= stays AUTHORITATIVE — if it does not resolve we must NOT
+       fall through to another reseller's shop. */
+    if(rid){
+        for(var i=0;i<list.length;i++){if(String(list[i].id)===String(rid)){shop=list[i];break}}
+        return;
+    }
+    /* No rid: a signed-in reseller is on their OWN shop, so checkout must work
+       instead of showing "Shop not found". sessionStorage is per-tab, so also try
+       the Remember-Login token, which lives in localStorage. The id always comes
+       from the visitor's own session/token — never from another shop. */
+    try{
+        var ut=sessionStorage.getItem('user_type'), uid=sessionStorage.getItem('user_id');
+        if(ut==='reseller'&&uid){
+            for(var k=0;k<list.length;k++){if(String(list[k].id)===String(uid)){shop=list[k];rid=String(uid);return}}
+        }
+    }catch(e){}
+    try{
+        if(typeof restorePersistentSession==='function'){
+            var ru=restorePersistentSession('reseller');
+            if(ru&&ru.id){
+                for(var m=0;m<list.length;m++){if(String(list[m].id)===String(ru.id)){shop=list[m];rid=String(ru.id);return}}
+            }
+        }
+    }catch(e){}
+}
+function acolor(){return (shop&&shop.shop_color)||'#e91e63'}
+function shade(hex,amt){var n=parseInt(hex.slice(1),16);var r=Math.min(255,Math.max(0,(n>>16)+amt)),g=Math.min(255,Math.max(0,((n>>8)&255)+amt)),b=Math.min(255,Math.max(0,(n&255)+amt));return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1)}
+function digits(ph){var d=String(ph||'').replace(/\D/g,'');if(d.charAt(0)==='0')d='88'+d;return d}
+/* Part 2 — delegate to the ONE canonical resolver in app.js. This local copy
+   used to omit `business_name`, which could surface the owner's personal name. */
+function bname(){try{return resellerBusinessName(shop)}catch(e){return shop.shop_name||shop.businessName||shop.name||'My Shop'}}
+function insideRate(){var s=getOne(DB_KEYS.SETTINGS);return s.deliveryCharge||60}
+function outsideRate(){var s=getOne(DB_KEYS.SETTINGS);return s.outsideCharge||180}
+/* 2026-09-18 (this request) — the DISTRICT decides the delivery zone, so nothing
+   has to be selected: Dhaka -> Inside, Dhaka Sub-Urban -> a fixed ৳100, any other
+   district -> Outside. bdDeliveryZone()/bdDeliveryRate() live in app.js so this
+   page and the reseller's Add New Order can never disagree. */
+function checkoutDistrict(){var e=document.getElementById('cDistrict');return e?String(e.value||''):''}
+function checkoutZone(){return bdDeliveryZone(checkoutDistrict())}
+/* The two buttons must show what the chosen district ACTUALLY costs, otherwise
+   "Outside City ৳180" would sit next to a ৳100 charge on a Sub-Urban order. */
+function paintZoneRates(){
+    var z=checkoutZone();
+    var ir=document.getElementById('inRate'),orr=document.getElementById('outRate');
+    if(ir)ir.textContent='৳'+insideRate();
+    if(orr)orr.textContent='৳'+(z==='suburban'?BD_SUBURBAN_CHARGE:outsideRate());
+}
+/* Re-derive the zone from the district and paint the buttons to match. Sub-Urban
+   is outside the city corporation, so it highlights "Outside City". */
+function syncZoneFromDistrict(){
+    var z=checkoutZone();
+    zone=(z==='inside')?'in':'out';
+    var r=document.querySelector('input[name="zone"][value="'+zone+'"]');
+    if(r)r.checked=true;
+    var zi=document.getElementById('zin'),zo=document.getElementById('zout');
+    if(zi)zi.classList.toggle('on',zone==='in');
+    if(zo)zo.classList.toggle('on',zone==='out');
+    paintZoneRates();
+}
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(function(){t.style.display='none'},2800)}
+
+function loadItems(){
+    if(isBuyNow){
+        try{var b=sessionStorage.getItem('rh_myshop_buynow');if(b)items=[JSON.parse(b)]}catch(e){items=[]}
+    }else{
+        try{items=JSON.parse(localStorage.getItem('rh_mycart_'+rid)||'[]')}catch(e){items=[]}
+    }
+}
+function subtotal(){var s=0;for(var i=0;i<items.length;i++)s+=items[i].resale*items[i].qty;return s}
+/* 2026-09-15 — per-product FREE DELIVERY.
+   When every line in the cart is a free-delivery product the customer pays ৳0
+   inside AND outside Dhaka; the reseller bears that delivery cost out of their
+   own profit (applied when the order is written, see placeOrder). */
+function itemIsFreeDelivery(it){
+    try{
+        if(!it)return false;
+        if(it.freeDelivery===true||it.free_delivery===true)return true;
+        var ps=getData(DB_KEYS.PRODUCTS)||[];
+        for(var i=0;i<ps.length;i++){
+            if(String(ps[i].id)===String(it.productId||it.id)) return (ps[i].freeDelivery===true||ps[i].free_delivery===true);
+        }
+    }catch(e){}
+    return false;
+}
+function allItemsFreeDelivery(){
+    if(!items||!items.length)return false;
+    for(var i=0;i<items.length;i++){ if(!itemIsFreeDelivery(items[i])) return false; }
+    return true;
+}
+function shipRate(){
+    if(allItemsFreeDelivery())return 0;      /* customer sees free delivery */
+    /* the DISTRICT decides, never the radio */
+    return bdDeliveryRate(checkoutDistrict(),insideRate(),outsideRate());
+}
+
+var _gx=null;
+function render(){
+    var c=acolor();var d=shade(c,-45);
+    document.documentElement.style.setProperty('--ac',c);
+    document.documentElement.style.setProperty('--acd',d);
+    var lg=(shop.shop_logo||shop.shopLogo||'');
+    (_gx=document.getElementById('hLogo'))&&rhSetLogo(_gx,lg,bname().charAt(0));
+    (_gx=document.getElementById('hName'))&&(_gx.textContent=bname());
+    (_gx=document.getElementById('backShop'))&&(_gx.href='my-shop.html?rid='+rid);
+    var lg2=(shop.shop_logo||shop.shopLogo||'');
+    var bn=bname();
+    (_gx=document.getElementById('fLogo'))&&rhSetLogo(_gx,lg2,bn.charAt(0));
+    (_gx=document.getElementById('fName2'))&&(_gx.textContent=bn);
+    /* Part 6 — the footer's "OUR SHOWROOM" line used to keep its static
+       "My Shop" placeholder because this assignment was missing, so every
+       checkout page showed the literal words "My Shop" instead of the shop's
+       business name. Fill it from the SAME `bname()` used by the header, so it
+       is always the CURRENT reseller and never another shop's name. */
+    (_gx=document.getElementById('fShopN'))&&(_gx.textContent=bn);
+    (_gx=document.getElementById('fwm'))&&(_gx.textContent=bn.toUpperCase());
+    (_gx=document.getElementById('fPhone2'))&&(_gx.textContent=shop.shop_phone||shop.phone||'01997904792');
+    (_gx=document.getElementById('fEmailH'))&&(_gx.textContent=shop.email||'resellerhubbd@gmail.com');
+    (_gx=document.getElementById('fAddr2'))&&(_gx.textContent=(shop.shop_name||bn)+' — '+(shop.shop_address||shop.address||'Bangladesh'));
+    var wa2='https://wa.me/'+digits(shop.shop_phone||shop.phone);
+    var _w2=document.getElementById('fwa2');if(_w2)_w2.href=wa2;var _w3=document.getElementById('fWa3');if(_w3)_w3.href=wa2;
+    var _fb=document.getElementById('fFb2');if(_fb)_fb.href=shop.shop_fb||shop.facebook||'#';
+    (_gx=document.getElementById('flHome'))&&(_gx.onclick=function(){location.href='my-shop.html?rid='+rid});
+    (_gx=document.getElementById('flCart'))&&(_gx.onclick=function(){location.href='my-shop-checkout.html?rid='+rid});
+    (_gx=document.getElementById('inRate'))&&(_gx.textContent='৳'+insideRate());
+    (_gx=document.getElementById('outRate'))&&(_gx.textContent='৳'+outsideRate());
+    paintZoneRates();
+    /* 2026-09-17 — ALL 64 districts from the shared dataset, and the Thana dropdown
+       is rebuilt from whichever district is chosen. DISTRICTS (the old ~13-name
+       Dhaka-division list) is kept only as a fallback if app.js has not loaded. */
+    var _names = (typeof BD_DISTRICT_NAMES !== 'undefined' && BD_DISTRICT_NAMES.length) ? BD_DISTRICT_NAMES : DISTRICTS;
+    var ds='<option value="">Select district</option>';
+    for(var i=0;i<_names.length;i++)ds+='<option>'+_names[i]+'</option>';
+    var _dEl=document.getElementById('cDistrict');
+    if(_dEl){
+        _dEl.innerHTML=ds;
+        _dEl.onchange=function(){ fillCheckoutThanas(this.value); syncZoneFromDistrict(); updateSum(); };
+    }
+    fillCheckoutThanas('');
+    syncZoneFromDistrict();
+    renderItems();
+    updateSum();
+}
+/* 2026-09-17 — rebuild the Thana dropdown for one district. Only that district's
+   thanas appear, so a customer can only pick a real Thana/Upazila of the district
+   they chose. Empty district -> the dropdown is disabled and asks for a district. */
+function fillCheckoutThanas(district){
+    var t=document.getElementById('cThana');
+    if(!t) return;
+    var list=(typeof bdThanas==='function')?bdThanas(district):[];
+    if(!district||!list.length){
+        t.innerHTML='<option value="">Select district first</option>';
+        t.disabled=true;
+        return;
+    }
+    t.disabled=false;
+    var h='<option value="">Select thana / upazila</option>';
+    for(var i=0;i<list.length;i++)h+='<option>'+list[i]+'</option>';
+    t.innerHTML=h;
+}
+function renderItems(){
+    var h='';
+    for(var j=0;j<items.length;j++){
+        var it=items[j];
+        h+='<div class="it">'+(prodImgSrc(it.image)?'<img src="'+prodImgSrc(it.image)+'">':'<div class="ph"><i class="fas fa-box"></i></div>')+
+           '<div class="nm">'+it.name+'<br><small>৳'+it.resale+' each'+(it.size?' • Size: <b>'+it.size+'</b>':'')+(it.color?' • '+it.color:'')+'</small></div>'+
+           '<div class="stp"><button onclick="chIt('+j+',-1)">&minus;</button><span>'+it.qty+'</span><button onclick="chIt('+j+',1)">+</button></div>'+
+           '<div class="pr">৳'+(it.resale*it.qty)+'</div>'+
+           '<button class="rm" title="Remove" onclick="rmIt('+j+')"><i class="fas fa-trash-can"></i></button></div>';
+    }
+    var _it=document.getElementById('items');if(_it)_it.innerHTML=h||'<div class="empty"><i class="fas fa-cart-shopping" style="font-size:2.4rem);color:#cbd5e1"></i><br><br>Your cart is empty!<br><a href="my-shop.html?rid='+rid+'" style="color:var(--ac);font-weight:800">Go to shop &rarr;</a></div>';
+}
+function saveCart(){if(!isBuyNow){try{localStorage.setItem('rh_mycart_'+rid,JSON.stringify(items))}catch(e){}}}
+function chIt(i,d){if(!items[i])return;items[i].qty+=d;if(items[i].qty<1)items[i].qty=1;saveCart();renderItems();updateSum()}
+function rmIt(i){if(!items[i])return;items.splice(i,1);saveCart();renderItems();updateSum()}
+function updateSum(){
+    (_gx=document.getElementById('sSub'))&&(_gx.textContent=subtotal());
+    (_gx=document.getElementById('sShip'))&&(_gx.textContent=items.length?shipRate():0);
+    (_gx=document.getElementById('sTot'))&&(_gx.textContent=subtotal()+(items.length?shipRate():0));
+}
+function setZone(){
+    /* 2026-09-18 (this request) — the DISTRICT decides the charge; this button no
+       longer does. The click only re-paints, and the zone is immediately
+       re-derived from the district, so nobody can under-pay by ticking
+       "Inside City" from Chattogram. */
+    syncZoneFromDistrict();
+    updateSum();
+}
+function placeOrder(){
+    if(_placing)return;                       /* (#24) ignore a second submit */
+    var name=document.getElementById('cName').value.trim();
+    var phone=document.getElementById('cPhone').value.trim();
+    var district=document.getElementById('cDistrict').value;
+    var thana=document.getElementById('cThana').value.trim();
+    var address=document.getElementById('cAddress').value.trim();
+    var note=document.getElementById('cNote').value.trim();
+    if(!items.length){toast('Cart is empty!');return}
+    // Shared variant guard — no order may be created without a valid variant
+    if(typeof validateOrderItems==='function'){var vchk=validateOrderItems(items);if(!vchk.ok){toast(vchk.message,'e');return}}
+    if(!name){toast('Enter customer name!','e');return}
+    if(!/^01[3-9]\d{8}$/.test(phone)){toast('Enter valid 11-digit mobile number!');return}
+    if(!district){toast('Select district!');return}
+    if(!thana){toast('Enter Thana/Upazila!');return}
+    if(!address){toast('Enter full address!');return}
+    /* (#12, #18, #19) freeze the historical selling + cost price on every line.
+       A later product edit must never rewrite an existing order's price or profit. */
+    for(var k=0;k<items.length;k++){
+        var itk=items[k]||{};
+        if(itk.selling_price===undefined||itk.selling_price===null||itk.selling_price==='')itk.selling_price=itemSellingPrice(itk);
+        if(itk.cost_price===undefined||itk.cost_price===null||itk.cost_price==='')itk.cost_price=itemCostPrice(itk);
+        itk.resale=itk.selling_price;
+        if(!itk.product_source)itk.product_source=(String(itk.product_owner_type)==='reseller')?'reseller':'platform';
+        if(!itk.shop_id&&String(itk.product_owner_type)==='reseller')itk.shop_id=itk.product_owner_id;
+        if(!itk.variant_id)itk.variant_id=String(itk.productId)+'|'+(itk.size||'-')+'|'+(itk.color||'-');
+    }
+    _placing=true;                            /* (#24) lock — every validation passed */
+    var sub=subtotal(), ship=shipRate(), total=sub+ship;
+    var profit=0, qty=0;
+    for(var i=0;i<items.length;i++){profit+=(items[i].resale-items[i].price)*items[i].qty;qty+=items[i].qty}
+    // Auto deductions: 1% COD on TOTAL (subtotal + delivery) + ৳10 packaging — cut from reseller profit
+    var codCharge=Math.round(total*0.01), packagingCharge=10;
+    /* FREE DELIVERY (2026-09-15): the customer was charged ৳0 shipping, so the
+       reseller carries the REAL courier charge out of their own profit.
+       2026-09-18 — that real charge now follows the DISTRICT too. */
+    var _dTier=checkoutZone();
+    var freeShipBorne=allItemsFreeDelivery()?bdDeliveryRate(checkoutDistrict(),insideRate(),outsideRate()):0;
+    profit=profit-codCharge-packagingCharge-freeShipBorne;
+    if(profit<0)profit=0;
+    var orders=getData(DB_KEYS.ORDERS)||[];
+    var order={
+        id:getNextOrderId(),
+        resellerId:shop.id,
+        resellerName:shop.name||bname(),
+        customer:name, phone:phone,
+        address:address+', '+thana+', '+district,
+        district:district, thana:thana,
+        shippingMethod:_dTier,
+        shippingCharge:ship,
+        items:items,
+        productName:items[0].name+(items.length>1?' +'+(items.length-1)+' more':''),
+        productPrice:items[0].price,
+        qty:qty,
+        itemsSubtotal:sub,
+        amount:total, advance:0, due:total,
+        profit:profit,
+        grossProfit:profit+codCharge+packagingCharge+freeShipBorne,
+        /* what the reseller absorbed so the customer saw free delivery */
+        freeDelivery:freeShipBorne>0,
+        freeDeliveryBorne:freeShipBorne,
+        codCharge:codCharge,
+        packagingCharge:packagingCharge,
+        status:'new',
+        note:note,
+        /* (#50) order architecture — My Shop orders are clearly distinguished
+           from platform orders and are fully attributed to one shop. */
+        source:'myshop',
+        order_source:'myshop',
+        shop_id:shop.id,
+        reseller_id:shop.id,
+        resellerName:shop.businessName||shop.name||bname(),
+        paymentMethod:'Cash on Delivery',
+        paymentInfo:{method:'Cash on Delivery',advance:0,due:total},
+        product_owner_id:ownOwnerId(),
+        product_owner_type:ownOwnerId()?'reseller':'platform',
+        date:new Date().toISOString()
+    };
+    /* Mixed-source customer order (own + platform lines): keep ONE combined
+       order + ONE delivery charge, but record the ownership-group linkage so
+       My Shop Orders can show the shared-delivery adjustment (#1, #2, #15). */
+    var _ownL=0,_catL=0;
+    for(var gi=0;gi<items.length;gi++){
+        var gk=(typeof orderLineGroupKind==='function')?orderLineGroupKind(items[gi],shop.id):'catalog';
+        if(gk==='own')_ownL++;else if(gk==='catalog')_catL++;
+    }
+    if(_ownL>0&&_catL>0){
+        order.mixed_source=true;
+        order.parent_order_id=order.id;
+        order.has_own_group=true;
+        order.own_line_count=_ownL;
+        order.catalog_line_count=_catL;
+    }
+    orders.push(order);
+    /* BUG FIX — setData() returns false when the write fails (quota exceeded,
+       private mode, file:// restrictions). The old code ignored that, so the
+       customer saw the green "Order Placed!" screen while NO order existed.
+       Now a failed write is reported and the form stays put so it can be retried. */
+    if(!setData(DB_KEYS.ORDERS,orders)){
+        _placing=false;
+        try{console.error('My Shop order save failed — rh_orders was not written. Existing size =',((localStorage.getItem('rh_orders')||'').length)+' chars')}catch(e){}
+        toast('Order could not be saved — the shop storage is full. Space is being freed automatically, please try again in a few seconds.','e');
+        return;
+    }
+    /* (#2) stock is deducted only for this reseller's OWN uploaded products —
+       admin/supplier inventory is never touched from a My Shop checkout. */
+    try{ applyOwnProductStockDeduction(order, shop.id); }catch(e){}
+    /* 2026-09-18 — the order is safely stored, so remember this customer in the
+       RESELLER's Customer Information. Keyed by shop.id, so a customer who buys
+       from THIS shop can never appear in another reseller's list.
+       Only the STREET address is kept: district and thana are separate fields, and
+       the "Order" button puts this value back into the street-address box. */
+    try{
+        if(typeof ciRemember==='function') ciRemember(shop.id,{name:name,phone:phone,address:address,district:district,thana:thana},'myshop-order');
+    }catch(e){}
+    /* Side effects are best-effort: a failure here (tracking, notification,
+       activity log, pixel) must NEVER prevent the confirmation screen. */
+    try{ addTracking(order.id,'Order Placed','Customer order from '+bname()+' (My Shop)','Awaiting reseller confirmation'); }catch(e){}
+    try{ addNotification(shop.id,'order','New customer order '+order.id+' from your My Shop — '+bname(0),false); }catch(e){}
+    try{ logActivity('myshop_order','Customer order '+order.id+' placed on '+bname()+' My Shop'); }catch(e){}
+    /* (#5) Purchase — fired exactly once per order id (deduped, never on refresh) */
+    try{
+        shopPixelTrack(shop.id,'Purchase',shopPixelPurchasePayload(order),'purchase:'+order.id);
+    }catch(e){}
+    if(!isBuyNow)try{localStorage.removeItem('rh_mycart_'+rid)}catch(e){}
+    try{sessionStorage.removeItem('rh_myshop_buynow')}catch(e){}
+    // Success screen
+    showSuccess(order);
+}
+/* Confirmation screen. Deliberately defensive: if #doneArea ever ends up nested
+   inside #formArea again, hide only the form's own .wrap — hiding the container
+   would hide this block too, which is what produced the blank white page. */
+function showSuccess(order){
+    try{
+        var da=document.getElementById('doneArea');
+        var fa=document.getElementById('formArea');
+        if(da&&fa&&fa.contains(da)){
+            var fw=document.querySelector('#formArea > .wrap');
+            if(fw)fw.style.display='none';
+        }else if(fa){
+            fa.style.display='none';
+        }
+        if(da)da.style.display='block';
+        var gx;
+        (gx=document.getElementById('doneId'))&&(gx.textContent=order.id);
+        (gx=document.getElementById('doneShop'))&&(gx.href='my-shop.html?rid='+rid);
+        (gx=document.getElementById('doneWa'))&&(gx.innerHTML='অর্ডার নিয়ে কিছু জানতে চাইলে আমাদের সাথে <b style="color:#16a34a">WhatsApp-এ নক করুন</b>');
+        var wa='https://wa.me/'+digits(shop.shop_phone||shop.phone)+'?text='+encodeURIComponent('I placed order '+order.id+' on '+bname()+'. Please confirm.');
+        (gx=document.getElementById('doneWaBtn'))&&(gx.href=wa);
+        try{window.scrollTo({top:0,behavior:'smooth'})}catch(e){}
+    }catch(e){}
+}
+/* (#14) when every line item belongs to this reseller, the order is an
+   Own-Product My Shop order; otherwise it is a platform-fulfilled one. */
+function ownOwnerId(){
+    try{
+        if(!items.length)return null;
+        for(var i=0;i<items.length;i++){
+            var it=items[i];
+            if(it.product_owner_type==='reseller'&&String(it.product_owner_id)===String(shop.id))continue;
+            return null;
+        }
+        return shop.id;
+    }catch(e){return null}
+}
+findShop();
+/* Render a terminal state IN PLACE — never `document.body.innerHTML = ...`, which
+   blanks the page and leaks the remaining inline scripts as visible text. */
+function showShopMsg(title, bodyHtml){
+    try{
+        var f=document.getElementById('formArea'); if(f) f.style.display='none';
+        var dn=document.getElementById('doneArea'); if(dn) dn.style.display='none';
+        var box=document.getElementById('shopMsg');
+        if(!box){ box=document.createElement('div'); box.id='shopMsg'; document.body.appendChild(box); }
+        box.style.display='block';
+        box.innerHTML='<div style="max-width:520px;margin:60px auto;background:#fff;border-radius:20px;padding:60px 28px;box-shadow:0 10px 40px rgba(15,23,42,.12);text-align:center">'+
+            '<i class="fas fa-store-slash" style="font-size:3.2rem;color:#cbd5e1;display:block;margin-bottom:16px"></i>'+
+            '<h2 style="font-size:1.25rem;font-weight:900;margin-bottom:8px">'+title+'</h2>'+
+            '<p style="font-size:.85rem;color:#64748b">'+bodyHtml+'</p>'+
+            '<p style="margin-top:18px"><a href="../index.html" style="color:#111;font-weight:800">&larr; Go home</a></p></div>';
+    }catch(e){}
+}
+if(!shop){ showShopMsg('Shop not found','এই My Shop খুঁজে পাওয়া যায়নি। লিংকটি আবার যাচাই করুন।'); }
+else if(!isShopEnabled(shop.id)){
+    showShopMsg('Shop Unavailable','এই My Shop বর্তমানে বন্ধ আছে। অর্ডার নেওয়া হচ্ছে না।');
+}
+else{
+    loadItems();render();
+    /* (#4) pixel lifecycle on the checkout page */
+    try{
+        shopPixelInit(shop.id);
+        shopPixelTrack(shop.id,'InitiateCheckout',{
+            content_ids:items.map(function(it){return String(it.productId)}),
+            contents:items.map(function(it){return {id:String(it.productId),quantity:it.qty||1,item_price:it.resale||0,name:it.name||''}}),
+            value:subtotal(),currency:'BDT',num_items:items.length
+        });
+    }catch(e){}
+    /* (#4) AddPaymentInfo — COD is the only method, so it is captured when the
+       customer reaches the payment step of the form. */
+    try{
+        var _pay=document.getElementById('codNote')||document.querySelector('.cod');
+        if(_pay&&!_pay.dataset.px){
+            _pay.dataset.px='1';
+            shopPixelTrack(shop.id,'AddPaymentInfo',{value:subtotal(),currency:'BDT'});
+        }
+    }catch(e){}
+}
+</script>
+<script>
+/* #25/#26 — the checkout header logo / business name go to THIS shop's home.
+   The footer was copied from the My Shop homepage, so its links were written for
+   THAT page: they call scrollToSec(...) / goCart(), which do not exist here and
+   threw "ReferenceError: ... is not defined" when clicked. Two fixes:
+   1) the links now navigate to the section on the shop home they refer to, and
+   2) safe fallbacks are defined so no footer/header click can ever throw. */
+(function(){
+  var r=new URLSearchParams(location.search).get('rid')||'';
+  var url='my-shop.html'+(r?('?rid='+encodeURIComponent(r)):'');
+  var a=document.getElementById('hLogo'); if(a)a.href=url;
+  var b=document.getElementById('msHomeLink'); if(b)b.href=url;
+  var c=document.getElementById('backShop'); if(c)c.href=url;
+
+  /* those footer sections live on the shop home */
+  var fls=document.querySelectorAll('.foot a.fl');
+  for(var i=0;i<fls.length;i++){
+    var el=fls[i], oc=String(el.getAttribute('onclick')||'');
+    if(oc.indexOf('scrollToSec')!==-1){
+      el.removeAttribute('onclick');
+      el.setAttribute('href', url);           /* shop home */
+    } else if(oc.indexOf('goCart')!==-1){
+      el.removeAttribute('onclick');
+      el.setAttribute('href', url);           /* cart = shop home -> checkout */
+    }
+  }
+})();
+/* Safe fallbacks (same behaviour as the shop home where the target exists). */
+function scrollToSec(id){
+  var e=document.getElementById(id);
+  if(e && e.offsetTop!==undefined){ try{ window.scrollTo({top:e.offsetTop-110,behavior:'smooth'}); }catch(x){} return; }
+  var r=new URLSearchParams(location.search).get('rid')||'';
+  location.href='my-shop.html'+(r?('?rid='+encodeURIComponent(r)):'');
+}
+function goCart(){
+  /* already on the checkout page — nothing to navigate to, scroll to the form */
+  var f=document.getElementById('formArea');
+  if(f){ try{ window.scrollTo({top:0,behavior:'smooth'}); }catch(x){} }
+  else { var r=new URLSearchParams(location.search).get('rid')||''; location.href='my-shop-checkout.html?rid='+encodeURIComponent(r); }
+}
+/* 2026-09-17 — images now arrive ASYNCHRONOUSLY (app.js rhLoadImagesAsync), so the
+   first render can draw placeholders. Redraw once the image cache is usable. */
+try { onRhImagesReady(function(){ renderItems(); try{updateSum();}catch(e){} }); } catch (e) { }
+</script>
+</body>
+</html>
+

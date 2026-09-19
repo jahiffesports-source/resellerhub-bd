@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Shop Orders - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root { --pri:#4f46e5; --prid:#4338ca; --vio:#7c3aed; --grn:#10b981; --gold:#fbbf24; --dark:#0f172a; --gray:#64748b; }
+        body { font-family:'Inter','Hind Siliguri',sans-serif; background:#eef1f9; color:#1e293b; padding-bottom:70px; overflow-x:hidden; }
+
+        /* ===== Animations ===== */
+        @keyframes dashUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:none} }
+        @keyframes dashSide { from{opacity:0;transform:translateX(-24px)} to{opacity:1;transform:none} }
+        @keyframes iconBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        @keyframes drift { 0%,100%{transform:translate(0,0) rotate(0)} 33%{transform:translate(24px,-18px) rotate(3deg)} 66%{transform:translate(-16px,14px) rotate(-2deg)} }
+        @keyframes welcomeShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        @keyframes barGrow { from{height:0 !important} }
+        @keyframes tilePop { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:none} }
+        .sidebar-header, .sidebar-menu a { animation:dashSide .4s ease both; }
+        .welcome { animation:dashUp .55s .1s ease both; }
+        .quick-row .quick-btn:nth-child(1) { animation:dashUp .5s .18s ease both; }
+        .quick-row .quick-btn:nth-child(2) { animation:dashUp .5s .24s ease both; }
+        .quick-row .quick-btn:nth-child(3) { animation:dashUp .5s .3s ease both; }
+        .quick-row .quick-btn:nth-child(4) { animation:dashUp .5s .36s ease both; }
+        .stats-grid .stat-card:nth-child(1) { animation:dashUp .5s .3s ease both; }
+        .stats-grid .stat-card:nth-child(2) { animation:dashUp .5s .38s ease both; }
+        .stats-grid .stat-card:nth-child(3) { animation:dashUp .5s .46s ease both; }
+        .stats-grid .stat-card:nth-child(4) { animation:dashUp .5s .54s ease both; }
+        .card { animation:dashUp .55s .5s ease both; }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:248px; background:linear-gradient(180deg,#0b1029 0%,#151a3a 100%); color:#c7d2fe; z-index:200; overflow-y:auto; transition:transform 0.3s; box-shadow:4px 0 24px rgba(11,16,41,.35); }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; justify-content:space-between; align-items:center; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:40px; height:40px; background:linear-gradient(135deg,var(--pri),var(--vio)); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .sidebar-logo h3 { color:white; font-size:1rem; font-weight:900; }
+        .sidebar-logo small { color:#818cf8; font-size:0.66rem; display:block; font-weight:700; letter-spacing:1px; }
+        .sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; }
+        .sidebar-menu { list-style:none; padding:12px 10px; }
+        .sidebar-menu li { margin:3px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:11px 15px; color:#c7d2fe; text-decoration:none; font-size:0.88rem; font-weight:600; border-radius:11px; transition:all .22s; }
+        .sidebar-menu a:hover { background:rgba(129,140,248,.14); color:white; transform:translateX(4px); }
+        .sidebar-menu a.active { background:linear-gradient(135deg,var(--pri),var(--vio)); color:white; box-shadow:0 8px 20px rgba(79,70,229,.4); }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 15px 5px; color:#6366f1; font-size:0.66rem; text-transform:uppercase; letter-spacing:1.4px; font-weight:800; }
+        .menu-badge { background:var(--gold); color:#1e293b; font-size:0.68rem; padding:1px 8px; border-radius:10px; font-weight:800; margin-left:auto; }
+        .menu-badge-n { color:var(--gold); font-weight:900; }
+
+        .side-overlay { display:none; position:fixed; inset:0; background:rgba(11,16,41,.55); z-index:150; backdrop-filter:blur(2px); }
+
+        /* ===== MAIN ===== */
+        .main { margin-left:248px; min-height:100vh; }
+        .topbar { background:rgba(255,255,255,.88); backdrop-filter:blur(12px); padding:12px 22px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 14px rgba(15,23,42,.06); position:sticky; top:0; z-index:100; }
+        .topbar-left { display:flex; align-items:center; gap:12px; }
+        .hamburger { display:none; background:none; border:none; font-size:1.3rem; color:#1e293b; cursor:pointer; padding:4px; }
+        .topbar h2 { font-size:1.12rem; font-weight:800; }
+        .topbar-right { display:flex; align-items:center; gap:8px; }
+        .topbar-balance { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#7c2d12; padding:7px 15px; border-radius:22px; font-weight:800; font-size:0.84rem; white-space:nowrap; box-shadow:0 4px 12px rgba(245,158,11,.35); }
+        .topbar-user { display:flex; align-items:center; gap:7px; padding:6px 14px; background:#eef2ff; color:var(--pri); border-radius:22px; font-size:0.84rem; font-weight:700; }
+        .btn-logout { background:#fee2e2; color:#dc2626; border:none; padding:8px 12px; border-radius:10px; cursor:pointer; font-size:0.85rem; transition:all .25s; }
+        .btn-logout:hover { background:#dc2626; color:#fff; transform:translateY(-1px); }
+
+        .content { padding:22px 28px; width:100%; }
+
+        /* ===== Welcome — index hero style (dark + orbit) ===== */
+        .welcome { background:radial-gradient(700px 400px at 80% 10%, #312e81 0%, transparent 55%), radial-gradient(500px 320px at 8% 90%, #1e1b4b 0%, transparent 55%), linear-gradient(150deg,#0b1029,#12102e 60%,#181436); color:white; padding:30px 32px; border-radius:26px; margin-bottom:22px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; position:relative; overflow:hidden; box-shadow:0 22px 50px rgba(11,16,41,.4); animation:dashUp .55s .1s ease both; }
+        .w-orbit { position:absolute; border:1px solid rgba(129,140,248,.22); border-radius:50%; pointer-events:none; }
+        .w-orbit.o1 { width:340px; height:340px; top:-140px; right:-80px; animation:drift 14s ease-in-out infinite; }
+        .w-orbit.o2 { width:240px; height:240px; bottom:-110px; left:-60px; animation:drift 18s ease-in-out infinite reverse; }
+        .w-kicker { display:inline-flex; align-items:center; gap:7px; background:rgba(129,140,248,.18); border:1px solid rgba(129,140,248,.45); color:#c7d2fe; font-size:.66rem; font-weight:900; letter-spacing:1.6px; padding:5px 14px; border-radius:18px; margin-bottom:12px; position:relative; }
+        .welcome h3 { font-size:1.5rem; font-weight:900; margin-bottom:4px; position:relative; }
+        .w-grad { background:linear-gradient(90deg,#a5b4fc,#f0abfc,#67e8f9); background-size:200% auto; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; animation:welcomeShift 5s linear infinite; }
+        .welcome p { opacity:0.92; font-size:0.9rem; position:relative; }
+        .welcome .ref-code { background:rgba(129,140,248,.25); border:1px solid rgba(129,140,248,.4); padding:3px 12px; border-radius:14px; font-weight:800; font-size:0.76rem; position:relative; }
+        .btn-welcome { background:linear-gradient(135deg,var(--grn),#059669); color:white; padding:14px 26px; border-radius:14px; border:none; font-weight:800; cursor:pointer; font-size:0.92rem; white-space:nowrap; position:relative; transition:all .28s; box-shadow:0 12px 28px rgba(16,185,129,.4); }
+        .btn-welcome:hover { transform:translateY(-3px); box-shadow:0 18px 36px rgba(16,185,129,.5); }
+
+        /* Pending banner */
+        .pending-banner { background:linear-gradient(135deg,#fef3c7,#fde68a); border-left:5px solid #f59e0b; padding:15px 19px; border-radius:14px; margin-bottom:18px; }
+        .pending-banner h4 { color:#92400e; font-size:0.95rem; margin-bottom:3px; }
+        .pending-banner p { color:#78350f; font-size:0.85rem; }
+
+        /* ===== Kickers (index-style section badges) ===== */
+        .kick { display:inline-flex; align-items:center; font-size:.6rem; font-weight:900; letter-spacing:1.6px; color:var(--pri); background:#eef2ff; padding:4px 12px; border-radius:16px; margin-right:9px; vertical-align:2px; }
+
+        /* Stats */
+        .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:15px; margin-bottom:20px; }
+        .stat-card { background:white; padding:19px; border-radius:18px; box-shadow:0 3px 14px rgba(15,23,42,.05); border:1px solid #eef2f7; display:flex; align-items:center; gap:14px; transition:all .28s; }
+        .stat-card:hover { transform:translateY(-4px); box-shadow:0 16px 32px rgba(15,23,42,.11); }
+        .stat-icon { width:52px; height:52px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:1.35rem; flex-shrink:0; }
+        .stat-icon.green { background:linear-gradient(135deg,#d1fae5,#a7f3d0); color:#059669; }
+        .stat-icon.blue { background:linear-gradient(135deg,#e0e7ff,#c7d2fe); color:var(--pri); }
+        .stat-icon.orange { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#d97706; }
+        .stat-icon.purple { background:linear-gradient(135deg,#ede9fe,#ddd6fe); color:#7c3aed; }
+        .stat-card .label { font-size:0.74rem; color:var(--gray); margin-bottom:3px; font-weight:700; }
+        .stat-card .value { font-size:1.32rem; font-weight:900; }
+
+        /* Quick actions */
+        .quick-row { display:grid; grid-template-columns:repeat(4,1fr); gap:13px; margin-bottom:20px; }
+        .quick-btn { background:white; border:1px solid #eef2f7; border-radius:18px; padding:17px 10px; cursor:pointer; text-align:center; box-shadow:0 3px 12px rgba(15,23,42,.05); transition:all .25s; text-decoration:none; }
+        .quick-btn:hover { transform:translateY(-4px); box-shadow:0 14px 30px rgba(79,70,229,.14); border-color:#c7d2fe; }
+        .quick-btn .qi { width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin:0 auto 9px; transition:transform .3s; }
+        .quick-btn:hover .qi { transform:scale(1.12) rotate(-6deg); }
+        .quick-btn p { font-size:0.8rem; font-weight:700; color:#334155; }
+
+        /* ===== SALES ANALYTICS ===== */
+        .analytics { background:white; border-radius:20px; border:1px solid #eef2f7; box-shadow:0 4px 16px rgba(15,23,42,.05); padding:20px 22px; margin-bottom:20px; animation:dashUp .55s .48s ease both; }
+        .analytics-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:8px; }
+        .analytics-head h4 { font-size:0.95rem; font-weight:800; }
+        .analytics-head small { color:var(--gray); font-size:.72rem; font-weight:700; }
+        .atile-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+        .atile { border-radius:16px; padding:14px 16px; text-align:center; animation:tilePop .45s ease both; transition:transform .25s; }
+        .atile:hover { transform:translateY(-3px); }
+        .atile:nth-child(2) { animation-delay:.08s; } .atile:nth-child(3) { animation-delay:.16s; } .atile:nth-child(4) { animation-delay:.24s; }
+        .atile .tl { font-size:.64rem; font-weight:800; letter-spacing:.8px; text-transform:uppercase; opacity:.85; }
+        .atile .tv { font-size:1.18rem; font-weight:900; margin-top:3px; }
+        .atile.t-ind { background:linear-gradient(135deg,#e0e7ff,#c7d2fe); color:#3730a3; }
+        .atile.t-grn { background:linear-gradient(135deg,#d1fae5,#a7f3d0); color:#065f46; }
+        .atile.t-amb { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#92400e; }
+        .atile.t-vio { background:linear-gradient(135deg,#ede9fe,#ddd6fe); color:#5b21b6; }
+        .achart { display:flex; align-items:flex-end; gap:10px; height:170px; padding:6px 4px 0; }
+        .acol { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
+        .abar { width:100%; max-width:44px; border-radius:9px 9px 4px 4px; background:linear-gradient(180deg,var(--pri),var(--vio)); min-height:5px; transition:height .8s cubic-bezier(.2,.8,.3,1); box-shadow:0 4px 10px rgba(79,70,229,.25); position:relative; }
+        .abar:hover { filter:brightness(1.15); }
+        .abar .av { position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-size:.62rem; font-weight:800; color:var(--pri); white-space:nowrap; opacity:0; transition:opacity .3s; }
+        .acol:hover .av { opacity:1; }
+        .abar.zero { background:#e2e8f0; box-shadow:none; }
+        .abar.zero .av { color:#94a3b8; }
+        .alab { font-size:.64rem; font-weight:800; color:var(--gray); }
+        .duo { display:grid; grid-template-columns:1.6fr 1fr; gap:20px; align-items:start; }
+
+        .card { background:white; border-radius:20px; box-shadow:0 4px 16px rgba(15,23,42,.05); border:1px solid #eef2f7; margin-bottom:20px; overflow:hidden; animation:dashUp .55s .5s ease both; }
+        .card-header { padding:15px 20px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; }
+        .card-header h4 { font-size:0.95rem; font-weight:800; }
+        .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+        .data-table { width:100%; border-collapse:collapse; min-width:600px; }
+        .data-table th { text-align:left; padding:11px 18px; background:#f8fafc; font-weight:700; font-size:0.68rem; color:var(--gray); text-transform:uppercase; white-space:nowrap; }
+        .data-table td { padding:12px 18px; border-bottom:1px solid #f4f6fb; font-size:0.84rem; }
+        .data-table tr:hover { background:#f8faff; }
+        .badge { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; white-space:nowrap; }
+        .b-delivered { background:#d1fae5; color:#065f46; }
+        .b-shipped { background:#e0e7ff; color:#4338ca; }
+        .b-processing { background:#e0f2fe; color:#0369a1; }
+        .b-cancelled { background:#fee2e2; color:#991b1b; }
+        .b-new { background:#fef3c7; color:#92400e; }
+        .b-pending { background:#fef3c7; color:#92400e; }
+        .b-confirmed { background:#dbeafe; color:#1e40af; }
+        .b-packaging { background:#ede9fe; color:#6d28d9; }
+        .b-shipping { background:#e0e7ff; color:#4338ca; }
+        .b-wfr { background:#fef9c3; color:#854d0e; }
+        .b-returned { background:#ffe4e6; color:#9f1239; }
+        .btn { padding:6px 12px; border:none; border-radius:8px; font-size:0.8rem; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:5px; transition:all .22s; }
+        .btn-primary { background:linear-gradient(135deg,var(--pri),var(--prid)); color:white; }
+        .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 14px rgba(79,70,229,.35); }
+        .empty { text-align:center; padding:38px 16px; color:var(--gray); }
+        .empty i { font-size:2.2rem; margin-bottom:8px; opacity:0.4; }
+        .empty a { color:var(--pri); font-weight:700; }
+
+        .notif-item { padding:12px 18px; border-bottom:1px solid #f4f6fb; display:flex; gap:11px; align-items:flex-start; font-size:0.86rem; transition:background .2s; }
+        .notif-item:hover { background:#f8faff; }
+        .notif-item:last-child { border-bottom:none; }
+        .notif-item i { color:var(--pri); margin-top:3px; }
+
+        /* ===== MOBILE BOTTOM NAV ===== */
+        .bottom-nav { display:none; position:fixed; bottom:10px; left:12px; right:12px; background:rgba(255,255,255,.92); backdrop-filter:blur(14px); border:1px solid #eef2f7; box-shadow:0 10px 30px rgba(15,23,42,.16); z-index:400; padding:7px 6px calc(7px + env(safe-area-inset-bottom)); border-radius:20px; }
+        .bottom-nav a { display:flex; flex-direction:column; align-items:center; gap:2px; text-decoration:none; color:#94a3b8; font-size:0.62rem; font-weight:700; padding:6px 6px; border-radius:12px; flex:1; transition:all .2s; }
+        .bottom-nav a i { font-size:1.12rem; }
+        .bottom-nav a.active { color:var(--pri); background:#eef2ff; }
+        .bn-menu { background:linear-gradient(135deg,var(--pri),var(--vio)); color:#fff; border-radius:14px; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .bn-menu i { color:#fff; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width:1024px) { .stats-grid { grid-template-columns:repeat(2,1fr); } .quick-row { grid-template-columns:repeat(4,1fr); } .duo { grid-template-columns:1fr; } .atile-row { grid-template-columns:1fr 1fr; } }
+        @media (max-width:768px) {
+            body { padding-bottom:86px; }
+            .sidebar { transform:translateX(-100%); width:272px; }
+            .sidebar.open { transform:translateX(0); }
+            .side-overlay.show { display:block; }
+            .sidebar-close-m { display:block; }
+            .main { margin-left:0; }
+            .hamburger { display:block; }
+            .topbar-user span { max-width:78px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+            .stats-grid { grid-template-columns:1fr 1fr; gap:10px; }
+            .stat-card { padding:14px 12px; flex-direction:column; text-align:center; gap:8px; }
+            .stat-card .value { font-size:1.12rem; }
+            .quick-row { grid-template-columns:repeat(2,1fr); gap:10px; }
+            .welcome { flex-direction:column; text-align:center; padding:24px 18px; }
+            .btn-welcome { width:100%; }
+            .bottom-nav { display:flex; }
+            .content { padding:14px; }
+            .topbar { padding:11px 14px; }
+            /* 2026-09-16 — MOBILE FIX (this request). The topbar measured about 440px
+               across on a 390px phone, so the logout button was pushed past the right
+               edge and looked cut off. These rules tighten the SAME header so it fits a
+               narrow screen. Nothing is hidden and nothing outside this media query is
+               touched, so the desktop layout is unchanged. */
+            .topbar { padding:10px 12px; }
+            .topbar-left { gap:8px; }
+            .topbar h2 { font-size:.98rem; }
+            .topbar-right { gap:6px; }
+            .topbar-balance { padding:6px 10px; font-size:.78rem; }
+            .topbar-user { padding:5px 10px; font-size:.78rem; }
+            .topbar-user span { max-width:52px; }
+
+            .atile-row { grid-template-columns:1fr 1fr; gap:9px; }
+            .achart { gap:5px; height:130px; }
+            .analytics { padding:16px 14px; }
+        }
+        @media (max-width:400px) { .quick-row { grid-template-columns:1fr 1fr; } .stats-grid { grid-template-columns:1fr 1fr; } }
+
+</style>
+
+<style id="lx-nav-force">
+@media(max-width:768px){
+    .bottom-nav{display:flex !important;position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;opacity:1 !important;visibility:visible !important;transform:none !important}
+    body{padding-bottom:86px !important}
+}
+</style>
+
+<style id="lx-bnav">
+/* ===== Complete bottom-nav styling ===== */
+.bottom-nav{position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;display:flex !important;align-items:stretch;background:rgba(255,255,255,.97) !important;backdrop-filter:blur(14px);border:1px solid #e8ecf4 !important;border-radius:18px !important;box-shadow:0 -4px 24px rgba(15,23,42,.14) !important;padding:7px 6px calc(7px + env(safe-area-inset-bottom)) !important}
+.bottom-nav a,.bottom-nav button{flex:1 !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;gap:3px !important;padding:7px 2px !important;border:none !important;background:none !important;color:#7b879c !important;font-size:.62rem !important;font-weight:700 !important;text-decoration:none !important;cursor:pointer !important;border-radius:12px !important;font-family:inherit !important;line-height:1.2 !important}
+.bottom-nav a i,.bottom-nav button i{font-size:1.18rem !important;line-height:1 !important}
+.bottom-nav a span,.bottom-nav button span{display:block !important}
+.bottom-nav a:hover,.bottom-nav button:hover{color:#4f46e5 !important;background:#eef2ff !important;transform:translateY(-2px)}
+.bottom-nav a.active{color:#4f46e5 !important;background:#eef2ff !important}
+.bottom-nav .bn-menu{color:#4f46e5 !important;background:#eef2ff !important;box-shadow:none !important;border-radius:12px !important}
+.bottom-nav .bn-menu:hover{background:#e0e7ff !important}
+.bottom-nav .bn-menu i,.bottom-nav .bn-menu span{color:#4f46e5 !important}
+body{padding-bottom:86px !important}
+@media(min-width:769px){
+    .bottom-nav{display:none !important}
+    body{padding-bottom:0 !important}
+}
+</style>
+
+<style>
+@media(max-width:768px){
+    .sidebar{transform:translateX(-100%) !important;transition:transform .32s cubic-bezier(.2,.8,.3,1) !important;display:block !important}
+    .sidebar.open{transform:translateX(0) !important;box-shadow:24px 0 60px rgba(11,16,41,.45) !important}
+}
+</style>
+
+<style id="lx-logout-fix">
+/* Logout fix: the open sidebar must paint ABOVE the fixed mobile bottom-nav,
+   otherwise the last menu item (Logout) is covered and un-tappable. */
+.sidebar{ z-index:900 !important; }
+.side-overlay{ z-index:880 !important; }
+.sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+@supports selector(:has(*)){
+  body:has(.sidebar.open) .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+}
+@media(min-width:769px){ .sidebar-menu{ padding-bottom:12px !important; } }
+</style>
+
+<style id="lx-sidebar-fix">
+/* ===== Reseller sidebar — canonical & stable (do not mutate at runtime) ===== */
+/* 1) Labels and section headings are ALWAYS visible. The old template hid
+      .sidebar-menu a span and .sidebar-divider under 768px, which made menu
+      text disappear and the "Account" heading vanish on some pages. */
+.sidebar .sidebar-menu a span{ display:inline !important; }
+.sidebar .sidebar-menu .sidebar-divider,
+.sidebar .sidebar-divider{ display:block !important; }
+.sidebar .sidebar-logo h3{ display:block !important; }
+.sidebar .sidebar-logo small{ display:block !important; }
+
+/* 2) Fixed geometry — the sidebar is never collapsed to a 70px icon rail. */
+.sidebar{ width:248px !important; z-index:900 !important; overflow-y:auto !important; }
+.side-overlay{ z-index:880 !important; }
+@media(min-width:769px){
+    .main{ margin-left:248px !important; }
+    .sidebar{ transform:none !important; }
+}
+@media(max-width:768px){
+    .main{ margin-left:0 !important; }
+    .sidebar{ transform:translateX(-100%) !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; display:block !important; }
+    .sidebar.open{ transform:translateX(0) !important; box-shadow:24px 0 60px rgba(11,16,41,.45) !important; }
+}
+
+/* 3) Row geometry is locked: the "All Orders" counter is absolutely positioned
+      so a changing number can never push the rows below it up or down. */
+.sidebar .sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.sidebar .sidebar-menu li{ position:relative; display:block; margin:3px 0; }
+.sidebar .sidebar-menu a{ display:flex !important; align-items:center; gap:12px; padding:11px 15px; }
+.sidebar .menu-badge{ position:absolute; right:12px; top:50%; transform:translateY(-50%); margin-left:0 !important; }
+
+/* 4) Mobile: hide the bottom nav while the drawer is open so the last item
+      (Logout) is never covered. */
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+
+/* 5) Close button inside the drawer on mobile. */
+.sidebar .sidebar-close-m{ display:none; }
+@media(max-width:768px){ .sidebar .sidebar-close-m{ display:block !important; } }
+</style>
+
+<style id="lx-ostage">
+/* ITEM 10 (spec, 2026-09-14) — the reseller marks their own My Shop order
+   Confirmed / Packaging / Shipped / Delivered. This is the SAME stage strip the
+   admin's Multi-Supplier page and the reseller's All Orders page already render
+   (orderStageStripHtml() in app.js), copied verbatim so the buyer and the
+   platform read one answer for the same order. */
+.ostage{display:flex;gap:5px;flex-wrap:wrap}
+.ostep{font-size:.62rem;font-weight:800;padding:3px 9px;border-radius:20px;background:#f1f5f9;color:#94a3b8;white-space:nowrap}
+.ostep.done{background:#dcfce7;color:#15803d}
+.ostep.cur{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff}
+.ostep.cur.bad{background:#fee2e2;color:#b91c1c}
+.ostage.off .ostep.done{background:#f1f5f9;color:#94a3b8}
+/* the reseller's own stage setter, laid out inside the existing .mo-acts row */
+.mo-stage{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:10px;padding:9px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:11px}
+.mo-stage b{font-size:.74rem;color:#475569}
+.mo-stage select{padding:7px 11px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:.78rem;font-weight:700;font-family:inherit;background:#fff;color:#0f172a;cursor:pointer}
+.mo-stage .hint{font-size:.66rem;color:#94a3b8;font-weight:700}
+</style>
+
+<style id="reseller-hamburger-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   Every reseller page hides the hamburger with ".hamburger{display:none}", but most
+   pages never turn it back ON at mobile width — only products.html did. So on a phone
+   there was no way to open the sidebar on Products, Orders, Wallet, Withdrawals,
+   Courier, Messages, Support, Profile, Referral or Website Integration.
+   This shows the SAME existing button (onclick="menuToggle()") at mobile width only.
+   It is an ADDED block and lives entirely inside a max-width query, so the DESKTOP
+   LAYOUT IS UNCHANGED. */
+@media (max-width:768px){
+  .hamburger { display:block !important; }
+}
+</style>
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon"><i class="fas fa-store"></i></div>
+            <div><h3>ResellerHub</h3><small>Reseller Panel</small></div>
+        </div>
+        
+        <button class="sidebar-close-m" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+        <ul class="sidebar-menu">
+        <li class="sidebar-divider">Main</li>
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+        <li><a href="products.html"><i class="fas fa-box"></i> <span>Products</span></a></li>
+        <li><a href="my-shop.html"><i class="fas fa-store"></i> <span>My Shop</span></a></li>
+        <li><a href="transactions.html"><i class="fas fa-right-left"></i> <span>Transactions</span></a></li>
+        <li class="sidebar-divider">Orders</li>
+        <li><a href="my-orders.html"><i class="fas fa-list"></i> <span>All Orders<span class="menu-badge-n" id="ordersBadgeLabel"></span></span></a> <span class="menu-badge" id="ordersBadge" style="display:none">0</span></li>
+        <li><a href="order.html"><i class="fas fa-cart-plus"></i> <span>Add New Order</span></a></li>
+        <li><a href="offers.html"><i class="fas fa-gift"></i> <span>Offers</span></a></li>
+        <li><a href="shop-categories.html"><i class="fas fa-sitemap"></i> <span>Shop Categories</span></a></li>
+        <li class="sidebar-divider">My Shop</li>
+        <li><a href="my-shop-settings.html"><i class="fas fa-sliders"></i> <span>Shop Settings</span></a></li>
+        <li><a href="my-products.html"><i class="fas fa-box-open"></i> <span>My Products</span></a></li>
+        <li><a href="my-shop-orders.html" class="active"><i class="fas fa-bag-shopping"></i> <span>My Shop Orders</span></a></li>
+        <li><a href="customer-messages.html"><i class="fas fa-comment-dots"></i> <span>Customer Messages<span class="menu-badge-n" id="cmsgBadgeLabel"></span></span></a></li>
+        <li class="sidebar-divider">Account</li>
+        <li><a href="wallet.html"><i class="fas fa-wallet"></i> <span>Wallet</span></a></li>
+        <li><a href="withdrawals.html"><i class="fas fa-money-bill-wave"></i> <span>Withdrawals</span></a></li>
+        <li><a href="courier.html"><i class="fas fa-truck"></i> <span>Courier</span></a></li>
+        <li><a href="messages.html"><i class="fas fa-comments"></i> <span>Messages<span class="menu-badge-n" id="msgBadgeLabel"></span></span></a></li>
+        <li><a href="support.html"><i class="fas fa-headset"></i> <span>Support</span></a></li>
+        <li><a href="profile.html"><i class="fas fa-user-cog"></i> <span>Profile</span></a></li>
+        <li><a href="referral.html"><i class="fas fa-user-plus"></i> <span>Referral</span></a></li>
+        <li><a href="website-integration.html"><i class="fas fa-plug"></i> <span>Website Integration</span></a></li>
+        <li><a href="../index.html"><i class="fas fa-globe"></i> <span>Visit Site</span></a></li>
+        <li><a href="javascript:void(0)" onclick="resellerLogout()" style="color:#dc2626"><i class="fas fa-right-from-bracket"></i> <span>Logout</span></a></li>
+    </ul>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+        <div class="topbar-left">
+            <button class="hamburger" onclick="toggleSidebar(true)"><i class="fas fa-bars"></i></button>
+            <h2><i class="fas fa-bag-shopping" style="color:#2563eb;margin-right:6px;"></i> My Shop Orders</h2>
+        </div>
+        <div class="topbar-right">
+            <div class="topbar-balance"><i class="fas fa-coins"></i> <span id="topBalance">0</span></div>
+            <div class="topbar-user"><i class="fas fa-user" style="color:#2563eb;"></i> <span id="userName">User</span></div>
+            <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content">
+<style id="lx-msorders">
+.mo-bar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:14px;background:#fff;padding:12px 14px;border-radius:14px;box-shadow:0 2px 10px rgba(15,23,42,.06)}
+.mo-bar .sp{flex:1}
+.mo-btn{border:none;border-radius:10px;padding:9px 16px;font-weight:800;font-size:.76rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.mo-btn:disabled{opacity:.45;cursor:not-allowed}
+.mo-btn.pri{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff}
+.mo-btn.pri:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 18px rgba(79,70,229,.3)}
+.mo-btn.gh{background:#f1f5f9;color:#475569}
+.mo-btn.gh:hover{background:#e2e8f0}
+.mo-btn.ok{background:#0d9488;color:#fff}
+.mo-btn.vio{background:#7c3aed;color:#fff}
+.mo-btn.del{background:#dc2626;color:#fff}
+.mo-btn.del:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 18px rgba(220,38,38,.3)}
+.mo-btn.del:disabled{background:#fca5a5}
+.mo-card{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(15,23,42,.06);overflow:hidden;margin-bottom:11px;transition:box-shadow .2s}
+.mo-card:hover{box-shadow:0 5px 18px rgba(79,70,229,.12)}
+.mo-hd{display:flex;align-items:center;gap:9px;padding:10px 13px;border-bottom:1px solid #eef2f7;flex-wrap:wrap;background:#fcfdff}
+.mo-hd input[type=checkbox]{width:17px;height:17px;cursor:pointer;flex:none;accent-color:#4f46e5}
+/* serial number — 1 = newest order, always at the top */
+.mo-ser{flex:none;min-width:24px;height:24px;padding:0 6px;border-radius:8px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-size:.68rem;font-weight:900;display:inline-flex;align-items:center;justify-content:center;letter-spacing:-.2px;box-shadow:0 2px 6px rgba(79,70,229,.3)}
+.mo-hd .oid{font-weight:900;font-size:.82rem;color:#0f172a;letter-spacing:-.2px}
+.mo-hd .odt{font-size:.64rem;color:#94a3b8;font-weight:700}
+.mo-hd .amt{font-size:.94rem;font-weight:900;color:#4338ca;letter-spacing:-.3px}
+/* one flat meta strip instead of a row of boxed chips */
+.mo-sum{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:6px 13px;background:#fafbff;border-bottom:1px solid #eef2f7}
+.mo-sum .chipx{background:transparent;border:none;border-radius:0;padding:0;font-size:.67rem;font-weight:800;color:#64748b}
+.mo-sum .chipx b{color:#334155}
+.mo-sum .chipx+.chipx:before{content:"•";color:#cbd5e1;margin-right:6px}
+/* ---- ONE compact item grid (image + name + variant + qty + price) ----
+   The old design stacked a thumbnail row (.mo-imgs) AND an item list
+   (.mo-list) — the same product appeared twice. They are now a single
+   card grid, so the card height roughly halves for multi-item orders. */
+.mo-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:7px;padding:10px 13px;border-top:1px solid #f1f5f9}
+.mo-it{display:flex;gap:8px;align-items:center;min-width:0;background:#f8fafc;border:1px solid #eef2f7;border-radius:10px;padding:6px 8px}
+.mo-it img{width:40px;height:40px;border-radius:8px;object-fit:cover;border:1px solid #e2e8f0;background:#fff;flex:none;display:block}
+.mo-it .ph{width:40px;height:40px;border-radius:8px;background:#eef2f7;display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:.9rem;flex:none}
+.mo-it .tx{min-width:0;flex:1}
+.mo-it .tx .nm{font-size:.72rem;font-weight:800;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mo-it .tx .vr{font-size:.61rem;font-weight:700;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.mo-it .tx .qz{font-size:.66rem;font-weight:900;color:#4338ca;margin-top:2px}
+.mo-it .tx .qz span{color:#94a3b8;font-weight:700}
+/* ---- customer / variant / consignment: tight, one block ---- */
+.mo-body{padding:9px 13px;border-top:1px solid #f1f5f9;font-size:.73rem;line-height:1.6;color:#334155}
+.mo-body .kv{display:flex;gap:6px 14px;flex-wrap:wrap}
+.mo-body .kv span{background:transparent;border-radius:0;padding:0;font-size:.7rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;max-width:100%}
+.mo-body .kv span i{color:#94a3b8;font-size:.66rem;flex:none}
+.mo-vars{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}
+.mo-vars span{background:#eef2ff;color:#4338ca;border-radius:7px;padding:2px 8px;font-size:.66rem;font-weight:800}
+.mo-cons{margin-top:7px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;padding:6px 9px;font-size:.69rem;font-weight:800;color:#065f46}
+.mo-fraud{margin-top:7px;background:#faf5ff;border:1px solid #e9d5ff;border-radius:9px;padding:8px 10px;font-size:.72rem;color:#5b21b6}
+.mo-acts{display:flex;gap:6px;flex-wrap:wrap;padding:9px 13px;border-top:1px solid #f1f5f9;background:#fcfdff}
+.mo-acts .mo-btn{padding:7px 12px;font-size:.7rem}
+.mo-split{margin:0 13px 0 !important}
+.mo-pill{font-size:.59rem;font-weight:900;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.mo-pill.new{background:#dbeafe;color:#1e40af}
+.mo-pill.delivered{background:#dcfce7;color:#166534}
+.mo-pill.pending{background:#fef3c7;color:#854d0e}
+.mo-pill.cancel,.mo-pill.cancelled,.mo-pill.returned{background:#fee2e2;color:#991b1b}
+.mo-pill.own{background:#eef2ff;color:#4338ca}
+.mo-empty{text-align:center;color:#94a3b8;padding:50px 20px;font-size:.84rem}
+.mo-empty i{font-size:2.4rem;display:block;margin-bottom:12px;opacity:.45}
+.mo-empty b{display:block;color:#475569;margin-bottom:5px}
+@media(max-width:560px){
+ .mo-bar{padding:10px}
+ .mo-btn{flex:1;justify-content:center}
+ .mo-hd{padding:9px 11px;gap:7px}
+ .mo-hd .amt{font-size:.86rem}
+ .mo-sum,.mo-items,.mo-body,.mo-acts{padding-left:11px;padding-right:11px}
+ .mo-items{grid-template-columns:1fr}
+ .mo-it img,.mo-it .ph{width:36px;height:36px}
+ .mo-split{margin:0 11px !important}
+}
+</style>
+
+<!-- ===== Own-product profit dashboard (#13 - #17) ===== -->
+<style id="lx-profit">
+.pf-wrap{background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(15,23,42,.06);padding:16px 18px;margin-bottom:14px}
+.pf-head{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.pf-head h4{font-size:.9rem;font-weight:900;color:#0f172a;margin:0 0 3px;display:flex;align-items:center;gap:7px}
+.pf-head h4 i{color:#059669}
+.pf-head p{margin:0;font-size:.7rem;color:#94a3b8}
+.pf-chips{display:flex;gap:6px;flex-wrap:wrap}
+.pf-chip{border:1px solid #e2e8f0;background:#f8fafc;color:#475569;border-radius:999px;padding:6px 13px;font-size:.7rem;font-weight:800;cursor:pointer;font-family:inherit;transition:all .2s}
+.pf-chip:hover{background:#eef2ff;color:#4f46e5;border-color:#c7d2fe}
+.pf-chip.active{background:linear-gradient(135deg,#059669,#10b981);color:#fff;border-color:transparent;box-shadow:0 5px 14px rgba(16,185,129,.28)}
+.pf-body{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+.pf-main{flex:1;min-width:190px;background:linear-gradient(135deg,#ecfdf5,#f0fdfa);border:1px solid #a7f3d0;border-radius:14px;padding:15px 17px}
+.pf-label{display:block;font-size:.66rem;font-weight:900;letter-spacing:1.1px;text-transform:uppercase;color:#059669}
+.pf-value{display:block;font-size:1.85rem;font-weight:900;color:#065f46;line-height:1.25;margin:3px 0 2px}
+.pf-sub{display:block;font-size:.7rem;font-weight:700;color:#64748b}
+.pf-side{display:flex;gap:10px;flex-wrap:wrap}
+.pf-box{background:#fafbff;border:1px solid #eef2f7;border-radius:13px;padding:12px 15px;min-width:118px}
+.pf-box span{display:block;font-size:.64rem;font-weight:900;text-transform:uppercase;letter-spacing:.8px;color:#94a3b8}
+.pf-box b{display:block;font-size:1.02rem;font-weight:900;color:#4338ca;margin-top:3px}
+@media(max-width:560px){
+ .pf-wrap{padding:13px 14px}
+ .pf-value{font-size:1.5rem}
+ .pf-chip{flex:1;justify-content:center;text-align:center}
+ .pf-box{flex:1;min-width:0}
+}
+</style>
+
+<div class="pf-wrap">
+    <div class="pf-head">
+        <div>
+            <h4><i class="fas fa-chart-line"></i> আমার Own Product Profit</h4>
+            <p>শুধু নিজের uploaded product-এর order থেকে — Profit = Selling Price − Cost Price</p>
+        </div>
+        <div class="pf-chips" id="pfChips">
+            <button class="pf-chip active" data-r="today" onclick="pfSet('today')">Today</button>
+            <button class="pf-chip" data-r="yesterday" onclick="pfSet('yesterday')">Yesterday</button>
+            <button class="pf-chip" data-r="week" onclick="pfSet('week')">7 Days</button>
+            <button class="pf-chip" data-r="month" onclick="pfSet('month')">1 Month</button>
+            <button class="pf-chip" data-r="six" onclick="pfSet('six')">6 Months</button>
+            <button class="pf-chip" data-r="year" onclick="pfSet('year')">1 Year</button>
+            <button class="pf-chip" data-r="overall" onclick="pfSet('overall')">Overall</button>
+        </div>
+    </div>
+    <div class="pf-body">
+        <div class="pf-main">
+            <span class="pf-label" id="pfLabel">Today</span>
+            <span class="pf-value" id="pfValue">৳0</span>
+            <span class="pf-sub" id="pfSub">0 orders</span>
+        </div>
+        <div class="pf-side">
+            <div class="pf-box"><span>Overall Profit</span><b id="pfOverall">৳0</b></div>
+            <div class="pf-box"><span>Orders Counted</span><b id="pfOrders">0</b></div>
+            <div class="pf-box"><span>Unpaid / Cancelled</span><b>Excluded</b></div>
+        </div>
+    </div>
+</div>
+
+<div class="mo-bar">
+    <button class="mo-btn gh" onclick="moSelectAll()"><i class="fas fa-check-double"></i> Select All</button>
+    <button class="mo-btn gh" onclick="moUnselectAll()"><i class="fas fa-xmark"></i> Unselect All</button>
+    <button class="mo-btn pri" onclick="moSendSteadfast()" id="moSfBtn" disabled><i class="fas fa-truck"></i> Send to Steadfast</button>
+    <button class="mo-btn gh" onclick="moPrintBulk()" id="moPrBtn" disabled><i class="fas fa-print"></i> Bulk Print</button>
+    <button class="mo-btn del" onclick="moDeleteSelected()" id="moDelBtn" disabled><i class="fas fa-trash-can"></i> Delete Selected</button>
+    <div class="sp"></div>
+    <select id="moStatus" class="mo-btn gh" style="padding:9px 12px" onchange="moRender()">
+        <option value="">All Status</option>
+        <option value="new">New</option>
+        <option value="pending">Pending</option>
+        <option value="confirmed">Confirmed</option>
+        <option value="packaging">Packaging</option>
+        <option value="shipping">Shipping</option>
+        <option value="shipped">Shipped</option>
+        <option value="handed_to_courier">Handed to Courier</option>
+        <option value="in_transit">In Transit</option>
+        <option value="delivered">Delivered</option>
+        <option value="cancelled">Cancelled</option>
+        <option value="returned">Returned</option>
+        <!-- 2026-09-16 — the failed-delivery / return family was missing from this
+             filter, so a reseller could not narrow the list down to the orders
+             that had failed or come back. These are exactly the statuses the
+             admin can set (see ORDER_STAGE_OFF in app.js); the labels match
+             orderStageLabel(). Added as new options only — nothing above changed. -->
+        <option value="failed_delivery">Failed Delivery</option>
+        <option value="wfr">WFR (Waiting for Return)</option>
+        <option value="failed_delivery_product_coming">Failed Delivery Product Coming</option>
+        <option value="failed_delivery_product_delivered">Failed Delivery Product Delivered</option>
+        <option value="return_product_coming">Return Product Coming</option>
+        <option value="return_product_delivered">Return Product Delivered</option>
+    </select>
+</div>
+
+<div id="moList"></div>
+
+    </div>
+</main>
+
+<script src="../app.js"></script><script>(function(){function paint(){try{var b=document.getElementById("ordersBadge");var uid=sessionStorage.getItem("user_id");if(!uid)return;if(sessionStorage.getItem("user_type")!=="reseller")return;var n=(typeof resellerNewOrderCount==="function")?resellerNewOrderCount(uid):0;if(b){b.textContent=n;b.style.display=n>0?"inline-block":"none";}var lb=document.getElementById("ordersBadgeLabel");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+/* ---- session / identity (never trust a URL param) ---- */
+var uid = sessionStorage.getItem('user_id');
+var utype = sessionStorage.getItem('user_type');
+if (!uid || utype !== 'reseller') { window.location.replace('login.html'); }
+var ME = null;
+function loadMe() {
+    var list = getData(DB_KEYS.RESELLERS) || [];
+    for (var i = 0; i < list.length; i++) { if (String(list[i].id) === String(uid)) { ME = list[i]; break; } }
+    return !!ME;
+}
+if (!loadMe()) { sessionStorage.clear(); window.location.replace('login.html'); }
+var RID = ME ? ME.id : null;
+function sEsc(v) {
+    return String(v === undefined || v === null ? '' : v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function sMoney(n) { return '\u09F3' + (Number(n) || 0).toLocaleString('en-IN'); }
+function sSet(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; }
+function sHtml(id, v) { var e = document.getElementById(id); if (e) e.innerHTML = v; }
+try {
+    sSet('userName', ME.businessName || ME.name || 'Reseller');
+    sSet('topBalance', (Number(ME.balance) || 0).toLocaleString('en-IN'));
+} catch (e) {}
+</script>
+<script>
+/* ================= My Shop Orders — reseller side (#28 - #39) ================= */
+var moSel = {};
+
+/* ==========================================================================
+   ORDER SERIAL + ORDERING (single source of truth for this page)
+   --------------------------------------------------------------------------
+   The list is ALWAYS sorted newest-first, and the sequence number is stamped
+   AFTER the sort, so:
+     • the newest order is serial 1 and sits at the very top
+     • the one before it is serial 2, and so on
+   Sorting only by `date` is not enough — several orders can share a date, and
+   a legacy row may carry no date at all. The tie-breakers are therefore:
+     1. date        (newest first; missing date sinks to the bottom)
+     2. createdAt   (real creation timestamp, when present)
+     3. id sequence (ord-000123 -> 123, so ORD-000012 > ORD-000009)
+     4. array order (stable last resort)
+   ========================================================================== */
+function moIdSeq(id) {
+    var m = String(id === undefined || id === null ? '' : id).match(/(\d+)\s*$/);
+    return m ? (parseInt(m[1], 10) || 0) : 0;
+}
+function moTimeOf(v) {
+    if (v === undefined || v === null || v === '') return 0;
+    if (typeof v === 'number') return isNaN(v) ? 0 : v;
+    var s = String(v).trim();
+    if (!s) return 0;
+    /* date-only strings ("2026-09-11") sort as midnight local time */
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) s += 'T00:00:00';
+    var t = Date.parse(s);
+    return isNaN(t) ? 0 : t;
+}
+function moSortNewestFirst(list) {
+    var indexed = [];
+    for (var i = 0; i < list.length; i++) indexed.push({ o: list[i], i: i });
+    indexed.sort(function (a, b) {
+        var da = moTimeOf(a.o.date), db = moTimeOf(b.o.date);
+        if (da !== db) return db - da;                    /* newest first */
+        var ca = moTimeOf(a.o.createdAt || a.o.created_at || a.o.time || a.o.orderedAt);
+        var cb = moTimeOf(b.o.createdAt || b.o.created_at || b.o.time || b.o.orderedAt);
+        if (ca !== cb) return cb - ca;
+        var sa = moIdSeq(a.o.id), sb = moIdSeq(b.o.id);
+        if (sa !== sb) return sb - sa;
+        return a.i - b.i;                                 /* stable */
+    });
+    var out = [];
+    for (var j = 0; j < indexed.length; j++) {
+        var o = indexed[j].o;
+        o.__moSer = j + 1;                                /* 1 = newest */
+        out.push(o);
+    }
+    return out;
+}
+function moOrders() {
+    var f = document.getElementById('moStatus');
+    var st = f ? String(f.value || '') : '';
+    /* 2026-09-19 — THE BADGE AND THIS LIST MUST AGREE.
+       The sidebar counts `myShopOrdersOf(RID)` (every My Shop order of this shop),
+       but this list used `resellerOwnProductOrders(RID)`, which additionally
+       demanded that the order contain one of the reseller's OWN uploaded products.
+       So a customer who bought only admin/supplier products from the shop made the
+       badge say 1 while the page said "no My Shop order" — the two could never be
+       reconciled by the user. Same reader as the badge now. */
+    var list = (typeof myShopOrdersOf === 'function') ? myShopOrdersOf(RID) : [];
+    if (st) {
+        var out = [];
+        for (var i = 0; i < list.length; i++) if (String(list[i].status || '') === st) out.push(list[i]);
+        list = out;
+    }
+    return moSortNewestFirst(list);
+}
+function moToggle(id, el) {
+    if (el && el.checked) moSel[id] = true; else delete moSel[id];
+    moSyncBar();
+}
+function moSelectAll() {
+    var list = moOrders();
+    for (var i = 0; i < list.length; i++) moSel[list[i].id] = true;
+    moRender();
+}
+function moUnselectAll() {
+    moSel = {};
+    moRender();
+}
+function moSelected() {
+    var list = moOrders(), out = [];
+    for (var i = 0; i < list.length; i++) if (moSel[list[i].id]) out.push(list[i]);
+    return out;
+}
+function moSyncBar() {
+    var n = moSelected().length;
+    var a = document.getElementById('moSfBtn'), b = document.getElementById('moPrBtn'), c = document.getElementById('moDelBtn');
+    if (a) { a.disabled = n === 0; a.innerHTML = '<i class="fas fa-truck"></i> Send to Steadfast' + (n ? ' (' + n + ')' : ''); }
+    if (b) { b.disabled = n === 0; b.innerHTML = '<i class="fas fa-print"></i> Bulk Print' + (n ? ' (' + n + ')' : ''); }
+    if (c) { c.disabled = n === 0; c.innerHTML = '<i class="fas fa-trash-can"></i> Delete Selected' + (n ? ' (' + n + ')' : ''); }
+}
+
+/* ==========================================================================
+   BULK DELETE — remove every selected My Shop order in one go.
+   Ownership is enforced by the shared layer: moOrders() only ever returns
+   orders that carry THIS reseller's own product line, so a reseller can never
+   reach another reseller's order through this button.
+   ========================================================================== */
+function moDeleteSelected() {
+    var sel = moSelected();
+    if (!sel.length) { showToast('অন্তত একটি order select করুন!', 'error'); return; }
+    var ids = {}, i;
+    for (i = 0; i < sel.length; i++) ids[String(sel[i].id)] = true;
+    var msg = sel.length + ' টি order একসাথে ডিলিট করবেন?\n\n' +
+        sel.slice(0, 8).map(function (o) { return '• ' + o.id + ' — ' + (o.customer || ''); }).join('\n') +
+        (sel.length > 8 ? '\n… আরও ' + (sel.length - 8) + ' টি' : '') +
+        '\n\n⚠️ এই কাজটি ফেরানো যাবে না।';
+    if (!confirm(msg)) return;
+    var all = getData(DB_KEYS.ORDERS) || [], out = [], removed = [];
+    for (i = 0; i < all.length; i++) {
+        /* Guard: only delete an order we are actually allowed to see/own. */
+        if (ids[String(all[i].id)] && orderBelongsToReseller(all[i], RID)) removed.push(all[i]);
+        else out.push(all[i]);
+    }
+    if (!removed.length) { showToast('সিলেক্ট করা order পাওয়া যায়নি!', 'error'); return; }
+    setData(DB_KEYS.ORDERS, out);
+    try { logActivity('myshop_orders_deleted', (ME.businessName || ME.name || 'Reseller') + ' deleted ' + removed.length + ' My Shop order(s)'); } catch (e) {}
+    moSel = {};
+    showToast(removed.length + ' টি order ডিলিট হয়েছে', 'success');
+    moRender();
+    try {
+        var b = document.getElementById('ordersBadge');
+        if (b && typeof resellerOrderBadgeCount === 'function') {
+            var n = resellerOrderBadgeCount(RID);
+            b.textContent = n; b.style.display = n > 0 ? 'inline-block' : 'none';
+        }
+    } catch (e) {}
+}
+/* ---- one compact item tile: image + name + variant + qty + price ----
+   Replaces the old double rendering (.mo-imgs thumbnails AND .mo-li rows),
+   which printed the same product twice and made every card twice as tall. */
+function moItemTile(it) {
+    it = it || {};
+    var im = it.image || ((findProductById(it.productId) || {}).image) || '';
+    var vr = [it.size, it.color, it.variant].filter(function (x) { return !!x; }).join(' / ');
+    var img = im
+        ? '<img src="' + sEsc(im) + '" alt="">'
+        : '<div class="ph"><i class="fas fa-image"></i></div>';
+    return '<div class="mo-it">' + img +
+        '<div class="tx">' +
+        '<div class="nm">' + sEsc(it.name || 'Product') + '</div>' +
+        '<div class="vr">' + sEsc(vr || 'No variant') + '</div>' +
+        '<div class="qz">' + sEsc(it.qty || 1) + ' <span>× ' + sMoney(itemSellingPrice(it)) + '</span></div>' +
+        '</div></div>';
+}
+/* Shared source of truth — render, print and profit all read the same lines.
+   IMPORTANT: on a MIXED order this page must only ever show the reseller's OWN
+   products. moItems() is therefore the OWN-line projection, never o.items. */
+/* The lines to show for one order. Normally this shop's own lines — but an order
+   placed from the shop may contain ONLY admin/supplier products, and then the own
+   list is empty. Fall back to the order's own line items so the order is never
+   listed with nothing underneath it. */
+function moItems(o) {
+    var own = [];
+    try { own = orderOwnLineItems(o, RID) || []; } catch (e) { own = []; }
+    if (own.length) return own;
+    try { return orderLineItems(o) || []; } catch (e) { return []; }
+}
+/* Mixed-source order: show WHY this order's amount carries a shared-delivery
+   adjustment. Only renders for a mixed order; a single-source own-product order
+   is completely unchanged (spec #7, #10). No cost/buying price is ever shown. */
+function moSplitBlock(o) {
+    try {
+        if (!o || typeof orderGroupAllocation !== 'function') return '';
+        var a = orderGroupAllocation(o, RID);
+        if (!a.mixed) return '';
+        var ownSell = a.own.sellingTotal, adj = a.own.adjustment, net = a.own.netAmount;
+        if (!ownSell) return '';
+        var nw = Number(a.catalogItems.length) || 0;
+        return '<div class="mo-split" style="margin:10px 0 0;border:1px solid #c7d2fe;background:#eef2ff;border-radius:11px;padding:11px 13px">' +
+            '<div style="font-size:.7rem;font-weight:900;letter-spacing:.4px;color:#4338ca;margin-bottom:7px"><i class="fas fa-code-branch"></i> COMBINED ORDER — PRODUCT OWNERSHIP SPLIT</div>' +
+            '<div style="display:flex;justify-content:space-between;font-size:.78rem;color:#334155;margin-bottom:3px"><span>Product Selling Price</span><b>' + sMoney(ownSell) + '</b></div>' +
+            '<div style="display:flex;justify-content:space-between;font-size:.78rem;color:#b45309;margin-bottom:3px"><span>Shared Order Delivery Charge Adjustment</span><b>' + sMoney(adj) + '</b></div>' +
+            '<div style="display:flex;justify-content:space-between;font-size:.86rem;color:#166534;border-top:1px dashed #a5b4fc;padding-top:6px;margin-top:3px"><span><b>Net Amount</b></span><b>' + sMoney(net) + '</b></div>' +
+            '<div style="font-size:.7rem;color:#475569;margin-top:8px;line-height:1.55"><i class="fas fa-circle-info"></i> এই order-এর সাথে Supplier/Admin/ResellerHub-এর ' + nw + 'টি product একসাথে থাকায় customer-এর delivery charge একবারই নেওয়া হয়েছে। Customer-এর total amount ঠিক রাখার জন্য delivery charge-এর ' + sMoney(Math.abs(adj)) + ' এই product-এর amount থেকে adjustment করা হয়েছে।</div>' +
+            '</div>';
+    } catch (e) { return ''; }
+}
+function moStatusPill(s) {
+    var k = String(s || 'new').toLowerCase();
+    var cls = (k === 'delivered') ? 'delivered' : (k === 'new' ? 'new' : (k === 'cancel' || k === 'cancelled' || k === 'returned' || k === 'rejected' ? 'cancel' : 'pending'));
+    return '<span class="mo-pill ' + cls + '">' + sEsc(s || 'new') + '</span>';
+}
+
+/* ==========================================================================
+   ITEM 10 (spec, 2026-09-14) — the reseller marks their OWN My Shop order
+   Confirmed / Packaging / Shipped / Delivered.
+   "এই অপশনগুলো রিসেলারকে দিয়ে দাও শুধুমাত্র মাইশপ অর্ডারসগুলোর জন্য।"
+   The control is only rendered when resellerCanStageOrder() (app.js) says the
+   order really is this reseller's own My Shop order, and rhSetOrderStage()
+   re-checks the very same rule on write — so the button and the guard can never
+   disagree, and a hand-typed moSetStage() call on someone else's order is refused.
+   ========================================================================== */
+function moStageBlock(o) {
+    var can = (typeof resellerCanStageOrder === 'function') && resellerCanStageOrder(o, RID);
+    var strip = (typeof orderStageStripHtml === 'function') ? orderStageStripHtml(o.status) : '';
+    if (!can) return '<div class="mo-stage">' + strip + '</div>';
+    var cur = (typeof orderStageKey === 'function') ? orderStageKey(o.status) : String(o.status || 'new');
+    var h = '<div class="mo-stage">' + strip +
+        '<b><i class="fas fa-flag-checkered"></i> Order Stage:</b>' +
+        '<select onchange="moSetStage(\'' + sEsc(o.id) + '\',this.value)">';
+    /* The order's CURRENT status must always be representable. Otherwise a stage
+       outside the reseller's four (new / returned / cancelled ...) would silently
+       display as the first option, i.e. the page would claim a stage the order is
+       not at. Mirrors msStageSelect() on the admin page. */
+    var inList = false;
+    for (var i = 0; i < RESELLER_STAGE_OPTIONS.length; i++) if (RESELLER_STAGE_OPTIONS[i] === cur) inList = true;
+    if (!inList) h += '<option value="' + sEsc(o.status || 'new') + '" selected>' + sEsc(orderStageLabel(o.status)) + '</option>';
+    for (var j = 0; j < RESELLER_STAGE_OPTIONS.length; j++) {
+        var k = RESELLER_STAGE_OPTIONS[j];
+        h += '<option value="' + sEsc(k) + '"' + (k === cur ? ' selected' : '') + '>' + sEsc(orderStageLabel(k)) + '</option>';
+    }
+    return h + '</select><span class="hint">এই stage Admin ও Supplier — দুজনেই দেখতে পাবে।</span></div>';
+}
+window.moSetStage = function (id, stage) {
+    var who = (typeof ME !== 'undefined' && ME) ? (ME.businessName || ME.name || 'Reseller') : 'Reseller';
+    var r = (typeof rhSetOrderStage === 'function')
+        ? rhSetOrderStage(id, stage, { actorType: 'reseller', actorId: RID, actorLabel: who })
+        : { ok: false, reason: 'nohelper' };
+    if (!r.ok) {
+        var msg = (r.reason === 'notowner') ? 'এই order আপনার নিজের My Shop order নয় — stage বদলানো যাবে না।'
+                : (r.reason === 'notfound') ? 'Order পাওয়া যায়নি।'
+                : 'Stage বদলানো যায়নি।';
+        showToast(msg, 'error');
+        moRender();
+        return;
+    }
+    if (r.unchanged) return;
+    showToast('Order ' + id + ' — ' + r.label, 'success');
+    moRender();
+    /* the badge is a notification: moving the order on must change the number */
+    try { if (typeof rhPaintOrderBadges === 'function') rhPaintOrderBadges(); } catch (e) {}
+};
+/* ==========================================================================
+   ITEM 6 (spec, 2026-09-14) — "আর এই বাটনটা অফ করে দিলে অটোমেটিকলি মাই শপ অর্ডারটা
+   হাইড হয়ে যাবে রিসেলার প্যানেল থেকে।" When the admin has switched uploads off,
+   this page shows NOTHING of the orders — not a row, not a count, not a customer
+   name. The orders themselves are untouched and still reach Admin -> My Shop
+   Orders; the reseller simply may not read them any more.
+   Checked inside moRender() (the single render path) so a hand-typed
+   moRender() cannot bring them back either.
+   ========================================================================== */
+function moUploadAllowed() {
+  try { return (typeof isShopUploadEnabled === 'function') ? isShopUploadEnabled(RID) : true; }
+  catch (e) { return true; }
+}
+function moLockedNotice() {
+  return '<div class="mo-card"><div class="mo-empty" style="color:#92400e">' +
+    '<i class="fas fa-lock"></i><b>My Shop Orders বন্ধ আছে</b>' +
+    'Admin আপনার My Shop-এ product upload বন্ধ করে দিয়েছেন, তাই এই order গুলো এখন আপনার প্যানেলে দেখা যাবে না। ' +
+    'আপনার আগের product থেকে আসা order গুলো Admin প্যানেলে জমা হচ্ছে — কোনো order হারায়নি।' +
+    '</div></div>';
+}
+window.moUploadAllowed = moUploadAllowed;
+function moRender() {
+    var box0 = document.getElementById('moList');
+    if (box0 && !moUploadAllowed()) {
+        box0.innerHTML = moLockedNotice();
+        try { pfRender(); } catch (e) {}
+        moSyncBar();
+        return;
+    }
+    var list = moOrders();
+    var box = document.getElementById('moList');
+    if (!box) return;
+    if (!list.length) {
+        box.innerHTML = '<div class="mo-card"><div class="mo-empty"><i class="fas fa-bag-shopping"></i><b>কোনো My Shop order নেই</b>আপনার shop থেকে order আসলে এখানে দেখা যাবে।</div></div>';
+        try { pfRender(); } catch (e) {}
+        moSyncBar();
+        return;
+    }
+    var h = '';
+    for (var i = 0; i < list.length; i++) {
+        var o = list[i];
+        var items = moItems(o);                 /* own lines only */
+        var vs = ownVariantSummary(o, RID);     /* own lines only */
+        var own = orderHasOwnProduct(o, RID);
+        /* (#5, #6) On a MIXED order the reseller is only settled for their OWN
+           part — show the own-group net (selling − shared delivery adjustment),
+           never the whole customer total. A single-source order keeps o.amount. */
+        var _alloc = null, _headAmount = Number(o.amount) || 0;
+        try {
+            _alloc = orderGroupAllocation(o, RID);
+            if (_alloc.mixed) _headAmount = _alloc.own.netAmount;
+        } catch (e) { _alloc = null; }
+        var tiles = '';
+        for (var k = 0; k < items.length; k++) tiles += moItemTile(items[k]);
+
+        var varHtml = '';
+        for (var sz in vs.sizes) { if (Object.prototype.hasOwnProperty.call(vs.sizes, sz)) varHtml += '<span>Size ' + sEsc(sz) + ' — ' + sEsc(vs.sizes[sz]) + '</span>'; }
+        for (var cl in vs.colors) { if (Object.prototype.hasOwnProperty.call(vs.colors, cl)) varHtml += '<span>Color ' + sEsc(cl) + ' — ' + sEsc(vs.colors[cl]) + '</span>'; }
+        for (var vr in vs.variants) { if (Object.prototype.hasOwnProperty.call(vs.variants, vr)) varHtml += '<span>' + sEsc(vr) + ' — ' + sEsc(vs.variants[vr]) + '</span>'; }
+
+        /* (#9) whatever Parcel/Consignment id the API actually returned */
+        var cons = shipParcelId(o) || '';
+        var consHtml = cons
+            ? '<div class="mo-cons"><i class="fas fa-truck"></i> Steadfast Consignment ID: <b>' + sEsc(cons) + '</b> — Sent to Steadfast</div>'
+            : '';
+
+        /* ---- compact layout: header -> flat meta strip -> item grid ->
+           customer block -> actions. No duplicated thumbnail row. ---- */
+        h += '<div class="mo-card" data-order-id="' + sEsc(o.id) + '" data-serial="' + sEsc(o.__moSer || (i + 1)) + '">' +
+            '<div class="mo-hd">' +
+            '<input type="checkbox" ' + (moSel[o.id] ? 'checked' : '') + ' onchange="moToggle(\'' + sEsc(o.id) + '\',this)">' +
+            '<span class="mo-ser" title="Order #' + sEsc(o.__moSer || (i + 1)) + ' — সর্বশেষ order সবার উপরে">' + sEsc(o.__moSer || (i + 1)) + '</span>' +
+            '<div><div class="oid">' + sEsc(o.id) + '</div><div class="odt">' + sEsc(String(o.date || '').slice(0, 10)) + '</div></div>' +
+            moStatusPill(o.status) +
+            (own ? '<span class="mo-pill own"><i class="fas fa-box-open"></i> Own Product</span>' : '<span class="mo-pill own"><i class="fas fa-store"></i> My Shop</span>') +
+            '<div style="flex:1"></div><span class="amt">' + sMoney(_headAmount) + '</span>' +
+            '</div>' +
+            '<div class="mo-sum">' +
+            '<span class="chipx"><b>' + sEsc(ownProductCount(o, RID)) + '</b> Products</span>' +
+            '<span class="chipx"><b>' + sEsc(ownItemCount(o, RID)) + '</b> Items</span>' +
+            '<span class="chipx">Payment: <b>' + sEsc(o.paymentMethod || 'Cash on Delivery') + '</b></span>' +
+            '</div>' +
+            '<div class="mo-items">' + tiles + '</div>' +
+            '<div class="mo-body">' +
+            '<div class="kv"><span><i class="fas fa-user"></i> ' + sEsc(o.customer || '—') + '</span>' +
+            '<span><i class="fas fa-phone"></i> ' + sEsc(o.phone || '—') + '</span>' +
+            '<span><i class="fas fa-location-dot"></i> ' + sEsc(o.address || '—') + '</span></div>' +
+            (varHtml ? '<div class="mo-vars">' + varHtml + '</div>' : '') +
+            consHtml +
+            '<div id="moFraud-' + sEsc(o.id) + '"></div>' +
+            '</div>' +
+            moSplitBlock(o) +
+            moStageBlock(o) +
+            '<div class="mo-acts">' +
+            '<button class="mo-btn vio" onclick="moFraud(\'' + sEsc(o.id) + '\')"><i class="fas fa-shield"></i> Fraud Check</button>' +
+            '<button class="mo-btn ok" onclick="moSendOne(\'' + sEsc(o.id) + '\')"><i class="fas fa-truck"></i> ' + (cons ? 'Already sent' : 'Send to Steadfast') + '</button>' +
+            '<button class="mo-btn gh" onclick="moPrint(\'' + sEsc(o.id) + '\')"><i class="fas fa-print"></i> Print</button>' +
+            '</div></div>';
+    }
+    box.innerHTML = h;
+    try { pfRender(); } catch (e) {}
+    moSyncBar();
+    /* deep link from Recent Orders -> View (#1, #2, #19) */
+    try { if (typeof focusOrderRow === 'function') focusOrderRow(queryParam('order')); } catch (e) {}
+}
+
+/* ---------- Profit dashboard (#13 - #17) -----------------------------------
+   Only THIS reseller's own uploaded products. Profit = selling − cost (× qty).
+   Cancelled / returned / failed / unpaid orders are excluded entirely, and an
+   order can never be counted twice. Admin, supplier and other resellers'
+   products are never included. */
+var PF_RANGE = 'today';
+var PF_LABELS = {
+    today: 'Today', yesterday: 'Yesterday', week: 'Last 7 Days',
+    month: 'Last 1 Month', six: 'Last 6 Months', year: 'Last 1 Year', overall: 'Overall'
+};
+function pfMoney(n) { return '৳' + (Number(n) || 0).toLocaleString('en-IN'); }
+function pfSet(r) { PF_RANGE = r; pfRender(); }
+function pfRender() {
+    if (RID === null || RID === undefined) return;
+    /* ITEM 6 - no My Shop order numbers may be shown while uploads are off */
+    if (typeof moUploadAllowed === 'function' && !moUploadAllowed()) {
+        sSet('pfLabel', PF_LABELS[PF_RANGE] || 'Today');
+        sSet('pfValue', '—');
+        sSet('pfOverall', '—');
+        sSet('pfOrders', '—');
+        sSet('pfSub', 'My Shop Orders বন্ধ আছে');
+        return;
+    }
+    var st = ownProductProfitStats(RID) || {};
+    var val = (PF_RANGE === 'overall') ? st.total : (st[PF_RANGE] || 0);
+    sSet('pfLabel', PF_LABELS[PF_RANGE] || 'Today');
+    sSet('pfValue', pfMoney(val));
+    sSet('pfOverall', pfMoney(st.total));
+    sSet('pfOrders', String(st.orders || 0));
+    sSet('pfSub', (st.orders || 0) + ' order(s) — নিজের product, cancelled বাদ');
+    var chips = document.querySelectorAll('#pfChips .pf-chip');
+    for (var i = 0; i < chips.length; i++) {
+        chips[i].classList.toggle('active', chips[i].getAttribute('data-r') === PF_RANGE);
+    }
+}
+window.pfSet = pfSet;
+
+/* ---------- Fraud Check (#32) — reuses the existing Steadfast fraud service ---------- */
+function moFraudCfg() {
+    var s = getOne(DB_KEYS.SETTINGS);
+    return { k: s.sf_api_key || '', sec: s.sf_secret_key || '', fraud: s.sf_fraud_url || 'https://check.steadfast.com.bd/api/v1/fraud', proxy: s.sf_proxy || '' };
+}
+function moCallFraud(phone, cb) {
+    var k = moFraudCfg();
+    if (k.proxy) {
+/* 2026-09-17 — BUG FIX: the call sent no credentials, so the server proxy
+           rejected it with 400 and the check always failed. The admin's saved
+           keys now ride along. No key is stored in this file. */
+        var _st = {}; try { _st = getOne(DB_KEYS.SETTINGS) || {}; } catch (e) {}
+        fetch(k.proxy, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'fraud', phone: phone , apiKey: _st.sf_api_key || '', secretKey: _st.sf_secret_key || ''}) })
+            .then(function (r) { return r.json(); }).then(function (j) { cb(null, j); }).catch(function (e) { cb(e); });
+        return;
+    }
+    fetch(k.fraud, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Api-Key': k.k, 'Secret-Key': k.sec }, body: JSON.stringify({ api_key: k.k, secret_key: k.sec, customer_phone_number: phone }) })
+        .then(function (r) { return r.json(); }).then(function (j) { cb(null, j); }).catch(function (e) { cb(e); });
+}
+function moFindOrder(id) {
+    var list = moOrders();
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
+}
+function moFraud(id) {
+    var o = moFindOrder(id);
+    if (!o) return;
+    var box = document.getElementById('moFraud-' + id);
+    if (box) box.innerHTML = '<div class="mo-fraud"><i class="fas fa-spinner fa-spin"></i> ' + sEsc(o.customer || '') + ' (' + sEsc(o.phone || '') + ') চেক হচ্ছে...</div>';
+    moCallFraud(o.phone, function (err, j) {
+        if (err) {
+            if (box) box.innerHTML = '<div class="mo-fraud" style="background:#fee2e2;border-color:#fecaca;color:#991b1b">Fraud check করা যায়নি (নেটওয়ার্ক/CORS)।</div>';
+            return;
+        }
+        var d = (j && j.data) ? j.data : j;
+        var tot = d.total_delivered || d.total_delivery || 0;
+        var ok = d.successful_delivery || d.total_success || 0;
+        var cn = d.cancelled_delivery || d.total_cancel || 0;
+        var rate = tot ? Math.round(ok * 100 / tot) : 0;
+        var risk = cn > ok;
+        if (box) {
+            box.innerHTML = '<div class="mo-fraud"><b>🛡 Fraud Check — ' + sEsc(o.customer || '') + ' (' + sEsc(o.phone || '') + ')</b><br>' +
+                'Total: <b>' + sEsc(tot) + '</b> | Success: <b style="color:#16a34a">' + sEsc(ok) + '</b> | Cancelled: <b style="color:#dc2626">' + sEsc(cn) + '</b> | Rate: <b>' + sEsc(rate) + '%</b> | ' +
+                '<b style="color:' + (risk ? '#dc2626' : '#16a34a') + '">' + (risk ? '🚨 HIGH RISK' : '✓ SAFE') + '</b></div>';
+        }
+    });
+}
+
+/* ---------- Steadfast (#33 - #36) ---------- */
+function moCallCreate(payload, cb) {
+    var k = moFraudCfg();
+    if (k.proxy) {
+        fetch(k.proxy, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create', order: payload }) })
+            .then(function (r) { return r.json(); }).then(function (j) { cb(null, j); }).catch(function (e) { cb(e); });
+        return;
+    }
+    fetch('https://portal.steadfast.com.bd/api/v1/create_order', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Api-Key': k.k, 'Secret-Key': k.sec }, body: JSON.stringify(payload) })
+        .then(function (r) { return r.json(); }).then(function (j) { cb(null, j); }).catch(function (e) { cb(e); });
+}
+function moAlreadySent(o) { return !!shipParcelId(o); }
+function moPayload(o) {
+    return {
+        invoice: String(o.id),
+        recipient_name: o.customer || '',
+        recipient_phone: String(o.phone || '').replace(/\D/g, ''),
+        recipient_address: o.address || '',
+        cod_amount: Number(o.amount) || 0,
+        note: (ME.businessName || ME.name || 'My Shop') + ' order ' + o.id
+    };
+}
+function moSaveConsignment(o, id) {
+    var orders = getData(DB_KEYS.ORDERS) || [];
+    for (var i = 0; i < orders.length; i++) {
+        if (orders[i].id === o.id) {
+            orders[i].steadfastConsignment = id;
+            orders[i].consignment_id = id;
+            orders[i].steadfastSentAt = new Date().toISOString();
+            break;
+        }
+    }
+    setData(DB_KEYS.ORDERS, orders);
+}
+/* ---------- Shipment (#8, #9, #10) ----------------------------------------
+   My Shop shipments go through the reseller's OWN connected Street First
+   account — never the admin/supplier account. Every rule (ownership, own
+   product present, duplicate, status eligibility) is enforced by the shared
+   layer before a single request leaves the browser, and only the Parcel /
+   Consignment id the API really returns is stored (#10). */
+function moAskConnect() {
+    if (confirm('আপনার কোনো Street First account connect করা নেই।\n\nMy Shop order পাঠাতে হলে Courier পেজ থেকে নিজের API Key/Secret Key connect করতে হবে।\n\nএখন Courier পেজে যাবেন?')) {
+        try { window.location.href = 'courier.html#sfCard'; } catch (e) {}
+    }
+}
+function moSendOne(id) {
+    var o = moFindOrder(id);
+    if (!o) return;
+    if (!sfAccountConnected(RID)) { moAskConnect(); return; }
+    var chk = sfResellerShipCheck(o, RID);
+    if (!chk.ok) {
+        showToast(chk.reason, 'warning');
+        moRender();
+        return;
+    }
+    showToast('Street First-এ পাঠানো হচ্ছে...', 'info');
+    sfResellerSend(RID, o, function (err, upd) {
+        if (err) { showToast(String((err && err.message) || err), 'error'); moRender(); return; }
+        showToast('সফল! Parcel/Consignment ID: ' + shipParcelId(upd), 'success');
+        moSel = {};
+        moRender();
+    });
+}
+function moSendSteadfast() {
+    var sel = moSelected();
+    if (!sel.length) { showToast('অন্তত একটি order select করুন!', 'error'); return; }
+    if (!sfAccountConnected(RID)) { moAskConnect(); return; }
+    /* Validate everything up front so duplicates are reported with their
+       existing Parcel/Consignment id instead of being silently skipped. */
+    var fresh = [], skipped = [];
+    for (var i = 0; i < sel.length; i++) {
+        var c = sfResellerShipCheck(sel[i], RID);
+        if (c.ok) fresh.push(sel[i]);
+        else skipped.push(sel[i].id + (c.duplicate ? ' — already sent (' + c.parcelId + ')' : ' — ' + c.reason));
+    }
+    if (skipped.length) {
+        showToast(skipped.length + ' টি order skip করা হয়েছে: ' + skipped.join(' | '), 'warning');
+    }
+    if (!fresh.length) { moRender(); return; }
+    showToast('Street First-এ ' + fresh.length + ' টি order পাঠানো হচ্ছে...', 'info');
+    sfResellerSendBatch(RID, fresh, function (err, res) {
+        var r = res || { ok: 0, fail: 0, errors: [] };
+        showToast(r.ok + ' টি সফল, ' + r.fail + ' ব্যর্থ', r.ok ? 'success' : 'error');
+        if (r.errors && r.errors.length) {
+            for (var e = 0; e < r.errors.length; e++) console.error('shipment failed', r.errors[e]);
+        }
+        try { logActivity('myshop_steadfast', (ME.businessName || ME.name) + ' sent ' + r.ok + ' My Shop order(s) via own Street First account'); } catch (e) {}
+        moSel = {};
+        moRender();
+    });
+}
+
+/* ---------- Print (#37 - #39) ---------- */
+function moPrintOneHtml(o) {
+    /* 2026-09-18 (this request) — the reseller's My Shop Orders invoice now uses
+       the SAME sheet as the admin panel (rhInvSheet), and because it is the
+       ADMIN variant it also carries the reseller-details block — here that is
+       the reseller's own brand / mobile / address / Gmail, exactly as the admin
+       sees them for this order.
+
+       ⚠️ SCOPE FIX (pre-existing bug). This used to print orderOwnPrintItems()
+       — lines the reseller UPLOADED herself. But a line for a catalogue product
+       sold through her shop carries `shop_id: null` and `product_owner_type:
+       'supplier'`, so itemBelongsToReseller() is false for it. Measured:
+           own + catalogue line  -> invoice showed ONLY the own line
+           catalogue line only   -> invoice showed NO products and a ৳0 total
+       i.e. the most common My Shop order printed an EMPTY invoice. The invoice
+       now shows the ORDER's lines — what the customer actually bought in this
+       shop — which is also what the admin sheet shows for the same order.
+       Prices are the CUSTOMER prices frozen on the order, so no cost, buying
+       price, supplier price or profit is exposed. */
+    var items = (o && o.items && o.items.length) ? o.items : [];
+    var delivery = 0;
+    try { delivery = (typeof orderDeliveryCharge === 'function') ? Number(orderDeliveryCharge(o) || 0) : 0; } catch (e) { delivery = 0; }
+    var d = rhInvData(o, {
+        mode: 'admin',
+        items: items,
+        shopId: (typeof shipShopId === 'function') ? shipShopId() : ''
+    });
+    return rhInvHtml([rhInvSheet(d, 'a4', {})], 'a4', { title: 'Invoice ' + (o && o.id) });
+}
+/* Kept for the bulk path: one document, one page per order. */
+function moPrintDoc(orders) {
+    var pages = [];
+    for (var i = 0; i < orders.length; i++) {
+        var one = moPrintOneHtml(orders[i]);
+        var inner = one.replace(/^[\s\S]*<body>/, '').replace(/<\/body>[\s\S]*$/, '');
+        pages.push(inner);
+    }
+    return rhInvHtml(pages, 'a4', { title: 'My Shop Invoices' });
+}
+function moPrint(id) {
+    var o = moFindOrder(id);
+    if (!o) return;
+    /* rhPrintFrame waits for the sheet's web fonts instead of guessing a delay */
+    rhPrintFrame(moPrintOneHtml(o));
+}
+function moPrintBulk() {
+    var sel = moSelected();
+    if (!sel.length) { showToast('অন্তত একটি order select করুন!', 'error'); return; }
+    rhPrintFrame(moPrintDoc(sel));
+}
+
+if (RID !== null) {
+  moRender();
+  try { pfRender(); } catch (e) {}
+}
+
+</script>
+</body>
+</html>

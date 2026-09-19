@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Integration - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; overflow-x:hidden; }
+        .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 240px; background: #1e293b; color: #cbd5e1; z-index: 100; overflow-y: auto; }
+        .sidebar-header { padding: 18px 20px; border-bottom: 1px solid #334155; }
+        .sidebar-logo { display: flex; align-items: center; gap: 10px; }
+        .sidebar-logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, #2563eb, #1e40af); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; }
+        .sidebar-logo h3 { color: white; font-size: 1rem; }
+        .sidebar-logo small { color: #94a3b8; font-size: 0.7rem; display: block; }
+        .sidebar-menu { list-style: none; padding: 12px 0; }
+        .sidebar-menu li { margin: 2px 0; }
+        .sidebar-menu a { display: flex; align-items: center; gap: 12px; padding: 10px 20px; color: #cbd5e1; text-decoration: none; font-size: 0.88rem; }
+        .sidebar-menu a:hover { background: rgba(255,255,255,0.05); color: white; }
+        .sidebar-menu a.active { background: #2563eb; color: white; }
+        .sidebar-menu a i { width: 18px; text-align: center; }
+        .sidebar-divider { padding: 15px 20px 5px; color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        .main { margin-left: 240px; min-height: 100vh; }
+        .topbar { background: white; padding: 14px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 50; }
+        .topbar h2 { font-size: 1.2rem; font-weight: 600; }
+        .topbar-right { display: flex; align-items: center; gap: 15px; }
+        .topbar-balance { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; padding: 6px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; }
+        .topbar-user { display: flex; align-items: center; gap: 8px; padding: 6px 14px; background: #f1f5f9; border-radius: 20px; font-size: 0.88rem; }
+        .btn-logout { background: #ef4444; color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
+        .content { padding: 25px; }
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+        .stat-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 14px; }
+        .stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+        .stat-icon.blue { background: #dbeafe; color: #2563eb; }
+        .stat-icon.green { background: #d1fae5; color: #10b981; }
+        .stat-icon.orange { background: #fef3c7; color: #f59e0b; }
+        .stat-icon.purple { background: #ede9fe; color: #8b5cf6; }
+        .stat-card .label { color: #64748b; font-size: 0.78rem; margin-bottom: 3px; }
+        .stat-card .value { font-size: 1.4rem; font-weight: 700; color: #1e293b; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; padding: 20px; }
+        .card h3 { font-size: 1rem; margin-bottom: 15px; }
+        .empty { text-align: center; padding: 30px; color: #64748b; }
+        @media (max-width: 1024px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) { .sidebar { width: 70px; } .sidebar-logo h3, .sidebar-logo small, .sidebar-menu a span, .sidebar-divider { display: none; } .main { margin-left: 70px; } .stats-row { grid-template-columns: 1fr; } }
+    </style>
+<link rel="stylesheet" href="rstyle.css">
+<style id="lx-theme">
+/* ============ ResellerHub Premium Theme (visual-only overrides) ============ */
+:root { --lx-pri:#4f46e5; --lx-prid:#4338ca; --lx-vio:#7c3aed; --lx-grn:#10b981; }
+@keyframes lxPgUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+@keyframes lxPop { from{opacity:0;transform:scale(.94)} to{opacity:1;transform:none} }
+@keyframes lxRow { from{opacity:0;transform:translateX(-14px)} to{opacity:1;transform:none} }
+
+body { background:#eef1f9 !important; }
+
+/* ---- Sidebar + Topbar (synced with dashboard v3) ---- */
+/* ===== SIDEBAR ===== */
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:248px !important; background:linear-gradient(180deg,#0b1029 0%,#151a3a 100%); color:#c7d2fe; z-index:200; overflow-y:auto; transition:transform 0.3s; box-shadow:4px 0 24px rgba(11,16,41,.35); }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; justify-content:space-between; align-items:center; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:40px; height:40px; background:linear-gradient(135deg,var(--pri),var(--vio)); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .sidebar-logo h3 { color:white; font-size:1rem; font-weight:900; }
+        .sidebar-logo small { color:#818cf8; font-size:0.66rem; display:block; font-weight:700; letter-spacing:1px; }
+        .sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; }
+        .sidebar-menu { list-style:none; padding:12px 10px; }
+        .sidebar-menu li { margin:3px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:11px 15px; color:#c7d2fe; text-decoration:none; font-size:0.88rem; font-weight:600; border-radius:11px; transition:all .22s; }
+        .sidebar-menu a:hover { background:rgba(129,140,248,.14); color:white; transform:translateX(4px); }
+        .sidebar-menu a.active { background:linear-gradient(135deg,var(--pri),var(--vio)); color:white; box-shadow:0 8px 20px rgba(79,70,229,.4); }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 15px 5px; color:#6366f1; font-size:0.66rem; text-transform:uppercase; letter-spacing:1.4px; font-weight:800; }
+        .menu-badge { background:var(--gold); color:#1e293b; font-size:0.68rem; padding:1px 8px; border-radius:10px; font-weight:800; margin-left:auto; }
+        .menu-badge-n { color:var(--gold); font-weight:900; }
+
+        .side-overlay { display:none; position:fixed; inset:0; background:rgba(11,16,41,.55); z-index:150; backdrop-filter:blur(2px); }
+
+        /* ===== MAIN ===== */
+        .main { margin-left:248px !important; min-height:100vh; }
+@media(max-width:768px){
+    .main{margin-left:0 !important}
+    .sidebar{transform:translateX(-100%) !important;transition:transform .3s ease}
+    .sidebar.open{transform:translateX(0) !important;box-shadow:20px 0 60px rgba(11,16,41,.4)}
+    .sidebar-close-m{display:block !important}
+    .side-overlay{position:fixed;inset:0;background:rgba(11,16,41,.55);z-index:150;backdrop-filter:blur(2px)}
+    .side-overlay.show{display:block !important}
+    .status-cards{display:grid !important;grid-template-columns:1fr 1fr !important;gap:10px !important}
+}
+
+        .topbar { background:rgba(255,255,255,.88); backdrop-filter:blur(12px); padding:12px 22px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 14px rgba(15,23,42,.06); position:sticky; top:0; z-index:100; }
+            /* 2026-09-16 — MOBILE FIX (this request). The topbar measured about 440px
+               across on a 390px phone, so the logout button was pushed past the right
+               edge and looked cut off. These rules tighten the SAME header so it fits a
+               narrow screen. Nothing is hidden and nothing outside this media query is
+               touched, so the desktop layout is unchanged. */
+            .topbar { padding:10px 12px; }
+            .topbar-left { gap:8px; }
+            .topbar h2 { font-size:.98rem; }
+            .topbar-right { gap:6px; }
+            .topbar-balance { padding:6px 10px; font-size:.78rem; }
+            .topbar-user { padding:5px 10px; font-size:.78rem; }
+            .topbar-user span { max-width:52px; }
+
+        .topbar-left { display:flex; align-items:center; gap:12px; }
+        .hamburger { display:none; background:none; border:none; font-size:1.3rem; color:#1e293b; cursor:pointer; padding:4px; }
+        .topbar h2 { font-size:1.12rem; font-weight:800; }
+        .topbar-right { display:flex; align-items:center; gap:8px; }
+        .topbar-balance { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#7c2d12; padding:7px 15px; border-radius:22px; font-weight:800; font-size:0.84rem; white-space:nowrap; box-shadow:0 4px 12px rgba(245,158,11,.35); }
+        .topbar-user { display:flex; align-items:center; gap:7px; padding:6px 14px; background:#eef2ff; color:var(--pri); border-radius:22px; font-size:0.84rem; font-weight:700; }
+        .btn-logout { background:#fee2e2; color:#dc2626; border:none; padding:8px 12px; border-radius:10px; cursor:pointer; font-size:0.85rem; transition:all .25s; }
+        .btn-logout:hover { background:#dc2626; color:#fff; transform:translateY(-1px); }
+
+
+        /* ---- Stats / status cards ---- */
+.stat-card { border-radius:18px !important; border:1px solid #eef2f7 !important; box-shadow:0 3px 14px rgba(15,23,42,.05) !important; transition:all .28s !important; animation:lxPgUp .5s ease both; }
+.stat-card:hover { transform:translateY(-4px) !important; box-shadow:0 16px 32px rgba(15,23,42,.11) !important; }
+.status-cards .stat-card:nth-child(1), .stats-row .stat-card:nth-child(1) { animation-delay:.08s; }
+.status-cards .stat-card:nth-child(2), .stats-row .stat-card:nth-child(2) { animation-delay:.16s; }
+.status-cards .stat-card:nth-child(3), .stats-row .stat-card:nth-child(3) { animation-delay:.24s; }
+.status-cards .stat-card:nth-child(4), .stats-row .stat-card:nth-child(4) { animation-delay:.32s; }
+.stat-icon.green { background:linear-gradient(135deg,#d1fae5,#a7f3d0) !important; color:#059669 !important; }
+.stat-icon.blue { background:linear-gradient(135deg,#e0e7ff,#c7d2fe) !important; color:#4f46e5 !important; }
+.stat-icon.orange { background:linear-gradient(135deg,#fef3c7,#fde68a) !important; color:#d97706 !important; }
+.stat-icon.purple { background:linear-gradient(135deg,#ede9fe,#ddd6fe) !important; color:#7c3aed !important; }
+
+/* ---- Inputs ---- */
+input,select,textarea { border-radius:10px !important; transition:border-color .2s, box-shadow .2s !important; }
+input:focus,select:focus,textarea:focus { border-color:#4f46e5 !important; box-shadow:0 0 0 3px rgba(79,70,229,.12) !important; outline:none !important; }
+
+/* ---- Modals ---- */
+.modal-overlay.show .modal { animation:lxPop .32s cubic-bezier(.2,.9,.3,1.15) both; }
+
+/* ---- Content entrance ---- */
+.content > * { animation:lxPgUp .5s ease both; }
+.content > *:nth-child(2) { animation-delay:.08s; }
+.content > *:nth-child(3) { animation-delay:.16s; }
+.content > *:nth-child(4) { animation-delay:.24s; }
+.content > *:nth-child(5) { animation-delay:.32s; }
+
+/* ---- Floating bottom nav (products page) ---- */
+.bottom-nav { background:rgba(255,255,255,.92) !important; backdrop-filter:blur(14px); border:1px solid #eef2f7 !important; border-radius:20px !important; bottom:10px !important; left:12px !important; right:12px !important; box-shadow:0 10px 30px rgba(15,23,42,.16) !important; }
+.bottom-nav a.active { color:#4f46e5 !important; background:#eef2ff !important; }
+
+/* ---- Page-specific polish ---- */
+.products-grid { animation:lxPgUp .5s .2s ease both; }
+.section-head h2 { font-weight:900 !important; }
+.courier-card, .contact-card { border-radius:18px !important; transition:all .28s !important; }
+.courier-card:hover, .contact-card:hover { transform:translateY(-4px); box-shadow:0 16px 34px rgba(15,23,42,.12) !important; }
+.profile-header { border-radius:20px !important; overflow:hidden; }
+.panel { border-radius:20px !important; border:1px solid #eef2f7 !important; box-shadow:0 4px 16px rgba(15,23,42,.05) !important; }
+.balcard { border-radius:20px !important; }
+.fchip { transition:all .2s !important; }
+.fchip:hover { transform:translateY(-2px); }
+.tx { transition:background .2s !important; }
+.tx:hover { background:#f8faff !important; }
+.welcome { border-radius:22px !important; }
+</style>
+
+<style id="lx-theme-2">/* ---- Sidebar: text ALWAYS visible + full-width sidebar ---- */
+.sidebar-menu a span { display:inline !important; }
+.sidebar-divider { display:block !important; }
+.sidebar-logo h3, .sidebar-logo small { display:block !important; }
+.sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.25rem; cursor:pointer; }
+@media (min-width:769px) {
+    .sidebar { width:250px !important; }
+    .main { margin-left:250px !important; }
+    .sidebar-close-m { display:none !important; }
+}
+@media (max-width:768px) {
+    .sidebar { width:272px !important; transform:translateX(-100%); transition:transform .3s ease; }
+    .sidebar.open { transform:translateX(0) !important; box-shadow:20px 0 60px rgba(11,16,41,.4); }
+    .main { margin-left:0 !important; }
+    .sidebar-close-m { display:block !important; }
+    .side-overlay.show { display:block !important; }
+    .status-cards { display:grid !important; grid-template-columns:1fr 1fr !important; gap:10px !important; }
+}
+.bn-menu { background:linear-gradient(135deg,#4f46e5,#7c3aed) !important; color:#fff !important; border-radius:14px !important; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+.bn-menu i, .bn-menu span { color:#fff !important; }
+</style>
+
+<style>
+@media(max-width:768px){
+    body{padding-bottom:86px !important}
+    .bottom-nav{display:flex !important}
+    .bn-menu{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.62rem;font-weight:700;padding:6px 6px;flex:1;border:none;cursor:pointer}
+    .bn-menu i{font-size:1.12rem}
+    .bn-menu span{color:#fff !important}
+}
+</style>
+
+<style id="lx-nav-force">
+@media(max-width:768px){
+    .bottom-nav{display:flex !important;position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;opacity:1 !important;visibility:visible !important;transform:none !important}
+    body{padding-bottom:86px !important}
+}
+</style>
+
+<style id="lx-bnav">
+/* ===== Complete bottom-nav styling ===== */
+.bottom-nav{position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;display:flex !important;align-items:stretch;background:rgba(255,255,255,.97) !important;backdrop-filter:blur(14px);border:1px solid #e8ecf4 !important;border-radius:18px !important;box-shadow:0 -4px 24px rgba(15,23,42,.14) !important;padding:7px 6px calc(7px + env(safe-area-inset-bottom)) !important}
+.bottom-nav a,.bottom-nav button{flex:1 !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;gap:3px !important;padding:7px 2px !important;border:none !important;background:none !important;color:#7b879c !important;font-size:.62rem !important;font-weight:700 !important;text-decoration:none !important;cursor:pointer !important;border-radius:12px !important;font-family:inherit !important;line-height:1.2 !important}
+.bottom-nav a i,.bottom-nav button i{font-size:1.18rem !important;line-height:1 !important}
+.bottom-nav a span,.bottom-nav button span{display:block !important}
+.bottom-nav a:hover,.bottom-nav button:hover{color:#4f46e5 !important;background:#eef2ff !important;transform:translateY(-2px)}
+.bottom-nav a.active{color:#4f46e5 !important;background:#eef2ff !important}
+.bottom-nav .bn-menu{color:#4f46e5 !important;background:#eef2ff !important;box-shadow:none !important;border-radius:12px !important}
+.bottom-nav .bn-menu:hover{background:#e0e7ff !important}
+.bottom-nav .bn-menu i,.bottom-nav .bn-menu span{color:#4f46e5 !important}
+body{padding-bottom:86px !important}
+@media(min-width:769px){
+    .bottom-nav{display:none !important}
+    body{padding-bottom:0 !important}
+}
+</style>
+
+<style>
+@media(max-width:768px){
+    .sidebar{transform:translateX(-100%) !important;transition:transform .32s cubic-bezier(.2,.8,.3,1) !important;display:block !important}
+    .sidebar.open{transform:translateX(0) !important;box-shadow:24px 0 60px rgba(11,16,41,.45) !important}
+}
+</style>
+
+<style id="lx-logout-fix">
+/* Logout fix: the open sidebar must paint ABOVE the fixed mobile bottom-nav,
+   otherwise the last menu item (Logout) is covered and un-tappable. */
+.sidebar{ z-index:900 !important; }
+.side-overlay{ z-index:880 !important; }
+.sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+@supports selector(:has(*)){
+  body:has(.sidebar.open) .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+}
+@media(min-width:769px){ .sidebar-menu{ padding-bottom:12px !important; } }
+</style>
+
+<style id="lx-referral">
+/* ============ Referral panel (#29–#32, #42, #43, #47) ============ */
+.wrap { max-width:1180px; margin:0 auto; }
+.rf-hero { background:radial-gradient(900px 380px at 88% -10%, #4f46e5 0%, transparent 58%), radial-gradient(600px 300px at 4% 110%, #7c3aed 0%, transparent 55%), linear-gradient(140deg,#0b1029,#171540 55%,#221a4d); color:#fff; border-radius:22px; padding:30px 30px 26px; margin-bottom:18px; position:relative; overflow:hidden; box-shadow:0 20px 46px rgba(11,16,41,.34); animation:lxPgUp .5s ease both; }
+.rf-hero .rf-kick { display:inline-flex; align-items:center; gap:7px; font-size:.68rem; font-weight:900; letter-spacing:1.4px; text-transform:uppercase; background:rgba(255,255,255,.13); border:1px solid rgba(255,255,255,.2); padding:5px 13px; border-radius:999px; margin-bottom:13px; }
+.rf-hero h2 { font-size:1.55rem; font-weight:900; line-height:1.3; margin-bottom:9px; }
+.rf-hero h2 .g { background:linear-gradient(92deg,#fbbf24,#fde68a 55%,#fbbf24); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.rf-hero p { color:#c7d2fe; font-size:.9rem; line-height:1.75; max-width:680px; }
+.rf-hero-orbit { position:absolute; border:1px solid rgba(129,140,248,.2); border-radius:50%; pointer-events:none; }
+.rf-hero-orbit.a { width:300px; height:300px; top:-130px; right:-70px; }
+
+/* code card */
+.rf-code-card { background:#fff; border-radius:20px; padding:26px; box-shadow:0 4px 20px rgba(15,23,42,.07); margin-bottom:18px; animation:lxPgUp .5s .06s ease both; }
+.rf-code-label { font-size:.68rem; font-weight:900; letter-spacing:1.6px; text-transform:uppercase; color:#94a3b8; margin-bottom:10px; display:flex; align-items:center; gap:7px; }
+.rf-code-box { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+.rf-code-val { flex:1 1 260px; min-width:0; background:linear-gradient(135deg,#eef2ff,#e0e7ff); border:1.5px dashed #818cf8; border-radius:15px; padding:16px 20px; font-size:1.5rem; font-weight:900; letter-spacing:2px; color:#3730a3; text-align:center; word-break:break-all; font-family:'Courier New',monospace; }
+.rf-btns { display:flex; gap:9px; flex-wrap:wrap; }
+.rf-btn { border:none; border-radius:13px; padding:13px 20px; font-weight:800; font-size:.84rem; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:.22s; font-family:inherit; }
+.rf-btn.pri { background:linear-gradient(135deg,#4f46e5,#7c3aed); color:#fff; box-shadow:0 6px 18px rgba(79,70,229,.32); }
+.rf-btn.pri:hover { transform:translateY(-2px); box-shadow:0 10px 24px rgba(79,70,229,.42); }
+.rf-btn.sec { background:#ecfdf5; color:#047857; border:1.5px solid #a7f3d0; }
+.rf-btn.sec:hover { background:#d1fae5; transform:translateY(-2px); }
+.rf-btn.ghost { background:#f1f5f9; color:#475569; border:1.5px solid #e2e8f0; }
+.rf-btn.ghost:hover { background:#e2e8f0; }
+.rf-link-row { margin-top:14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:11px 15px; font-size:.78rem; color:#64748b; word-break:break-all; display:flex; gap:10px; align-items:center; }
+.rf-link-row i { color:#94a3b8; flex:0 0 auto; }
+.rf-link-row span { flex:1; min-width:0; font-family:'Courier New',monospace; }
+.rf-msg { margin-top:12px; font-size:.82rem; font-weight:800; display:none; align-items:center; gap:8px; padding:10px 14px; border-radius:11px; }
+.rf-msg.ok { background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; display:flex; }
+.rf-msg.bad { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; display:flex; }
+
+/* tier cards */
+.rf-tiers { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:18px; }
+.rf-tier { background:#fff; border-radius:20px; padding:24px; box-shadow:0 4px 20px rgba(15,23,42,.07); position:relative; overflow:hidden; animation:lxPgUp .5s .1s ease both; border:2px solid transparent; }
+.rf-tier.on { border-color:#4f46e5; }
+.rf-tier.t2.on { border-color:#f59e0b; }
+.rf-tier .rf-tbadge { position:absolute; top:16px; right:16px; font-size:.62rem; font-weight:900; letter-spacing:1px; text-transform:uppercase; padding:4px 10px; border-radius:999px; }
+.rf-tier.on .rf-tbadge { background:#eef2ff; color:#4f46e5; }
+.rf-tier.t2.on .rf-tbadge { background:#fef3c7; color:#b45309; }
+.rf-tier .rf-ticon { width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.3rem; margin-bottom:13px; }
+.rf-tier.t1 .rf-ticon { background:#ecfdf5; color:#10b981; }
+.rf-tier.t2 .rf-ticon { background:#fef3c7; color:#f59e0b; }
+.rf-tier h4 { font-size:1rem; font-weight:900; margin-bottom:5px; }
+.rf-tier .rf-rate { font-size:1.85rem; font-weight:900; color:#0f172a; line-height:1.1; margin-bottom:6px; }
+.rf-tier p { font-size:.8rem; color:#64748b; line-height:1.65; }
+.rf-tier .rf-unlock { margin-top:12px; font-size:.76rem; font-weight:700; color:#b45309; background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:9px 12px; display:flex; gap:8px; align-items:flex-start; }
+.rf-tier .rf-unlock.done { color:#047857; background:#ecfdf5; border-color:#a7f3d0; }
+
+/* stat grid */
+.rf-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px; }
+.rf-stat { background:#fff; border-radius:16px; padding:17px 15px; box-shadow:0 3px 14px rgba(15,23,42,.06); display:flex; align-items:center; gap:12px; animation:lxPgUp .5s .14s ease both; }
+.rf-stat .si { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.05rem; flex:0 0 42px; }
+.rf-stat .lb { font-size:.7rem; color:#64748b; font-weight:700; margin-bottom:2px; }
+.rf-stat .vl { font-size:1.15rem; font-weight:900; color:#0f172a; line-height:1.2; }
+
+/* progress */
+.rf-prog { background:#fff; border-radius:20px; padding:24px; box-shadow:0 4px 20px rgba(15,23,42,.07); margin-bottom:18px; animation:lxPgUp .5s .18s ease both; }
+.rf-prog h3 { font-size:1rem; font-weight:900; margin-bottom:4px; display:flex; align-items:center; gap:9px; }
+.rf-prog .sub { font-size:.8rem; color:#64748b; margin-bottom:16px; }
+.rf-prog-top { display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+.rf-prog-top .big { font-size:1.35rem; font-weight:900; color:#4f46e5; }
+.rf-prog-top .big small { font-size:.9rem; color:#94a3b8; font-weight:800; }
+.rf-bar { height:14px; background:#eef2f7; border-radius:999px; overflow:hidden; }
+.rf-bar > i { display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,#4f46e5,#7c3aed); transition:width .6s cubic-bezier(.2,.8,.3,1); }
+.rf-prog .need { margin-top:12px; font-size:.84rem; font-weight:800; color:#b45309; background:#fffbeb; border:1px solid #fde68a; border-radius:11px; padding:11px 14px; display:flex; gap:9px; align-items:center; }
+.rf-prog .need.done { color:#047857; background:#ecfdf5; border-color:#a7f3d0; }
+
+/* table */
+.rf-card { background:#fff; border-radius:20px; box-shadow:0 4px 20px rgba(15,23,42,.07); overflow:hidden; animation:lxPgUp .5s .22s ease both; }
+.rf-card-head { padding:20px 22px 14px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+.rf-card-head h3 { font-size:1rem; font-weight:900; display:flex; align-items:center; gap:9px; }
+.rf-search { padding:9px 14px; border:1.5px solid #e2e8f0; border-radius:11px; font-family:inherit; font-size:.82rem; min-width:180px; outline:none; }
+.rf-search:focus { border-color:#818cf8; }
+.rf-tw { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+table.rf-t { width:100%; border-collapse:collapse; min-width:760px; }
+table.rf-t th { background:#f8fafc; padding:12px 14px; text-align:left; font-size:.68rem; font-weight:900; text-transform:uppercase; letter-spacing:.6px; color:#64748b; border-bottom:1px solid #eef2f7; white-space:nowrap; }
+table.rf-t td { padding:13px 14px; font-size:.83rem; border-bottom:1px solid #f1f5f9; color:#334155; vertical-align:middle; }
+table.rf-t tr:last-child td { border-bottom:none; }
+table.rf-t tbody tr { animation:lxRow .34s ease both; }
+table.rf-t tbody tr:hover { background:#fafbff; }
+.rf-nm { font-weight:800; color:#0f172a; }
+.rf-sub { font-size:.72rem; color:#94a3b8; }
+.rf-pill { font-size:.68rem; font-weight:900; padding:3px 10px; border-radius:999px; text-transform:capitalize; display:inline-block; }
+.rf-pill.approved { background:#dcfce7; color:#166534; }
+.rf-pill.pending { background:#fef9c3; color:#854d0e; }
+.rf-pill.banned, .rf-pill.rejected { background:#fee2e2; color:#991b1b; }
+.rf-pill.t1 { background:#dcfce7; color:#166534; }
+.rf-pill.t2 { background:#fef3c7; color:#b45309; }
+.rf-empty { text-align:center; padding:46px 20px; color:#94a3b8; }
+.rf-empty i { font-size:2.4rem; margin-bottom:12px; display:block; opacity:.5; }
+.rf-empty b { display:block; color:#475569; margin-bottom:6px; font-size:.95rem; }
+
+/* CTA */
+.rf-cta { background:linear-gradient(135deg,#4f46e5,#7c3aed); color:#fff; border-radius:20px; padding:26px; margin-top:18px; display:flex; justify-content:space-between; align-items:center; gap:18px; flex-wrap:wrap; box-shadow:0 16px 34px rgba(79,70,229,.3); animation:lxPgUp .5s .26s ease both; }
+.rf-cta h3 { font-size:1.15rem; font-weight:900; margin-bottom:6px; }
+.rf-cta p { font-size:.84rem; color:#e0e7ff; line-height:1.6; }
+.rf-cta .rf-btns .rf-btn.sec { background:rgba(255,255,255,.16); color:#fff; border-color:rgba(255,255,255,.3); }
+.rf-cta .rf-btns .rf-btn.sec:hover { background:rgba(255,255,255,.26); }
+.rf-cta .rf-btns .rf-btn.pri { background:#fff; color:#4f46e5; box-shadow:none; }
+
+/* ---------- responsive (#47) ---------- */
+@media (max-width:1100px) { .rf-stats { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:860px) {
+    .rf-tiers { grid-template-columns:1fr; }
+    .rf-hero { padding:24px 20px 22px; border-radius:18px; }
+    .rf-hero h2 { font-size:1.22rem; }
+    .rf-hero p { font-size:.85rem; }
+    .rf-code-card, .rf-prog { padding:20px 16px; border-radius:16px; }
+    .rf-code-val { font-size:1.2rem; padding:14px 14px; letter-spacing:1.4px; }
+    .rf-btns { width:100%; }
+    .rf-btn { flex:1 1 100%; justify-content:center; }
+    .rf-cta { flex-direction:column; align-items:stretch; padding:20px 16px; border-radius:16px; }
+    .rf-stat { padding:14px 13px; }
+    .rf-stat .vl { font-size:1.05rem; }
+}
+@media (max-width:560px) {
+    .rf-stats { grid-template-columns:1fr 1fr; gap:10px; }
+    .rf-stat { flex-direction:column; text-align:center; gap:8px; padding:13px 10px; }
+    .rf-stat .si { flex:0 0 auto; }
+    .rf-stat .lb { font-size:.64rem; }
+    .rf-stat .vl { font-size:1rem; }
+    .rf-card-head { padding:16px 14px 12px; }
+    .rf-search { width:100%; min-width:0; }
+    .rf-tw { border-radius:0; }
+    table.rf-t { min-width:680px; }
+    table.rf-t th, table.rf-t td { padding:11px 11px; font-size:.78rem; }
+}
+@media (max-width:380px) { .rf-stats { grid-template-columns:1fr; } }
+</style>
+
+<style id="lx-sidebar-fix">
+/* ===== Reseller sidebar — canonical & stable (do not mutate at runtime) ===== */
+/* 1) Labels and section headings are ALWAYS visible. The old template hid
+      .sidebar-menu a span and .sidebar-divider under 768px, which made menu
+      text disappear and the "Account" heading vanish on some pages. */
+.sidebar .sidebar-menu a span{ display:inline !important; }
+.sidebar .sidebar-menu .sidebar-divider,
+.sidebar .sidebar-divider{ display:block !important; }
+.sidebar .sidebar-logo h3{ display:block !important; }
+.sidebar .sidebar-logo small{ display:block !important; }
+
+/* 2) Fixed geometry — the sidebar is never collapsed to a 70px icon rail. */
+.sidebar{ width:248px !important; z-index:900 !important; overflow-y:auto !important; }
+.side-overlay{ z-index:880 !important; }
+@media(min-width:769px){
+    .main{ margin-left:248px !important; }
+    .sidebar{ transform:none !important; }
+}
+@media(max-width:768px){
+    .main{ margin-left:0 !important; }
+    .sidebar{ transform:translateX(-100%) !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; display:block !important; }
+    .sidebar.open{ transform:translateX(0) !important; box-shadow:24px 0 60px rgba(11,16,41,.45) !important; }
+}
+
+/* 3) Row geometry is locked: the "All Orders" counter is absolutely positioned
+      so a changing number can never push the rows below it up or down. */
+.sidebar .sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.sidebar .sidebar-menu li{ position:relative; display:block; margin:3px 0; }
+.sidebar .sidebar-menu a{ display:flex !important; align-items:center; gap:12px; padding:11px 15px; }
+.sidebar .menu-badge{ position:absolute; right:12px; top:50%; transform:translateY(-50%); margin-left:0 !important; }
+
+/* 4) Mobile: hide the bottom nav while the drawer is open so the last item
+      (Logout) is never covered. */
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+
+/* 5) Close button inside the drawer on mobile. */
+.sidebar .sidebar-close-m{ display:none; }
+@media(max-width:768px){ .sidebar .sidebar-close-m{ display:block !important; } }
+</style>
+
+<style id="reseller-hamburger-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   Every reseller page hides the hamburger with ".hamburger{display:none}", but most
+   pages never turn it back ON at mobile width — only products.html did. So on a phone
+   there was no way to open the sidebar on Products, Orders, Wallet, Withdrawals,
+   Courier, Messages, Support, Profile, Referral or Website Integration.
+   This shows the SAME existing button (onclick="menuToggle()") at mobile width only.
+   It is an ADDED block and lives entirely inside a max-width query, so the DESKTOP
+   LAYOUT IS UNCHANGED. */
+@media (max-width:768px){
+  .hamburger { display:block !important; }
+}
+</style>
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon"><i class="fas fa-store"></i></div>
+            <div><h3>ResellerHub</h3><small>Reseller Panel</small></div>
+        </div>
+        
+        <button class="sidebar-close-m" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+        <ul class="sidebar-menu">
+        <li class="sidebar-divider">Main</li>
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+        <li><a href="products.html"><i class="fas fa-box"></i> <span>Products</span></a></li>
+        <li><a href="my-shop.html"><i class="fas fa-store"></i> <span>My Shop</span></a></li>
+        <li><a href="transactions.html"><i class="fas fa-right-left"></i> <span>Transactions</span></a></li>
+        <li class="sidebar-divider">Orders</li>
+        <li><a href="my-orders.html"><i class="fas fa-list"></i> <span>All Orders<span class="menu-badge-n" id="ordersBadgeLabel"></span></span></a></li>
+        <li><a href="order.html"><i class="fas fa-cart-plus"></i> <span>Add New Order</span></a></li>
+        <li><a href="offers.html"><i class="fas fa-gift"></i> <span>Offers</span></a></li>
+        <li><a href="shop-categories.html"><i class="fas fa-sitemap"></i> <span>Shop Categories</span></a></li>
+        <li class="sidebar-divider">My Shop</li>
+        <li><a href="my-shop-settings.html"><i class="fas fa-sliders"></i> <span>Shop Settings</span></a></li>
+        <li><a href="my-products.html"><i class="fas fa-box-open"></i> <span>My Products</span></a></li>
+        <li><a href="my-shop-orders.html"><i class="fas fa-bag-shopping"></i> <span>My Shop Orders</span></a></li>
+        <li><a href="customer-messages.html"><i class="fas fa-comment-dots"></i> <span>Customer Messages<span class="menu-badge-n" id="cmsgBadgeLabel"></span></span></a></li>
+        <li class="sidebar-divider">Account</li>
+        <li><a href="wallet.html"><i class="fas fa-wallet"></i> <span>Wallet</span></a></li>
+        <li><a href="withdrawals.html"><i class="fas fa-money-bill-wave"></i> <span>Withdrawals</span></a></li>
+        <li><a href="courier.html"><i class="fas fa-truck"></i> <span>Courier</span></a></li>
+        <li><a href="messages.html"><i class="fas fa-comments"></i> <span>Messages<span class="menu-badge-n" id="msgBadgeLabel"></span></span></a></li>
+        <li><a href="support.html"><i class="fas fa-headset"></i> <span>Support</span></a></li>
+        <li><a href="profile.html"><i class="fas fa-user-cog"></i> <span>Profile</span></a></li>
+        <li><a href="referral.html"><i class="fas fa-user-plus"></i> <span>Referral</span></a></li>
+        <li><a href="website-integration.html" class="active"><i class="fas fa-plug"></i> <span>Website Integration</span></a></li>
+        <li><a href="../index.html"><i class="fas fa-globe"></i> <span>Visit Site</span></a></li>
+        <li><a href="javascript:void(0)" onclick="resellerLogout()" style="color:#dc2626"><i class="fas fa-right-from-bracket"></i> <span>Logout</span></a></li>
+    </ul>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+<main class="main">
+    <div class="topbar">
+        <div class="topbar-left">
+            <button class="hamburger" onclick="toggleSidebar(true)"><i class="fas fa-bars"></i></button>
+            <h2><i class="fas fa-user-plus" style="color:#4f46e5;margin-right:8px;"></i> Referral</h2>
+        </div>
+        <div class="topbar-right">
+            <div class="topbar-balance"><i class="fas fa-coins"></i> <span id="topBalance">0</span></div>
+            <div class="topbar-user"><i class="fas fa-user" style="color:#2563eb;"></i> <span id="userName">User</span></div>
+            <button class="btn-logout" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content">
+    <div class="wrap">
+        <div class="card" style="margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+                <div>
+                    <h2 style="margin:0 0 4px;font-size:1.05rem;font-weight:800"><i class="fas fa-plug"></i> Website Integration</h2>
+                    <p style="margin:0;font-size:.8rem;color:#64748b">আপনার নিজের ওয়েবসাইট (WordPress / Shopify / নিজের কোড করা) এর সাথে ResellerHub BD কানেক্ট করুন।</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px">
+            <h3 style="margin:0 0 10px;font-size:.9rem;font-weight:800">১. আপনার API Key</h3>
+            <p style="font-size:.78rem;color:#64748b;margin:0 0 10px">এই key শুধু আপনার — অন্য কোনো রিসেলার এটি দিয়ে আপনার ডেটা দেখতে পারবে না।</p>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <code id="apiKeyBox" style="flex:1;min-width:260px;background:#0f172a;color:#a5b4fc;padding:11px 14px;border-radius:10px;font-size:.85rem;font-family:'Courier New',monospace;word-break:break-all">—</code>
+                <button class="rf-btn pri" onclick="wiCopyKey()"><i class="fas fa-copy"></i> Copy</button>
+                <button class="rf-btn sec" onclick="wiRegenKey()"><i class="fas fa-rotate"></i> নতুন Key</button>
+            </div>
+            <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:10px 13px;margin-top:11px;font-size:.75rem;color:#92400e">
+                <i class="fas fa-triangle-exclamation"></i> নতুন key বানালে পুরনো key সঙ্গে সঙ্গে বন্ধ হয়ে যাবে — তখন আপনার ওয়েবসাইটে নতুন key বসাতে হবে।
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px">
+            <h3 style="margin:0 0 10px;font-size:.9rem;font-weight:800">২. প্রোডাক্ট ফিড</h3>
+            <p style="font-size:.78rem;color:#64748b;margin:0 0 10px">
+                আপনার ওয়েবসাইট এই ফিড থেকে প্রোডাক্ট আনবে। আমাদের কোনো প্রোডাক্ট <b>স্টক শেষ</b> হলে, <b>বন্ধ</b> করলে বা <b>ডিলিট</b> করলে
+                সেটি এই ফিড থেকে নিজে থেকেই বাদ পড়ে যাবে — আপনার সাইটেও তখন ওটা দেখাবে না।
+            </p>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <code id="feedUrlBox" style="flex:1;min-width:260px;background:#f1f5f9;color:#334155;padding:11px 14px;border-radius:10px;font-size:.8rem;font-family:'Courier New',monospace;word-break:break-all">—</code>
+                <button class="rf-btn sec" onclick="wiCopyFeed()"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+            <div style="margin-top:12px">
+                <button class="rf-btn sec" onclick="wiPreview()"><i class="fas fa-eye"></i> ফিড প্রিভিউ দেখুন</button>
+                <span id="wiCount" style="font-size:.76rem;color:#64748b;margin-left:10px"></span>
+            </div>
+            <pre id="wiPreview" style="display:none;background:#0f172a;color:#c7d2fe;padding:13px;border-radius:10px;font-size:.7rem;max-height:280px;overflow:auto;margin-top:11px"></pre>
+        </div>
+
+        <div class="card" style="margin-bottom:16px">
+            <h3 style="margin:0 0 10px;font-size:.9rem;font-weight:800">৩. অর্ডার পাঠানোর লিংক</h3>
+            <p style="font-size:.78rem;color:#64748b;margin:0 0 10px">
+                আপনার সাইটে কেউ অর্ডার করলে এই লিংকে পাঠালে অর্ডারটি <b>সোজা আপনার রিসেলার প্যানেলে</b> চলে আসবে।
+            </p>
+            <code id="orderUrlBox" style="display:block;background:#f1f5f9;color:#334155;padding:11px 14px;border-radius:10px;font-size:.8rem;font-family:'Courier New',monospace;word-break:break-all">—</code>
+            <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:9px;padding:11px 13px;margin-top:11px;font-size:.76rem;color:#065f46">
+                <b>অর্ডার আসার পর নিজে থেকেই ঠিক জায়গায় যাবে:</b>
+                <ul style="margin:7px 0 0;padding-left:18px;line-height:1.8">
+                    <li>একই অর্ডারে <b>দুই বা বেশি সাপ্লায়ারের</b> প্রোডাক্ট → <b>Multi-Supplier Orders</b> (অ্যাডমিন ও সাপ্লায়ার প্যানেল)</li>
+                    <li><b>এক সাপ্লায়ারের</b> প্রোডাক্ট → সেই সাপ্লায়ারের কাছে সাধারণ অর্ডার হিসেবে</li>
+                    <li><b>আপনার নিজের প্রোডাক্ট</b> থাকলে → সেটি <b>My Shop Orders</b>-এ, আর পুরো অর্ডারটি <b>All Orders</b>-এ</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px">
+            <h3 style="margin:0 0 10px;font-size:.9rem;font-weight:800">৩খ. সিঙ্ক চালান</h3>
+            <p style="font-size:.78rem;color:#64748b;margin:0 0 10px">
+                আপনার প্রোডাক্ট তালিকা সার্ভারে পাঠায়, আর আপনার সাইট থেকে আসা নতুন অর্ডারগুলো প্যানেলে নিয়ে আসে।
+                <b>প্রতিবার প্রোডাক্ট বদলালে বা নতুন অর্ডার আশা করলে একবার চাপুন।</b>
+            </p>
+            <button class="rf-btn pri" onclick="wiSync()"><i class="fas fa-rotate"></i> এখনই সিঙ্ক করুন</button>
+            <span id="wiSyncMsg" style="font-size:.78rem;color:#475569;margin-left:12px"></span>
+            <label style="display:flex;align-items:center;gap:8px;font-size:.78rem;font-weight:700;color:#475569;margin-top:12px;cursor:pointer">
+                <input type="checkbox" id="wiAutoSync" onchange="wiAutoToggle()" style="width:auto">
+                অটোমেটিক সিঙ্ক চালু রাখুন (সাইট থেকে অর্ডার নিজে থেকেই চলে আসবে)
+            </label>
+        </div>
+
+        <div class="card" style="margin-bottom:16px">
+            <h3 style="margin:0 0 10px;font-size:.9rem;font-weight:800">৪. কীভাবে বসাবো?</h3>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+                <button class="rf-btn sec" onclick="wiTab('wp')" id="wiTab-wp">WordPress</button>
+                <button class="rf-btn sec" onclick="wiTab('shopify')" id="wiTab-shopify">Shopify</button>
+                <button class="rf-btn sec" onclick="wiTab('custom')" id="wiTab-custom">নিজের কোড</button>
+            </div>
+            <pre id="wiSnippet" style="background:#0f172a;color:#c7d2fe;padding:14px;border-radius:10px;font-size:.7rem;max-height:340px;overflow:auto;white-space:pre-wrap"></pre>
+        </div>
+    </div>
+    </div>
+</main>
+
+<nav class="bottom-nav">
+    <a href="dashboard.html"><i class="fas fa-home"></i>Home</a>
+    <a href="products.html"><i class="fas fa-box"></i>Products</a>
+    <a href="order.html"><i class="fas fa-cart-plus"></i>Order</a>
+    <button class="bn-menu" onclick="menuToggle()"><i class="fas fa-bars"></i><span>Menu</span></button>
+    <a href="profile.html"><i class="fas fa-user"></i>Profile</a>
+</nav>
+
+<script src="../app.js"></script><script>(function(){function paint(){try{var b=document.getElementById("ordersBadge");var uid=sessionStorage.getItem("user_id");if(!uid)return;if(sessionStorage.getItem("user_type")!=="reseller")return;var n=(typeof resellerNewOrderCount==="function")?resellerNewOrderCount(uid):0;if(b){b.textContent=n;b.style.display=n>0?"inline-block":"none";}var lb=document.getElementById("ordersBadgeLabel");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+
+
+<script>
+/* Logout fix: keep the mobile bottom-nav in sync with the drawer state. */
+(function () {
+    function sync(open) {
+        try {
+            var sb = document.querySelector('.sidebar');
+            var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+            if (sb) sb.classList.toggle('open', !!open);
+            if (ov) ov.classList.toggle('show', !!open);
+            document.body.classList.toggle('sb-open', !!open);
+        } catch (e) {}
+    }
+    var orig = window.toggleSidebar;
+    window.toggleSidebar = function (open) {
+        try { if (typeof orig === 'function') orig(open); } catch (e) {}
+        sync(open);
+    };
+    window.menuToggle = function () {
+        var sb = document.querySelector('.sidebar');
+        var open = !(sb && sb.classList.contains('open'));
+        window.toggleSidebar(open);
+    };
+})();
+</script>
+<script>
+/* The header's logout button calls logoutUser() from an inline onclick, which runs
+   in GLOBAL scope. Every other reseller panel page defines it as
+   `window.logoutUser = function () { resellerLogout(); };` inside its own script —
+   this page was generated from referral.html and the definition lived in the
+   referral-specific block that was stripped out, which left the logout button
+   silently dead. Restored here. */
+window.logoutUser = function () { resellerLogout(); };
+/* ---------- Website Integration (2026-09-15) ---------- */
+(function () {
+    function el(id) { return document.getElementById(id); }
+    var RID = null;
+    try { RID = sessionStorage.getItem('user_id'); } catch (e) {}
+    function key() { try { return (typeof resellerApiKey === 'function') ? resellerApiKey(RID) : ''; } catch (e) { return ''; } }
+    /* the backend lives next to the panel, so derive it from the current URL */
+    function base() {
+        try { return location.href.replace(/reseller\/[^\/]*(\?.*)?$/, ''); } catch (e) { return ''; }
+    }
+    var API = 'backend/api/resellerhub-api.php';
+    function feedUrl() { return base() + API + '?action=products&key=' + encodeURIComponent(key()); }
+    function orderUrl() { return base() + API + '?action=order&key=' + encodeURIComponent(key()); }
+
+    function copy(txt, msg) {
+        if (!txt) { showToast('আগে লগইন করুন।', 'error'); return; }
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(txt); showToast(msg || 'Copied!', 'success'); return;
+            }
+            var ta = document.createElement('textarea'); ta.value = txt;
+            document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+            showToast(msg || 'Copied!', 'success');
+        } catch (e) { showToast('Copy করা গেল না', 'error'); }
+    }
+    function paint() {
+        var k = key();
+        if (el('apiKeyBox')) el('apiKeyBox').textContent = k || '— (আগে লগইন করুন)';
+        if (el('feedUrlBox')) el('feedUrlBox').textContent = k ? feedUrl() : '—';
+        if (el('orderUrlBox')) el('orderUrlBox').textContent = k ? orderUrl() : '—';
+        var cb = el('wiAutoSync');
+        if (cb) { try { cb.checked = (typeof shopAutoSyncOn === 'function') ? shopAutoSyncOn(RID) : true; } catch (e) { cb.checked = true; } }
+    }
+    window.wiSync = function () {
+        var msg = el('wiSyncMsg');
+        if (msg) msg.textContent = 'সিঙ্ক হচ্ছে…';
+        try {
+            apiSyncNow(RID, base() + API).then(function (r) {
+                var p = (r && r.push) || {}, q = (r && r.pull) || {};
+                if (!p.ok && !q.ok) {
+                    if (msg) msg.textContent = 'সিঙ্ক করা গেল না — সার্ভারে API ফাইলটা আপলোড করা আছে কি?';
+                    showToast('Sync failed — backend not reachable.', 'error');
+                    return;
+                }
+                var sent = (p && typeof p.products === 'number') ? p.products : '—';
+                var got = (q && typeof q.imported === 'number') ? q.imported : 0;
+                if (msg) msg.textContent = sent + 'টি প্রোডাক্ট পাঠানো হলো · ' + got + 'টি নতুন অর্ডার এসেছে';
+                showToast('সিঙ্ক সম্পন্ন ✓', 'success');
+                try { if (typeof renderOrders === 'function') renderOrders(); } catch (e) {}
+            }).catch(function () {
+                if (msg) msg.textContent = 'সিঙ্ক করা গেল না।';
+            });
+        } catch (e) { if (msg) msg.textContent = 'সিঙ্ক করা গেল না।'; }
+    };
+    window.wiAutoToggle = function () {
+        var cb = el('wiAutoSync');
+        try { if (typeof setShopAutoSync === 'function') setShopAutoSync(RID, !!(cb && cb.checked)); } catch (e) {}
+        showToast((cb && cb.checked) ? 'অটোমেটিক সিঙ্ক চালু হলো ✓' : 'অটোমেটিক সিঙ্ক বন্ধ হলো।', 'success');
+    };
+    window.wiCopyKey = function () { copy(key(), 'API key copied!'); };
+    window.wiCopyFeed = function () { copy(feedUrl(), 'Feed URL copied!'); };
+    window.wiRegenKey = function () {
+        if (!confirm('নতুন key বানালে পুরনো key সঙ্গে সঙ্গে বন্ধ হয়ে যাবে। চালিয়ে যাব?')) return;
+        try { if (typeof regenerateResellerApiKey === 'function') regenerateResellerApiKey(RID); } catch (e) {}
+        paint(); showToast('নতুন API key তৈরি হয়েছে — ওয়েবসাইটে বসাতে ভুলবেন না।', 'success');
+    };
+    window.wiPreview = function () {
+        var box = el('wiPreview'), cnt = el('wiCount');
+        try {
+            var feed = (typeof apiProductFeed === 'function') ? apiProductFeed(RID) : [];
+            if (cnt) cnt.textContent = feed.length + 'টি প্রোডাক্ট এই ফিডে যাবে';
+            if (box) { box.style.display = 'block'; box.textContent = JSON.stringify(feed.slice(0, 5), null, 2) + (feed.length > 5 ? '\n\n… আরও ' + (feed.length - 5) + 'টি' : ''); }
+        } catch (e) { if (cnt) cnt.textContent = 'ফিড পড়া গেল না'; }
+    };
+    var SNIP = {
+        wp: '// WordPress: functions.php অথবা একটা ছোট plugin-এ বসান\n'
+          + 'add_shortcode("resellerhub_products", function () {\n'
+          + '  $feed = wp_remote_get("' + feedUrl() + '");\n'
+          + '  if (is_wp_error($feed)) return "";\n'
+          + '  $items = json_decode(wp_remote_retrieve_body($feed), true);\n'
+          + '  $out = "<div class=\\"rh-products\\">";\n'
+          + '  foreach ($items["products"] as $p) {\n'
+          + '    $out .= "<div class=\\"rh-item\\">"\n'
+          + '          . "<img src=\\"" . esc_url($p["image"]) . "\\">"\n'
+          + '          . "<h4>" . esc_html($p["name"]) . "</h4>"\n'
+          + '          . "<span>৳" . esc_html($p["price"]) . "</span>"\n'
+          + '          . "</div>";\n'
+          + '  }\n'
+          + '  return $out . "</div>";\n'
+          + '});\n'
+          + '// তারপর পেজে বসান:  [resellerhub_products]',
+        shopify: '<!-- Shopify: প্রোডাক্ট পেজ / থিমের liquid ফাইলে বসান -->\n'
+          + '<script>\n'
+          + 'fetch("' + feedUrl() + '")\n'
+          + '  .then(function(r){ return r.json(); })\n'
+          + '  .then(function(d){\n'
+          + '    var box = document.getElementById("rh-products");\n'
+          + '    d.products.forEach(function(p){\n'
+          + '      var el = document.createElement("div");\n'
+          + '      el.className = "rh-item";\n'
+          + '      el.innerHTML = "<img src=\\"" + p.image + "\\"><h4>" + p.name +\n'
+          + '                       "</h4><span>৳" + p.price + "</span>";\n'
+          + '      box.appendChild(el);\n'
+          + '    });\n'
+          + '  });\n'
+          /* NOTE: the closing script tag MUST be escaped as <\/script>.
+             Written literally it would END this inline <script> block here and
+             leave a dangling quote — which is exactly what happened first time. */
+          + '<\/script>\n'
+          + '<div id="rh-products"></div>',
+        custom: '// নিজের কোড করা সাইট — প্রোডাক্ট আনুন\n'
+          + 'fetch("' + feedUrl() + '")\n'
+          + '  .then(r => r.json())\n'
+          + '  .then(d => console.log(d.products));\n\n'
+          + '// অর্ডার পাঠান\n'
+          + 'fetch("' + orderUrl() + '", {\n'
+          + '  method: "POST",\n'
+          + '  headers: { "Content-Type": "application/json" },\n'
+          + '  body: JSON.stringify({\n'
+          + '    customer: "Karim",\n'
+          + '    phone: "01700000000",\n'
+          + '    address: "Dhaka",\n'
+          + '    shippingMethod: "inside",   // অথবা "outside"\n'
+          + '    externalOrderId: "MY-1001",\n'
+          + '    items: [ { productId: "PRODUCT_ID", qty: 1 } ]\n'
+          + '  })\n'
+          + '});'
+    };
+    window.wiTab = function (which) {
+        var box = el('wiSnippet');
+        if (box) box.textContent = SNIP[which] || '';
+        ['wp', 'shopify', 'custom'].forEach(function (t) {
+            var b = el('wiTab-' + t);
+            if (b) b.style.background = (t === which) ? '#4f46e5' : '';
+            if (b) b.style.color = (t === which) ? '#fff' : '';
+        });
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { paint(); wiTab('wp'); });
+    else { paint(); wiTab('wp'); }
+    setTimeout(paint, 400);
+})();
+</script>
+</body>
+</html>

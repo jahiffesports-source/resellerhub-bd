@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - Admin - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#f1f5f9; color:#1e293b; }
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:240px; background:linear-gradient(180deg,#0f172a 0%,#0f172a 100%); color:#cbd5e1; z-index:100; overflow-y:auto; }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid #334155; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:38px; height:38px; background:linear-gradient(135deg,#dc2626,#b91c1c); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; }
+        .sidebar-logo h3 { color:white; font-size:1rem; }
+        .sidebar-logo small { color:#94a3b8; font-size:0.7rem; display:block; }
+        .sidebar-menu { list-style:none; padding:12px 0; }
+        .sidebar-menu li { margin:2px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:10px 20px; color:#cbd5e1; text-decoration:none; font-size:0.88rem; }
+        .sidebar-menu a:hover { background:rgba(255,255,255,0.05); color:white; }
+        .sidebar-menu a.active { background:#10b981; color:white; }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 20px 5px; color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+        .main { margin-left:240px; min-height:100vh; }
+        .breadcrumb { padding:14px 25px 0; font-size:.82rem; color:#64748b; }
+        .breadcrumb b { color:#1e293b; }
+        .content { padding:12px 25px 25px; }
+        .phead { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+        .phead h1 { font-size:1.7rem; font-weight:800; }
+        .phead p { color:#64748b; font-size:.88rem; }
+        .btn { padding:10px 18px; border:none; border-radius:8px; font-weight:700; font-size:.88rem; cursor:pointer; display:inline-flex; align-items:center; gap:6px; text-decoration:none; }
+        .btn-teal { background:#10b981; color:white; }
+        .btn-teal:hover { background:#059669; }
+        .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px; }
+        .stat-card { border-radius:14px; padding:16px 18px; border:1px solid #e2e8f0; transition:transform .15s, box-shadow .15s; position:relative; overflow:hidden; }
+        .stat-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; border-radius:4px 0 0 4px; }
+        .s-blue::before { background:#3b82f6 } .s-green::before { background:#10b981 } .s-yellow::before { background:#f59e0b } .s-purple::before { background:#a855f7 }
+        .stat-card:hover { transform:translateY(-3px); box-shadow:0 10px 24px rgba(15,23,42,.1); }
+        .stat-card .big { font-size:1.6rem; font-weight:900; }
+        .stat-card .lbl { font-size:.8rem; color:#64748b; margin-top:2px; font-weight:600; }
+        .stat-card .ico { font-size:1.4rem; margin-bottom:6px; }
+        .s-blue { background:#eff6ff; border-color:#bfdbfe } .s-blue .big{color:#1d4ed8}
+        .s-green { background:#ecfdf5; border-color:#a7f3d0 } .s-green .big{color:#047857}
+        .s-yellow { background:#fefce8; border-color:#fde68a } .s-yellow .big{color:#a16207}
+        .s-purple { background:#faf5ff; border-color:#e9d5ff } .s-purple .big{color:#7e22ce}
+        .toolbar { display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; align-items:center; background:#fff; padding:14px 16px; border-radius:14px; box-shadow:0 2px 10px rgba(15,23,42,.06); }
+        .toolbar input[type=text] { flex:1; min-width:200px; padding:10px 16px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:.9rem; }
+        .toolbar input[type=text]:focus, .toolbar select:focus { outline:none; border-color:#10b981; box-shadow:0 0 0 3px rgba(16,185,129,.12); }
+        .toolbar select { padding:10px 14px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:.88rem; background:white; }
+        .vmode { display:flex; border:1.5px solid #e2e8f0; border-radius:10px; overflow:hidden; }
+        .vmode button { padding:10px 14px; border:none; background:white; cursor:pointer; font-size:.95rem; color:#64748b; }
+        .vmode button.on { background:#1e293b; color:white; }
+        .products-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:14px; }
+        .pcard { background:white; border-radius:14px; overflow:hidden; border:1px solid #eef0f6; transition:all .2s; box-shadow:0 2px 8px rgba(15,23,42,.04); }
+        .pcard:hover { box-shadow:0 14px 32px rgba(15,23,42,.13); transform:translateY(-4px); }
+        .pcard.dim { opacity:.55 }
+        .pimg { position:relative; height:190px; background:#f8fafc; overflow:hidden; }
+        /* Full image visible - never cropped, aspect ratio preserved (item 3) */
+        .pimg img { width:100%; height:100%; object-fit:contain; background:#fff; transition:transform .3s; }
+        .pcard:hover .pimg img { transform:scale(1.04); }
+        .pimg .noimg { width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#cbd5e1; font-size:2.6rem; }
+        .disc-tag { position:absolute; top:8px; left:8px; background:#ef4444; color:#fff; font-size:.66rem; font-weight:800; padding:2px 8px; border-radius:10px; }
+        .low-tag { position:absolute; bottom:8px; left:8px; background:#f59e0b; color:#fff; font-size:.62rem; font-weight:700; padding:2px 8px; border-radius:8px; }
+        .phover { position:absolute; top:8px; right:8px; display:flex; gap:5px; opacity:0; transition:.2s; }
+        .pcard:hover .phover { opacity:1; }
+        .phover button { width:28px; height:28px; background:#fff; border:none; border-radius:8px; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.12); color:#475569; font-size:.75rem; }
+        .phover button.del:hover { background:#ef4444; color:#fff; }
+        .pinfo { padding:13px; }
+        .pinfo h4 { font-size:.92rem; font-weight:700; margin-bottom:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .cat-badge { font-size:.66rem; font-weight:600; padding:2px 8px; border-radius:6px; background:#f1f5f9; color:#475569; display:inline-block; margin-bottom:7px; }
+        .swrow { display:flex; gap:4px; margin-bottom:5px; flex-wrap:wrap; }
+        .swrow .d { width:13px; height:13px; border-radius:50%; border:1px solid rgba(0,0,0,.12); }
+        .szrow { display:flex; gap:3px; flex-wrap:wrap; margin-bottom:6px; }
+        .szrow small { background:#f1f5f9; font-size:.6rem; padding:1px 5px; border-radius:4px; font-weight:600; color:#475569; }
+        .pr-row { display:flex; justify-content:space-between; margin-bottom:8px; }
+        .pr-row .l { font-size:.68rem; color:#94a3b8; }
+        .pr-row .retail { font-weight:800; font-size:.95rem; color:#10b981; }
+        .pr-row .resell { font-weight:700; font-size:.82rem; color:#2563eb; text-align:right; }
+        .act-tgl { width:100%; padding:8px; border:none; border-radius:8px; font-size:.78rem; font-weight:700; cursor:pointer; }
+        .act-on { background:#ecfdf5; color:#059669; }
+        .act-off { background:#f1f5f9; color:#64748b; }
+        .empty { text-align:center; padding:60px; color:#94a3b8; }
+        .empty i { font-size:3rem; display:block; margin-bottom:12px; opacity:.3; }
+        /* ===== MODAL ===== */
+        .modal-o { position:fixed; inset:0; background:rgba(15,23,42,.65); display:none; align-items:center; justify-content:center; z-index:1000; padding:18px; }
+        .modal-o.show { display:flex; }
+        .modal { background:white; border-radius:16px; width:100%; max-width:680px; max-height:92vh; display:flex; flex-direction:column; overflow:hidden; }
+        .mhead { padding:16px 22px; display:flex; justify-content:space-between; align-items:center; }
+        .mhead h3 { font-size:1.15rem; font-weight:800; display:flex; align-items:center; gap:8px; }
+        .mhead p { font-size:.8rem; color:#64748b; }
+        .mclose { background:none; border:none; font-size:1.4rem; cursor:pointer; color:#64748b; }
+        .mtabs { display:flex; gap:2px; padding:0 22px; border-bottom:1px solid #eef0f6; overflow-x:auto; }
+        .mtab { padding:10px 14px; font-size:.82rem; font-weight:600; color:#64748b; cursor:pointer; border:none; background:none; border-bottom:2.5px solid transparent; white-space:nowrap; display:flex; align-items:center; gap:5px; }
+        .mtab.on { color:#10b981; border-bottom-color:#10b981; }
+        .mbody { padding:20px 22px; overflow-y:auto; flex:1; }
+        .mfoot { padding:13px 22px; border-top:1px solid #eef0f6; display:flex; justify-content:space-between; align-items:center; }
+        .dots { display:flex; gap:5px; }
+        .dots i { width:6px; height:6px; border-radius:50%; background:#d1d5db; }
+        .dots i.on { background:#10b981; width:16px; border-radius:4px; }
+        .mfoot-r { display:flex; gap:9px; }
+        .fg { margin-bottom:14px; }
+        .fg label { display:block; font-weight:600; font-size:.84rem; margin-bottom:5px; color:#334155; }
+        .fg label .req { color:#ef4444; }
+        .fg input[type=text], .fg input[type=number], .fg input[type=url], .fg select, .fg textarea { width:100%; padding:11px 14px; border:1.5px solid #e2e8f0; border-radius:9px; font-size:.9rem; font-family:inherit; }
+        .fg input:focus, .fg select:focus, .fg textarea:focus { outline:none; border-color:#10b981; }
+        .fg .h { font-size:.72rem; color:#94a3b8; margin-top:4px; }
+        /* Item 10 — tiny rename / delete buttons beside the 3-level category selects */
+        .cat-mini { background:#f1f5f9; border:1px solid #e2e8f0; border-radius:6px; padding:1px 6px; font-size:.7rem; line-height:1.5; cursor:pointer; margin-left:4px; vertical-align:middle; }
+        .cat-mini:hover { background:#e0e7ff; border-color:#c7d2fe; }
+        .cat-mini.del:hover { background:#fee2e2; border-color:#fecaca; }
+        .frow { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+        .price-in { position:relative; }
+        .price-in .taka { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#10b981; font-weight:700; }
+        .price-in input { padding-left:30px !important; }
+        .oos { color:#ef4444; font-size:.75rem; font-weight:700; margin-top:4px; display:none; }
+        /* Images tab */
+        .addimg { width:130px; height:130px; border:2px dashed #d1d5db; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; color:#9ca3af; font-size:.78rem; gap:5px; }
+        .addimg:hover { border-color:#10b981; color:#10b981; }
+        .addimg i { font-size:1.3rem; }
+        .gwrap { border:1.5px dashed #e2e8f0; border-radius:10px; padding:26px; text-align:center; color:#b6bccb; margin-top:14px; }
+        .gwrap i { font-size:1.8rem; display:block; margin-bottom:6px; }
+        .igal { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+        .igal .g { position:relative; width:74px; height:74px; border-radius:10px; overflow:hidden; border:2px solid #e2e8f0; }
+        .igal .g img { width:100%; height:100%; object-fit:cover; }
+        .igal .g button { position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%; background:#ef4444; color:#fff; border:none; font-size:.62rem; cursor:pointer; }
+        .igal .g .main-tag { position:absolute; bottom:0; left:0; right:0; background:rgba(16,185,129,.9); color:#fff; font-size:.55rem; text-align:center; font-weight:700; }
+        /* Colors tab */
+        .colgrid { display:grid; grid-template-columns:repeat(6,1fr); gap:9px; }
+        .colitem { border:1.5px solid #e2e8f0; border-radius:9px; padding:9px 4px; text-align:center; cursor:pointer; transition:.15s; }
+        .colitem:hover { border-color:#10b981; }
+        .colitem.on { border-color:#10b981; background:#ecfdf5; }
+        .colitem .c { width:26px; height:26px; border-radius:50%; margin:0 auto 5px; border:1px solid rgba(0,0,0,.08); }
+        .colitem p { font-size:.64rem; font-weight:600; color:#475569; }
+        .czrow { display:flex; gap:8px; margin-top:12px; }
+        .czrow input { flex:1; padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:.85rem; }
+        .szpresets { display:flex; gap:6px; margin-bottom:10px; }
+        .szp { padding:6px 14px; border-radius:16px; font-size:.75rem; font-weight:600; cursor:pointer; background:#f1f5f9; color:#475569; border:none; }
+        .szp.on { background:#10b981; color:#fff; }
+        .selchips { display:flex; gap:5px; flex-wrap:wrap; margin-top:10px; }
+        .selchips span { background:#ecfdf5; color:#047857; font-size:.72rem; font-weight:700; padding:4px 10px; border-radius:14px; }
+        /* Summary */
+        .psum { background:#f8fafc; border-radius:10px; padding:16px; }
+        .psum .r { display:flex; padding:5px 0; font-size:.82rem; border-bottom:1px dashed #eef0f6; }
+        .psum .r:last-child { border-bottom:none; }
+        .psum .r b { width:45%; color:#64748b; font-weight:600; }
+        .psum .r span { flex:1; text-align:right; font-weight:600; color:#1e293b; }
+        .taka-g { color:#10b981; font-weight:800; }
+        .toggle { position:relative; width:44px; height:24px; background:#10b981; border-radius:20px; cursor:pointer; transition:.2s; display:inline-block; vertical-align:middle; }
+        .toggle.off { background:#d1d5db; }
+        .toggle::after { content:''; position:absolute; top:2px; left:22px; width:20px; height:20px; background:white; border-radius:50%; transition:.2s; }
+        .toggle.off::after { left:2px; }
+        .tg-row { display:flex; align-items:center; gap:10px; background:#f8fafc; padding:12px 14px; border-radius:10px; }
+        .tg-row b { font-size:.87rem; }
+        .tg-row small { color:#64748b; font-size:.76rem; display:block; }
+        @media (max-width:1500px) { .products-grid { grid-template-columns:repeat(5,1fr); } }
+        @media (max-width:1024px) { .products-grid { grid-template-columns:repeat(4,1fr); } }
+        @media (max-width:860px) { .products-grid { grid-template-columns:repeat(3,1fr); } }
+        @media (max-width:768px) {
+            .sidebar { width:240px; } .sidebar-logo h3, .sidebar-logo small, .sidebar-menu a span, .sidebar-divider { display:initial; }
+            .main { margin-left:240px; } .products-grid { grid-template-columns:repeat(2,1fr); } .stats-row { grid-template-columns:repeat(2,1fr); }
+        }
+        @media (max-width:480px) {
+            .sidebar { width:200px; }
+            .main { margin-left:200px; padding:12px 12px 25px; }
+            .products-grid { grid-template-columns:1fr 1fr; }
+        }
+    </style>
+
+
+
+
+<style id="lx-sb-final">
+/* ===== ADMIN SIDEBAR v4 — fresh premium design (authoritative) ===== */
+body .lx-sidebar { position:fixed !important; left:0 !important; top:0 !important; bottom:0 !important; width:264px !important; background:linear-gradient(180deg,#0d1226 0%,#171233 100%) !important; border-right:1px solid rgba(129,140,248,.14) !important; z-index:600 !important; overflow-y:auto !important; overflow-x:hidden !important; display:flex !important; flex-direction:column !important; transform:none !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; font-family:'Inter','Hind Siliguri',sans-serif !important; }
+body .lx-sidebar::before { content:'' !important; position:absolute !important; top:-80px !important; right:-60px !important; width:260px !important; height:260px !important; background:radial-gradient(circle,rgba(99,102,241,.18),transparent 70%) !important; pointer-events:none !important; }
+body .lx-brand { display:flex !important; align-items:center !important; gap:12px !important; padding:20px 18px !important; border-bottom:1px solid rgba(129,140,248,.14) !important; position:relative !important; }
+body .lx-brand-ic { width:42px !important; height:42px !important; border-radius:13px !important; background:linear-gradient(135deg,#6366f1,#a855f7) !important; display:flex !important; align-items:center !important; justify-content:center !important; color:#fff !important; font-size:1.05rem !important; box-shadow:0 8px 20px rgba(99,102,241,.4) !important; flex-shrink:0 !important; }
+body .lx-brand-tx b { color:#fff !important; font-size:1.02rem !important; font-weight:900 !important; display:block !important; line-height:1.2 !important; }
+body .lx-brand-tx small { color:#818cf8 !important; font-size:.6rem !important; font-weight:800 !important; letter-spacing:2px !important; }
+body .lx-close { margin-left:auto !important; background:rgba(255,255,255,.06) !important; border:none !important; color:#94a3b8 !important; width:30px !important; height:30px !important; border-radius:9px !important; cursor:pointer !important; font-size:1rem !important; display:none !important; align-items:center !important; justify-content:center !important; }
+body .lx-close:hover { background:#fee2e2 !important; color:#dc2626 !important; }
+body .lx-menu { padding:14px 12px !important; flex:1 !important; }
+body .sec-label { font-size:.6rem !important; font-weight:900 !important; letter-spacing:2.2px !important; color:#6b7280 !important; text-transform:uppercase !important; padding:14px 12px 6px !important; display:flex !important; align-items:center !important; gap:8px !important; }
+body .sec-label::before { content:'' !important; width:14px !important; height:2px !important; background:linear-gradient(90deg,#6366f1,#a855f7) !important; border-radius:2px !important; }
+body .sb-item { position:relative !important; display:flex !important; align-items:center !important; gap:11px !important; padding:9px 12px !important; margin:3px 0 !important; border-radius:12px !important; color:#b6c2e2 !important; text-decoration:none !important; font-size:.86rem !important; font-weight:600 !important; transition:all .2s !important; border:1px solid transparent !important; background:transparent !important; opacity:1 !important; visibility:visible !important; pointer-events:auto !important; box-shadow:none !important; transform:none !important; }
+body .sb-item .sb-ico { width:30px !important; height:30px !important; border-radius:9px !important; background:rgba(255,255,255,.05) !important; display:flex !important; align-items:center !important; justify-content:center !important; font-size:.82rem !important; flex-shrink:0 !important; transition:all .2s !important; }
+body .sb-item .sb-txt { flex:1 !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; display:block !important; }
+body .sb-item:hover { background:rgba(99,102,241,.13) !important; color:#fff !important; }
+body .sb-item:hover .sb-ico { background:rgba(99,102,241,.3) !important; }
+body .sb-item.on { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; border-color:rgba(129,140,248,.35) !important; }
+body .sb-item.on::before { content:'' !important; position:absolute !important; left:-12px !important; top:50% !important; transform:translateY(-50%) !important; width:3.5px !important; height:60% !important; background:linear-gradient(180deg,#818cf8,#c084fc) !important; border-radius:3px !important; }
+body .sb-item.on .sb-ico { background:linear-gradient(135deg,#6366f1,#a855f7) !important; color:#fff !important; }
+/* page-এর নিচের inline-highlight script সবসময় হারাবে */
+body .sb-item[style] { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; }
+body .sb-badge { background:#fbbf24 !important; color:#1e293b !important; font-size:.62rem !important; padding:1px 8px !important; border-radius:10px !important; font-weight:800 !important; margin-left:auto !important; }
+body .main { margin-left:264px !important; min-height:100vh !important; }
+body .side-overlay { display:none !important; position:fixed !important; inset:0 !important; background:rgba(7,10,26,.6) !important; z-index:590 !important; backdrop-filter:blur(2px) !important; }
+body .side-overlay.show { display:block !important; pointer-events:auto !important; }
+body .hamburger { display:none !important; }
+/* ===== মোবাইল/ট্যাবলেট: slide drawer ===== */
+@media (max-width:1024px) {
+    body .main { margin-left:0 !important; }
+    body .lx-sidebar { transform:translateX(-100%) !important; box-shadow:none !important; }
+    body .lx-sidebar.open { transform:none !important; box-shadow:30px 0 70px rgba(7,10,26,.6) !important; }
+    body .lx-close { display:flex !important; }
+    body .hamburger { display:inline-flex !important; }
+    body { overflow-x:hidden !important; }
+}
+</style>
+
+
+
+
+
+<style id="lx-ovf-fix">
+@media(max-width:768px){ body{overflow-x:hidden !important} }
+</style>
+<style id="lx-orders-badge-n">.orders-badge-n{color:#fbbf24;font-weight:900;font-size:.72rem}.orders-badge-n:empty{display:none}</style>
+<style id="admin-mobile-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   The admin topbar measured about 474px across on a 390px phone (25px padding, an
+   h2 at 1.2rem, 12px gaps, a wide user pill), so the logout button was pushed past
+   the right edge. Several admin tables are also built by JS with NO .table-scroll
+   wrapper, so they widened the whole page instead of scrolling.
+   EVERY rule below sits inside a max-width query, so the DESKTOP LAYOUT IS
+   UNCHANGED. This is an ADDED block — no existing rule is modified or removed. */
+@media (max-width:768px){
+  .topbar { padding:10px 12px; gap:8px; }
+  .topbar h2 { font-size:.92rem; }
+  .topbar h2 i { margin-right:4px; }
+  .topbar-right { gap:6px; }
+  .user-pill { padding:5px 9px; font-size:.72rem; }
+  .btn-logout { padding:7px 10px; }
+  /* a table without a scroll wrapper would otherwise push the page wide */
+  .data-table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%; }
+}
+</style>
+<style id="panel-fullwidth-fix">
+/* 2026-09-16 — FULL-WIDTH FIX for the admin and supplier panels (this request).
+   The whole page sat in a narrow column with empty space on the right, because the
+   base rule reserves the sidebar with `margin-left`, and a block element with
+   margin-left and width:auto is only (100% - that) wide. A LATER rule in the same
+   file re-asserted the margin with !important, so the earlier mobile override lost.
+   This block is the LAST thing in the document, so it wins, and it resets width as
+   well as margin. Desktop is untouched — everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<button class="lx-float-ham" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+<style id="lx-float-ham-css">
+.lx-float-ham{display:none;position:fixed;top:12px;left:12px;z-index:300;width:44px;height:44px;border:none;border-radius:12px;background:#fff;color:#1e293b;font-size:1.2rem;cursor:pointer;box-shadow:0 6px 18px rgba(15,23,42,.18)}
+@media(max-width:768px){.lx-float-ham{display:flex;align-items:center;justify-content:center}}
+</style>
+<aside class="lx-sidebar sidebar" id="sidebar">
+    <div class="lx-brand">
+        <span class="lx-brand-ic"><i class="fas fa-user-shield"></i></span>
+        <div class="lx-brand-tx"><b>AdminHub</b><small>CONTROL PANEL</small></div>
+        <button class="lx-close" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+    <nav class="lx-menu">
+        <div class="sec-label">Main</div>
+        <a href="dashboard.html" class="sb-item"><span class="sb-ico"><i class="fas fa-chart-line"></i></span><span class="sb-txt">Dashboard</span></a>
+        <a href="orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-shopping-cart"></i></span><span class="sb-txt">All Orders<span class="orders-badge-n" id="ordersBadgeN"></span></span><span class="orders-badge" style="display:none;margin-left:auto;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:.62rem;font-weight:800"></span></a>
+        <a href="multi-supplier-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-people-arrows"></i></span><span class="sb-txt">Multi-Supplier Orders<span class="orders-badge-n" id="msCount"></span></span></a>
+        <a href="products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box"></i></span><span class="sb-txt">Products</span></a>
+        <div class="sec-label">Users</div>
+        <a href="resellers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-users"></i></span><span class="sb-txt">Resellers</span></a>
+        <a href="suppliers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-warehouse"></i></span><span class="sb-txt">Suppliers</span></a>
+        <a href="supplier-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-boxes-stacked"></i></span><span class="sb-txt">Supplier Products</span></a>
+        <a href="add-reseller.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Add Reseller</span></a>
+        <a href="add-supplier.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck"></i></span><span class="sb-txt">Add Supplier</span></a>
+        <a href="approvals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-check"></i></span><span class="sb-txt">Approvals</span></a>
+        <a href="withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-money-bill-wave"></i></span><span class="sb-txt">Withdrawals</span></a>
+        <a href="supplier-withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-hand-holding-dollar"></i></span><span class="sb-txt">Supplier Withdraw</span></a>
+        <a href="transactions.html" class="sb-item"><span class="sb-ico"><i class="fas fa-receipt"></i></span><span class="sb-txt">Transaction History</span></a>
+        <a href="moderators.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-shield"></i></span><span class="sb-txt">Moderators</span></a>
+        <div class="sec-label">Referral</div>
+        <a href="referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Reseller Referral</span></a>
+        <a href="supplier-referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck-arrow-right"></i></span><span class="sb-txt">Supplier Referral</span></a>
+                <a href="myshop-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-bag-shopping"></i></span><span class="sb-txt">My Shop Orders</span></a>
+        <a href="myshop-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box-open"></i></span><span class="sb-txt">My Shop Products</span></a>
+        <div class="sec-label">Offers &amp; Banners</div>
+        <a href="add-offer.html" class="sb-item"><span class="sb-ico"><i class="fas fa-plus-circle"></i></span><span class="sb-txt">Add Offers</span></a>
+        <a href="manage-offers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-gift"></i></span><span class="sb-txt">Manage Offers</span></a>
+        <a href="add-banner.html" class="sb-item"><span class="sb-ico"><i class="fas fa-image"></i></span><span class="sb-txt">Add Banners</span></a>
+        <a href="manage-banners.html" class="sb-item"><span class="sb-ico"><i class="fas fa-images"></i></span><span class="sb-txt">Manage Banners</span></a>
+        <div class="sec-label">System</div>
+        <a href="messages.html" class="sb-item"><span class="sb-ico"><i class="fas fa-comments"></i></span><span class="sb-txt">Messages<span class="orders-badge-n" id="msgBadgeN"></span></span></a>
+        <a href="settings.html" class="sb-item"><span class="sb-ico"><i class="fas fa-cog"></i></span><span class="sb-txt">Settings</span></a>
+        <a href="../index.html" class="sb-item"><span class="sb-ico"><i class="fas fa-globe"></i></span><span class="sb-txt">Visit Site</span></a>
+    </nav>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="breadcrumb">Admin &nbsp;›&nbsp; <b>Products</b></div>
+    <div class="content">
+        <div class="phead">
+            <div><h1>Products</h1><p><span id="pTotal">0</span> total • <span id="pActive">0</span> active • <span id="pLow">0</span> low stock</p></div>
+            <button class="btn btn-teal" onclick="openAdd()"><i class="fas fa-plus"></i> Add Product</button>
+        </div>
+        <div class="stats-row">
+            <div class="stat-card s-blue"><div class="ico">📦</div><div class="big" id="sT">0</div><div class="lbl">Total Products</div></div>
+            <div class="stat-card s-green"><div class="ico">✅</div><div class="big" id="sA">0</div><div class="lbl">Active Products</div></div>
+            <div class="stat-card s-yellow"><div class="ico">⚠️</div><div class="big" id="sL">0</div><div class="lbl">Low Stock</div></div>
+            <div class="stat-card s-purple" onclick="location.href='supplier-products.html'" style="cursor:pointer" title="Supplier Products page-তে review করুন"><div class="ico">⏳</div><div class="big" id="sPend">0</div><div class="lbl">Pending Product Approval</div></div>
+        </div>
+
+        <div class="toolbar">
+            <input type="text" id="q" placeholder="🔍 Search by name or SKU..." oninput="renderGrid()">
+            <select id="catF" onchange="renderGrid()"><option value="">All Categories</option></select>
+            <select id="stF" onchange="renderGrid()"><option value="">All Status</option><option value="on">Active</option><option value="off">Inactive</option></select>
+            <div class="vmode"><button class="on" onclick="setMode('grid',this)">⊞</button><button onclick="setMode('list',this)">☰</button></div>
+        </div>
+
+        <div class="products-grid" id="grid"></div>
+        <div id="listWrap" style="display:none"></div>
+        <div id="adminPageBar"></div>
+    </div>
+</main>
+
+<!-- ===== ADD/EDIT PRODUCT MODAL (SelfShop 5-tab) ===== -->
+<div class="modal-o" id="pm">
+<div class="modal">
+<div class="mhead">
+<div><h3><i class="fas fa-plus" style="color:#10b981"></i> <span id="pmTitle">Add New Product</span></h3><p id="pmSub">Fill in the details to create a new product</p></div>
+<button class="mclose" onclick="closePM()">&times;</button>
+</div>
+<div class="mtabs">
+<button class="mtab on" data-t="0" onclick="mgo(0)"><i class="fas fa-info-circle"></i> Basic Info</button>
+<button class="mtab" data-t="1" onclick="mgo(1)"><i class="fas fa-images"></i> Images</button>
+<button class="mtab" data-t="2" onclick="mgo(2)"><i class="fas fa-tag"></i> Pricing</button>
+<button class="mtab" data-t="3" onclick="mgo(3)"><i class="fas fa-palette"></i> Colors &amp; Sizes</button>
+<button class="mtab" data-t="4" onclick="mgo(4)"><i class="fas fa-sticky-note"></i> Details</button>
+</div>
+<div class="mbody">
+<!-- TAB 0: BASIC INFO -->
+<div class="msec" id="ms0">
+<div class="fg"><label>Product Name <span class="req" style="color:#ef4444">*</span></label><input type="text" id="f_name" placeholder="e.g. Premium Cotton T-Shirt"></div>
+<div class="fg"><label>Description</label><textarea id="f_desc" rows="3" placeholder="Describe the product in detail..."></textarea></div>
+<div class="frow">
+<!-- Item 10 — 3-level cascading Category > Sub Category > Sub-Sub Category (create / edit / delete) -->
+<div class="fg"><label>Category <button type="button" class="cat-mini" title="Rename category" onclick="fRenameCat()">✏️</button><button type="button" class="cat-mini del" title="Delete category" onclick="fDelCat()">🗑</button></label><select id="f_cat"><option value="">Select category...</option></select></div>
+<div class="fg"><label>Sub Category <button type="button" class="cat-mini" title="Rename sub-category" onclick="fRenameSub()">✏️</button><button type="button" class="cat-mini del" title="Delete sub-category" onclick="fDelSub()">🗑</button></label><select id="f_sub" onchange="fSubChange()"></select><div id="fNewSubWrap" style="display:none;gap:6px;margin-top:7px;"><input type="text" id="f_newsub" placeholder="নতুন sub-category-র নাম" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;box-sizing:border-box;"><button type="button" onclick="fAddSubNew()" style="background:#10b981;color:#fff;border:none;border-radius:8px;padding:9px 14px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Add</button></div></div>
+<div class="fg"><label>Sub-Sub Category <small style="color:#94a3b8;">(optional — e.g. Abaya / Hijab)</small> <button type="button" class="cat-mini" title="Rename sub-sub-category" onclick="fRenameSubSub()">✏️</button><button type="button" class="cat-mini del" title="Delete sub-sub-category" onclick="fDelSubSub()">🗑</button></label><select id="f_subsub" onchange="fSubSubChange()"></select><div id="fNewSubSubWrap" style="display:none;gap:6px;margin-top:7px;"><input type="text" id="f_newsubsub" placeholder="নতুন sub-sub-category-র নাম" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;box-sizing:border-box;"><button type="button" onclick="fAddSubSubNew()" style="background:#10b981;color:#fff;border:none;border-radius:8px;padding:9px 14px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Add</button></div></div>
+<div class="fg"><label>YouTube Video Link <small style="color:#94a3b8;">(optional — product page-এ video play হবে)</small></label><input type="url" id="f_yt" placeholder="https://www.youtube.com/watch?v=..."></div>
+</div>
+<div class="frow">
+<div class="fg"><label>SKU / Product Code</label><input type="text" id="f_sku" placeholder="e.g. SKU-001"></div>
+<div class="fg"><label>Brand</label><input type="text" id="f_brand" placeholder="Brand name"></div>
+</div>
+<div class="tg-row"><span class="toggle" id="f_active_t" onclick="this.classList.toggle('off')"></span><div><b>Active</b><small>— visible to customers</small></div></div>
+<!-- Item 14 — Ready to Campaign (admin upload / edit) -->
+<div class="tg-row"><span class="toggle off" id="f_campaign_t" onclick="this.classList.toggle('off')"></span><div><b>🚀 Ready to Campaign</b><small>— reseller panel-এর "Ready to Campaign" filter-এ দেখাবে</small></div></div>
+</div>
+<!-- TAB 1: IMAGES -->
+<div class="msec" id="ms1" style="display:none">
+<p style="font-size:.85rem;color:#475569;margin-bottom:12px">Upload high-quality product images. First image will be the main display image.</p>
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start">
+<div class="addimg" onclick="document.getElementById('f_imgs').click()"><i class="fas fa-upload"></i> Add Image</div>
+</div>
+<input type="file" id="f_imgs" accept="image/*" multiple style="display:none" onchange="pickImgs(event)">
+<div class="gwrap"><i class="fas fa-inbox"></i><span id="gMsg">No images yet. Click "Add Image" to upload.</span></div>
+<div class="igal" id="fGal"></div>
+</div>
+<!-- TAB 2: PRICING -->
+<div class="msec" id="ms2" style="display:none">
+<div class="frow">
+<div class="fg"><label>Customer Price (৳) <span style="color:#ef4444">*</span></label><div class="price-in"><span class="taka">৳</span><input type="number" id="f_cprice" placeholder="0" oninput="updateSummary()"></div><div class="h">Price customers pay</div></div>
+<div class="fg"><label>Reseller Price (৳) <span style="color:#ef4444">*</span></label><div class="price-in"><span class="taka">৳</span><input type="number" id="f_rprice" placeholder="0" oninput="updateSummary()"></div><div class="h">Price resellers pay</div></div>
+<div class="fg"><label>Admin Buying Price (৳) <small style="color:#94a3b8;">(supplier থেকে কেনা দাম)</small></label><div class="price-in"><span class="taka">৳</span><input type="number" id="f_buy" placeholder="0"></div><div class="h">Admin profit = Reseller Price − Buying Price</div></div>
+</div>
+<div class="frow">
+<div class="fg"><label>Discount %</label><input type="number" id="f_disc" value="0" min="0" max="90"></div>
+<div class="fg"><label>Stock Quantity</label><input type="number" id="f_stock" value="0" min="0" oninput="updateSummary()"><div class="oos" id="oosMsg">0 - Out of Stock</div></div>
+</div>
+</div>
+<!-- TAB 3: COLORS & SIZES -->
+<div class="msec" id="ms3" style="display:none">
+<div class="fg"><label style="display:flex;align-items:center;gap:6px"><i class="fas fa-palette" style="color:#10b981"></i> Available Colors</label>
+<div class="colgrid" id="colGrid"></div>
+<div class="czrow"><input type="text" id="v_name" placeholder="Custom color name..."><button type="button" class="btn btn-teal" style="padding:9px 16px" onclick="addColor()">Add</button></div>
+<div class="selchips" id="selColors"></div>
+</div>
+<div class="fg"><label style="display:flex;align-items:center;gap:6px"><i class="fas fa-ruler-horizontal" style="color:#10b981"></i> Available Sizes</label>
+<div class="szpresets">
+<button type="button" class="szp on" onclick="szPreset('Clothing',this)">Clothing</button>
+<button type="button" class="szp" onclick="szPreset('Shoes',this)">Shoes</button>
+<button type="button" class="szp" onclick="szPreset('Kids',this)">Kids</button>
+</div>
+<div id="szChips" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+<div class="czrow"><input type="text" id="v_size" placeholder='Custom size (e.g. 32×34)...'><button type="button" class="btn btn-teal" style="padding:9px 16px" onclick="addSize()">Add</button></div>
+<div class="selchips" id="selSizes"></div>
+</div>
+</div>
+<!-- TAB 4: DETAILS + SUMMARY -->
+<div class="msec" id="ms4" style="display:none">
+<div class="frow">
+<div class="fg"><label>Material</label><input type="text" id="f_material" placeholder="e.g. 100% Cotton"></div>
+<div class="fg"><label>Weight</label><input type="text" id="f_weight" placeholder="e.g. 250g"></div>
+</div>
+<div class="fg" style="margin-top:18px"><label style="font-weight:800;color:#1e293b">Product Summary</label></div>
+<div class="psum" id="pSum"></div>
+</div>
+</div>
+<div class="mfoot">
+<div class="dots" id="mdots"><i></i><i></i><i></i><i></i><i></i></div>
+<div class="mfoot-r">
+<button class="btn" style="background:#eef0f6;color:#334155" onclick="closePM()">Cancel</button>
+<button class="btn btn-teal" onclick="saveProduct()"><span id="pmSaveTxt">Create Product</span></button>
+</div>
+</div>
+</div>
+</div>
+
+<script src="../app.js"></script><script>(function(){function paint(){try{var n=(typeof adminNewOrderCount==="function")?adminNewOrderCount():(typeof adminOrderBadgeCount==="function"?adminOrderBadgeCount():0);var els=document.querySelectorAll(".orders-badge");for(var i=0;i<els.length;i++){els[i].textContent=n;els[i].style.display=n>0?"inline-block":"none";}}catch(e){}var lb=document.getElementById("ordersBadgeN");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+window.onerror=function(msg,src,line){try{var b=document.getElementById('errBanner');if(!b){b=document.createElement('div');b.id='errBanner';b.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#dc2626;color:#fff;padding:9px 14px;font:12px Inter,sans-serif;z-index:99999';document.body.appendChild(b)}b.textContent='⚠ JS Error (line '+line+'): '+msg;}catch(e){}};
+(function() {
+    var userId = sessionStorage.getItem('user_id');
+    var userType = sessionStorage.getItem('user_type');
+    if (!userId || (userType !== 'admin' && userType !== 'moderator')) { sessionStorage.clear(); window.location.replace('login.html'); return; }
+    setInterval(function() {
+        var t = sessionStorage.getItem('user_type');
+        if (t && (t !== 'admin' && t !== 'moderator')) { sessionStorage.clear(); window.location.replace('login.html'); }
+    }, 3000);
+
+    // ===== CONSTANTS =====
+    var PALETTE = [
+        ['Red', '#ef4444'], ['Pink', '#ec4899'], ['Orange', '#f97316'], ['Yellow', '#eab308'], ['Green', '#22c55e'], ['Teal', '#14b8a6'],
+        ['Blue', '#3b82f6'], ['Indigo', '#6366f1'], ['Purple', '#a855f7'], ['White', '#f8fafc'], ['Black', '#111827'], ['Gray', '#6b7280'],
+        ['Brown', '#92400e'], ['Beige', '#d4b896'], ['Navy', '#1e3a5f'], ['Maroon', '#7f1d1d'], ['Gold', '#ca8a04'], ['Silver', '#94a3b8']
+    ];
+    var SIZE_PRESETS = { Clothing: ['XS','S','M','L','XL','XXL','3XL','4XL'], Shoes: ['36','37','38','39','40','41','42','43'], Kids: ['1-2 Years','2-3 Years','3-4 Years','4-5 Years','5-6 Years'] };
+    var CM = {}; PALETTE.forEach(function(p) { CM[p[0]] = p[1]; });
+    var selColors = [], selSizes = [], imgs = [], editId = null, viewMode = 'grid';
+    /* 2026-09-19 — which size family's chips are SHOWN (Clothing / Shoes / Kids).
+       Display state ONLY: it must never put a size into selSizes by itself. */
+    var szActive = 'Clothing';
+
+    // ===== HELPERS =====
+    function $(id) { return document.getElementById(id); }
+    function esc(s) { return String(s || '').replace(/</g, '&lt;'); }
+    /* ALL products in the database — never a filtered VIEW.
+       A read-modify-write cycle must NOT use a filtered helper such as
+       adminCatalogProducts(): writing that array back DELETES every product the
+       helper leaves out (reseller-owned products). Read the real store here. */
+    function allProductsDb() {
+        return (getData(DB_KEYS.PRODUCTS) || []).filter(function (p) { return !!p && typeof p === "object"; });
+    }
+
+    // ===== LOAD PAGE =====
+    function loadPage() {
+        var products = adminCatalogProducts();
+        var t = products.length, a = 0, low = 0, pend = 0;
+        for (var i = 0; i < products.length; i++) {
+            if (products[i].is_active !== false) a++;
+            var st = products[i].stock || 0;
+            if (st <= 5) low++;
+            if (products[i].supplierId && products[i].approved === false) pend++;
+        }
+        $('pTotal').textContent = t; $('pActive').textContent = a; $('pLow').textContent = low;
+        $('sT').textContent = t; $('sA').textContent = a; $('sL').textContent = low;
+        $('sPend').textContent = pend;
+        renderGrid();
+    }
+
+    function fillCatFilter() {
+        var cats = getData(DB_KEYS.CATEGORIES);
+        var cf = $('catF'), cur = cf.value;
+        var opts = '<option value="">All Categories</option>';
+        for (var i = 0; i < cats.length; i++) opts += '<option value="' + esc(cats[i].name) + '">' + esc(cats[i].name) + '</option>';
+        cf.innerHTML = opts; cf.value = cur;
+    }
+
+    // ===== GRID =====
+    window.setMode = function(m, btn) {
+        viewMode = m;
+        document.querySelectorAll('.vmode button').forEach(function(b) { b.classList.remove('on'); });
+        btn.classList.add('on');
+        renderGrid();
+    };
+
+    function renderGrid() {
+        var products = adminCatalogProducts();
+        var q = ($('q').value || '').toLowerCase();
+        var cf = $('catF').value, sf = $('stF').value;
+        var list = [];
+        for (var i = 0; i < products.length; i++) {
+            var p = products[i];
+            if (!p || !p.name) continue;
+            var ok = true;
+            if (q && (p.name||'').toLowerCase().indexOf(q) === -1 && (p.sku || '').toLowerCase().indexOf(q) === -1) ok = false;
+            if (cf && p.category !== cf) ok = false;
+            if (sf === 'on' && p.is_active === false) ok = false;
+            if (sf === 'off' && p.is_active !== false) ok = false;
+            if (sf === 'pending' && !(p.supplierId && p.approved === false)) ok = false;
+            if (ok) list.push(p);
+        }
+        list.reverse();
+
+        /* ---- pagination: 21 products per page (7 per row x 3 rows) ---- */
+        var PAGE_SIZE = 21;
+        var totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+        if (!window._apg || window._apg > totalPages) window._apg = 1;
+        var pageList = list.slice((window._apg - 1) * PAGE_SIZE, window._apg * PAGE_SIZE);
+
+        var h = '';
+        if (viewMode === 'grid') {
+            for (var j = 0; j < pageList.length; j++) {
+                var p = pageList[j];
+                var pImgs = p.images && p.images.length ? p.images : (p.image ? [p.image] : []);
+                var img = pImgs.length ? '<img src="' + pImgs[0] + '" alt="' + esc(p.name) + '">' : '<div class="noimg"><i class="fas fa-box"></i></div>';
+                var dim = p.is_active === false;
+                var disc = p.discount_percent > 0 ? '<div class="disc-tag">-' + p.discount_percent + '%</div>' : '';
+                var stock = p.stock || 0;
+                var low = stock <= 5 ? '<div class="low-tag">' + (stock === 0 ? 'Out' : 'Low') + '</div>' : '';
+                var sw = '';
+                if (p.colors && p.colors.length) {
+                    sw = '<div class="swrow">';
+                    for (var c = 0; c < Math.min(p.colors.length, 6); c++) sw += '<span class="d" title="' + esc(p.colors[c]) + '" style="background:' + (CM[p.colors[c]] || '#888') + '"></span>';
+                    if (p.colors.length > 6) sw += '<small style="color:#94a3b8;font-size:.62rem">+' + (p.colors.length - 6) + '</small>';
+                    sw += '</div>';
+                }
+                var sz = '';
+                if (p.sizes && p.sizes.length) {
+                    sz = '<div class="szrow">';
+                    for (var s = 0; s < Math.min(p.sizes.length, 4); s++) sz += '<small>' + esc(p.sizes[s]) + '</small>';
+                    if (p.sizes.length > 4) sz += '<small style="color:#94a3b8;font-size:.62rem">+' + (p.sizes.length - 4) + '</small>';
+                    sz += '</div>';
+                }
+                var cprice = p.customer_price || p.price || 0;
+                var rprice = p.reseller_price || 0;
+                h += '<div class="pcard' + (dim ? ' dim' : '') + '">' +
+                    '<div class="pimg">' + img + disc + low +
+                    /* BUG FIX — same unquoted-id bug as the list view and the toggle:
+                       `p.id` was concatenated bare, so a STRING id ('P1', 'SP1', 'PX')
+                       produced onclick="openEdit(P1)" -> "ReferenceError: P1 is not
+                       defined" and these Edit / Delete buttons did nothing. Quote safely. */
+                    '<div class="phover"><button onclick="event.stopPropagation();openEdit(' + JSON.stringify(String(p.id)).replace(/"/g, '&quot;') + ')" title="Edit"><i class="fas fa-pencil-alt"></i></button>' +
+                    '<button class="del" onclick="event.stopPropagation();delProd(' + JSON.stringify(String(p.id)).replace(/"/g, '&quot;') + ')" title="Delete"><i class="fas fa-trash"></i></button></div></div>' +
+                    '<div class="pinfo"><h4 title="' + esc(p.name) + '">' + esc(p.name) + '</h4>' +
+                    (p.supplierName ? '<div style="font-size:.64rem;color:#7c3aed;font-weight:800;margin:2px 0"><i class="fas fa-warehouse"></i> ' + esc(p.supplierName) + '</div>' : '') +
+                    /* Item 9 — Category › Subcategory › Sub-subcategory */
+                    (function () { var ch = (typeof productCategoryChain === 'function') ? productCategoryChain(p) : (p.category || ''); return ch ? '<span class="cat-badge" title="' + esc(ch) + '">' + esc(ch) + '</span>' : ''; })() + sw + sz +
+                    '<div class="pr-row"><div><div class="l">Retail</div><div class="retail">' + formatCurrency(cprice) + '</div></div>' +
+                    '<div style="text-align:right"><div class="l">Reseller</div><div class="resell">' + formatCurrency(rprice) + '</div></div></div>' +
+                    /* BUG FIX — the id was concatenated UNQUOTED, so a product whose
+                       id is a string ('P1', 'ROP…') produced onclick="togActive(P1)"
+                       -> "ReferenceError: P1 is not defined" and the Active/Inactive
+                       toggle did nothing (that is why an uploaded product could not be
+                       made live). Quote it safely. */
+                    '<button class="act-tgl ' + (dim ? 'act-off' : 'act-on') + '" onclick="togActive(' + JSON.stringify(String(p.id)).replace(/"/g, '&quot;') + ')">' + (dim ? '○ Inactive — Click to Activate' : '✓ Active') + '</button>' +
+                    '</div></div>';
+            }
+            document.getElementById('grid').style.display = 'grid';
+            document.getElementById('listWrap').style.display = 'none';
+            document.getElementById('grid').innerHTML = h || '<div class="empty" style="grid-column:1/-1;padding:60px 20px;text-align:center"><i class="fas fa-box-open" style="font-size:3rem;color:#cbd5e1;display:block;margin-bottom:14px"></i><h3 style="color:#475569;margin:0 0 6px">No products found</h3><p style="color:#94a3b8;margin:0 0 6px">Database-এ <b style="color:#10b981">'+products.length+'</b> টি product আছে — কিন্তু current filter-এ কোনোটা match করেনি।</p><p style="color:#94a3b8;margin:0 0 18px">Filter change করে দেখুন অথবা উপরের <b style="color:#7e22ce">⏳ Pending Product Approval</b> card-এ click করুন।</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px"><button onclick="document.getElementById(\'q\').value=\'\';document.getElementById(\'catF\').value=\'\';document.getElementById(\'stF\').value=\'\';renderGrid()" style="padding:8px 16px;background:#10b981;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700">🔄 Clear All Filters</button><a href="supplier-products.html" style="padding:8px 16px;background:#f59e0b;color:#fff;border-radius:6px;text-decoration:none;font-weight:700">📦 Supplier Products</a></div></div>';
+        } else {
+            var lh = '<div class="card"><div class="table-scroll"><table class="data-table" style="width:100%;border-collapse:collapse;font-size:.85rem">';
+            lh += '<thead><tr><th style="padding:10px 14px;text-align:left;background:#f8fafc;font-size:.7rem;color:#64748b">#</th><th style="padding:10px 14px;text-align:left;background:#f8fafc;font-size:.7rem;color:#64748b">Product</th><th style="padding:10px 14px;text-align:left;background:#f8fafc;font-size:.7rem;color:#64748b">Reseller ৳</th><th style="padding:10px 14px;text-align:left;background:#f8fafc;font-size:.7rem;color:#64748b">Retail ৳</th><th style="padding:10px 14px;text-align:left;background:#f8fafc;font-size:.7rem;color:#64748b">Stock</th><th style="padding:10px 14px;text-align:left;background:#f8fafc;font-size:.7rem;color:#64748b">Status</th><th style="padding:10px 14px;text-align:left;background:#f8fafc;font-size:.7rem;color:#64748b">Actions</th></tr></thead><tbody>';
+            for (var k = 0; k < pageList.length; k++) {
+                var pp = pageList[k];
+                var pImgs2 = pp.images && pp.images.length ? pp.images : (pp.image ? [pp.image] : []);
+                var im2 = pImgs2.length ? '<img src="' + pImgs2[0] + '" style="width:40px;height:40px;border-radius:6px;object-fit:cover">' : '<div style="width:40px;height:40px;background:#f1f5f9;border-radius:6px"></div>';
+                var st2 = (pp.stock || 0) > 10 ? '<span class="badge badge-success">' + pp.stock + '</span>' : (pp.stock || 0) > 0 ? '<span class="badge badge-warning">' + pp.stock + '</span>' : '<span class="badge badge-danger">0</span>';
+                var chain2 = (typeof productCategoryChain === 'function') ? productCategoryChain(pp) : (pp.category || '');
+                /* BUG FIX — same bug as the grid's toggle: `pp.id` was concatenated
+                   UNQUOTED, so a product whose id is a string ('rfP0', 'P1', …)
+                   produced onclick="openEdit(rfP0)" -> "ReferenceError: rfP0 is not
+                   defined" and the Edit / Delete buttons did nothing. Quote safely. */
+                lh += '<tr><td style="padding:10px 14px">' + (((window._apg - 1) * PAGE_SIZE) + k + 1) + '</td><td style="padding:10px 14px"><div style="display:flex;gap:10px;align-items:center">' + im2 + '<div><b>' + esc(pp.name) + '</b><br><small style="color:#64748b">' + (pp.sku || '') + '</small>' + (chain2 ? '<br><small style="color:#0f766e;font-weight:700">' + esc(chain2) + '</small>' : '') + (pp.supplierName ? '<br><small style="color:#7c3aed;font-weight:700"><i class="fas fa-warehouse"></i> ' + esc(pp.supplierName) + '</small>' : '') + '</div></div></td><td style="padding:10px 14px;color:#2563eb;font-weight:600">' + formatCurrency(pp.reseller_price || 0) + '</td><td style="padding:10px 14px">' + formatCurrency(pp.customer_price || pp.price || 0) + '</td><td style="padding:10px 14px">' + st2 + '</td><td style="padding:10px 14px"><span class="badge badge-success">' + (pp.is_active === false ? 'Inactive' : 'Active') + '</span></td><td style="padding:10px 14px"><button class="btn btn-sm btn-primary" onclick="openEdit(' + JSON.stringify(String(pp.id)).replace(/"/g, '&quot;') + ')"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger" onclick="delProd(' + JSON.stringify(String(pp.id)).replace(/"/g, '&quot;') + ')"><i class="fas fa-trash"></i></button></td></tr>';
+            }
+            lh += '</tbody></table>' + (list.length === 0 ? '<div class="empty" style="padding:40px 20px;text-align:center"><i class="fas fa-box-open" style="font-size:2rem;color:#cbd5e1;display:block;margin-bottom:10px"></i><h4 style="color:#475569;margin:0 0 6px">No products match current filter</h4><p style="color:#94a3b8;margin:0 0 14px">DB-তে <b style="color:#10b981">'+products.length+'</b> টি product আছে। Filter clear করে try করুন।</p><button onclick="document.getElementById(\'q\').value=\'\';document.getElementById(\'catF\').value=\'\';document.getElementById(\'stF\').value=\'\';renderGrid()" style="padding:8px 16px;background:#10b981;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700">🔄 Clear Filters</button></div>' : '') + '</div></div>';
+            document.getElementById('grid').style.display = 'none';
+            var lw = document.getElementById('listWrap');
+            lw.style.display = 'block';
+            lw.innerHTML = lh;
+        }
+        renderAdminPageBar(totalPages, list.length);
+    }
+
+    /* Center-aligned pagination under the product grid (item 3) */
+    function renderAdminPageBar(totalPages, totalItems) {
+        var bar = document.getElementById('adminPageBar');
+        if (!bar) return;
+        if (!totalPages || totalPages <= 1) { bar.innerHTML = ''; return; }
+        var p = window._apg || 1;
+        var mk = function (pg, lbl, dis, act) {
+            return '<button onclick="adminGoPg(' + pg + ')" ' + (dis ? 'disabled' : '') + ' style="min-width:38px;height:38px;padding:0 12px;border:none;border-radius:10px;cursor:pointer;font-weight:800;font-size:.85rem;' +
+                (act ? 'background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;box-shadow:0 6px 14px rgba(37,99,235,.3);' : 'background:#fff;color:#475569;border:1.5px solid #e2e8f0;') +
+                (dis ? ';opacity:.45;cursor:not-allowed;' : '') + '">' + lbl + '</button>';
+        };
+        var h = '<div style="display:flex;justify-content:center;align-items:center;gap:8px;margin:26px 0 10px;flex-wrap:wrap">';
+        h += mk(p - 1, '&laquo; Prev', p <= 1);
+        var start = Math.max(1, p - 2), end = Math.min(totalPages, p + 2);
+        if (p <= 3) end = Math.min(totalPages, 5);
+        if (p >= totalPages - 2) start = Math.max(1, totalPages - 4);
+        if (start > 1) { h += mk(1, '1'); if (start > 2) h += '<span style="color:#94a3b8;font-weight:800;padding:0 4px">...</span>'; }
+        for (var pg = start; pg <= end; pg++) h += mk(pg, String(pg), false, pg === p);
+        if (end < totalPages) { if (end < totalPages - 1) h += '<span style="color:#94a3b8;font-weight:800;padding:0 4px">...</span>'; h += mk(totalPages, String(totalPages)); }
+        h += mk(p + 1, 'Next &raquo;', p >= totalPages);
+        h += '<span style="margin-left:10px;font-size:.74rem;color:#64748b;font-weight:700">Page ' + p + ' of ' + totalPages + ' &middot; ' + totalItems + ' products</span>';
+        h += '</div>';
+        bar.innerHTML = h;
+    }
+    window.adminGoPg = function (n) { window._apg = n; renderGrid(); window.scrollTo(0, 0); };
+
+    // ===== MODAL NAVIGATION =====
+    var curTab = 0;
+    window.mgo = function(t) {
+        curTab = t;
+        var tabs = document.querySelectorAll('.mtab');
+        for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('on');
+        document.querySelector('.mtab[data-t="' + t + '"]').classList.add('on');
+        var secs = document.querySelectorAll('.msec');
+        for (var j = 0; j < secs.length; j++) secs[j].style.display = 'none';
+        document.getElementById('ms' + t).style.display = 'block';
+        var dots = document.querySelectorAll('#mdots i');
+        for (var d = 0; d < dots.length; d++) dots[d].classList.remove('on');
+        if (dots[t]) dots[t].classList.add('on');
+        if (t === 4) updateSummary();
+    };
+
+    // ===== COLOR PICKER =====
+    function buildColorGrid() {
+        var h = '';
+        for (var i = 0; i < PALETTE.length; i++) {
+            h += '<div class="colitem" onclick="togCol(\'' + PALETTE[i][0] + '\')"><div class="c" style="background:' + PALETTE[i][1] + (PALETTE[i][0] === 'White' ? ';border:1px solid #ddd' : '') + '"></div><p>' + PALETTE[i][0] + '</p></div>';
+        }
+        $('colGrid').innerHTML = h;
+        refreshColSel();
+    }
+    window.togCol = function(name) {
+        var idx = selColors.indexOf(name);
+        if (idx !== -1) selColors.splice(idx, 1); else selColors.push(name);
+        refreshColSel();
+    };
+    window.addColor = function() {
+        var v = $('v_name').value.trim();
+        if (!v) return;
+        if (selColors.indexOf(v) === -1) selColors.push(v);
+        $('v_name').value = '';
+        refreshColSel();
+    };
+    function refreshColSel() {
+        var items = document.querySelectorAll('.colitem');
+        for (var i = 0; i < items.length; i++) items[i].classList.remove('on');
+        for (var c = 0; c < selColors.length; c++) {
+            for (var j = 0; j < items.length; j++) {
+                if (items[j].querySelector('p').textContent === selColors[c]) items[j].classList.add('on');
+            }
+        }
+        var h = '';
+        for (var k = 0; k < selColors.length; k++) h += '<span>' + esc(selColors[k]) + '</span>';
+        $('selColors').innerHTML = h;
+    }
+
+    // ===== SIZE PICKER =====
+    function buildSizeChips() {
+        /* render the CHIPS of the family currently being shown, not always Clothing */
+        var preset = SIZE_PRESETS[szActive] || SIZE_PRESETS.Clothing;
+        var h = '';
+        for (var i = 0; i < preset.length; i++) {
+            var on = selSizes.indexOf(preset[i]) !== -1;
+            h += '<button type="button" class="szp' + (on ? ' on' : '') + '" style="border:1.5px solid ' + (on ? '#10b981' : '#e2e8f0') + '" onclick="togSz(\'' + preset[i] + '\')">' + preset[i] + '</button>';
+        }
+        $('szChips').innerHTML = h;
+        var sh = '';
+        for (var s = 0; s < selSizes.length; s++) sh += '<span>' + esc(selSizes[s]) + '</span>';
+        $('selSizes').innerHTML = sh;
+    }
+    /* 2026-09-19 — BUG FIX (this request).
+       This used to run `selSizes = SIZE_PRESETS[name].slice()`, so choosing
+       Clothing / Shoes / Kids silently SELECTED every size in that family.
+       The user: "যেকোনো ক্লথিং, কিডস অথবা shoes সিলেক্ট করলে অটোমেটিক সাইজটা বসে যায়
+       … ডিফল্ট কোনো সাইজ বসবে না। অ্যাডমিন ক্লিক করে করে সাইজ বসাবে।"
+       The preset button now only switches WHICH chips are offered. Nothing is
+       selected by itself — every size has to be clicked. */
+    window.szPreset = function(name, btn) {
+        if (!SIZE_PRESETS[name]) return;
+        szActive = name;
+        document.querySelectorAll('.szp').forEach(function(b) { b.classList.remove('on'); });
+        if (btn) btn.classList.add('on');
+        buildSizeChips();
+    };
+    window.togSz = function(sz) {
+        var idx = selSizes.indexOf(sz);
+        if (idx !== -1) selSizes.splice(idx, 1); else selSizes.push(sz);
+        buildSizeChips();
+    };
+    window.addSize = function() {
+        var v = $('v_size').value.trim();
+        if (!v) return;
+        if (selSizes.indexOf(v) === -1) selSizes.push(v);
+        $('v_size').value = '';
+        buildSizeChips();
+    };
+
+    // ===== IMAGES =====
+    /* BUG FIX — same compression rationale as reseller/my-products.html: a raw
+       iPhone PNG of 3-5 MB can single-handedly blow localStorage's 5-10 MB quota.
+       The 2 MB pre-check is not enough — resize and JPEG-recompress too. */
+    function _compressImg(dataUrl, maxLen, quality, cb) {
+        var img = new Image();
+        img.onload = function () {
+            var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+            var scale = Math.min(1, maxLen / Math.max(w, h));
+            var cw = Math.max(1, Math.round(w * scale)), ch = Math.max(1, Math.round(h * scale));
+            var canvas = document.createElement('canvas');
+            canvas.width = cw; canvas.height = ch;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, cw, ch);
+            var isPng = /^data:image\/png/i.test(dataUrl);
+            cb(isPng ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = function () { cb(dataUrl); };
+        img.src = dataUrl;
+    }
+    window.pickImgs = function(e) {
+        var files = e.target.files;
+        if (!files.length) return;
+        var pending = 0;
+        for (var i = 0; i < files.length; i++) {
+            /* Removed the 2 MB hard-reject — we now compress, so accept anything. */
+            (function(f) {
+                var r = new FileReader();
+                r.onload = function() { _compressImg(String(r.result), 1200, 0.7, function (compressed) { imgs.push(compressed); pending--; if (pending === 0) renderImgGal(); }); };
+                r.readAsDataURL(f);
+            })(files[i]);
+            pending++;
+        }
+        e.target.value = '';
+    };
+    window.rmG = function(i) { imgs.splice(i, 1); renderImgGal(); };
+    function renderImgGal() {
+        var h = '';
+        for (var i = 0; i < imgs.length; i++) {
+            h += '<div class="g"><img src="' + imgs[i] + '">' + (i === 0 ? '<div class="main-tag">Main</div>' : '') + '<button onclick="rmG(' + i + ')">&times;</button></div>';
+        }
+        $('fGal').innerHTML = h;
+        $('gMsg').textContent = imgs.length ? imgs.length + ' image(s) uploaded. First image = main display.' : 'No images yet. Click "Add Image" to upload.';
+    }
+
+    // ===== SUMMARY =====
+    function updateSummary() {
+        var n = $('f_name').value || '—';
+        var sku = $('f_sku').value || '—';
+        /* Item 9 — full Category › Sub › Sub-Sub path in the live summary */
+        var cat = (function () {
+            var a = $('f_cat').value || '', b = $('f_sub').value || '', c = ($('f_subsub') ? $('f_subsub').value : '') || '';
+            if (b === '__NEW_SUB__') b = '';
+            if (c === '__NEW_SUBSUB__') c = '';
+            var parts = []; if (a) parts.push(a); if (b) parts.push(b); if (c) parts.push(c);
+            return parts.length ? parts.join(' › ') : '—';
+        })();
+        var br = $('f_brand').value || '—';
+        var cp = $('f_cprice').value ? '৳' + parseInt($('f_cprice').value).toLocaleString('en-IN') : '৳—';
+        var rp = $('f_rprice').value ? '৳' + parseInt($('f_rprice').value).toLocaleString('en-IN') : '৳—';
+        var st = $('f_stock').value || '0';
+        var oos = $('oosMsg');
+        if (parseInt(st) === 0) oos.style.display = 'block'; else oos.style.display = 'none';
+        var colN = selColors.length + ' colors';
+        var szN = selSizes.length ? selSizes.join(', ') : '—';
+        var imN = imgs.length + ' photos';
+        $('pSum').innerHTML =
+            '<div class="r"><b>Name:</b><span>' + esc(n) + '</span></div>' +
+            '<div class="r"><b>SKU:</b><span>' + esc(sku) + '</span></div>' +
+            '<div class="r"><b>Category:</b><span>' + esc(cat) + '</span></div>' +
+            '<div class="r"><b>Brand:</b><span>' + esc(br) + '</span></div>' +
+            '<div class="r"><b>Customer Price:</b><span class="taka-g">' + cp + '</span></div>' +
+            '<div class="r"><b>Reseller Price:</b><span style="color:#2563eb">' + rp + '</span></div>' +
+            '<div class="r"><b>Stock:</b><span>' + st + '</span></div>' +
+            '<div class="r"><b>Colors:</b><span>' + colN + '</span></div>' +
+            '<div class="r"><b>Sizes:</b><span>' + esc(szN) + '</span></div>' +
+            '<div class="r"><b>Images:</b><span>' + imN + '</span></div>';
+    }
+    ['f_name','f_sku','f_brand','f_stock','f_cat','f_sub','f_subsub'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('input', updateSummary);
+        if (el) el.addEventListener('change', updateSummary);
+    });
+
+    // ===== OPEN ADD =====
+    window.openAdd = function() {
+        editId = null;
+        $('pmTitle').textContent = 'Add New Product';
+        $('pmSub').textContent = 'Fill in the details to create a new product';
+        $('pmSaveTxt').textContent = 'Create Product';
+        ['f_name','f_desc','f_sub','f_subsub','f_yt','f_sku','f_brand','f_cprice','f_rprice','f_buy','f_material','f_weight'].forEach(function(id) { if ($(id)) $(id).value = ''; });
+        $('f_cat').value = '';
+        fillSubSelect('');
+        fillSubSubSelect('');
+        $('f_disc').value = '0'; $('f_stock').value = '0';
+        /* 2026-09-19 — a NEW product starts with NO size selected (this request).
+           This line used to pre-select the whole Clothing preset, which is exactly
+           the "size sets itself automatically" bug the user reported. */
+        selColors = []; selSizes = []; szActive = 'Clothing'; imgs = [];
+        fillCatSelect(); buildColorGrid(); buildSizeChips(); renderImgGal();
+        document.getElementById('f_active_t').classList.remove('off');
+        /* Item 14 — reset Ready to Campaign */
+        if ($('f_campaign_t')) $('f_campaign_t').classList.add('off');
+        mgo(0);
+        $('pm').classList.add('show');
+    };
+
+    // ===== OPEN EDIT =====
+    window.openEdit = function(id) {
+        var products = adminCatalogProducts();
+        var p = null;
+        /* BUG FIX — the handler now always passes a STRING, so a strict === against
+           a NUMERIC stored id would never match and Edit would silently do nothing.
+           Compare as strings (same fix as togActive). */
+        for (var i = 0; i < products.length; i++) { if (String(products[i].id) === String(id)) { p = products[i]; break; } }
+        if (!p) return;
+        editId = id;
+        $('pmTitle').textContent = 'Edit Product';
+        $('pmSub').textContent = 'Update product details below.';
+        $('pmSaveTxt').textContent = 'Save Changes';
+        $('f_name').value = p.name || '';
+        $('f_desc').value = p.description || '';
+        fillCatSelect(); $('f_cat').value = p.category || '';
+        fillSubSelect(p.subSection || p.sub_category || '');
+        $('f_sub').value = p.subSection || p.sub_category || '';
+        fillSubSubSelect(p.subSub || '');
+        if ($('f_subsub')) $('f_subsub').value = p.subSub || '';
+        if ($('f_yt')) $('f_yt').value = p.youtube || '';
+        $('f_sku').value = p.sku || '';
+        $('f_brand').value = p.brand || '';
+        $('f_cprice').value = p.customer_price || p.price || 0;
+        $('f_rprice').value = p.reseller_price || 0;
+        if ($('f_buy')) $('f_buy').value = p.buy_price || 0;
+        $('f_disc').value = p.discount_percent || 0;
+        $('f_stock').value = p.stock || 0;
+        $('f_material').value = p.material || '';
+        $('f_weight').value = p.weight || '';
+        selColors = (p.colors || []).slice();
+        selSizes = (p.sizes || []).slice();
+        imgs = (p.images && p.images.length) ? p.images.slice() : (p.image ? [p.image] : []);
+        buildColorGrid(); buildSizeChips(); renderImgGal();
+        var tg = $('f_active_t');
+        if (p.is_active === false) tg.classList.add('off'); else tg.classList.remove('off');
+        /* Item 14 — load Ready to Campaign state */
+        var tgC = $('f_campaign_t');
+        if (tgC) { if (p.readyToCampaign || p.ready_to_campaign) tgC.classList.remove('off'); else tgC.classList.add('off'); }
+        mgo(0);
+        $('pm').classList.add('show');
+    };
+
+    function fillCatSelect() {
+        var cats = getData(DB_KEYS.CATEGORIES);
+        var opts = '<option value="">Select category...</option>';
+        for (var i = 0; i < cats.length; i++) opts += '<option value="' + esc(cats[i].name) + '">' + esc(cats[i].name) + '</option>';
+        opts += '<option value="__NEW_CAT__">➕ Create New Category...</option>';
+        $('f_cat').innerHTML = opts;
+    }
+
+    /* ---------- Item 10 — 3-level Category > Sub > Sub-Sub (create / edit / delete) ---------- */
+    function fillSubSelect(keepVal) {
+        if (typeof ensureCategoryTree === 'function') ensureCategoryTree();
+        var catName = $('f_cat').value;
+        var sel = $('f_sub');
+        var subs = (typeof getSubList === 'function') ? getSubList(catName) : [];
+        var cur = (keepVal !== undefined) ? keepVal : sel.value;
+        var opts = '<option value="">Sub-category (optional)</option>';
+        /* BUG FIX — defensive: if anything in the chain ever returns an OBJECT
+           instead of a string (a corrupted category tree, or a future shape
+           change), render its .name instead of "[object Object]". */
+        for (var j = 0; j < subs.length; j++) {
+            var subName = (subs[j] && typeof subs[j] === 'object') ? (subs[j].name || '') : subs[j];
+            if (!subName) continue;
+            opts += '<option value="' + esc(subName) + '">' + esc(subName) + '</option>';
+        }
+        opts += '<option value="__NEW_SUB__">➕ Create Sub-Category...</option>';
+        sel.innerHTML = opts;
+        if (cur && cur !== '__NEW_SUB__') sel.value = cur;
+        fSubChange();
+    }
+    window.fSubChange = function() {
+        var sel = $('f_sub');
+        var w = document.getElementById('fNewSubWrap');
+        if (w) w.style.display = sel.value === '__NEW_SUB__' ? 'flex' : 'none';
+        if (sel.value !== '__NEW_SUB__') fillSubSubSelect('');
+    };
+    window.fSubSubChange = function() {
+        var sel = $('f_subsub');
+        var w = document.getElementById('fNewSubSubWrap');
+        if (w) w.style.display = (sel && sel.value === '__NEW_SUBSUB__') ? 'flex' : 'none';
+    };
+    function fillSubSubSelect(keepVal) {
+        if (typeof ensureCategoryTree === 'function') ensureCategoryTree();
+        var sel = $('f_subsub');
+        if (!sel) return;
+        var catName = $('f_cat').value;
+        var subName = ($('f_sub').value || '').trim();
+        if (subName === '__NEW_SUB__') subName = '';
+        var list = (typeof getSubSubList === 'function' && catName && subName) ? getSubSubList(catName, subName) : [];
+        var cur = (keepVal !== undefined) ? keepVal : sel.value;
+        var opts = '<option value="">Sub-sub-category (optional)</option>';
+        /* Same defensive .name extraction as fillSubSelect above. */
+        for (var i = 0; i < list.length; i++) {
+            var subSubName = (list[i] && typeof list[i] === 'object') ? (list[i].name || '') : list[i];
+            if (!subSubName) continue;
+            opts += '<option value="' + esc(subSubName) + '">' + esc(subSubName) + '</option>';
+        }
+        opts += '<option value="__NEW_SUBSUB__">➕ Create Sub-Sub-Category...</option>';
+        sel.innerHTML = opts;
+        if (cur && cur !== '__NEW_SUBSUB__') sel.value = cur;
+        fSubSubChange();
+    }
+    window.fAddSubNew = function() {
+        var catName = $('f_cat').value;
+        var n = ($('f_newsub').value || '').trim();
+        if (!n) { showToast('Sub-category-র নাম লিখুন!', 'error'); return; }
+        if (!catName || catName === '__NEW_CAT__') { showToast('আগে category বাছুন!', 'error'); return; }
+        if (typeof addSubCategory === 'function') {
+            if (!addSubCategory(catName, n)) { showToast('এই sub-category already আছে!', 'error'); return; }
+        }
+        try { var ss = getData(DB_KEYS.SUB_SECTIONS) || []; var ex2 = false; for (var k = 0; k < ss.length; k++) { if ((ss[k].name || ss[k]) === n) ex2 = true; } if (!ex2) ss.push({ id: Date.now(), name: n, emoji: '🏷', image: '' }); setData(DB_KEYS.SUB_SECTIONS, ss); } catch (e) {}
+        $('f_newsub').value = '';
+        fillSubSelect(n);
+        showToast('Sub-category "' + n + '" created!', 'success');
+        logActivity('subcategory_added', 'Sub-category "' + n + '" created from Add Product');
+    };
+    window.fAddSubSubNew = function() {
+        var catName = $('f_cat').value;
+        var subName = ($('f_sub').value || '').trim();
+        var n = ($('f_newsubsub').value || '').trim();
+        if (!catName || !subName || subName === '__NEW_SUB__') { showToast('আগে Category ও Sub-category বাছুন!', 'error'); return; }
+        if (!n) { showToast('Sub-sub-category-র নাম লিখুন!', 'error'); return; }
+        if (typeof addSubSubCategory !== 'function') { showToast('Category helper load হয়নি!', 'error'); return; }
+        if (!addSubSubCategory(catName, subName, n)) { showToast('এই sub-sub-category already আছে!', 'error'); return; }
+        $('f_newsubsub').value = '';
+        fillSubSubSelect(n);
+        showToast('Sub-sub-category "' + n + '" created!', 'success');
+        logActivity('subsubcategory_added', 'Sub-sub-category "' + n + '" created from Add Product');
+    };
+    /* ---- rename / delete per level ---- */
+    window.fRenameCat = function() {
+        var old = $('f_cat').value;
+        if (!old || old === '__NEW_CAT__') { showToast('আগে একটি category বাছুন!', 'error'); return; }
+        var n = prompt('Category-এর নতুন নাম:', old);
+        if (!n || !n.trim()) return;
+        n = n.trim();
+        if (typeof renameCategory === 'function' && !renameCategory(old, n)) { showToast('Rename করা যায়নি (খালি অথবা নাম already আছে)!', 'error'); return; }
+        var prods = allProductsDb();
+        for (var i = 0; i < prods.length; i++) { if (prods[i].category === old) prods[i].category = n; }
+        setData(DB_KEYS.PRODUCTS, prods);
+        fillCatSelect(); $('f_cat').value = n; fillSubSelect('');
+        showToast('Category renamed!', 'success');
+        if (typeof renderGrid === 'function') renderGrid();
+    };
+    window.fDelCat = function() {
+        var name = $('f_cat').value;
+        if (!name || name === '__NEW_CAT__') { showToast('আগে একটি category বাছুন!', 'error'); return; }
+        var prods = allProductsDb(), used = 0, i;
+        for (i = 0; i < prods.length; i++) { if (prods[i].category === name) used++; }
+        if (!confirm('Category "' + name + '" ডিলিট করবেন?' + (used ? '\n\nএই category-তে ' + used + ' টি product আছে — তাদের category খালি হয়ে যাবে।' : ''))) return;
+        if (typeof deleteCategory === 'function' && !deleteCategory(name)) { showToast('Delete করা যায়নি!', 'error'); return; }
+        for (i = 0; i < prods.length; i++) { if (prods[i].category === name) prods[i].category = ''; }
+        setData(DB_KEYS.PRODUCTS, prods);
+        fillCatSelect(); $('f_cat').value = ''; fillSubSelect('');
+        showToast('Category deleted!', 'success');
+        if (typeof renderGrid === 'function') renderGrid();
+    };
+    window.fRenameSub = function() {
+        var cat = $('f_cat').value, old = ($('f_sub').value || '').trim();
+        if (!cat || !old || old === '__NEW_SUB__') { showToast('আগে একটি sub-category বাছুন!', 'error'); return; }
+        var n = prompt('Sub-category-এর নতুন নাম:', old);
+        if (!n || !n.trim()) return;
+        n = n.trim();
+        if (typeof renameSubCategory === 'function' && !renameSubCategory(cat, old, n)) { showToast('Rename করা যায়নি (খালি অথবা নাম already আছে)!', 'error'); return; }
+        var prods = allProductsDb();
+        for (var i = 0; i < prods.length; i++) {
+            if (prods[i].category === cat && ((prods[i].subSection === old) || (prods[i].sub_category === old))) { prods[i].subSection = n; prods[i].sub_category = n; }
+        }
+        setData(DB_KEYS.PRODUCTS, prods);
+        fillSubSelect(n);
+        showToast('Sub-category renamed!', 'success');
+        if (typeof renderGrid === 'function') renderGrid();
+    };
+    window.fDelSub = function() {
+        var cat = $('f_cat').value, name = ($('f_sub').value || '').trim();
+        if (!cat || !name || name === '__NEW_SUB__') { showToast('আগে একটি sub-category বাছুন!', 'error'); return; }
+        var prods = allProductsDb(), used = 0, i;
+        for (i = 0; i < prods.length; i++) { if (prods[i].category === cat && ((prods[i].subSection === name) || (prods[i].sub_category === name))) used++; }
+        if (!confirm('Sub-category "' + name + '" ডিলিট করবেন?' + (used ? '\n\n' + used + ' টি product এই sub-category ব্যবহার করছে — তাদের sub-category খালি হয়ে যাবে।' : ''))) return;
+        if (typeof deleteSubCategory === 'function' && !deleteSubCategory(cat, name)) { showToast('Delete করা যায়নি!', 'error'); return; }
+        for (i = 0; i < prods.length; i++) {
+            if (prods[i].category === cat && ((prods[i].subSection === name) || (prods[i].sub_category === name))) { prods[i].subSection = ''; prods[i].sub_category = ''; }
+        }
+        setData(DB_KEYS.PRODUCTS, prods);
+        fillSubSelect('');
+        showToast('Sub-category deleted!', 'success');
+        if (typeof renderGrid === 'function') renderGrid();
+    };
+    window.fRenameSubSub = function() {
+        var cat = $('f_cat').value, sub = ($('f_sub').value || '').trim(), old = ($('f_subsub') ? $('f_subsub').value : '') || '';
+        if (!cat || !sub || !old || old === '__NEW_SUBSUB__') { showToast('আগে একটি sub-sub-category বাছুন!', 'error'); return; }
+        var n = prompt('Sub-sub-category-এর নতুন নাম:', old);
+        if (!n || !n.trim()) return;
+        n = n.trim();
+        if (typeof renameSubSubCategory === 'function' && !renameSubSubCategory(cat, sub, old, n)) { showToast('Rename করা যায়নি (খালি অথবা নাম already আছে)!', 'error'); return; }
+        var prods = allProductsDb();
+        for (var i = 0; i < prods.length; i++) { if (prods[i].category === cat && prods[i].subSub === old) prods[i].subSub = n; }
+        setData(DB_KEYS.PRODUCTS, prods);
+        fillSubSubSelect(n);
+        showToast('Sub-sub-category renamed!', 'success');
+    };
+    window.fDelSubSub = function() {
+        var cat = $('f_cat').value, sub = ($('f_sub').value || '').trim(), name = ($('f_subsub') ? $('f_subsub').value : '') || '';
+        if (!cat || !sub || !name || name === '__NEW_SUBSUB__') { showToast('আগে একটি sub-sub-category বাছুন!', 'error'); return; }
+        if (!confirm('Sub-sub-category "' + name + '" ডিলিট করবেন?')) return;
+        if (typeof deleteSubSubCategory === 'function' && !deleteSubSubCategory(cat, sub, name)) { showToast('Delete করা যায়নি!', 'error'); return; }
+        var prods = allProductsDb();
+        for (var i = 0; i < prods.length; i++) { if (prods[i].category === cat && prods[i].subSub === name) prods[i].subSub = ''; }
+        setData(DB_KEYS.PRODUCTS, prods);
+        fillSubSubSelect('');
+        showToast('Sub-sub-category deleted!', 'success');
+    };
+
+    function updateSubSubList() { fillSubSubSelect(); }
+    var _fsubEl = $('f_sub');
+    if (_fsubEl) { _fsubEl.addEventListener('input', updateSubSubList); _fsubEl.addEventListener('change', updateSubSubList); }
+    var _fsubsubEl = $('f_subsub');
+    if (_fsubsubEl) { _fsubsubEl.addEventListener('change', fSubSubChange); }
+    /* Item 10 — keep all three levels populated from the moment the page loads */
+    fillCatSelect();
+    fillSubSelect('');
+    fillSubSubSelect('');
+
+    $('f_cat').addEventListener('change', function() {
+        updateSubSubList();
+        fillSubSelect();
+        if (this.value !== '__NEW_CAT__') return;
+        var name = prompt('নতুন Category-র নাম লিখুন:');
+        if (!name || !name.trim()) { this.value = ''; return; }
+        name = name.trim();
+        var cats = getData(DB_KEYS.CATEGORIES);
+        var exists = false;
+        for (var i = 0; i < cats.length; i++) { if (cats[i].name.toLowerCase() === name.toLowerCase()) { exists = true; break; } }
+        if (exists) { showToast('This category already exists!', 'error'); this.value = name; return; }
+        var icons = ['fa-tshirt','fa-shoe-prints','fa-mobile-alt','fa-gem','fa-clock','fa-headphones','fa-laptop','fa-baby','fa-home','fa-shopping-bag'];
+        cats.push({ id: 'cat_' + Date.now(), name: name, icon: icons[cats.length % icons.length], image: '', subs: [], count: 0 });
+        setData(DB_KEYS.CATEGORIES, cats);
+        logActivity('category_added', 'Category "' + name + '" created from Add Product');
+        fillCatSelect();
+        $('f_cat').value = name;
+        showToast('Category "' + name + '" created!', 'success');
+    });
+
+    window.closePM = function() { $('pm').classList.remove('show'); };
+
+    // ===== SAVE =====
+    window.saveProduct = function() {
+        var name = $('f_name').value.trim();
+        if (!name) { showToast('Product name required! Go to Basic Info tab.', 'error'); mgo(0); return; }
+        var cprice = parseInt($('f_cprice').value) || 0;
+        var rprice = parseInt($('f_rprice').value) || 0;
+        if (!cprice || !rprice) { showToast('Customer Price and Reseller Price required!', 'error'); mgo(2); return; }
+
+        var products = allProductsDb();
+        var isActive = !$('f_active_t').classList.contains('off');
+        var data = {
+            name: name,
+            description: $('f_desc').value.trim(),
+            category: $('f_cat').value,
+            subSection: $('f_sub').value.trim(),
+            sub_category: $('f_sub').value.trim(),
+            subSub: $('f_subsub') ? $('f_subsub').value.trim() : '',
+            youtube: $('f_yt') ? $('f_yt').value.trim() : '',
+            sku: $('f_sku').value.trim() || ('SKU-' + String(Date.now()).slice(-5)),
+            brand: $('f_brand').value.trim(),
+            customer_price: cprice,
+            reseller_price: rprice,
+            price: rprice,
+            cost: rprice,
+            buy_price: $('f_buy') ? (parseInt($('f_buy').value) || 0) : 0,
+            discount_percent: parseInt($('f_disc').value) || 0,
+            stock: parseInt($('f_stock').value) || 0,
+            material: $('f_material').value.trim(),
+            weight: $('f_weight').value.trim(),
+            images: imgs.slice(),
+            image: imgs.length ? imgs[0] : '',
+            colors: selColors.slice(),
+            sizes: selSizes.slice(),
+            is_active: isActive,
+            /* Item 14 — Ready to Campaign flag (admin upload / edit) */
+            readyToCampaign: !($('f_campaign_t') ? $('f_campaign_t').classList.contains('off') : true),
+            icon: 'fa-box'
+        };
+
+        if (editId) {
+            for (var i = 0; i < products.length; i++) {
+                /* BUG FIX — openEdit() is called from a generated handler that always
+                   passes a QUOTED id, so `editId` is a STRING, while a product uploaded
+                   through this page stores a NUMERIC id (Date.now()). Strict === then
+                   never matched: the modal opened (its find loop compares as strings),
+                   the toast said "Product updated!", but NOTHING was written — the edit
+                   was silently discarded for every admin-created product. */
+                if (String(products[i].id) === String(editId)) { products[i] = Object.assign({}, products[i], data); break; }
+            }
+            logActivity('product_updated', 'Updated: ' + name);
+            /* success toast moved below — it now fires only AFTER setData() actually persists */
+        } else {
+            data.id = Date.now();
+            data.createdAt = new Date().toISOString();
+            data.published = true;
+            products.push(data);
+            logActivity('product_created', 'Created: ' + name);
+        }
+        /* BUG FIX — setData() can silently fail (localStorage quota exceeded,
+           file:// without --allow-file-access-from-files, private-mode limits,
+           JSON.stringify of an over-large value, etc.). The toast and "products
+           updated" log were already shown by the time setData returned false,
+           so the modal closed, the grid re-rendered against UNCHANGED storage,
+           and the user saw "Product created successfully!" + "0 products in DB"
+           — a confusing lie. Now we HANDLE the failure: keep the modal open and
+           tell the user the truth. */
+        var saved = setData(DB_KEYS.PRODUCTS, products);
+        if (!saved) {
+            try { console.error('Product save failed — rh_products was not written. Existing storage size =',
+                ((localStorage.getItem('rh_products') || '').length) + ' chars'); } catch (e) {}
+            showToast('Save failed — storage full or unavailable. Remove some product images or clear browser data, then try again.', 'error');
+            return;
+        }
+        showToast(editId ? 'Product updated!' : 'Product created successfully!', 'success');
+        closePM();
+        fillCatFilter();
+        /* BUG FIX — if the admin was on page 2+ when they created a product, the
+           new product lands at index 0 of the reversed list (page 1) but
+           window._apg was untouched, so the user kept staring at the OLD page 2
+           and concluded "uploaded but not shown". Jump back to page 1 so the new
+           product is visible right next to the success toast. (For an edit, the
+           row already exists, so leaving the page alone is fine.) */
+        if (!editId && window._apg && window._apg > 1) {
+            window._apg = 1;
+            try { window.scrollTo(0, 0); } catch (e) {}
+        }
+        loadPage();
+    };
+
+    window.approveSup = function(id) {
+        var s = getOne(DB_KEYS.SETTINGS);
+        var comm = parseInt(s.supplierCommission) || 10;
+        var products = allProductsDb();
+        var p = null;
+        /* String compare — same lesson as saveProduct's edit path. */
+        for (var i = 0; i < products.length; i++) { if (String(products[i].id) === String(id)) { p = products[i]; break; } }
+        if (!p) return;
+        var rp = Math.ceil((p.cost || p.price || 0) * (1 + comm / 100));
+        p.price = rp;
+        p.reseller_price = rp;
+        if (!p.customer_price) p.customer_price = Math.round(rp * 1.8);
+        p.approved = true;
+        p.published = true;
+        p.approvedAt = new Date().toISOString();
+        setData(DB_KEYS.PRODUCTS, products);
+        addNotification(p.supplierId, 'product', 'আপনার product "' + p.name + '" approve হয়েছে! Reseller price: ' + formatCurrency(rp) + ' (+' + comm + '% commission)', true);
+        logActivity('product_approved', 'Admin approved supplier product: ' + p.name + ' (reseller price ' + formatCurrency(rp) + ')');
+        showToast('Product approved! Reseller price: ' + formatCurrency(rp), 'success');
+        renderGrid();
+    };
+    window.delProd = function(id) {
+        /* MODERATOR (this request) — a moderator may NOT delete a product.
+           They can take it off sale by setting stock to 0 (Out of Stock), which
+           is the supported alternative, so nothing is unreachable for them. */
+        if (typeof blockIfModerator === 'function' && blockIfModerator('প্রোডাক্ট ডিলিট (Out of Stock করুন)')) return;
+        if (!confirm('Delete this product? This cannot be undone.')) return;
+        var products = allProductsDb();
+        var out = [];
+        /* BUG FIX — strict !== meant a string id never matched a numeric stored id,
+           so the product was kept and Delete silently did nothing. */
+        for (var i = 0; i < products.length; i++) { if (String(products[i].id) !== String(id)) out.push(products[i]); }
+        setData(DB_KEYS.PRODUCTS, out);
+        logActivity('product_deleted', 'Product deleted');
+        showToast('Product deleted!', 'success');
+        loadPage();
+    };
+
+    window.togActive = function(id) {
+        var products = allProductsDb();
+        for (var i = 0; i < products.length; i++) {
+            /* BUG FIX — strict === failed whenever the id type differed (the
+               handler now always passes a string), so the toggle silently did
+               nothing even once it was reachable. Compare as strings. */
+            if (String(products[i].id) === String(id)) { products[i].is_active = products[i].is_active === false ? true : false; break; }
+        }
+        setData(DB_KEYS.PRODUCTS, products);
+        loadPage();
+    };
+
+    // ===== INIT =====
+    window.renderGrid = renderGrid; window.loadPage = loadPage;
+    /* BUG FIX — `updateSummary` lives INSIDE this IIFE, but the price / stock
+       fields call it from an inline oninput handler, which runs in the GLOBAL
+       scope. Every keystroke in Customer Price / Reseller Price / Stock threw
+       "ReferenceError: updateSummary is not defined" (the red banner in the
+       screenshot) and the live summary never updated. Expose it like the other
+       handlers this page already publishes on window. */
+    window.updateSummary = updateSummary;
+    fillCatFilter();
+    buildColorGrid();
+    buildSizeChips();
+    loadPage();
+    updateDbg();
+    setInterval(updateDbg,2000);
+
+
+    // ===== Auto-cleanup corrupt products (no name field) on first load =====
+    (function cleanupCorrupt(){
+        try{
+        var ps=getData(DB_KEYS.PRODUCTS)||[];
+        var cleaned=false;
+        var out=[];
+        for(var i=0;i<ps.length;i++){
+            var p=ps[i];
+            if(!p||typeof p!=='object'||!p.name||typeof p.name!=='string'||!p.name.trim()){cleaned=true;continue;}
+            // Ensure required fields exist
+            if(typeof p.stock!=='number')p.stock=0;
+            if(typeof p.price!=='number')p.price=p.reseller_price||p.cost||0;
+            out.push(p);
+        }
+        if(cleaned){
+            setData(DB_KEYS.PRODUCTS,out);
+            console.log('[cleanup] Removed corrupt products. Clean count:',out.length);
+        }
+        }catch(e){console.error('cleanup error:',e)}
+    })();
+
+    function updateDbg(){
+        try{
+        var ps=getData(DB_KEYS.PRODUCTS)||[];
+        var act=0,pend=0;
+        for(var i=0;i<ps.length;i++){if(ps[i].is_active!==false)act++;if(ps[i].supplierId&&ps[i].approved===false)pend++;}
+        // DB Status badge was removed from the UI — writes are null-safe no-ops
+        var dT=$('dbgTotal');if(dT)dT.textContent=ps.length;
+        var dA=$('dbgActive');if(dA)dA.textContent=act;
+        var dP=$('dbgPending');if(dP)dP.textContent=pend;
+        var q=$('q').value||'',cf=$('catF').value,sf=$('stF').value;
+        var parts=[];
+        if(q)parts.push('search="'+q+'"');
+        if(cf)parts.push('cat='+cf);
+        if(sf)parts.push('status='+sf);
+        var dF=$('dbgFilter');if(dF)dF.textContent=parts.length?parts.join(' • '):'no filter (showing all)';
+        }catch(e){console.error(e)}
+    }
+
+    window.forceShowAll=function(){
+        $('q').value='';$('catF').value='';$('stF').value='';
+        renderGrid();updateDbg();
+        showToast('Filters cleared — showing all '+getData(DB_KEYS.PRODUCTS).length+' products','success');
+    };
+
+    window.rebuildSampleData=function(){
+        if(!confirm('Reset করবে? আপনার existing products মুছে যাবে। OK করলে 6টা sample product তৈরি হবে।'))return;
+        var now=Date.now();
+        var samples=[
+            {id:now++,name:'Classic White T-Shirt',sku:'WT-001',category:'Clothing',stock:50,is_active:true,approved:true,cost:200,price:450,reseller_price:380,customer_price:650,discount_percent:10,supplierName:'Demo Supplier',images:['https://picsum.photos/seed/wt1/300/300']},
+            {id:now++,name:'Denim Jeans Blue',sku:'DJ-002',category:'Clothing',stock:30,is_active:true,approved:true,cost:500,price:950,reseller_price:820,customer_price:1400,discount_percent:5,supplierName:'Demo Supplier',images:['https://picsum.photos/seed/dj1/300/300']},
+            {id:now++,name:'Running Sneakers',sku:'RS-003',category:'Shoes',stock:20,is_active:true,approved:true,cost:800,price:1600,reseller_price:1400,customer_price:2400,discount_percent:15,supplierName:'Demo Supplier',images:['https://picsum.photos/seed/rs1/300/300']},
+            {id:now++,name:'Leather Wallet',sku:'LW-004',category:'Accessories',stock:100,is_active:true,approved:true,cost:150,price:380,reseller_price:320,customer_price:550,discount_percent:0,supplierName:'Demo Supplier',images:['https://picsum.photos/seed/lw1/300/300']},
+            {id:now++,name:'Smart Watch Pro',sku:'SW-005',category:'Electronics',stock:15,is_active:true,approved:true,cost:1500,price:3200,reseller_price:2800,customer_price:4500,discount_percent:12,supplierName:'Demo Supplier',images:['https://picsum.photos/seed/sw1/300/300']},
+            {id:now++,name:'Backpack Travel',sku:'BP-006',category:'Accessories',stock:3,is_active:true,approved:true,cost:600,price:1200,reseller_price:1050,customer_price:1800,discount_percent:8,supplierName:'Demo Supplier',images:['https://picsum.photos/seed/bp1/300/300']}
+        ];
+        setData(DB_KEYS.PRODUCTS,samples);
+        alert('✅ 6 sample products restored! Page will reload.');
+        location.reload();
+    };
+})();
+</script>
+<script>document.addEventListener('DOMContentLoaded',function(){var p=location.pathname.split('/').pop();var sel=null;if(p==='add-reseller.html')sel='resellers.html';else if(p==='supplier-products.html')sel='suppliers.html';else sel=p;document.querySelectorAll('.smenu a,.sidebar a,.sidebar-menu a').forEach(function(a){if(a.getAttribute('href')===sel){a.classList.add('active');a.style.background='#10b981';a.style.color='#fff';a.style.fontWeight='800'}})});</script>
+
+<script>
+/* Admin sidebar toggle (additive) */
+if (!window.toggleSidebar) {
+    window.toggleSidebar = function(open) {
+        var sb = document.querySelector('.sidebar');
+        if (!sb) return;
+        if (open === undefined) open = !sb.classList.contains('open');
+        sb.classList.toggle('open', open);
+        var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+        if (ov) ov.classList.toggle('show', open);
+    };
+}
+</script>
+
+
+<script id="lx-auto-active">
+(function() {
+    var page = location.pathname.split('/').pop();
+    document.querySelectorAll('.sb-item').forEach(function(a) {
+        var href = (a.getAttribute('href') || '').split('?')[0];
+        if (href === page) a.classList.add('on');
+    });
+    /* ADMIN ONLY (this request) — a moderator must not see the Moderators page,
+       which is the one screen that could let them recruit another moderator.
+       The page itself also bounces a moderator; this hides the door as well. */
+    try {
+        if (sessionStorage.getItem('user_type') !== 'admin') {
+            document.querySelectorAll('.sb-item[href="moderators.html"]').forEach(function (a) { a.style.display = 'none'; });
+        }
+    } catch (e) {}
+})();
+</script>
+</body>
+</html>

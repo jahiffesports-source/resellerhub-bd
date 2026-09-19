@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Products - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root { --pri:#4f46e5; --prid:#4338ca; --vio:#7c3aed; --grn:#10b981; --gold:#fbbf24; --dark:#0f172a; --gray:#64748b; }
+        body { font-family:'Inter','Hind Siliguri',sans-serif; background:#eef1f9; color:#1e293b; padding-bottom:70px; overflow-x:hidden; }
+
+        /* ===== Animations ===== */
+        @keyframes dashUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:none} }
+        @keyframes dashSide { from{opacity:0;transform:translateX(-24px)} to{opacity:1;transform:none} }
+        @keyframes iconBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        @keyframes drift { 0%,100%{transform:translate(0,0) rotate(0)} 33%{transform:translate(24px,-18px) rotate(3deg)} 66%{transform:translate(-16px,14px) rotate(-2deg)} }
+        @keyframes welcomeShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        @keyframes barGrow { from{height:0 !important} }
+        @keyframes tilePop { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:none} }
+        .sidebar-header, .sidebar-menu a { animation:dashSide .4s ease both; }
+        .welcome { animation:dashUp .55s .1s ease both; }
+        .quick-row .quick-btn:nth-child(1) { animation:dashUp .5s .18s ease both; }
+        .quick-row .quick-btn:nth-child(2) { animation:dashUp .5s .24s ease both; }
+        .quick-row .quick-btn:nth-child(3) { animation:dashUp .5s .3s ease both; }
+        .quick-row .quick-btn:nth-child(4) { animation:dashUp .5s .36s ease both; }
+        .stats-grid .stat-card:nth-child(1) { animation:dashUp .5s .3s ease both; }
+        .stats-grid .stat-card:nth-child(2) { animation:dashUp .5s .38s ease both; }
+        .stats-grid .stat-card:nth-child(3) { animation:dashUp .5s .46s ease both; }
+        .stats-grid .stat-card:nth-child(4) { animation:dashUp .5s .54s ease both; }
+        .card { animation:dashUp .55s .5s ease both; }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:248px; background:linear-gradient(180deg,#0b1029 0%,#151a3a 100%); color:#c7d2fe; z-index:200; overflow-y:auto; transition:transform 0.3s; box-shadow:4px 0 24px rgba(11,16,41,.35); }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; justify-content:space-between; align-items:center; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:40px; height:40px; background:linear-gradient(135deg,var(--pri),var(--vio)); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .sidebar-logo h3 { color:white; font-size:1rem; font-weight:900; }
+        .sidebar-logo small { color:#818cf8; font-size:0.66rem; display:block; font-weight:700; letter-spacing:1px; }
+        .sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; }
+        .sidebar-menu { list-style:none; padding:12px 10px; }
+        .sidebar-menu li { margin:3px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:11px 15px; color:#c7d2fe; text-decoration:none; font-size:0.88rem; font-weight:600; border-radius:11px; transition:all .22s; }
+        .sidebar-menu a:hover { background:rgba(129,140,248,.14); color:white; transform:translateX(4px); }
+        .sidebar-menu a.active { background:linear-gradient(135deg,var(--pri),var(--vio)); color:white; box-shadow:0 8px 20px rgba(79,70,229,.4); }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 15px 5px; color:#6366f1; font-size:0.66rem; text-transform:uppercase; letter-spacing:1.4px; font-weight:800; }
+        .menu-badge { background:var(--gold); color:#1e293b; font-size:0.68rem; padding:1px 8px; border-radius:10px; font-weight:800; margin-left:auto; }
+        .menu-badge-n { color:var(--gold); font-weight:900; }
+
+        .side-overlay { display:none; position:fixed; inset:0; background:rgba(11,16,41,.55); z-index:150; backdrop-filter:blur(2px); }
+
+        /* ===== MAIN ===== */
+        .main { margin-left:248px; min-height:100vh; }
+        .topbar { background:rgba(255,255,255,.88); backdrop-filter:blur(12px); padding:12px 22px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 14px rgba(15,23,42,.06); position:sticky; top:0; z-index:100; }
+        .topbar-left { display:flex; align-items:center; gap:12px; }
+        .hamburger { display:none; background:none; border:none; font-size:1.3rem; color:#1e293b; cursor:pointer; padding:4px; }
+        .topbar h2 { font-size:1.12rem; font-weight:800; }
+        .topbar-right { display:flex; align-items:center; gap:8px; }
+        .topbar-balance { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#7c2d12; padding:7px 15px; border-radius:22px; font-weight:800; font-size:0.84rem; white-space:nowrap; box-shadow:0 4px 12px rgba(245,158,11,.35); }
+        .topbar-user { display:flex; align-items:center; gap:7px; padding:6px 14px; background:#eef2ff; color:var(--pri); border-radius:22px; font-size:0.84rem; font-weight:700; }
+        .btn-logout { background:#fee2e2; color:#dc2626; border:none; padding:8px 12px; border-radius:10px; cursor:pointer; font-size:0.85rem; transition:all .25s; }
+        .btn-logout:hover { background:#dc2626; color:#fff; transform:translateY(-1px); }
+
+        .content { padding:22px 28px; width:100%; }
+
+        /* ===== Welcome — index hero style (dark + orbit) ===== */
+        .welcome { background:radial-gradient(700px 400px at 80% 10%, #312e81 0%, transparent 55%), radial-gradient(500px 320px at 8% 90%, #1e1b4b 0%, transparent 55%), linear-gradient(150deg,#0b1029,#12102e 60%,#181436); color:white; padding:30px 32px; border-radius:26px; margin-bottom:22px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; position:relative; overflow:hidden; box-shadow:0 22px 50px rgba(11,16,41,.4); animation:dashUp .55s .1s ease both; }
+        .w-orbit { position:absolute; border:1px solid rgba(129,140,248,.22); border-radius:50%; pointer-events:none; }
+        .w-orbit.o1 { width:340px; height:340px; top:-140px; right:-80px; animation:drift 14s ease-in-out infinite; }
+        .w-orbit.o2 { width:240px; height:240px; bottom:-110px; left:-60px; animation:drift 18s ease-in-out infinite reverse; }
+        .w-kicker { display:inline-flex; align-items:center; gap:7px; background:rgba(129,140,248,.18); border:1px solid rgba(129,140,248,.45); color:#c7d2fe; font-size:.66rem; font-weight:900; letter-spacing:1.6px; padding:5px 14px; border-radius:18px; margin-bottom:12px; position:relative; }
+        .welcome h3 { font-size:1.5rem; font-weight:900; margin-bottom:4px; position:relative; }
+        .w-grad { background:linear-gradient(90deg,#a5b4fc,#f0abfc,#67e8f9); background-size:200% auto; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; animation:welcomeShift 5s linear infinite; }
+        .welcome p { opacity:0.92; font-size:0.9rem; position:relative; }
+        .welcome .ref-code { background:rgba(129,140,248,.25); border:1px solid rgba(129,140,248,.4); padding:3px 12px; border-radius:14px; font-weight:800; font-size:0.76rem; position:relative; }
+        .btn-welcome { background:linear-gradient(135deg,var(--grn),#059669); color:white; padding:14px 26px; border-radius:14px; border:none; font-weight:800; cursor:pointer; font-size:0.92rem; white-space:nowrap; position:relative; transition:all .28s; box-shadow:0 12px 28px rgba(16,185,129,.4); }
+        .btn-welcome:hover { transform:translateY(-3px); box-shadow:0 18px 36px rgba(16,185,129,.5); }
+
+        /* Pending banner */
+        .pending-banner { background:linear-gradient(135deg,#fef3c7,#fde68a); border-left:5px solid #f59e0b; padding:15px 19px; border-radius:14px; margin-bottom:18px; }
+        .pending-banner h4 { color:#92400e; font-size:0.95rem; margin-bottom:3px; }
+        .pending-banner p { color:#78350f; font-size:0.85rem; }
+
+        /* ===== Kickers (index-style section badges) ===== */
+        .kick { display:inline-flex; align-items:center; font-size:.6rem; font-weight:900; letter-spacing:1.6px; color:var(--pri); background:#eef2ff; padding:4px 12px; border-radius:16px; margin-right:9px; vertical-align:2px; }
+
+        /* Stats */
+        .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:15px; margin-bottom:20px; }
+        .stat-card { background:white; padding:19px; border-radius:18px; box-shadow:0 3px 14px rgba(15,23,42,.05); border:1px solid #eef2f7; display:flex; align-items:center; gap:14px; transition:all .28s; }
+        .stat-card:hover { transform:translateY(-4px); box-shadow:0 16px 32px rgba(15,23,42,.11); }
+        .stat-icon { width:52px; height:52px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:1.35rem; flex-shrink:0; }
+        .stat-icon.green { background:linear-gradient(135deg,#d1fae5,#a7f3d0); color:#059669; }
+        .stat-icon.blue { background:linear-gradient(135deg,#e0e7ff,#c7d2fe); color:var(--pri); }
+        .stat-icon.orange { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#d97706; }
+        .stat-icon.purple { background:linear-gradient(135deg,#ede9fe,#ddd6fe); color:#7c3aed; }
+        .stat-card .label { font-size:0.74rem; color:var(--gray); margin-bottom:3px; font-weight:700; }
+        .stat-card .value { font-size:1.32rem; font-weight:900; }
+
+        /* Quick actions */
+        .quick-row { display:grid; grid-template-columns:repeat(4,1fr); gap:13px; margin-bottom:20px; }
+        .quick-btn { background:white; border:1px solid #eef2f7; border-radius:18px; padding:17px 10px; cursor:pointer; text-align:center; box-shadow:0 3px 12px rgba(15,23,42,.05); transition:all .25s; text-decoration:none; }
+        .quick-btn:hover { transform:translateY(-4px); box-shadow:0 14px 30px rgba(79,70,229,.14); border-color:#c7d2fe; }
+        .quick-btn .qi { width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin:0 auto 9px; transition:transform .3s; }
+        .quick-btn:hover .qi { transform:scale(1.12) rotate(-6deg); }
+        .quick-btn p { font-size:0.8rem; font-weight:700; color:#334155; }
+
+        /* ===== SALES ANALYTICS ===== */
+        .analytics { background:white; border-radius:20px; border:1px solid #eef2f7; box-shadow:0 4px 16px rgba(15,23,42,.05); padding:20px 22px; margin-bottom:20px; animation:dashUp .55s .48s ease both; }
+        .analytics-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:8px; }
+        .analytics-head h4 { font-size:0.95rem; font-weight:800; }
+        .analytics-head small { color:var(--gray); font-size:.72rem; font-weight:700; }
+        .atile-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+        .atile { border-radius:16px; padding:14px 16px; text-align:center; animation:tilePop .45s ease both; transition:transform .25s; }
+        .atile:hover { transform:translateY(-3px); }
+        .atile:nth-child(2) { animation-delay:.08s; } .atile:nth-child(3) { animation-delay:.16s; } .atile:nth-child(4) { animation-delay:.24s; }
+        .atile .tl { font-size:.64rem; font-weight:800; letter-spacing:.8px; text-transform:uppercase; opacity:.85; }
+        .atile .tv { font-size:1.18rem; font-weight:900; margin-top:3px; }
+        .atile.t-ind { background:linear-gradient(135deg,#e0e7ff,#c7d2fe); color:#3730a3; }
+        .atile.t-grn { background:linear-gradient(135deg,#d1fae5,#a7f3d0); color:#065f46; }
+        .atile.t-amb { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#92400e; }
+        .atile.t-vio { background:linear-gradient(135deg,#ede9fe,#ddd6fe); color:#5b21b6; }
+        .achart { display:flex; align-items:flex-end; gap:10px; height:170px; padding:6px 4px 0; }
+        .acol { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
+        .abar { width:100%; max-width:44px; border-radius:9px 9px 4px 4px; background:linear-gradient(180deg,var(--pri),var(--vio)); min-height:5px; transition:height .8s cubic-bezier(.2,.8,.3,1); box-shadow:0 4px 10px rgba(79,70,229,.25); position:relative; }
+        .abar:hover { filter:brightness(1.15); }
+        .abar .av { position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-size:.62rem; font-weight:800; color:var(--pri); white-space:nowrap; opacity:0; transition:opacity .3s; }
+        .acol:hover .av { opacity:1; }
+        .abar.zero { background:#e2e8f0; box-shadow:none; }
+        .abar.zero .av { color:#94a3b8; }
+        .alab { font-size:.64rem; font-weight:800; color:var(--gray); }
+        .duo { display:grid; grid-template-columns:1.6fr 1fr; gap:20px; align-items:start; }
+
+        .card { background:white; border-radius:20px; box-shadow:0 4px 16px rgba(15,23,42,.05); border:1px solid #eef2f7; margin-bottom:20px; overflow:hidden; animation:dashUp .55s .5s ease both; }
+        .card-header { padding:15px 20px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; }
+        .card-header h4 { font-size:0.95rem; font-weight:800; }
+        .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+        .data-table { width:100%; border-collapse:collapse; min-width:600px; }
+        .data-table th { text-align:left; padding:11px 18px; background:#f8fafc; font-weight:700; font-size:0.68rem; color:var(--gray); text-transform:uppercase; white-space:nowrap; }
+        .data-table td { padding:12px 18px; border-bottom:1px solid #f4f6fb; font-size:0.84rem; }
+        .data-table tr:hover { background:#f8faff; }
+        .badge { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; white-space:nowrap; }
+        .b-delivered { background:#d1fae5; color:#065f46; }
+        .b-shipped { background:#e0e7ff; color:#4338ca; }
+        .b-processing { background:#e0f2fe; color:#0369a1; }
+        .b-cancelled { background:#fee2e2; color:#991b1b; }
+        .b-new { background:#fef3c7; color:#92400e; }
+        .b-pending { background:#fef3c7; color:#92400e; }
+        .b-confirmed { background:#dbeafe; color:#1e40af; }
+        .b-packaging { background:#ede9fe; color:#6d28d9; }
+        .b-shipping { background:#e0e7ff; color:#4338ca; }
+        .b-wfr { background:#fef9c3; color:#854d0e; }
+        .b-returned { background:#ffe4e6; color:#9f1239; }
+        .btn { padding:6px 12px; border:none; border-radius:8px; font-size:0.8rem; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:5px; transition:all .22s; }
+        .btn-primary { background:linear-gradient(135deg,var(--pri),var(--prid)); color:white; }
+        .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 14px rgba(79,70,229,.35); }
+        .empty { text-align:center; padding:38px 16px; color:var(--gray); }
+        .empty i { font-size:2.2rem; margin-bottom:8px; opacity:0.4; }
+        .empty a { color:var(--pri); font-weight:700; }
+
+        .notif-item { padding:12px 18px; border-bottom:1px solid #f4f6fb; display:flex; gap:11px; align-items:flex-start; font-size:0.86rem; transition:background .2s; }
+        .notif-item:hover { background:#f8faff; }
+        .notif-item:last-child { border-bottom:none; }
+        .notif-item i { color:var(--pri); margin-top:3px; }
+
+        /* ===== MOBILE BOTTOM NAV ===== */
+        .bottom-nav { display:none; position:fixed; bottom:10px; left:12px; right:12px; background:rgba(255,255,255,.92); backdrop-filter:blur(14px); border:1px solid #eef2f7; box-shadow:0 10px 30px rgba(15,23,42,.16); z-index:400; padding:7px 6px calc(7px + env(safe-area-inset-bottom)); border-radius:20px; }
+        .bottom-nav a { display:flex; flex-direction:column; align-items:center; gap:2px; text-decoration:none; color:#94a3b8; font-size:0.62rem; font-weight:700; padding:6px 6px; border-radius:12px; flex:1; transition:all .2s; }
+        .bottom-nav a i { font-size:1.12rem; }
+        .bottom-nav a.active { color:var(--pri); background:#eef2ff; }
+        .bn-menu { background:linear-gradient(135deg,var(--pri),var(--vio)); color:#fff; border-radius:14px; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .bn-menu i { color:#fff; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width:1024px) { .stats-grid { grid-template-columns:repeat(2,1fr); } .quick-row { grid-template-columns:repeat(4,1fr); } .duo { grid-template-columns:1fr; } .atile-row { grid-template-columns:1fr 1fr; } }
+        @media (max-width:768px) {
+            body { padding-bottom:86px; }
+            .sidebar { transform:translateX(-100%); width:272px; }
+            .sidebar.open { transform:translateX(0); }
+            .side-overlay.show { display:block; }
+            .sidebar-close-m { display:block; }
+            .main { margin-left:0; }
+            .hamburger { display:block; }
+            .topbar-user span { max-width:78px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+            .stats-grid { grid-template-columns:1fr 1fr; gap:10px; }
+            .stat-card { padding:14px 12px; flex-direction:column; text-align:center; gap:8px; }
+            .stat-card .value { font-size:1.12rem; }
+            .quick-row { grid-template-columns:repeat(2,1fr); gap:10px; }
+            .welcome { flex-direction:column; text-align:center; padding:24px 18px; }
+            .btn-welcome { width:100%; }
+            .bottom-nav { display:flex; }
+            .content { padding:14px; }
+            .topbar { padding:11px 14px; }
+            /* 2026-09-16 — MOBILE FIX (this request). The topbar measured about 440px
+               across on a 390px phone, so the logout button was pushed past the right
+               edge and looked cut off. These rules tighten the SAME header so it fits a
+               narrow screen. Nothing is hidden and nothing outside this media query is
+               touched, so the desktop layout is unchanged. */
+            .topbar { padding:10px 12px; }
+            .topbar-left { gap:8px; }
+            .topbar h2 { font-size:.98rem; }
+            .topbar-right { gap:6px; }
+            .topbar-balance { padding:6px 10px; font-size:.78rem; }
+            .topbar-user { padding:5px 10px; font-size:.78rem; }
+            .topbar-user span { max-width:52px; }
+
+            .atile-row { grid-template-columns:1fr 1fr; gap:9px; }
+            .achart { gap:5px; height:130px; }
+            .analytics { padding:16px 14px; }
+        }
+        @media (max-width:400px) { .quick-row { grid-template-columns:1fr 1fr; } .stats-grid { grid-template-columns:1fr 1fr; } }
+
+</style>
+
+<style id="lx-nav-force">
+@media(max-width:768px){
+    .bottom-nav{display:flex !important;position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;opacity:1 !important;visibility:visible !important;transform:none !important}
+    body{padding-bottom:86px !important}
+}
+</style>
+
+<style id="lx-bnav">
+/* ===== Complete bottom-nav styling ===== */
+.bottom-nav{position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;display:flex !important;align-items:stretch;background:rgba(255,255,255,.97) !important;backdrop-filter:blur(14px);border:1px solid #e8ecf4 !important;border-radius:18px !important;box-shadow:0 -4px 24px rgba(15,23,42,.14) !important;padding:7px 6px calc(7px + env(safe-area-inset-bottom)) !important}
+.bottom-nav a,.bottom-nav button{flex:1 !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;gap:3px !important;padding:7px 2px !important;border:none !important;background:none !important;color:#7b879c !important;font-size:.62rem !important;font-weight:700 !important;text-decoration:none !important;cursor:pointer !important;border-radius:12px !important;font-family:inherit !important;line-height:1.2 !important}
+.bottom-nav a i,.bottom-nav button i{font-size:1.18rem !important;line-height:1 !important}
+.bottom-nav a span,.bottom-nav button span{display:block !important}
+.bottom-nav a:hover,.bottom-nav button:hover{color:#4f46e5 !important;background:#eef2ff !important;transform:translateY(-2px)}
+.bottom-nav a.active{color:#4f46e5 !important;background:#eef2ff !important}
+.bottom-nav .bn-menu{color:#4f46e5 !important;background:#eef2ff !important;box-shadow:none !important;border-radius:12px !important}
+.bottom-nav .bn-menu:hover{background:#e0e7ff !important}
+.bottom-nav .bn-menu i,.bottom-nav .bn-menu span{color:#4f46e5 !important}
+body{padding-bottom:86px !important}
+@media(min-width:769px){
+    .bottom-nav{display:none !important}
+    body{padding-bottom:0 !important}
+}
+</style>
+
+<style>
+@media(max-width:768px){
+    .sidebar{transform:translateX(-100%) !important;transition:transform .32s cubic-bezier(.2,.8,.3,1) !important;display:block !important}
+    .sidebar.open{transform:translateX(0) !important;box-shadow:24px 0 60px rgba(11,16,41,.45) !important}
+}
+</style>
+
+<style id="lx-logout-fix">
+/* Logout fix: the open sidebar must paint ABOVE the fixed mobile bottom-nav,
+   otherwise the last menu item (Logout) is covered and un-tappable. */
+.sidebar{ z-index:900 !important; }
+.side-overlay{ z-index:880 !important; }
+.sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+@supports selector(:has(*)){
+  body:has(.sidebar.open) .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+}
+@media(min-width:769px){ .sidebar-menu{ padding-bottom:12px !important; } }
+</style>
+
+<style id="lx-sidebar-fix">
+/* ===== Reseller sidebar — canonical & stable (do not mutate at runtime) ===== */
+/* 1) Labels and section headings are ALWAYS visible. The old template hid
+      .sidebar-menu a span and .sidebar-divider under 768px, which made menu
+      text disappear and the "Account" heading vanish on some pages. */
+.sidebar .sidebar-menu a span{ display:inline !important; }
+.sidebar .sidebar-menu .sidebar-divider,
+.sidebar .sidebar-divider{ display:block !important; }
+.sidebar .sidebar-logo h3{ display:block !important; }
+.sidebar .sidebar-logo small{ display:block !important; }
+
+/* 2) Fixed geometry — the sidebar is never collapsed to a 70px icon rail. */
+.sidebar{ width:248px !important; z-index:900 !important; overflow-y:auto !important; }
+.side-overlay{ z-index:880 !important; }
+@media(min-width:769px){
+    .main{ margin-left:248px !important; }
+    .sidebar{ transform:none !important; }
+}
+@media(max-width:768px){
+    .main{ margin-left:0 !important; }
+    .sidebar{ transform:translateX(-100%) !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; display:block !important; }
+    .sidebar.open{ transform:translateX(0) !important; box-shadow:24px 0 60px rgba(11,16,41,.45) !important; }
+}
+
+/* 3) Row geometry is locked: the "All Orders" counter is absolutely positioned
+      so a changing number can never push the rows below it up or down. */
+.sidebar .sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.sidebar .sidebar-menu li{ position:relative; display:block; margin:3px 0; }
+.sidebar .sidebar-menu a{ display:flex !important; align-items:center; gap:12px; padding:11px 15px; }
+.sidebar .menu-badge{ position:absolute; right:12px; top:50%; transform:translateY(-50%); margin-left:0 !important; }
+
+/* 4) Mobile: hide the bottom nav while the drawer is open so the last item
+      (Logout) is never covered. */
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+
+/* 5) Close button inside the drawer on mobile. */
+.sidebar .sidebar-close-m{ display:none; }
+@media(max-width:768px){ .sidebar .sidebar-close-m{ display:block !important; } }
+</style>
+
+<style id="reseller-hamburger-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   Every reseller page hides the hamburger with ".hamburger{display:none}", but most
+   pages never turn it back ON at mobile width — only products.html did. So on a phone
+   there was no way to open the sidebar on Products, Orders, Wallet, Withdrawals,
+   Courier, Messages, Support, Profile, Referral or Website Integration.
+   This shows the SAME existing button (onclick="menuToggle()") at mobile width only.
+   It is an ADDED block and lives entirely inside a max-width query, so the DESKTOP
+   LAYOUT IS UNCHANGED. */
+@media (max-width:768px){
+  .hamburger { display:block !important; }
+}
+</style>
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+
+<style id="lx-page-entrance">
+/* ============================================================================
+   2026-09-18 — THE PAGE ENTRANCE (this request)
+   ----------------------------------------------------------------------------
+   The same animation the products page uses, copied VERBATIM from
+   reseller/products.html: the content block rises 20px and fades in as the page
+   opens, instead of appearing all at once.
+
+   This block adds nothing but that animation. It is the only change on this page,
+   and every selector it uses is either the keyframe or the .content wrapper the
+   panel shell already provides — so nothing else here can be affected.
+   ============================================================================ */
+@keyframes lxPgUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+.content > * { animation:lxPgUp .5s ease both; }
+
+/* somebody who asked their device to calm down gets a calm page */
+@media (prefers-reduced-motion: reduce){
+    .content > * { animation:none !important; }
+}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon"><i class="fas fa-store"></i></div>
+            <div><h3>ResellerHub</h3><small>Reseller Panel</small></div>
+        </div>
+        
+        <button class="sidebar-close-m" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+        <ul class="sidebar-menu">
+        <li class="sidebar-divider">Main</li>
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+        <li><a href="products.html"><i class="fas fa-box"></i> <span>Products</span></a></li>
+        <li><a href="my-shop.html"><i class="fas fa-store"></i> <span>My Shop</span></a></li>
+        <li><a href="transactions.html"><i class="fas fa-right-left"></i> <span>Transactions</span></a></li>
+        <li class="sidebar-divider">Orders</li>
+        <li><a href="my-orders.html"><i class="fas fa-list"></i> <span>All Orders<span class="menu-badge-n" id="ordersBadgeLabel"></span></span></a> <span class="menu-badge" id="ordersBadge" style="display:none">0</span></li>
+        <li><a href="order.html"><i class="fas fa-cart-plus"></i> <span>Add New Order</span></a></li>
+        <li><a href="offers.html"><i class="fas fa-gift"></i> <span>Offers</span></a></li>
+        <li><a href="shop-categories.html"><i class="fas fa-sitemap"></i> <span>Shop Categories</span></a></li>
+        <li class="sidebar-divider">My Shop</li>
+        <li><a href="my-shop-settings.html"><i class="fas fa-sliders"></i> <span>Shop Settings</span></a></li>
+        <li><a href="my-products.html" class="active"><i class="fas fa-box-open"></i> <span>My Products</span></a></li>
+        <li><a href="my-shop-orders.html"><i class="fas fa-bag-shopping"></i> <span>My Shop Orders</span></a></li>
+        <li><a href="customer-messages.html"><i class="fas fa-comment-dots"></i> <span>Customer Messages<span class="menu-badge-n" id="cmsgBadgeLabel"></span></span></a></li>
+        <li class="sidebar-divider">Account</li>
+        <li><a href="wallet.html"><i class="fas fa-wallet"></i> <span>Wallet</span></a></li>
+        <li><a href="withdrawals.html"><i class="fas fa-money-bill-wave"></i> <span>Withdrawals</span></a></li>
+        <li><a href="courier.html"><i class="fas fa-truck"></i> <span>Courier</span></a></li>
+        <li><a href="messages.html"><i class="fas fa-comments"></i> <span>Messages<span class="menu-badge-n" id="msgBadgeLabel"></span></span></a></li>
+        <li><a href="support.html"><i class="fas fa-headset"></i> <span>Support</span></a></li>
+        <li><a href="profile.html"><i class="fas fa-user-cog"></i> <span>Profile</span></a></li>
+        <li><a href="referral.html"><i class="fas fa-user-plus"></i> <span>Referral</span></a></li>
+        <li><a href="website-integration.html"><i class="fas fa-plug"></i> <span>Website Integration</span></a></li>
+        <li><a href="../index.html"><i class="fas fa-globe"></i> <span>Visit Site</span></a></li>
+        <li><a href="javascript:void(0)" onclick="resellerLogout()" style="color:#dc2626"><i class="fas fa-right-from-bracket"></i> <span>Logout</span></a></li>
+    </ul>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+        <div class="topbar-left">
+            <button class="hamburger" onclick="toggleSidebar(true)"><i class="fas fa-bars"></i></button>
+            <h2><i class="fas fa-box-open" style="color:#2563eb;margin-right:6px;"></i> My Products</h2>
+        </div>
+        <div class="topbar-right">
+            <div class="topbar-balance"><i class="fas fa-coins"></i> <span id="topBalance">0</span></div>
+            <div class="topbar-user"><i class="fas fa-user" style="color:#2563eb;"></i> <span id="userName">User</span></div>
+            <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content">
+<style id="lx-myprod">
+.mp-head{background:linear-gradient(120deg,#4f46e5,#7c3aed);color:#fff;border-radius:16px;padding:20px 22px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.mp-head h3{font-size:1.15rem;font-weight:900;margin-bottom:4px}
+.mp-head p{font-size:.78rem;opacity:.92;line-height:1.6;max-width:640px}
+.mp-card{background:#fff;border-radius:15px;box-shadow:0 2px 12px rgba(15,23,42,.06);padding:20px 22px;margin-bottom:16px}
+.mp-card h3{font-size:.95rem;font-weight:900;margin-bottom:4px;display:flex;align-items:center;gap:9px}
+.mp-card h3 i{color:#4f46e5}
+.mp-card .hint{font-size:.76rem;color:#64748b;margin-bottom:14px;line-height:1.6}
+.mp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:13px}
+.mp-p{background:#fff;border:1px solid #eef2f7;border-radius:14px;overflow:hidden;box-shadow:0 1px 5px rgba(15,23,42,.05);transition:transform .2s}
+.mp-p:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(15,23,42,.11)}
+.mp-p .im{height:140px;background:#f8fafc;display:flex;align-items:center;justify-content:center;overflow:hidden;color:#cbd5e1;font-size:2rem}
+.mp-p .im img{width:100%;height:100%;object-fit:contain}
+.mp-p .bd{padding:11px 12px}
+.mp-p .nm{font-size:.78rem;font-weight:800;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-p .ct{font-size:.65rem;color:#94a3b8;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-p .pr{font-size:.84rem;font-weight:900;color:#4338ca;margin-top:6px}
+.mp-p .st{font-size:.64rem;font-weight:800;margin-top:4px}
+.mp-p .ac{display:flex;gap:6px;padding:0 12px 12px}
+.mp-p .ac button{flex:1;border:none;border-radius:9px;padding:7px;font-size:.7rem;font-weight:800;cursor:pointer;font-family:inherit}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fgrp{margin-bottom:12px}
+.fgrp label{display:block;font-size:.74rem;font-weight:800;color:#475569;margin-bottom:5px}
+.fgrp input,.fgrp select,.fgrp textarea{width:100%;padding:10px 13px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.84rem;font-family:inherit;box-sizing:border-box}
+.fgrp input:focus,.fgrp select:focus,.fgrp textarea:focus{outline:none;border-color:#4f46e5;box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+.imgbox{width:100%;height:130px;border:2px dashed #cbd5e1;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;color:#94a3b8;background:#f8fafc}
+.imgbox img{width:100%;height:100%;object-fit:contain}
+/* PART 1 — multi-image manager */
+/* 2026-09-16 — the grid set COLUMNS but no ROW height, and the cell relied on its
+   own height alone. Nothing then stopped a stretched parent (the modal body is a
+   flex item with flex:1) from pulling the cells out of shape, which is what made
+   the image preview render as a tall strip. grid-auto-rows + align-items:start +
+   align-self:start pin every tile to a square no matter what the parent does.
+   The admin panel's own thumbnails do the same thing with flex:none. */
+/* 2026-09-16 — the image picker broke on BOTH phone and desktop.
+   `grid-auto-rows:130px` forced every ROW to 130px no matter what the cell wanted,
+   and `.imgcell{width:130px;height:130px}` plus `aspect-ratio:1/1` fought each other.
+   With two or three images the first (MAIN) tile grew into a tall narrow box and the
+   row pushed the others off the edge.
+   Now: columns are fluid with a floor, rows size to their content, and a cell is
+   `width:100%` with a square `aspect-ratio` so it can never outgrow its column.
+   `max-width:130px` keeps the desktop tiles the same size they always were. */
+/* 2026-09-17 — the image picker now matches the ADMIN product form's design, as the
+   user asked: a dashed "Add Image" box, a dashed hint strip, and the uploaded images
+   in a ROW of small square thumbnails (each with an X, the first badged "Main").
+   The class names are unchanged, so every existing handler — drag to reorder,
+   set-main, remove — keeps working. Only the presentation changed. */
+.imggrid{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0;align-items:flex-start}
+.imgcell{position:relative;width:74px;height:74px;min-width:74px;min-height:74px;max-width:74px;max-height:74px;flex:0 0 74px;border:2px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#f8fafc;box-sizing:border-box;aspect-ratio:auto;align-self:flex-start}
+.imgcell img{width:100%;height:100%;object-fit:cover;display:block}
+.imgcell.main{border-color:#10b981;box-shadow:0 0 0 2px rgba(16,185,129,.18)}
+.imgcell .tag{position:absolute;top:auto;bottom:0;left:0;right:0;background:rgba(16,185,129,.92);color:#fff;font-size:.5rem;font-weight:800;text-align:center;padding:1px 0;border-radius:0}
+.imgcell .ops{position:absolute;top:2px;right:2px;left:auto;bottom:auto;background:none;display:flex;gap:2px}
+.imgcell .ops button{width:18px;height:18px;flex:0 0 auto;border-radius:50%;background:#ef4444;color:#fff;border:none;font-size:.58rem;line-height:1;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.imgcell .ops button:nth-child(1):not(:last-child){background:#4f46e5}
+.imgcell[draggable="true"]{cursor:grab}
+.imgcell.dragging{opacity:.4;cursor:grabbing}
+.imgcell.dragover{border-color:#4f46e5;box-shadow:0 0 0 3px rgba(79,70,229,.28);transform:scale(.96)}
+/* imgtile-uniform-fix (2026-09-17) — the add box was 130px while every tile was
+   74px, and the tiles could stretch. Both are now one fixed square so no image
+   can ever render taller than its neighbours. */
+.imgadd{width:74px;height:74px;min-width:74px;min-height:74px;border:2px dashed #d1d5db;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:#9ca3af;font-weight:800;font-size:.8rem;background:#f8fafc;text-align:center;padding:0;margin:0 0 0}
+.imgadd i{font-size:1.3rem;margin-bottom:6px;color:#10b981}
+.imgadd:hover{border-color:#10b981;color:#059669;background:#f0fdf4}
+.imgadd small{font-weight:700;color:#94a3b8;margin-left:4px}
+.imgadd.off{opacity:.5;pointer-events:none}
+.gwrap{border:1.5px dashed #e2e8f0;border-radius:10px;padding:22px;text-align:center;color:#b6bccb;margin:14px 0 0;font-size:.82rem}
+.gwrap i{font-size:1.1rem;display:block;margin-bottom:6px}
+.imgadd:hover{border-color:#4f46e5;color:#4338ca;background:#eef2ff}
+.imgadd small{font-weight:700;color:#94a3b8;margin-left:5px}
+.imgadd.off{opacity:.5;pointer-events:none}
+.varwrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.varcell{background:#f8fafc;border:1px solid #eef2f7;border-radius:10px;padding:8px 10px}
+.varcell b{font-size:.7rem;font-weight:900;color:#334155;display:block;margin-bottom:4px}
+.varcell input{width:100%;padding:6px 9px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.78rem;font-family:inherit;box-sizing:border-box}
+.varcell input:focus{outline:none;border-color:#4f46e5}
+.varhint{font-size:.7rem;color:#94a3b8;padding:6px 0}
+.mp-btn{border:none;border-radius:10px;padding:10px 18px;font-weight:800;font-size:.78rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.mp-btn.pri{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff}
+.mp-btn.pri:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(79,70,229,.3)}
+.mp-btn.gh{background:#f1f5f9;color:#475569}
+.mp-btn.dn{background:#fee2e2;color:#dc2626}
+.mp-empty{text-align:center;color:#94a3b8;padding:44px 20px;font-size:.82rem}
+.mp-empty i{font-size:2.2rem;display:block;margin-bottom:11px;opacity:.5}
+.mp-empty b{display:block;color:#475569;margin-bottom:5px}
+@media(max-width:560px){
+ .mp-card{padding:16px 15px}
+ .frow{grid-template-columns:1fr}
+ .mp-grid{grid-template-columns:1fr 1fr;gap:9px}
+ .mp-head{padding:16px 15px}
+ .mp-btn{width:100%;justify-content:center}
+}
+
+/* ==========================================================================
+   ITEM 14 (spec, 2026-09-14) — the upload form now uses the ADMIN product-upload
+   design: the same modal shell, the same 5-tab strip (Basic Info / Images /
+   Pricing / Colors & Sizes / Details) and the same footer with the step dots.
+   Only the LOOK changed — every field id, the save path and the ownership rules
+   are untouched, so the product still never reaches the admin panel, another
+   reseller's My Shop, or a supplier panel.
+   ========================================================================== */
+.mp-modal-o{position:fixed;inset:0;background:rgba(15,23,42,.65);display:none;align-items:center;justify-content:center;z-index:1200;padding:18px}
+.mp-modal-o.show{display:flex}
+.mp-modal{background:#fff;border-radius:16px;width:100%;max-width:680px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(15,23,42,.35)}
+.mp-mhead{padding:16px 22px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.mp-mhead h3{font-size:1.15rem;font-weight:900;display:flex;align-items:center;gap:8px;margin:0}
+.mp-mhead h3 i{color:#4f46e5}
+.mp-mhead p{font-size:.78rem;color:#64748b;margin:3px 0 0;line-height:1.6}
+.mp-mclose{background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;line-height:1}
+.mp-mtabs{display:flex;gap:2px;padding:0 22px;border-bottom:1px solid #eef0f6;overflow-x:auto}
+.mp-mtab{padding:10px 14px;font-size:.82rem;font-weight:700;color:#64748b;cursor:pointer;border:none;background:none;border-bottom:2.5px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:5px;font-family:inherit}
+.mp-mtab.on{color:#4f46e5;border-bottom-color:#4f46e5}
+.mp-mbody{padding:20px 22px;overflow-y:auto;flex:1}
+.mp-msec{display:none}
+.mp-msec.on{display:block}
+.mp-mfoot{padding:13px 22px;border-top:1px solid #eef0f6;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.mp-dots{display:flex;gap:5px}
+.mp-dots i{width:6px;height:6px;border-radius:50%;background:#d1d5db}
+.mp-dots i.on{background:#4f46e5;width:16px;border-radius:4px}
+.mp-mfoot-r{display:flex;gap:9px}
+.mp-note{background:#eef2ff;border-radius:10px;padding:11px 13px;font-size:.75rem;color:#4338ca;line-height:1.7;margin-bottom:14px}
+.mp-tg-row{display:flex;align-items:center;gap:11px;background:#f8fafc;padding:12px 14px;border-radius:10px}
+.mp-tg-row b{font-size:.87rem;display:block}
+.mp-tg-row small{color:#64748b;font-size:.76rem;display:block}
+.mp-pill{display:inline-block;background:#ecfdf5;color:#047857;font-size:.66rem;font-weight:900;padding:4px 10px;border-radius:12px;white-space:nowrap}
+.mp-psum{background:#f8fafc;border-radius:10px;padding:16px}
+.mp-psum .r{display:flex;padding:5px 0;font-size:.82rem;border-bottom:1px dashed #eef0f6}
+.mp-psum .r:last-child{border-bottom:none}
+.mp-psum .r b{width:45%;color:#64748b;font-weight:600}
+.mp-psum .r span{flex:1;text-align:right;font-weight:700;color:#1e293b}
+.mp-psum .r span.g{color:#4f46e5;font-weight:900}
+@media(max-width:560px){
+ .mp-mbody{padding:16px 15px}
+ .mp-mtabs{padding:0 12px}
+ .mp-mtab{padding:9px 9px;font-size:.74rem}
+ .mp-mfoot{padding:11px 15px;flex-wrap:wrap}
+ .mp-mfoot-r{width:100%}
+ /* 2026-09-16 — MOBILE FIX (this request). The image picker on the Images tab was
+    broken on a phone. `.imggrid` used `repeat(auto-fill,130px)` with
+    `grid-auto-rows:130px` and `.imgcell` was a hard `width:130px;height:130px`, so the
+    cells could not shrink: the MAIN tile rendered as a tall narrow box, the uploaded
+    photo beside it was clipped at the right edge, and the "Add Image" strip and its
+    hint were cut off too.
+    These rules make the grid fluid — cells share the row and stay square — so every
+    tile and the Add box fit inside the modal. Only the phone layout changes; the
+    desktop grid is untouched. */
+ /* Forced, because the base `grid-auto-rows:130px` was still winning the cascade. */
+ .imgcell .ops button{font-size:.58rem;padding:5px 0}
+ .imgadd{padding:11px;font-size:.74rem}
+ /* 2026-09-16 — MOBILE FIX (this request). The product card was cut off on Android.
+    `.mp-p .ac` is a flex row holding THREE buttons (Free Delivery / Edit / Delete)
+    with no wrap, and `.mp-p .ac button{flex:1}` cannot shrink a button below its own
+    text width. So the card's minimum width was the sum of three buttons — wider than
+    the phone — and `.mp-p{overflow:hidden}` clipped whatever did not fit.
+    One card per row gives it the full screen, and the buttons may now wrap onto a
+    second line instead of forcing the card wider. Desktop grid is untouched. */
+ .mp-grid{grid-template-columns:1fr;gap:11px}
+ .mp-p .ac{flex-wrap:wrap}
+ .mp-p .ac button{flex:1 1 auto;min-width:0;padding:8px 6px}
+ .mp-p .im{height:150px}
+}
+</style>
+
+<style id="mp-colsize-css">
+/* ===========================================================================
+   2026-09-19 — COLOURS & SIZES, the ADMIN's design (this request).
+   The user: "রিসেলার প্রোডাক্ট আপলোড করতে গেলে এই সেম কালার অপশনটা তাকে অবশ্যই করবে।"
+   These rules are copied VERBATIM from admin/products.html's Colors & Sizes tab
+   so the reseller sees the identical widget. Nothing here is retyped by hand.
+   The two text inputs the old design used (#mpColors / #mpSizes) are kept in the
+   DOM as hidden carriers, so mpSave() and mpRenderVariants() are untouched.
+   =========================================================================== */
+.colgrid { display:grid; grid-template-columns:repeat(6,1fr); gap:9px; }
+.colitem { border:1.5px solid #e2e8f0; border-radius:9px; padding:9px 4px; text-align:center; cursor:pointer; transition:.15s; }
+.colitem:hover { border-color:#10b981; }
+.colitem.on { border-color:#10b981; background:#ecfdf5; }
+.colitem .c { width:26px; height:26px; border-radius:50%; margin:0 auto 5px; border:1px solid rgba(0,0,0,.08); }
+.colitem p { font-size:.64rem; font-weight:600; color:#475569; }
+.czrow { display:flex; gap:8px; margin-top:12px; }
+.czrow input { flex:1; padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:.85rem; }
+.szpresets { display:flex; gap:6px; margin-bottom:10px; }
+.szp { padding:6px 14px; border-radius:16px; font-size:.75rem; font-weight:600; cursor:pointer; background:#f1f5f9; color:#475569; border:none; }
+.szp.on { background:#10b981; color:#fff; }
+.selchips { display:flex; gap:5px; flex-wrap:wrap; margin-top:10px; }
+.selchips span { background:#ecfdf5; color:#047857; font-size:.72rem; font-weight:700; padding:4px 10px; border-radius:14px; }
+@media (max-width:560px) { .colgrid { grid-template-columns:repeat(4,1fr); } }
+</style>
+
+<div class="mp-head">
+    <div>
+        <h3><i class="fas fa-box-open"></i> My Products</h3>
+        <p>আপনার নিজের product upload করুন। এই product গুলো <b>শুধুমাত্র আপনার</b> My Shop-এ দেখাবে — অন্য কোনো reseller-এর shop-এ নয়।</p>
+    </div>
+    <button class="mp-btn gh" onclick="mpToggleFormGuarded()" id="mpFormBtn"><i class="fas fa-plus"></i> Add Product</button>
+</div>
+
+<!-- ITEM 14 — the upload form is now a modal; markup lives after </main> -->
+
+<div class="mp-card">
+    <h3><i class="fas fa-list"></i> My Uploaded Products (<span id="mpCount">0</span>)</h3>
+    <p class="hint">শুধুমাত্র আপনার product গুলো। অন্য reseller-এর product এখানে কখনো আসবে না।</p>
+    <div class="mp-grid" id="mpGrid"></div>
+</div>
+
+    </div>
+</main>
+
+<!-- ===== ITEM 14 — ADD/EDIT OWN PRODUCT (admin product-upload design) ===== -->
+<div class="mp-modal-o" id="mpFormCard">
+<div class="mp-modal">
+<div class="mp-mhead">
+  <div>
+    <h3><i class="fas fa-box-open"></i> <span id="mpModalTitle">Upload Own Product</span></h3>
+    <p id="mpModalSub">Admin-এর category থেকে বেছে নিয়ে নিজের product যোগ করুন — শুধু আপনার My Shop-এ দেখাবে।</p>
+  </div>
+  <button type="button" class="mp-mclose" onclick="mpToggleForm()">&times;</button>
+</div>
+<div class="mp-mtabs">
+  <button type="button" class="mp-mtab on" data-t="0" onclick="mpMgo(0)"><i class="fas fa-info-circle"></i> Basic Info</button>
+  <button type="button" class="mp-mtab" data-t="1" onclick="mpMgo(1)"><i class="fas fa-images"></i> Images</button>
+  <button type="button" class="mp-mtab" data-t="2" onclick="mpMgo(2)"><i class="fas fa-tag"></i> Pricing</button>
+  <button type="button" class="mp-mtab" data-t="3" onclick="mpMgo(3)"><i class="fas fa-palette"></i> Colors &amp; Sizes</button>
+  <button type="button" class="mp-mtab" data-t="4" onclick="mpMgo(4)"><i class="fas fa-sticky-note"></i> Details</button>
+</div>
+<div class="mp-mbody">
+
+<!-- TAB 0 — BASIC INFO -->
+<div class="mp-msec on" id="mpms0">
+  <div class="mp-note"><i class="fas fa-circle-info"></i> Admin-এর বিদ্যমান <b>Category → Subcategory → Sub-subcategory</b> থেকে বেছে নিন। আপনি নতুন category তৈরি করতে পারবেন না।</div>
+  <div class="fgrp"><label>Product Name *</label><input id="mpName" placeholder="Product title" oninput="mpSum()"></div>
+  <div class="fgrp">
+    <label>Description <small style="color:#94a3b8">(ঐচ্ছিক)</small></label>
+    <textarea id="mpDesc" rows="3" placeholder="প্রোডাক্টের বর্ণনা লিখুন — কাপড়, সাইজ, ফিচার, ব্যবহার ইত্যাদি"></textarea>
+  </div>
+  <!-- 2026-09-17 — SEO (this request). These do NOT change the listing; they change how
+       the product page presents itself to Google and to social previews: the browser
+       tab title, the meta description, the keywords and the share card. Leave them
+       blank and the page falls back to the product name and description. -->
+  <div class="mp-seo-box" style="border:1px solid #e2e8f0;border-radius:12px;padding:12px;margin-top:10px;background:#f8fafc">
+    <div style="font-weight:800;font-size:.8rem;color:#334155;margin-bottom:8px"><i class="fas fa-magnifying-glass-chart"></i> SEO <small style="color:#94a3b8;font-weight:600">(ঐচ্ছিক — খালি রাখলে প্রোডাক্টের নাম ও বর্ণনা ব্যবহার হবে)</small></div>
+    <div class="fgrp"><label>SEO Title</label><input id="mpSeoTitle" maxlength="70" placeholder="Google-এ যে টাইটেল দেখাবে (৬০-৭০ অক্ষর ভালো)"></div>
+    <div class="fgrp"><label>SEO Description</label><textarea id="mpSeoDesc" rows="2" maxlength="170" placeholder="Google-এ যে বর্ণনা দেখাবে (১৫০-১৬০ অক্ষর ভালো)"></textarea></div>
+    <div class="fgrp"><label>Keywords <small style="color:#94a3b8">(কমা দিয়ে)</small></label><input id="mpSeoKeys" placeholder="e.g. t-shirt, cotton, dhaka"></div>
+    <div class="fgrp"><label>URL Slug <small style="color:#94a3b8">(ইংরেজি ছোট হাতের, হাইফেন দিয়ে)</small></label><input id="mpSeoSlug" placeholder="e.g. premium-cotton-t-shirt"></div>
+  </div>
+  <div class="frow">
+    <div class="fgrp"><label>Category *</label><select id="mpCat" onchange="mpFillSubs();mpSum()"></select></div>
+    <div class="fgrp"><label>Subcategory</label><select id="mpSub" onchange="mpFillSubSubs();mpSum()"></select></div>
+  </div>
+  <div class="frow">
+    <div class="fgrp"><label>Sub-subcategory</label><select id="mpSubSub" onchange="mpSum()"></select></div>
+    <div class="fgrp"><label>Product Video (YouTube link)</label>
+      <input id="mpVideo" placeholder="https://www.youtube.com/watch?v=...">
+      <div class="hint" id="mpVideoHint" style="font-size:.68rem;color:#94a3b8;margin-top:4px">youtube.com/watch, youtu.be বা embed link দিন। ভিডিও শুধু আপনার My Shop-এ দেখাবে।</div>
+    </div>
+  </div>
+  <div class="mp-tg-row"><span class="mp-pill">ACTIVE</span><div><b>আপনার My Shop-এ দেখা যাবে</b><small>— Save করলেই product-টি shop-এ live হয়ে যাবে</small></div></div>
+</div>
+
+<!-- TAB 1 — IMAGES -->
+<div class="mp-msec" id="mpms1">
+  <p style="font-size:.82rem;color:#475569;margin-bottom:12px">সর্বোচ্চ ১০টি ছবি। একেবারে প্রথম ছবিটিই main image।</p>
+  <div class="imgadd" id="mpImgAdd" onclick="document.getElementById('mpImgFile').click()">
+    <i class="fas fa-upload"></i> Add Image <small id="mpImgCount">0 / 10</small>
+  </div>
+  <div class="gwrap"><i class="fas fa-inbox"></i><span id="mpImgMsg">No images yet. Click "Add Image" to upload.</span></div>
+  <div class="imggrid" id="mpImgGrid"></div>
+  <input type="file" id="mpImgFile" accept="image/*" multiple style="display:none" onchange="mpPickImg(this)">
+  <div class="hint" style="font-size:.68rem;color:#94a3b8;margin-top:6px">ছবি টেনে (drag) অন্য জায়গায় ছাড়লেও সাজাতে পারবেন — একেবারে প্রথমে ছাড়লে সেটিই main হয়ে যাবে। ★ চেপে যেকোনো ছবিকে main করতে পারেন; ← → দিয়ে সাজান; ✕ দিয়ে সরান।</div>
+</div>
+
+<!-- TAB 2 — PRICING -->
+<div class="mp-msec" id="mpms2">
+  <div class="frow">
+    <div class="fgrp"><label>My Cost (৳) *</label><input id="mpCost" type="number" min="0" placeholder="0" oninput="mpSum()"><div class="hint" style="font-size:.68rem;color:#94a3b8;margin-top:4px">আপনার কেনা দাম</div></div>
+    <div class="fgrp"><label>Selling Price (৳) *</label><input id="mpPrice" type="number" min="0" placeholder="0" oninput="mpSum()"><div class="hint" style="font-size:.68rem;color:#94a3b8;margin-top:4px">কাস্টমার যে দামে কিনবে</div></div>
+  </div>
+  <div class="frow">
+    <div class="fgrp"><label>Stock *</label><input id="mpStock" type="number" min="0" placeholder="0" oninput="mpSum()"></div>
+    <div class="fgrp"><label>Discount (%)</label><input id="mpDisc" type="number" min="0" max="90" placeholder="0" oninput="mpSum()"></div>
+  </div>
+  <div class="mp-psum" id="mpMargin"></div>
+</div>
+
+<!-- TAB 3 — COLORS & SIZES  (2026-09-19 — now the ADMIN's design, this request) -->
+<div class="mp-msec" id="mpms3">
+  <!-- the old design's two text inputs are kept ONLY as hidden carriers, so
+       mpSave() / mpRenderVariants() keep working with no change -->
+  <input type="hidden" id="mpColors" value="">
+  <input type="hidden" id="mpSizes" value="">
+
+  <div class="fgrp"><label><i class="fas fa-palette" style="color:#10b981"></i> Available Colors</label>
+    <div class="colgrid" id="mpColGrid"></div>
+    <div class="czrow"><input type="text" id="mpVName" placeholder="Custom color name..."><button type="button" class="mp-btn pri" style="padding:9px 16px" onclick="mpAddColor()">Add</button></div>
+    <div class="selchips" id="mpSelColors"></div>
+  </div>
+
+  <div class="fgrp"><label><i class="fas fa-ruler-horizontal" style="color:#10b981"></i> Available Sizes</label>
+    <div class="szpresets">
+      <button type="button" class="szp on" onclick="mpSzPreset('Clothing',this)">Clothing</button>
+      <button type="button" class="szp" onclick="mpSzPreset('Shoes',this)">Shoes</button>
+      <button type="button" class="szp" onclick="mpSzPreset('Kids',this)">Kids</button>
+    </div>
+    <div id="mpSzChips" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    <div class="czrow"><input type="text" id="mpVSize" placeholder='Custom size (e.g. 32×34)...'><button type="button" class="mp-btn pri" style="padding:9px 16px" onclick="mpAddSize()">Add</button></div>
+    <div class="selchips" id="mpSelSizes"></div>
+  </div>
+
+  <div class="fgrp">
+    <label>Variant Stock <small style="color:#94a3b8">(প্রতিটি size × color)</small></label>
+    <div class="varwrap" id="mpVarWrap"></div>
+  </div>
+</div>
+
+<!-- TAB 4 — DETAILS / SUMMARY -->
+<div class="mp-msec" id="mpms4">
+  <div class="fgrp"><label style="font-weight:900;color:#1e293b">Product Summary</label></div>
+  <div class="mp-psum" id="mpSum"></div>
+</div>
+
+</div>
+<div class="mp-mfoot">
+  <div class="mp-dots" id="mpDots"><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="mp-mfoot-r">
+    <button class="mp-btn gh" onclick="mpToggleForm()">Cancel</button>
+    <button class="mp-btn pri" onclick="mpSave()"><i class="fas fa-save"></i> <span id="mpSaveTxt">Save Product</span></button>
+  </div>
+</div>
+</div>
+</div>
+
+<script src="../app.js"></script><script>(function(){function paint(){try{var b=document.getElementById("ordersBadge");var uid=sessionStorage.getItem("user_id");if(!uid)return;if(sessionStorage.getItem("user_type")!=="reseller")return;var n=(typeof resellerNewOrderCount==="function")?resellerNewOrderCount(uid):0;if(b){b.textContent=n;b.style.display=n>0?"inline-block":"none";}var lb=document.getElementById("ordersBadgeLabel");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+/* ---- session / identity (never trust a URL param) ---- */
+var uid = sessionStorage.getItem('user_id');
+var utype = sessionStorage.getItem('user_type');
+if (!uid || utype !== 'reseller') { window.location.replace('login.html'); }
+var ME = null;
+function loadMe() {
+    var list = getData(DB_KEYS.RESELLERS) || [];
+    for (var i = 0; i < list.length; i++) { if (String(list[i].id) === String(uid)) { ME = list[i]; break; } }
+    return !!ME;
+}
+if (!loadMe()) { sessionStorage.clear(); window.location.replace('login.html'); }
+var RID = ME ? ME.id : null;
+function sEsc(v) {
+    return String(v === undefined || v === null ? '' : v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function sMoney(n) { return '\u09F3' + (Number(n) || 0).toLocaleString('en-IN'); }
+function sSet(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; }
+function sHtml(id, v) { var e = document.getElementById(id); if (e) e.innerHTML = v; }
+try {
+    sSet('userName', ME.businessName || ME.name || 'Reseller');
+    sSet('topBalance', (Number(ME.balance) || 0).toLocaleString('en-IN'));
+} catch (e) {}
+</script>
+<script>
+/* ================= My Products — own-product upload (#12, #13, #25, #40) ================= */
+var mpImages = [], mpEditId = null;
+
+function mpCats() { return shopUploadCategories(); }
+
+function mpFillCats() {
+    var cats = mpCats();
+    var el = document.getElementById('mpCat');
+    if (!el) return;
+    var h = '<option value="">— Select category —</option>';
+    for (var i = 0; i < cats.length; i++) h += '<option value="' + sEsc(cats[i].name) + '">' + sEsc(cats[i].name) + '</option>';
+    el.innerHTML = h;
+    mpFillSubs();
+}
+function mpFillSubs() {
+    var cats = mpCats(), sel = document.getElementById('mpCat');
+    var cname = sel ? sel.value : '';
+    var subs = [];
+    for (var i = 0; i < cats.length; i++) if (cats[i].name === cname) subs = cats[i].subs || [];
+    var el = document.getElementById('mpSub');
+    if (!el) return;
+    var h = '<option value="">— None —</option>';
+    /* BUG FIX — shopUploadCategories() returns subs as OBJECTS ({name, subSubs}),
+       not strings. Without this every option would render as "[object Object]". */
+    for (var j = 0; j < subs.length; j++) {
+        var subName = (subs[j] && typeof subs[j] === 'object') ? (subs[j].name || '') : subs[j];
+        if (!subName) continue;
+        h += '<option value="' + sEsc(subName) + '">' + sEsc(subName) + '</option>';
+    }
+    el.innerHTML = h;
+    mpFillSubSubs();
+}
+function mpFillSubSubs() {
+    var cs = document.getElementById('mpCat'), ss = document.getElementById('mpSub');
+    var cname = cs ? cs.value : '', sname = ss ? ss.value : '';
+    var el = document.getElementById('mpSubSub');
+    if (!el) return;
+    /* BUG FIX — this used to read `cats[i].subSubs[sname]`, a CATEGORY-level
+       { subName: [...] } map. The live structure (ensureCategoryTree /
+       RH_CATEGORY_STRUCTURE) stores subSubs as an ARRAY ON EACH SUB
+       (`cat.subs[k].subSubs`), so the map lookup was always undefined and the
+       Sub-sub-category dropdown stayed EMPTY — a reseller could never pick one.
+       Use the canonical global helper, which understands both shapes, and fall
+       back to reading the sub record directly. */
+    var list = [];
+    if (typeof getSubSubList === 'function' && cname && sname) {
+        try { list = getSubSubList(cname, sname) || []; } catch (e) { list = []; }
+    }
+    if (!list.length) {
+        var cats = mpCats();
+        for (var i = 0; i < cats.length; i++) {
+            if (cats[i].name !== cname) continue;
+            var subs = cats[i].subs || [];
+            for (var k = 0; k < subs.length; k++) {
+                var sName = (subs[k] && typeof subs[k] === 'object') ? subs[k].name : subs[k];
+                if (sName !== sname) continue;
+                /* array on the sub record (new shape) OR the legacy category map */
+                var own = (subs[k] && typeof subs[k] === 'object') ? (subs[k].subSubs || []) : [];
+                if (own.length) list = own;
+                else if (cats[i].subSubs && cats[i].subSubs[sname]) list = cats[i].subSubs[sname];
+            }
+        }
+    }
+    var h = '<option value="">— None —</option>';
+    for (var j = 0; j < list.length; j++) {
+        var nm = (list[j] && typeof list[j] === 'object') ? (list[j].name || '') : list[j];
+        if (!nm) continue;
+        h += '<option value="' + sEsc(nm) + '">' + sEsc(nm) + '</option>';
+    }
+    el.innerHTML = h;
+}
+/* PART 1 — multi-image upload (max 10), preview, reorder, primary, remove */
+/* BUG FIX — store a compressed JPEG (~1200px, q=0.7) instead of the raw file.
+   An iPhone photo is ~3-5 MB as base64 PNG; ten of those blow past localStorage's
+   5-10 MB quota and silently kill EVERY save (setData() returns false, the toast
+   shows "Product created successfully!" but the DB stays empty). After the fix
+   each image is typically 80-250 KB and ten of them fit comfortably. */
+var PRODUCT_IMG_MAX = 1200;     /* longest side in px                          */
+var PRODUCT_IMG_QUALITY = 0.7;   /* JPEG quality (ignored for PNG inputs)        */
+function compressImage(dataUrl, maxLen, quality, cb) {
+    var img = new Image();
+    img.onload = function () {
+        var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+        var scale = Math.min(1, maxLen / Math.max(w, h));
+        var cw = Math.max(1, Math.round(w * scale)), ch = Math.max(1, Math.round(h * scale));
+        var canvas = document.createElement('canvas');
+        canvas.width = cw; canvas.height = ch;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, cw, ch);
+        var isPng = /^data:image\/png/i.test(dataUrl);
+        var out = isPng ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', quality);
+        cb(out);
+    };
+    img.onerror = function () { cb(dataUrl); };   /* fall back to the original */
+    img.src = dataUrl;
+}
+function mpPickImg(inp) {
+    var files = inp.files ? Array.prototype.slice.call(inp.files) : [];
+    inp.value = '';
+    if (!files.length) return;
+    var room = PRODUCT_MAX_IMAGES - mpImages.length;
+    if (room <= 0) { showToast('সর্বোচ্চ ' + PRODUCT_MAX_IMAGES + 'টি image যোগ করা যাবে।', 'warning'); return; }
+    if (files.length > room) showToast('শুধু প্রথম ' + room + 'টি image যোগ করা হয়েছে (সর্বোচ্চ ' + PRODUCT_MAX_IMAGES + 'টি)।', 'warning');
+    files = files.slice(0, room);
+    var pending = files.length;
+    for (var i = 0; i < files.length; i++) {
+        (function (f) {
+            if (!/^image\//.test(f.type)) { pending--; if (!pending) mpRenderImages(); return; }
+            var r = new FileReader();
+            r.onload = function () {
+                /* compress before storing so localStorage doesn't overflow */
+                compressImage(String(r.result), PRODUCT_IMG_MAX, PRODUCT_IMG_QUALITY, function (compressed) {
+                    if (mpImages.length < PRODUCT_MAX_IMAGES) mpImages.push(compressed);
+                    pending--;
+                    if (!pending) mpRenderImages();
+                });
+            };
+            r.onerror = function () { pending--; if (!pending) mpRenderImages(); };
+            r.readAsDataURL(f);
+        })(files[i]);
+    }
+}
+function mpRenderImages() {
+    var grid = document.getElementById('mpImgGrid');
+    if (grid) {
+        var h = '';
+        for (var i = 0; i < mpImages.length; i++) {
+            /* DRAG (this request) — every tile is draggable. Dropping it on
+               another tile MOVES it to that position, so dragging any image onto
+               the first slot makes it the MAIN image. The ←/→/★ buttons are kept
+               as they were; drag is an addition, not a replacement. */
+            h += '<div class="imgcell' + (i === 0 ? ' main' : '') + '"' +
+                ' draggable="true"' +
+                ' ondragstart="mpDragStart(' + i + ',event)"' +
+                ' ondragover="mpDragOver(event)"' +
+                ' ondragenter="mpDragEnter(event)"' +
+                ' ondragleave="mpDragLeave(event)"' +
+                ' ondrop="mpDrop(' + i + ',event)"' +
+                ' ondragend="mpDragEnd(event)">' +
+                '<img src="' + mpImages[i] + '" alt="" draggable="false">' +
+                (i === 0 ? '<span class="tag">MAIN</span>' : '') +
+                '<span class="ops">' +
+                (i > 0 ? '<button type="button" title="Move left" onclick="mpMoveImg(' + i + ',-1)">←</button>' : '') +
+                (i < mpImages.length - 1 ? '<button type="button" title="Move right" onclick="mpMoveImg(' + i + ',1)">→</button>' : '') +
+                (i > 0 ? '<button type="button" title="Make main" onclick="mpSetMain(' + i + ')">★</button>' : '') +
+                '<button type="button" title="Remove" onclick="mpRemoveImg(' + i + ')">✕</button>' +
+                '</span></div>';
+        }
+        grid.innerHTML = h;
+    }
+    var c = document.getElementById('mpImgCount');
+    if (c) c.textContent = mpImages.length + ' / ' + PRODUCT_MAX_IMAGES;
+    var add = document.getElementById('mpImgAdd');
+    if (add) add.className = 'imgadd' + (mpImages.length >= PRODUCT_MAX_IMAGES ? ' off' : '');
+}
+/* ---- drag & drop reordering (this request) ----
+   Index-based, not element-based: mpImages is the single source of truth and
+   every handler re-renders from it, so a stale DOM node can never win. */
+var mpDragFrom = -1;
+window.mpDragStart = function (i, ev) {
+    mpDragFrom = i;
+    if (ev) {
+        if (ev.dataTransfer) {
+            ev.dataTransfer.effectAllowed = 'move';
+            try { ev.dataTransfer.setData('text/plain', String(i)); } catch (e) {}
+        }
+        var el = ev.currentTarget || ev.target;
+        if (el && el.classList) el.classList.add('dragging');
+    }
+};
+window.mpDragOver = function (ev) {
+    if (ev) {
+        if (ev.preventDefault) ev.preventDefault();
+        if (ev.dataTransfer) ev.dataTransfer.dropEffect = 'move';
+    }
+    return false;
+};
+window.mpDragEnter = function (ev) {
+    var el = ev && (ev.currentTarget || ev.target);
+    if (el && el.classList && el.classList.add) el.classList.add('dragover');
+};
+window.mpDragLeave = function (ev) {
+    var el = ev && (ev.currentTarget || ev.target);
+    if (el && el.classList && el.classList.remove) el.classList.remove('dragover');
+};
+window.mpDragEnd = function () {
+    mpDragFrom = -1;
+    mpClearDragMarks();
+};
+window.mpDrop = function (i, ev) {
+    if (ev) {
+        if (ev.preventDefault) ev.preventDefault();
+        if (ev.stopPropagation) ev.stopPropagation();
+    }
+    mpMoveTo(mpDragFrom, i);
+    mpDragFrom = -1;
+    return false;
+};
+/* Move the image at `from` so that it sits at index `to`. Dropping onto slot 0
+   therefore promotes it to MAIN. */
+function mpMoveTo(from, to) {
+    if (from < 0 || to < 0) return;
+    if (from === to) return;
+    if (from >= mpImages.length || to >= mpImages.length) return;
+    var v = mpImages.splice(from, 1)[0];
+    mpImages.splice(to, 0, v);
+    mpRenderImages();
+}
+function mpClearDragMarks() {
+    var cells = document.querySelectorAll('#mpImgGrid .imgcell');
+    for (var i = 0; i < cells.length; i++) {
+        if (cells[i].classList) { cells[i].classList.remove('dragging'); cells[i].classList.remove('dragover'); }
+    }
+}
+window.mpMoveImg = function (i, dir) {
+    var j = i + dir;
+    if (j < 0 || j >= mpImages.length) return;
+    var t = mpImages[i]; mpImages[i] = mpImages[j]; mpImages[j] = t;
+    mpRenderImages();
+};
+window.mpSetMain = function (i) {
+    var v = mpImages.splice(i, 1)[0];
+    mpImages.unshift(v);
+    mpRenderImages();
+};
+window.mpRemoveImg = function (i) { mpImages.splice(i, 1); mpRenderImages(); };
+
+/* PART 9, 10 — variant grid driven by the Size × Variant inputs */
+function mpVariantKey(sz, cl) { return sz + '||' + cl; }
+function mpRenderVariants() {
+    var wrap = document.getElementById('mpVarWrap');
+    if (!wrap) return;
+    var sizes = String((document.getElementById('mpSizes') || {}).value || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+    var colors = String((document.getElementById('mpColors') || {}).value || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+    var prev = {};
+    var old = document.querySelectorAll('.varcell');
+    for (var o = 0; o < old.length; o++) prev[old[o].getAttribute('data-k')] = old[o].querySelector('input').value;
+    if (!sizes.length && !colors.length) {
+        wrap.innerHTML = '<div class="varhint">Size বা Variant লিখলে এখানে প্রতিটির stock বসাতে পারবেন। কিছু না দিলে উপরের Stock ব্যবহার হবে।</div>';
+        return;
+    }
+    var combos = [];
+    if (sizes.length && colors.length) {
+        for (var a = 0; a < sizes.length; a++) for (var b = 0; b < colors.length; b++) combos.push({ s: sizes[a], c: colors[b] });
+    } else if (sizes.length) {
+        for (var x = 0; x < sizes.length; x++) combos.push({ s: sizes[x], c: '' });
+    } else {
+        for (var y = 0; y < colors.length; y++) combos.push({ s: '', c: colors[y] });
+    }
+    var h = '';
+    for (var k = 0; k < combos.length; k++) {
+        var key = mpVariantKey(combos[k].s, combos[k].c);
+        var val = prev[key] !== undefined ? prev[key] : '';
+        h += '<div class="varcell" data-k="' + sEsc(key) + '"><b>' + sEsc([combos[k].s, combos[k].c].filter(Boolean).join(' / ')) +
+            '</b><input type="number" min="0" placeholder="stock" value="' + sEsc(val) + '"></div>';
+    }
+    wrap.innerHTML = h;
+}
+function mpCollectVariants() {
+    var cells = document.querySelectorAll('.varcell');
+    var out = [];
+    for (var i = 0; i < cells.length; i++) {
+        var key = String(cells[i].getAttribute('data-k') || '');
+        var parts = key.split('||');
+        out.push({ size: parts[0] || '', color: parts[1] || '', stock: Number(cells[i].querySelector('input').value) || 0 });
+    }
+    return out;
+}
+/* A grid where the user never typed a quantity must NOT take over stock control
+   (that used to zero the product and block every order for it). */
+function mpVariantStockCaptured(vs) {
+    for (var i = 0; i < (vs || []).length; i++) { if ((Number(vs[i].stock) || 0) > 0) return true; }
+    return false;
+}
+/* ==========================================================================
+   2026-09-19 — COLOURS & SIZES widget, the ADMIN's design (this request).
+   --------------------------------------------------------------------------
+   The user: "রিসেলার প্রোডাক্ট আপলোড করতে গেলে এই সেম কালার অপশনটা তাকে অবশ্যই
+   করবে। আর হচ্ছে ডিফল্টভাবে কোনো ধরনের সাইজ সিলেক্ট করা থাকবে না।"
+
+   #mpColors / #mpSizes stay in the DOM as HIDDEN carriers, so mpSave(),
+   mpRenderVariants() and mpCollectVariants() are all untouched — these widgets
+   only WRITE into them and then refresh the variant grid.
+
+   Nothing is pre-selected: a new product opens with no colour and no size, and
+   every chip has to be clicked. The preset button only changes WHICH chips are
+   shown — it never selects anything (the same bug fixed in the admin panel).
+   ========================================================================== */
+var MP_PALETTE = [
+    ['Red', '#ef4444'], ['Pink', '#ec4899'], ['Orange', '#f97316'], ['Yellow', '#eab308'], ['Green', '#22c55e'], ['Teal', '#14b8a6'],
+    ['Blue', '#3b82f6'], ['Indigo', '#6366f1'], ['Purple', '#a855f7'], ['White', '#f8fafc'], ['Black', '#111827'], ['Gray', '#6b7280'],
+    ['Brown', '#92400e'], ['Beige', '#d4b896'], ['Navy', '#1e3a5f'], ['Maroon', '#7f1d1d'], ['Gold', '#ca8a04'], ['Silver', '#94a3b8']
+];
+var MP_SIZE_PRESETS = { Clothing: ['XS','S','M','L','XL','XXL','3XL','4XL'], Shoes: ['36','37','38','39','40','41','42','43'], Kids: ['1-2 Years','2-3 Years','3-4 Years','4-5 Years','5-6 Years'] };
+var mpSelColors = [], mpSelSizes = [], mpSzActive = 'Clothing';
+
+/* write the picks into the hidden carriers, then refresh the variant grid */
+function mpSyncColSize() {
+    var c = document.getElementById('mpColors'), s = document.getElementById('mpSizes');
+    if (c) c.value = mpSelColors.join(', ');
+    if (s) s.value = mpSelSizes.join(', ');
+    mpRenderVariants();
+    try { mpSum(); } catch (e) {}
+}
+function mpBuildColorGrid() {
+    var g = document.getElementById('mpColGrid');
+    if (!g) return;
+    var h = '';
+    for (var i = 0; i < MP_PALETTE.length; i++) {
+        var n = MP_PALETTE[i][0];
+        var on = mpSelColors.indexOf(n) !== -1;
+        h += '<div class="colitem' + (on ? ' on' : '') + '" onclick="mpTogCol(\'' + n + '\')">' +
+             '<div class="c" style="background:' + MP_PALETTE[i][1] + (n === 'White' ? ';border:1px solid #ddd' : '') + '"></div><p>' + n + '</p></div>';
+    }
+    g.innerHTML = h;
+    var sh = '';
+    for (var k = 0; k < mpSelColors.length; k++) sh += '<span>' + sEsc(mpSelColors[k]) + '</span>';
+    var sel = document.getElementById('mpSelColors');
+    if (sel) sel.innerHTML = sh;
+}
+function mpBuildSizeChips() {
+    var preset = MP_SIZE_PRESETS[mpSzActive] || MP_SIZE_PRESETS.Clothing;
+    var h = '';
+    for (var i = 0; i < preset.length; i++) {
+        var on = mpSelSizes.indexOf(preset[i]) !== -1;
+        h += '<button type="button" class="szp' + (on ? ' on' : '') + '" style="border:1.5px solid ' + (on ? '#10b981' : '#e2e8f0') + '" onclick="mpTogSz(\'' + preset[i] + '\')">' + preset[i] + '</button>';
+    }
+    var host = document.getElementById('mpSzChips');
+    if (host) host.innerHTML = h;
+    var sh = '';
+    for (var s = 0; s < mpSelSizes.length; s++) sh += '<span>' + sEsc(mpSelSizes[s]) + '</span>';
+    var sel = document.getElementById('mpSelSizes');
+    if (sel) sel.innerHTML = sh;
+}
+window.mpTogCol = function (n) {
+    var i = mpSelColors.indexOf(n);
+    if (i !== -1) mpSelColors.splice(i, 1); else mpSelColors.push(n);
+    mpBuildColorGrid(); mpSyncColSize();
+};
+window.mpAddColor = function () {
+    var e = document.getElementById('mpVName');
+    var v = String((e || {}).value || '').trim();
+    if (!v) return;
+    if (mpSelColors.indexOf(v) === -1) mpSelColors.push(v);
+    if (e) e.value = '';
+    mpBuildColorGrid(); mpSyncColSize();
+};
+/* the preset button only switches WHICH chips are offered — it never selects a
+   size by itself */
+window.mpSzPreset = function (name, btn) {
+    if (!MP_SIZE_PRESETS[name]) return;
+    mpSzActive = name;
+    var bs = document.querySelectorAll('.szp');
+    for (var i = 0; i < bs.length; i++) bs[i].classList.remove('on');
+    if (btn) btn.classList.add('on');
+    mpBuildSizeChips();
+};
+window.mpTogSz = function (sz) {
+    var i = mpSelSizes.indexOf(sz);
+    if (i !== -1) mpSelSizes.splice(i, 1); else mpSelSizes.push(sz);
+    mpBuildSizeChips(); mpSyncColSize();
+};
+window.mpAddSize = function () {
+    var e = document.getElementById('mpVSize');
+    var v = String((e || {}).value || '').trim();
+    if (!v) return;
+    if (mpSelSizes.indexOf(v) === -1) mpSelSizes.push(v);
+    if (e) e.value = '';
+    mpBuildSizeChips(); mpSyncColSize();
+};
+/* repaint the widgets from the hidden carriers — used on open and on edit */
+function mpRepaintColSize() {
+    var sp = function (v) { return String(v || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean); };
+    mpSelColors = sp((document.getElementById('mpColors') || {}).value);
+    mpSelSizes = sp((document.getElementById('mpSizes') || {}).value);
+    mpBuildColorGrid(); mpBuildSizeChips();
+}
+/* a NEW product starts completely empty */
+function mpResetColSize() {
+    mpSelColors = []; mpSelSizes = []; mpSzActive = 'Clothing';
+    var bs = document.querySelectorAll('.szp');
+    for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', i === 0);
+    mpBuildColorGrid(); mpBuildSizeChips();
+}
+
+/* ==========================================================================
+   ITEM 14 (spec, 2026-09-14) — the upload form is now the ADMIN product-upload
+   modal: the same header, the same 5-tab strip (Basic Info / Images / Pricing /
+   Colors & Sizes / Details) and the same footer with the step dots. Only the
+   LOOK changed. Every field id, the save path, the ownership stamp
+   (product_owner_type:'reseller') and the item-6 upload switch are untouched.
+   ========================================================================== */
+function mpFormEl() { return document.getElementById('mpFormCard'); }
+function mpFormOpen() { var c = mpFormEl(); return !!(c && c.classList && c.classList.contains('show')); }
+function mpSetFormOpen(open) {
+    var c = mpFormEl();
+    if (!c) return;
+    if (c.classList) c.classList.toggle('show', !!open);
+    c.style.display = open ? 'flex' : 'none';
+    if (open) mpMgo(0);
+}
+window.mpSetFormOpen = mpSetFormOpen;
+function mpMgo(i) {
+    i = Number(i) || 0;
+    var tabs = document.querySelectorAll('#mpFormCard .mp-mtab');
+    for (var t = 0; t < tabs.length; t++) {
+        tabs[t].className = 'mp-mtab' + (Number(tabs[t].getAttribute('data-t')) === i ? ' on' : '');
+    }
+    for (var k = 0; k < 5; k++) {
+        var sec = document.getElementById('mpms' + k);
+        if (sec) sec.className = 'mp-msec' + (k === i ? ' on' : '');
+    }
+    var dots = document.querySelectorAll('#mpDots i');
+    for (var d = 0; d < dots.length; d++) dots[d].className = (d === i ? 'on' : '');
+    var body = document.querySelector('#mpFormCard .mp-mbody');
+    if (body) body.scrollTop = 0;
+}
+window.mpMgo = mpMgo;
+/* live summary — READ-ONLY: it reads the form and renders, it never writes */
+/* 2026-09-17 — SEO helpers (this request). Read the four SEO inputs, and write
+   them onto a product record. Blank fields are stored as '' so the product page
+   can fall back to the product name/description rather than showing an empty tag. */
+function mpSeoVal(id){ var e=document.getElementById(id); return e ? String(e.value||'').trim() : ''; }
+function mpApplySeo(p){
+    if(!p) return;
+    p.seoTitle       = mpSeoVal('mpSeoTitle');
+    p.seoDescription = mpSeoVal('mpSeoDesc');
+    p.seoKeywords    = mpSeoVal('mpSeoKeys');
+    p.seoSlug        = mpSeoVal('mpSeoSlug');
+}
+function mpFillSeo(p){
+    p = p || {};
+    var v = function(id, val){ var e=document.getElementById(id); if(e) e.value = val || ''; };
+    v('mpSeoTitle', p.seoTitle);
+    v('mpSeoDesc',  p.seoDescription);
+    v('mpSeoKeys',  p.seoKeywords);
+    v('mpSeoSlug',  p.seoSlug);
+}
+function mpSum() {
+    function v(id) { var e = document.getElementById(id); return e ? e.value : ''; }
+    var cost = Number(v('mpCost') || 0), price = Number(v('mpPrice') || 0);
+    var stock = Number(v('mpStock') || 0), disc = Number(v('mpDisc') || 0);
+    var margin = price - cost;
+    var net = disc > 0 ? Math.round(price - (price * disc / 100)) : price;
+    var name = String(v('mpName') || '').trim() || '—';
+    var cat = String(v('mpCat') || '').trim() || '—';
+    var sub = String(v('mpSub') || '').trim();
+    var ss = String(v('mpSubSub') || '').trim();
+    var path = cat + (sub ? ' \u203A ' + sub : '') + (ss ? ' \u203A ' + ss : '');
+    var sz = String(v('mpSizes') || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+    var cl = String(v('mpColors') || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+    var rows = [
+        ['Product', sEsc(name)],
+        ['Category', sEsc(path)],
+        ['My Cost', sMoney(cost)],
+        ['Selling Price', sMoney(price)],
+        ['Discount', disc > 0 ? disc + '%' : '\u2014'],
+        ['Customer pays', sMoney(net)],
+        ['Profit / unit', '<span class="' + (margin > 0 ? 'g' : '') + '">' + sMoney(margin) + '</span>'],
+        ['Stock', String(stock) + (stock > 0 ? '' : ' (out of stock)')],
+        ['Sizes', sz.length ? sEsc(sz.join(', ')) : '\u2014'],
+        ['Colors', cl.length ? sEsc(cl.join(', ')) : '\u2014'],
+        ['Images', mpImages.length + ' / ' + PRODUCT_MAX_IMAGES]
+    ];
+    var h = '';
+    for (var i = 0; i < rows.length; i++) h += '<div class="r"><b>' + rows[i][0] + '</b><span>' + rows[i][1] + '</span></div>';
+    var m = document.getElementById('mpMargin'); if (m) m.innerHTML = h;
+    var p = document.getElementById('mpSum'); if (p) p.innerHTML = h;
+}
+window.mpSum = mpSum;
+function mpToggleForm() {
+    var open = !mpFormOpen();
+    if (open) {
+        mpEditId = null;
+        mpImages = [];
+        mpFillCats();
+        mpClearForm();
+        var t = document.getElementById('mpModalTitle'); if (t) t.textContent = 'Upload Own Product';
+        var st = document.getElementById('mpSaveTxt'); if (st) st.textContent = 'Save Product';
+        var sb = document.getElementById('mpModalSub');
+        if (sb) sb.textContent = 'Admin-এর category থেকে বেছে নিয়ে নিজের product যোগ করুন — শুধু আপনার My Shop-এ দেখাবে।';
+    }
+    mpSetFormOpen(open);
+    var b = document.getElementById('mpFormBtn');
+    if (b) b.innerHTML = open ? '<i class="fas fa-times"></i> Close' : '<i class="fas fa-plus"></i> Add Product';
+    if (open) mpSum();
+}
+function mpClearForm() {
+    /* 2026-09-19 — SEO BUG FIX (this request).
+       The user: "নতুন আরেকটা প্রোডাক্ট আপলোড করতে যাই, আগের প্রোডাক্টের SEO ডিটেইলসগুলো
+       থেকে যায় … ডিফল্টভাবে এই ডিটেইলসটা থাকবে না।"
+       The four SEO inputs were simply MISSING from this list, so they survived into the
+       next product's form. A new product must always start with them empty; mpFillSeo()
+       still loads them back for an EDIT, so an existing product keeps its own SEO. */
+    var ids = ['mpName', 'mpCost', 'mpPrice', 'mpStock', 'mpDisc', 'mpSizes', 'mpColors', 'mpVideo', 'mpDesc',
+               'mpSeoTitle', 'mpSeoDesc', 'mpSeoKeys', 'mpSeoSlug'];
+    for (var i = 0; i < ids.length; i++) { var e = document.getElementById(ids[i]); if (e) e.value = ''; }
+    mpImages = [];
+    mpRenderImages();
+    /* 2026-09-19 — a fresh form must show NO colour and NO size picked (this request) */
+    try { mpResetColSize(); } catch (e2) {}
+    mpRenderVariants();
+}
+/* ==========================================================================
+   ITEM 6 (spec, 2026-09-14) — the admin can switch product upload OFF for this
+   shop. When it is off the "Add Product" button and the upload form are hidden
+   and a NEW product can no longer be created. Products already uploaded stay
+   listed and stay editable/removable: the switch is about UPLOADING, not about
+   destroying what the shop already sells. Re-checked inside mpSave() so a
+   hand-typed mpSave() cannot create one either.
+   ========================================================================== */
+function mpUploadAllowed() {
+  try { return (typeof isShopUploadEnabled === 'function') ? isShopUploadEnabled(RID) : true; }
+  catch (e) { return true; }
+}
+function mpApplyUploadPolicy() {
+  var on = mpUploadAllowed();
+  var b = document.getElementById('mpFormBtn');
+  var n = document.getElementById('mpLockNote');
+  if (on) {
+    if (b) b.style.display = '';
+    if (n) n.style.display = 'none';
+    return;
+  }
+  if (b) b.style.display = 'none';
+  /* ITEM 14 — the form is a modal now: close it through the modal helper so the
+     .show class and the inline display never disagree. */
+  mpSetFormOpen(false);
+  if (!n) {
+    var host = document.querySelector('.mp-head');
+    if (host && host.parentNode) {
+      n = document.createElement('div');
+      n.id = 'mpLockNote';
+      n.className = 'mp-card';
+      n.innerHTML = '<h3><i class="fas fa-lock"></i> Product upload বন্ধ আছে</h3>' +
+        '<p class="hint">Admin আপনার My Shop-এ নতুন product upload বন্ধ করে দিয়েছেন। ' +
+        'আপনার আগের product গুলো shop-এ আগের মতোই দেখা যাবে ও বিক্রি হবে — Edit বা Delete করতে পারবেন। ' +
+        'আবার চালু করতে Admin-এর সাথে যোগাযোগ করুন।</p>';
+      host.parentNode.insertBefore(n, host.nextSibling);
+    }
+  } else n.style.display = '';
+}
+window.mpApplyUploadPolicy = mpApplyUploadPolicy;
+function mpToggleFormGuarded() {
+  if (!mpUploadAllowed()) {
+    showToast('Admin এই shop-এ নতুন product upload বন্ধ রেখেছেন।', 'error');
+    mpApplyUploadPolicy();
+    return;
+  }
+  mpToggleForm();
+}
+window.mpToggleFormGuarded = mpToggleFormGuarded;
+
+function mpSave() {
+    /* ITEM 6 — a NEW product is refused outright when the admin switched upload
+       off. Editing an EXISTING one (mpEditId set) is still allowed. */
+    if (!mpEditId && !mpUploadAllowed()) {
+        showToast('Admin এই shop-এ নতুন product upload বন্ধ রেখেছেন।', 'error');
+        mpApplyUploadPolicy();
+        return;
+    }
+    var name = (document.getElementById('mpName').value || '').trim();
+    var cat = document.getElementById('mpCat').value || '';
+    var sub = document.getElementById('mpSub').value || '';
+    var subsub = document.getElementById('mpSubSub').value || '';
+    var cost = Number(document.getElementById('mpCost').value || 0);
+    var price = Number(document.getElementById('mpPrice').value || 0);
+    var stock = Number(document.getElementById('mpStock').value || 0);
+    var disc = Number(document.getElementById('mpDisc').value || 0);
+    var sizes = String(document.getElementById('mpSizes').value || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+    var colors = String(document.getElementById('mpColors').value || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+    /* the new Description field */
+    var desc = String((document.getElementById('mpDesc') || {}).value || '').trim();
+    if (!name) { showToast('Product name দিন!', 'error'); return; }
+    if (!cat) { showToast('Admin-এর category বেছে নিন!', 'error'); return; }
+    if (cost <= 0 || price <= 0) { showToast('Cost ও Selling price দিন!', 'error'); return; }
+
+    var ps = getData(DB_KEYS.PRODUCTS) || [];
+    if (mpEditId) {
+        for (var i = 0; i < ps.length; i++) {
+            if (String(ps[i].id) === String(mpEditId) && isResellerOwnProduct(ps[i], RID)) {
+                ps[i].name = name; ps[i].category = cat; ps[i].section = sub; ps[i].subSection = sub; ps[i].subSub = subsub;
+                ps[i].cost = cost; ps[i].price = cost; ps[i].customer_price = price;
+                ps[i].stock = stock; ps[i].discount = disc;
+                ps[i].sizes = sizes;
+                ps[i].colors = colors;
+                var vsE = mpCollectVariants();
+                ps[i].variants = vsE;
+                markVariantStockSet(ps[i], mpVariantStockCaptured(vsE));
+                ps[i].videoUrl = mpParseVideo();
+                ps[i].description = desc;
+                mpApplySeo(ps[i]);
+                if (mpImages.length) setProductImages(ps[i], mpImages);
+                syncProductStock(ps[i]);
+                break;
+            }
+        }
+        showToast('Product updated!', 'success');
+    } else {
+        var vsN = mpCollectVariants();
+        ps.push({
+            id: 'ROP' + Date.now() + Math.floor(Math.random() * 1000),
+            name: name, category: cat, section: sub, subSection: sub, subSub: subsub,
+            cost: cost, price: cost, customer_price: price,
+            stock: stock, discount: disc, image: '',
+            sizes: sizes, colors: colors, variants: vsN,
+            seoTitle: mpSeoVal('mpSeoTitle'), seoDescription: mpSeoVal('mpSeoDesc'),
+            seoKeywords: mpSeoVal('mpSeoKeys'), seoSlug: mpSeoVal('mpSeoSlug'),
+            variantStockSet: mpVariantStockCaptured(vsN),
+            videoUrl: mpParseVideo(),
+            description: desc,
+            /* (#13, #51) ownership — always traceable back to this reseller */
+            product_owner_type: 'reseller',
+            product_owner_id: RID,
+            ownerResellerId: RID,
+            supplierId: null,
+            approved: true,
+            is_active: true,
+            createdAt: new Date().toISOString()
+        });
+        showToast('Product uploaded — শুধু আপনার shop-এ দেখাবে!', 'success');
+    }
+    /* PART 1 — persist the ordered image list + primary image */
+    if (mpImages.length) {
+        for (var q = 0; q < ps.length; q++) {
+            if (String(ps[q].id) === String(mpEditId || (ps[ps.length - 1] || {}).id)) { setProductImages(ps[q], mpImages); syncProductStock(ps[q]); break; }
+        }
+    }
+    if (!setData(DB_KEYS.PRODUCTS, ps)) {
+        showToast('Save failed — storage full or unavailable. Remove some product images and try again.', 'error');
+        return;
+    }
+    logActivity('reseller_own_product', (ME.businessName || ME.name) + ' uploaded own product: ' + name);
+    mpEditId = null;
+    mpClearForm();
+    mpToggleForm();
+    mpRender();
+}
+/* 2026-09-15 — toggle per-product free delivery.
+   Uses allProductsDb() for the READ-MODIFY-WRITE: a filtered helper here would
+   drop every product the filter excludes (the mistake that once deleted every
+   reseller-owned product). */
+function mpToggleFree(id) {
+    try {
+        var all = (typeof allProductsDb === 'function') ? allProductsDb() : (getData(DB_KEYS.PRODUCTS) || []);
+        var hit = null;
+        for (var i = 0; i < all.length; i++) { if (String(all[i].id) === String(id)) { hit = all[i]; break; } }
+        if (!hit) { showToast('Product not found', 'error'); return; }
+        hit.freeDelivery = !(hit.freeDelivery === true);
+        if (!setData(DB_KEYS.PRODUCTS, all)) { showToast('Save failed — storage full.', 'error'); return; }
+        showToast(hit.freeDelivery
+            ? 'Free delivery ON — কাস্টমার ৳0 দেবে, খরচ আপনার প্রফিট থেকে কাটা হবে।'
+            : 'Free delivery OFF.', 'success');
+        try { if (typeof logActivity === 'function') logActivity('product_free_delivery', id + ' -> ' + hit.freeDelivery); } catch (e) {}
+        if (typeof mpRender === 'function') mpRender(); else if (typeof render === 'function') render();
+    } catch (e) { showToast('Could not update free delivery', 'error'); }
+}
+function mpEdit(id) {
+    var ps = getData(DB_KEYS.PRODUCTS) || [];
+    for (var i = 0; i < ps.length; i++) {
+        if (String(ps[i].id) === String(id) && isResellerOwnProduct(ps[i], RID)) {
+            var p = ps[i];
+            var t = document.getElementById('mpModalTitle'); if (t) t.textContent = 'Edit Product';
+            var st = document.getElementById('mpSaveTxt'); if (st) st.textContent = 'Update Product';
+            var sb = document.getElementById('mpModalSub'); if (sb) sb.textContent = 'আপনার own product-এর তথ্য পরিবর্তন করে Save করুন।';
+            mpSetFormOpen(true);
+            mpFillCats();
+            document.getElementById('mpName').value = p.name || '';
+            try { mpFillSeo(p); } catch (e) {}
+            document.getElementById('mpCat').value = p.category || '';
+            mpFillSubs();
+            document.getElementById('mpSub').value = p.section || p.subSection || '';
+            mpFillSubSubs();
+            document.getElementById('mpSubSub').value = p.subSub || '';
+            document.getElementById('mpCost').value = p.cost || p.price || 0;
+            document.getElementById('mpPrice').value = p.customer_price || 0;
+            document.getElementById('mpStock').value = p.stock || 0;
+            document.getElementById('mpDisc').value = p.discount || 0;
+            mpImages = productImages(p).slice(0, PRODUCT_MAX_IMAGES);
+            mpRenderImages();
+            document.getElementById('mpSizes').value = (p.sizes || []).join(', ');
+            document.getElementById('mpColors').value = (p.colors || []).join(', ');
+            /* 2026-09-19 — light up the swatches/chips for what this product already has */
+            try { mpRepaintColSize(); } catch (e3) {}
+            document.getElementById('mpVideo').value = p.videoUrl || '';
+            /* load the saved description back into the new field */
+            var _md = document.getElementById('mpDesc'); if (_md) _md.value = p.description || '';
+            mpRenderVariants();
+            /* restore per-variant stock */
+            var vs = productVariants(p);
+            var cells = document.querySelectorAll('.varcell');
+            for (var c = 0; c < cells.length; c++) {
+                var parts = String(cells[c].getAttribute('data-k')).split('||');
+                for (var v2 = 0; v2 < vs.length; v2++) {
+                    if (String(vs[v2].size || '') === parts[0] && String(vs[v2].color || '') === parts[1]) {
+                        cells[c].querySelector('input').value = vs[v2].stock || 0;
+                        break;
+                    }
+                }
+            }
+            mpEditId = id;
+            mpSum();
+            try { window.scrollTo(0, 0); } catch (e) {}
+            return;
+        }
+    }
+    showToast('Product পাওয়া যায়নি!', 'error');
+}
+function mpDelete(id) {
+    if (!confirm('এই product ডিলিট করবেন?')) return;
+    var ps = getData(DB_KEYS.PRODUCTS) || [], out = [];
+    for (var i = 0; i < ps.length; i++) {
+        if (String(ps[i].id) === String(id) && isResellerOwnProduct(ps[i], RID)) continue;
+        out.push(ps[i]);
+    }
+    setData(DB_KEYS.PRODUCTS, out);
+    showToast('Product deleted.', 'success');
+    mpRender();
+}
+function mpRender() {
+    var ps = getData(DB_KEYS.PRODUCTS) || [], mine = [];
+    for (var i = 0; i < ps.length; i++) if (isResellerOwnProduct(ps[i], RID)) mine.push(ps[i]);
+    sSet('mpCount', mine.length);
+    var box = document.getElementById('mpGrid');
+    if (!box) return;
+    if (!mine.length) {
+        box.innerHTML = '<div class="mp-empty" style="grid-column:1/-1"><i class="fas fa-box-open"></i><b>কোনো own product নেই</b>উপরে "Add Product" চেপে প্রথম product যোগ করুন।</div>';
+        return;
+    }
+    var h = '';
+    for (var j = mine.length - 1; j >= 0; j--) {
+        var p = mine[j];
+        var img = productPrimaryImage(p) ? '<img src="' + sEsc(productPrimaryImage(p)) + '">' : '<i class="fas fa-image"></i>';
+        var st = isOutOfStock(p)
+            ? '<span style="color:#dc2626">Out of stock</span>'
+            : '<span style="color:#16a34a">In stock: ' + sEsc(p.stock) + '</span>';
+        var path = [p.category, p.section || p.subSection, p.subSub].filter(function (x) { return !!x; }).join(' › ');
+        h += '<div class="mp-p"><div class="im">' + img + '</div><div class="bd">' +
+             '<div class="nm" title="' + sEsc(p.name) + '">' + sEsc(p.name) + '</div>' +
+             '<div class="ct">' + sEsc(path || '—') + '</div>' +
+             '<div class="pr">' + sMoney(p.customer_price || 0) + '</div>' +
+             '<div class="st">' + st + '</div></div>' +
+             '<div class="ac">' +
+             /* 2026-09-15 — per-product free delivery. The CUSTOMER pays ৳0 shipping;
+                the real courier charge comes out of THIS reseller's profit on the
+                order, so the button states that plainly. */
+             '<button class="mp-btn gh" style="background:' + (p.freeDelivery ? '#d1fae5' : '#f1f5f9') + ';color:' + (p.freeDelivery ? '#065f46' : '#475569') + '" onclick="mpToggleFree(\'' + sEsc(p.id) + '\')" title="কাস্টমার ফ্রি ডেলিভারি পাবে — খরচ আপনার প্রফিট থেকে কাটা হবে"><i class="fas fa-truck-fast"></i> ' + (p.freeDelivery ? 'Free Delivery ON' : 'Free Delivery OFF') + '</button>' +
+             '<button class="mp-btn gh" style="background:#eef2ff;color:#4338ca" onclick="mpEdit(\'' + sEsc(p.id) + '\')"><i class="fas fa-pen"></i> Edit</button>' +
+             '<button class="mp-btn dn" onclick="mpDelete(\'' + sEsc(p.id) + '\')"><i class="fas fa-trash"></i> Delete</button></div></div>';
+    }
+    box.innerHTML = h;
+    /* 2026-09-17 — the hint strip beside the gallery, worded like the admin form. */
+    try { var _m = document.getElementById('mpImgMsg');
+          if (_m) _m.textContent = mpImages.length
+            ? mpImages.length + ' image(s) uploaded. First image = main display.'
+            : 'No images yet. Click "Add Image" to upload.'; } catch (e) {}
+}
+/* PART 11, 13 — validate the YouTube link before saving (never raw-injected) */
+function mpParseVideo() {
+    var raw = String((document.getElementById('mpVideo') || {}).value || '').trim();
+    var hint = document.getElementById('mpVideoHint');
+    if (!raw) { if (hint) hint.style.color = '#94a3b8'; return ''; }
+    var id = parseYouTubeId(raw);
+    if (!id) { if (hint) hint.style.color = '#dc2626'; return ''; }
+    if (hint) hint.style.color = '#16a34a';
+    return youtubeWatchUrl(raw);
+}
+(function () {
+    var sz = document.getElementById('mpSizes'), cl = document.getElementById('mpColors'), vd = document.getElementById('mpVideo');
+    if (sz) sz.addEventListener('input', function () { mpRenderVariants(); mpSum(); });
+    if (cl) cl.addEventListener('input', function () { mpRenderVariants(); mpSum(); });
+    if (vd) vd.addEventListener('input', function () { mpParseVideo(); });
+})();
+if (RID !== null) {
+  mpFillCats();
+  mpRenderImages();
+  /* 2026-09-19 — paint the colour swatches + size chips on first load */
+  try { mpRepaintColSize(); } catch (e0) {}
+  mpRenderVariants();
+  mpRender();
+  mpSum();
+  /* ITEM 6 — apply the admin's upload switch for THIS shop */
+  mpApplyUploadPolicy();
+}
+
+</script>
+</body>
+</html>

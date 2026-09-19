@@ -1,0 +1,24 @@
+/* ResellerHub BD — Reseller Panel Responsive Patch (all devices) */
+img{max-width:100%}
+@media(max-width:1024px){
+  .products-grid{grid-template-columns:repeat(3,1fr)!important}
+  .stats-grid,.stat-grid,.quick-grid{grid-template-columns:repeat(2,1fr)!important}
+  .pop-grid{grid-template-columns:repeat(5,1fr)!important}
+}
+@media(max-width:768px){
+  .content{padding:14px!important;margin-left:0!important;margin-top:0!important}
+  .products-grid{grid-template-columns:repeat(2,1fr)!important;gap:12px!important}
+  .stats-grid,.stat-grid,.quick-grid{grid-template-columns:repeat(2,1fr)!important;gap:10px!important}
+  .pop-grid{grid-template-columns:repeat(4,1fr)!important}
+  .ss-toolbar{flex-direction:column!important}
+  .ss-search,.ss-select{width:100%!important;flex:none!important;max-width:none!important;min-width:0!important}
+  .card{overflow-x:auto}
+  h1{font-size:1.3rem!important}
+  h2{font-size:1.1rem!important}
+}
+@media(max-width:480px){
+  .products-grid{grid-template-columns:repeat(2,1fr)!important;gap:10px!important}
+  .pop-grid{grid-template-columns:repeat(3,1fr)!important}
+  .stat-card{padding:12px!important}
+  .stat-card .value{font-size:1.1rem!important}
+}

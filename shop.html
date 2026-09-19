@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>আমাদের প্রোডাক্ট — ResellerHub BD</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{--pri:#4f46e5;--prid:#4338ca;--grn:#10b981;--dark:#0f172a;--gray:#64748b}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter','Hind Siliguri',sans-serif;background:#f4f6fb;color:var(--dark)}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit;cursor:pointer}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+/* Header */
+.hdr{background:linear-gradient(90deg,#0f172a,#1e1b4b 60%,#0f172a);color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 4px 18px rgba(15,23,42,.25)}
+.hdr-in{max-width:1320px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.05rem;min-width:0}
+.logo .lg-ic{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--pri),#7c3aed);display:flex;align-items:center;justify-content:center;font-size:1rem;flex:none}
+.logo .lt{min-width:0}
+.logo small{display:block;font-size:.58rem;font-weight:700;letter-spacing:1.4px;color:#a5b4fc}
+.hdr-r{display:flex;gap:8px;align-items:center;flex:none}
+.hbtn{padding:9px 15px;border-radius:10px;font-weight:800;font-size:.78rem;border:none;display:inline-flex;align-items:center;gap:6px;transition:all .25s;white-space:nowrap}
+.hbtn.ghost{background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.25)}
+.hbtn.ghost:hover{background:rgba(255,255,255,.22)}
+.hbtn.pri{background:var(--grn);color:#fff}
+.hbtn.pri:hover{background:#059669;transform:translateY(-2px)}
+
+/* Hero strip */
+.strip{background:linear-gradient(135deg,var(--pri),#7c3aed);color:#fff;padding:26px 18px;text-align:center;position:relative;overflow:hidden}
+.strip::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 20% 20%,rgba(255,255,255,.14),transparent 45%),radial-gradient(circle at 80% 80%,rgba(255,255,255,.1),transparent 45%)}
+.strip h1{font-size:1.6rem;font-weight:900;position:relative;animation:fadeUp .6s ease both}
+.strip p{font-size:.88rem;opacity:.92;margin-top:5px;position:relative;animation:fadeUp .6s .12s ease both}
+.strip .lockpill{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.16);border:1.5px solid rgba(255,255,255,.35);padding:7px 16px;border-radius:24px;font-size:.74rem;font-weight:800;margin-top:12px;position:relative;animation:fadeUp .6s .22s ease both}
+.strip .lockpill i{color:#fde047}
+
+/* Layout */
+.wrap{max-width:1320px;margin:0 auto;padding:22px 18px 60px;display:grid;grid-template-columns:250px 1fr;gap:20px;align-items:start}
+/* Sidebar cats */
+.cats{background:#fff;border-radius:16px;box-shadow:0 3px 14px rgba(15,23,42,.06);overflow:hidden;position:sticky;top:80px}
+.cats .cath{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;padding:12px 16px;font-weight:800;font-size:.84rem;display:flex;align-items:center;gap:8px}
+.cats .catlist{padding:8px;max-height:520px;overflow-y:auto}
+.cats .catitem{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 13px;border-radius:10px;font-size:.83rem;font-weight:700;color:#475569;cursor:pointer;transition:all .18s;border:none;background:none;width:100%;text-align:left}
+.cats .catitem:hover{background:#eef2ff;color:var(--pri)}
+.cats .catitem.on{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff}
+.cats .catitem .ct{font-size:.64rem;background:#f1f5f9;color:#64748b;border-radius:10px;padding:1px 9px;font-weight:800}
+.cats .catitem.on .ct{background:rgba(255,255,255,.25);color:#fff}
+
+/* Main */
+.main-area{min-width:0}
+.toolbar{background:#fff;border-radius:14px;box-shadow:0 3px 12px rgba(15,23,42,.05);padding:12px 15px;display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.toolbar input{flex:1;min-width:160px;padding:10px 15px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.86rem;outline:none;font-family:inherit}
+.toolbar input:focus{border-color:var(--pri);box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+.toolbar .cnt{font-size:.76rem;font-weight:800;color:#64748b;white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{background:#fff;border-radius:16px;overflow:hidden;border:1px solid #eef0f6;box-shadow:0 2px 10px rgba(15,23,42,.05);transition:all .25s;cursor:pointer;animation:fadeUp .45s ease both}
+.card:hover{transform:translateY(-5px);box-shadow:0 16px 34px rgba(15,23,42,.13)}
+.img{position:relative;height:200px;background:#f8fafc;overflow:hidden}
+.img img{width:100%;height:100%;object-fit:cover;transition:transform .35s}
+.card:hover .img img{transform:scale(1.06)}
+.noimg{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:2.4rem}
+.cat-b{position:absolute;top:10px;left:10px;background:rgba(15,23,42,.78);color:#fff;font-size:.58rem;font-weight:800;padding:3px 10px;border-radius:10px}
+.lock-ov{position:absolute;inset:auto 0 0 0;background:linear-gradient(0deg,rgba(15,23,42,.92),rgba(15,23,42,.5) 78%,transparent);padding:34px 12px 12px;display:flex;align-items:center;justify-content:center;gap:7px;color:#fff;font-size:.74rem;font-weight:800}
+.lock-ov i{color:#fde047}
+.price-open{position:absolute;bottom:10px;left:12px;background:#fff;border-radius:10px;padding:4px 12px;font-weight:900;color:#059669;box-shadow:0 4px 12px rgba(0,0,0,.18);font-size:.9rem}
+.info{padding:12px 14px}
+.info h4{font-size:.86rem;font-weight:800;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.3em}
+.info .view{font-size:.7rem;font-weight:800;color:var(--pri);margin-top:7px;display:flex;align-items:center;gap:5px}
+.empty{grid-column:1/-1;text-align:center;color:#94a3b8;padding:60px 16px}
+.empty i{font-size:3rem;display:block;margin-bottom:12px;opacity:.5}
+/* Banner */
+.banner{grid-column:1/-1;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:18px;color:#fff;padding:24px 26px;text-align:center;margin-top:8px;position:relative;overflow:hidden}
+.banner::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 15% 30%,rgba(255,255,255,.15),transparent 40%),radial-gradient(circle at 85% 70%,rgba(255,255,255,.12),transparent 40%)}
+.banner h3{font-size:1.15rem;font-weight:900;margin-bottom:6px;position:relative}
+.banner p{font-size:.84rem;opacity:.92;margin-bottom:15px;position:relative}
+.banner .btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;position:relative}
+.banner .btns a{padding:10px 22px;border-radius:11px;font-weight:800;font-size:.82rem;transition:all .25s}
+.banner .b1{background:#fff;color:var(--pri)}
+.banner .b1:hover{transform:translateY(-2px)}
+.banner .b2{background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);color:#fff}
+.banner .b2:hover{background:rgba(255,255,255,.28)}
+
+/* Product detail modal */
+@keyframes ovFade{from{opacity:0}to{opacity:1}}
+@keyframes popIn{from{opacity:0;transform:scale(.9) translateY(24px)}to{opacity:1;transform:none}}
+@keyframes imgZoom{from{transform:scale(1.12);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes chipIn{from{opacity:0;transform:translateY(8px) scale(.9)}to{opacity:1;transform:none}}
+.dov{position:fixed;inset:0;background:rgba(15,23,42,.7);z-index:500;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
+.dov.show{display:flex;animation:ovFade .25s ease}
+.dbox{background:#fff;border-radius:20px;max-width:860px;width:100%;max-height:92vh;overflow-y:auto;position:relative;animation:popIn .38s cubic-bezier(.2,.9,.3,1.2) both}
+.dov.show .dimg{animation:imgZoom .5s ease both}
+.dov.show .dsec{animation:fadeUp .45s ease both}
+.dov.show .dsec:nth-of-type(1){animation-delay:.08s}
+.dov.show .dsec:nth-of-type(2){animation-delay:.16s}
+.dov.show .dsec:nth-of-type(3){animation-delay:.24s}
+.dov.show .dprice{animation:popIn .4s .18s cubic-bezier(.2,.9,.3,1.2) both}
+.chips .schip,.chips .cwrap{animation:chipIn .35s ease both}
+.chips .schip:nth-child(1),.chips .cwrap:nth-child(1){animation-delay:.05s}
+.chips .schip:nth-child(2),.chips .cwrap:nth-child(2){animation-delay:.1s}
+.chips .schip:nth-child(3),.chips .cwrap:nth-child(3){animation-delay:.15s}
+.chips .schip:nth-child(4),.chips .cwrap:nth-child(4){animation-delay:.2s}
+.chips .schip:nth-child(5),.chips .cwrap:nth-child(5){animation-delay:.25s}
+.chips .schip:nth-child(n+6),.chips .cwrap:nth-child(n+6){animation-delay:.3s}
+.dimg img{transition:transform .4s}
+.dimg:hover img{transform:scale(1.05)}
+.dthumbs img{transition:all .2s}
+.dthumbs img:hover{transform:scale(1.12);border-color:var(--pri)}
+.schip{transition:all .2s}
+.schip:hover{border-color:var(--pri);color:var(--pri);transform:translateY(-2px)}
+.cwrap{transition:all .2s}
+.cwrap:hover{border-color:#ec4899;transform:translateY(-2px)}
+.dclose{position:absolute;top:12px;right:14px;width:34px;height:34px;border:none;border-radius:10px;background:#f1f5f9;color:#475569;font-size:1.1rem;cursor:pointer;z-index:2}
+.dclose:hover{background:#fee2e2;color:#dc2626}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:22px;padding:22px}
+.dimg{position:relative;border-radius:16px;overflow:hidden;background:#f8fafc;height:340px}
+.dimg img{width:100%;height:100%;object-fit:cover}
+.dthumbs{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.dthumbs img{width:56px;height:56px;border-radius:10px;object-fit:cover;border:2px solid #e2e8f0;cursor:pointer}
+.dthumbs img.on{border-color:var(--pri)}
+.dinfo h2{font-size:1.25rem;font-weight:900;line-height:1.35;margin-bottom:8px}
+.dmeta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.dmeta .dc{background:#eef2ff;color:var(--pri);font-size:.68rem;font-weight:800;padding:4px 12px;border-radius:12px}
+.dprice{border-radius:14px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.dprice.locked{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1.5px dashed #f59e0b}
+.dprice.locked b{color:#92400e;font-size:.9rem;display:flex;align-items:center;gap:8px}
+.dprice.open{background:#ecfdf5;border:1.5px solid #a7f3d0}
+.dprice.open b{color:#059669;font-size:1.35rem;font-weight:900}
+.dprice.open small{display:block;color:#64748b;font-size:.7rem}
+.dprice .dbtns{margin-left:auto;display:flex;gap:8px}
+.dprice .dbtns a{padding:9px 16px;border-radius:9px;font-size:.75rem;font-weight:800}
+.dprice .dbtns .bl{background:var(--pri);color:#fff}
+.dprice .dbtns .br{background:#fff;border:1.5px solid #a7f3d0;color:#047857}
+.dsec{margin-bottom:14px}
+.dsec b{font-size:.8rem;font-weight:800;color:#334155;display:block;margin-bottom:8px}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.schip{padding:7px 15px;border-radius:9px;border:1.5px solid #e2e8f0;background:#fff;font-size:.76rem;font-weight:700;color:#475569}
+.cchip{width:30px;height:30px;border-radius:50%;border:2px solid #e2e8f0;display:inline-block}
+.cwrap{display:inline-flex;align-items:center;gap:6px;margin:3px 6px 3px 0;background:#f8fafc;border:1px solid #e2e8f0;border-radius:20px;padding:4px 11px 4px 5px;font-size:.72rem;font-weight:700;color:#475569}
+.cwrap .cchip{width:20px;height:20px;margin:0}
+.ddesc{background:#f8fafc;border-radius:12px;padding:13px 15px;font-size:.82rem;color:#475569;line-height:1.75}
+.footer{background:#0f172a;color:#94a3b8;text-align:center;padding:20px;font-size:.78rem;margin-top:20px}
+.footer b{color:#fff}
+.fsocial{display:flex;gap:9px;justify-content:center;margin-bottom:12px}
+.fsocial a{width:36px;height:36px;background:rgba(255,255,255,.08);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#cbd5e1;transition:all .25s}
+.fsocial a:hover{background:var(--pri);color:#fff}
+
+/* ===== Responsive ===== */
+@media(max-width:1024px){.grid{grid-template-columns:repeat(3,1fr)}.wrap{grid-template-columns:1fr}.cats{position:static}}
+@media(max-width:768px){
+    /* sidebar → horizontal chips */
+    .wrap{display:block;padding:16px 12px 50px}
+    .cats{margin-bottom:14px}
+    .cats .catlist{display:flex !important;flex-direction:row !important;overflow-x:auto;overflow-y:hidden;gap:7px;padding:10px;max-height:none !important;-webkit-overflow-scrolling:touch}
+    .cats .catitem{width:auto !important;flex:none}
+    .cats .catitem{white-space:nowrap;width:auto;flex:none;padding:8px 14px;border:1.5px solid #e2e8f0}
+    .cats .catitem.on{border-color:transparent}
+    .cats .catitem .ct{display:none}
+    .hdr-in{padding:10px 12px}
+    .hbtn{padding:8px 12px;font-size:.72rem}
+    .strip{padding:20px 14px}
+    .strip h1{font-size:1.25rem}
+    .strip p{font-size:.8rem}
+    .grid{grid-template-columns:1fr 1fr;gap:12px}
+    .img{height:160px}
+    .info{padding:10px 12px}
+    .info h4{font-size:.78rem}
+    .lock-ov{font-size:.66rem;padding:26px 8px 9px}
+    .lockbar .btns a{padding:6px 2px;font-size:.64rem}
+    .toolbar{padding:10px 12px}
+    .banner{padding:20px 16px}
+    .dgrid{grid-template-columns:1fr;gap:16px;padding:16px}
+    .dimg{height:260px}
+}
+@media(max-width:600px){
+    .logo{font-size:.9rem}
+    .logo .lt small{display:none}
+    .hdr-r{gap:6px}
+}
+@media(max-width:520px){.hbtn .ht{display:none}.hbtn{padding:9px 11px}
+    .strip{padding:16px 12px}
+    .strip h1{font-size:1.1rem}
+    .strip p{font-size:.74rem}
+    .strip .lockpill{font-size:.64rem;padding:6px 12px}
+    .toolbar .cnt{width:100%;text-align:center}
+}
+</style>
+
+<style id="public-mobile-nav-fix">
+/* 2026-09-17 — MOBILE FIX (this request). Same fix as index.html: reserve space for the
+   FIXED bottom nav the public site injects, so page content and the footer are not
+   hidden underneath it, and any floating button clears the bar. Desktop untouched. */
+@media (max-width:1024px){
+  body { padding-bottom: calc(86px + env(safe-area-inset-bottom)) !important; }
+  .footer { padding-bottom: 28px !important; }
+  .fl { bottom: calc(84px + env(safe-area-inset-bottom)) !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="hdr"><div class="hdr-in">
+    <a href="index.html" class="logo">
+        <span class="lg-ic"><i class="fas fa-store"></i></span>
+        <span class="lt">ResellerHub BD<small>PRODUCT CATALOG</small></span>
+    </a>
+    <div class="hdr-r">
+        <a href="index.html" class="hbtn ghost"><i class="fas fa-house"></i> <span class="ht">Home</span></a>
+        <a href="reseller/register.html" class="hbtn pri"><i class="fas fa-user-plus"></i> <span class="ht">রেজিস্টার</span></a>
+        <a href="reseller/login.html" class="hbtn ghost"><i class="fas fa-right-to-bracket"></i> <span class="ht">Login</span></a>
+    </div>
+</div></div>
+
+<div class="strip">
+    <h1>আমাদের প্রোডাক্ট ক্যাটালগ</h1>
+    <p>সব ক্যাটাগরির প্রোডাক্ট ব্রাউজ করুন — রিসেলিং শুরু করতে আজই যোগ দিন</p>
+    <div class="lockpill"><i class="fas fa-lock"></i> দাম শুধু রেজিস্টার্ড রিসেলারদের জন্য — লগইন করলেই আনলক</div>
+</div>
+
+<div class="wrap">
+    <aside class="cats">
+        <div class="cath"><i class="fas fa-layer-group"></i> ক্যাটাগরি সমূহ</div>
+        <div class="catlist" id="catList"></div>
+    </aside>
+    <div class="main-area">
+        <div class="toolbar">
+            <input id="q" placeholder="🔍 প্রোডাক্ট খুঁজুন..." oninput="render()">
+            <span class="cnt" id="cnt"></span>
+        </div>
+        <div class="grid" id="grid"></div>
+        <div class="banner" id="lockBanner">
+            <h3><i class="fas fa-lock"></i> দাম দেখতে চান?</h3>
+            <p>প্রোডাক্টের দাম শুধুমাত্র রেজিস্টার্ড রিসেলারদের জন্য দৃশ্যমান। ফ্রি রেজিস্ট্রেশন করে সাথে সাথেই সব দাম আনলক করুন।</p>
+            <div class="btns">
+                <a href="reseller/register.html" class="b1"><i class="fas fa-user-plus"></i> ফ্রি রেজিস্টার করুন</a>
+                <a href="reseller/login.html" class="b2"><i class="fas fa-right-to-bracket"></i> আগে থেকেই আছেন? Login</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Product detail modal -->
+<div class="dov" id="dov" onclick="if(event.target===this)closeD()">
+    <div class="dbox">
+        <button class="dclose" onclick="closeD()">×</button>
+        <div class="dgrid" id="dBody"></div>
+    </div>
+</div>
+
+<div class="footer">
+    <div class="fsocial">
+        <a href="https://www.facebook.com/" target="_blank"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://www.youtube.com/channel/UCj7mGCRxCkCjFmg_plsO5Og/" target="_blank"><i class="fab fa-youtube"></i></a>
+    </div>
+    © 2024 <b>ResellerHub BD</b> — বাংলাদেশের #১ রিসেলার প্ল্যাটফর্ম | Powered by Stylex Shopping
+</div>
+
+<script src="app.js"></script>
+<script>
+var LOGGED_IN = !!(sessionStorage.getItem('user_id') && sessionStorage.getItem('user_type'));
+var activeCat = '';
+var CMAP = {Red:'#ef4444',Pink:'#ec4899',Orange:'#f97316',Yellow:'#eab308',Green:'#22c55e',Teal:'#14b8a6',Blue:'#3b82f6',Indigo:'#6366f1',Purple:'#a855f7',White:'#f8fafc',Black:'#111827',Gray:'#6b7280',Brown:'#92400e',Beige:'#d4b896',Navy:'#1e3a5f',Maroon:'#7f1d1d',Gold:'#ca8a04',Silver:'#94a3b8'};
+function retailOf(p){ return p.customer_price || Math.round((p.reseller_price || p.price || 0) * 1.8); }
+
+function drawCats(){
+    var cats = getData(DB_KEYS.CATEGORIES) || [];
+    /* PART 6, 20 — main catalog never shows reseller products or 0-stock items */
+    var ps = catalogProducts();
+    var h = '<button class="catitem' + (activeCat === '' ? ' on' : '') + '" onclick="setCat(\'\')"><span><i class="fas fa-grip" style="margin-right:8px;"></i>সব প্রোডাক্ট</span><span class="ct">' + ps.length + '</span></button>';
+    for (var i = 0; i < cats.length; i++) {
+        var c = 0;
+        for (var j = 0; j < ps.length; j++) { if (String(ps[j].category || '') === String(cats[i].name)) c++; }
+        h += '<button class="catitem' + (activeCat === cats[i].name ? ' on' : '') + '" onclick="setCat(\'' + String(cats[i].name).replace(/'/g, "\\'") + '\')"><span>' + cats[i].name + '</span><span class="ct">' + c + '</span></button>';
+    }
+    document.getElementById('catList').innerHTML = h;
+}
+window.setCat = function(c) { activeCat = c; drawCats(); render(); };
+
+function render(){
+    var q = (document.getElementById('q').value || '').trim().toLowerCase();
+    var ps = catalogProducts();
+    var list = [];
+    for (var i = 0; i < ps.length; i++) {
+        var p = ps[i];
+        if (p.supplierId && p.approved === false) continue;
+        if (p.is_active === false) continue;
+        if (activeCat && String(p.category || '') !== activeCat) continue;
+        if (q && (p.name || '').toLowerCase().indexOf(q) === -1) continue;
+        list.push(p);
+    }
+    document.getElementById('cnt').textContent = list.length + ' টি প্রোডাক্ট';
+    var h = '';
+    for (var k = 0; k < list.length && k < 48; k++) {
+        var p2 = list[k];
+        var img = p2.image || (p2.images && p2.images[0]) || '';
+        h += '<div class="card" style="animation-delay:' + (k % 12) * 0.04 + 's" onclick="openD(' + k + ')" data-k="' + k + '">' +
+            '<div class="img">' + (img ? '<img src="' + img + '" alt="">' : '<div class="noimg"><i class="fas fa-box"></i></div>') +
+            '<span class="cat-b">' + (p2.category || 'Product') + '</span>';
+        if (LOGGED_IN) {
+            h += '<span class="price-open">৳' + retailOf(p2).toLocaleString('en-IN') + '</span>';
+        } else {
+            h += '<div class="lock-ov"><i class="fas fa-lock"></i> দাম লক করা</div>';
+        }
+        h += '</div><div class="info"><h4>' + p2.name + '</h4><span class="view"><i class="fas fa-eye"></i> বিস্তারিত দেখুন</span></div></div>';
+    }
+    if (!list.length) h = '<div class="empty"><i class="fas fa-box-open"></i>এই ক্যাটাগরিতে এখনো প্রোডাক্ট নেই</div>';
+    document.getElementById('grid').innerHTML = h;
+    document.getElementById('lockBanner').style.display = LOGGED_IN ? 'none' : 'block';
+    window._list = list;
+}
+
+// ===== Product detail modal (sizes/colors visible, price locked) =====
+window.openD = function(k) {
+    var p = (window._list || [])[k];
+    if (!p) return;
+    var imgs = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
+    var sizes = (p.sizes && p.sizes.length) ? p.sizes : [];
+    var colors = (p.colors && p.colors.length) ? p.colors : [];
+    var variants = (p.variants && p.variants.length) ? p.variants : [];
+    if (!sizes.length && variants.length) { for (var v = 0; v < variants.length; v++) { if (variants[v].name && colors.indexOf(variants[v].name) === -1) colors.push(variants[v].name); } }
+
+    var h = '<div>' +
+        '<div class="dimg" id="dMain">' + (imgs[0] ? '<img src="' + imgs[0] + '">' : '<div class="noimg" style="height:100%"><i class="fas fa-box"></i></div>') + '</div>';
+    if (imgs.length > 1) {
+        h += '<div class="dthumbs">';
+        for (var t = 0; t < imgs.length; t++) h += '<img src="' + imgs[t] + '" class="' + (t === 0 ? 'on' : '') + '" onclick="dSw(' + t + ')">';
+        h += '</div>';
+    }
+    h += '</div><div>' +
+        '<h2>' + p.name + '</h2>' +
+        '<div class="dmeta"><span class="dc">' + (p.category || 'Product') + '</span>' + (p.sku ? '<span style="font-size:.7rem;color:#94a3b8;font-weight:700;">SKU: ' + p.sku + '</span>' : '') + (p.stock ? '<span style="font-size:.7rem;font-weight:800;color:#059669;"><i class="fas fa-cubes-stacked"></i> Stock: ' + p.stock + '</span>' : '') + '</div>';
+
+    if (LOGGED_IN) {
+        h += '<div class="dprice open"><div><b>৳' + retailOf(p).toLocaleString('en-IN') + '</b><small>customer price — আপনি দেখছেন ✓</small></div></div>';
+    } else {
+        h += '<div class="dprice locked"><b><i class="fas fa-lock"></i> দাম লক করা আছে — দেখতে রেজিস্টার/লগইন করুন</b><div class="dbtns"><a class="bl" href="reseller/register.html">Register</a><a class="br" href="reseller/login.html">Login</a></div></div>';
+    }
+
+    if (sizes.length) {
+        h += '<div class="dsec"><b><i class="fas fa-ruler-horizontal" style="color:var(--pri);margin-right:5px;"></i>Available Sizes</b><div class="chips">';
+        for (var s = 0; s < sizes.length; s++) h += '<span class="schip">' + sizes[s] + '</span>';
+        h += '</div></div>';
+    }
+    if (colors.length) {
+        h += '<div class="dsec"><b><i class="fas fa-palette" style="color:#ec4899;margin-right:5px;"></i>Available Colors</b><div class="chips">';
+        for (var c = 0; c < colors.length; c++) {
+            var hex = CMAP[colors[c]] || colors[c];
+            var isHex = /^#/.test(String(hex));
+            h += '<span class="cwrap"><span class="cchip" style="background:' + (isHex ? hex : '#94a3b8') + '"></span>' + colors[c] + '</span>';
+        }
+        h += '</div></div>';
+    }
+    if (variants.length) {
+        h += '<div class="dsec"><b><i class="fas fa-list" style="color:#7c3aed;margin-right:5px;"></i>Variants</b><div class="chips">';
+        for (var v2 = 0; v2 < variants.length; v2++) {
+            var vv = variants[v2];
+            if (!vv.name && !vv.size) continue;
+            h += '<span class="schip">' + (vv.name || '') + (vv.size ? ' — ' + vv.size : '') + '</span>';
+        }
+        h += '</div></div>';
+    }
+    if (p.description) h += '<div class="dsec"><div class="ddesc">' + String(p.description).substring(0, 500) + '</div></div>';
+
+    h += '<div style="display:flex;gap:9px;margin-top:6px;flex-wrap:wrap"><a href="reseller/register.html" class="btn" style="flex:1;justify-content:center;background:linear-gradient(135deg,var(--pri),#7c3aed);color:#fff;padding:12px;border-radius:11px;font-weight:800;font-size:.8rem;border:none;text-align:center"><i class="fas fa-user-plus"></i> রিসেলার হিসেবে যোগ দিন</a><a href="reseller/login.html" class="btn" style="flex:1;justify-content:center;background:#eef2ff;color:var(--pri);padding:12px;border-radius:11px;font-weight:800;font-size:.8rem;border:none;text-align:center"><i class="fas fa-right-to-bracket"></i> Login</a></div>';
+
+    h += '</div>';
+    document.getElementById('dBody').innerHTML = h;
+    window._dImgs = imgs;
+    document.getElementById('dov').classList.add('show');
+    document.body.style.overflow = 'hidden';
+};
+window.dSw = function(t) {
+    var main = document.getElementById('dMain');
+    if (main && window._dImgs[t]) main.innerHTML = '<img src="' + window._dImgs[t] + '">';
+    var th = document.querySelectorAll('.dthumbs img');
+    for (var i = 0; i < th.length; i++) th[i].classList.toggle('on', i === t);
+};
+window.closeD = function() {
+    var box = document.querySelector('#dov .dbox');
+    var ov = document.getElementById('dov');
+    if (ov.classList.contains('show') && box) {
+        box.style.transition = 'all .22s ease';
+        box.style.opacity = '0';
+        box.style.transform = 'scale(.92) translateY(18px)';
+        setTimeout(function() { ov.classList.remove('show'); box.style.opacity = ''; box.style.transform = ''; document.body.style.overflow = ''; }, 200);
+    } else {
+        ov.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+};
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeD(); });
+
+drawCats();
+render();
+</script>
+</body>
+</html>

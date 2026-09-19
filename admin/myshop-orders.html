@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Shop Orders - Admin - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#f1f5f9; color:#1e293b; }
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:240px; background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%); color:#cbd5e1; z-index:100; overflow-y:auto; }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid #334155; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:38px; height:38px; background:linear-gradient(135deg,#dc2626,#b91c1c); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; }
+        .sidebar-logo h3 { color:white; font-size:1rem; }
+        .sidebar-logo small { color:#94a3b8; font-size:0.7rem; display:block; }
+        .sidebar-menu { list-style:none; padding:12px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:10px 20px; color:#cbd5e1; text-decoration:none; font-size:0.88rem; }
+        .sidebar-menu a:hover { background:rgba(255,255,255,0.05); color:white; }
+        .sidebar-menu a.active { background:#dc2626; color:white; }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 20px 5px; color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+        .main { margin-left:240px; min-height:100vh; }
+        .topbar { background:white; padding:14px 25px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:sticky; top:0; z-index:50; }
+        .topbar h2 { font-size:1.2rem; font-weight:600; }
+        .topbar h2 i { color:#dc2626; margin-right:8px; }
+        .user-pill { display:flex; align-items:center; gap:8px; padding:6px 14px; background:#fee2e2; border-radius:30px; font-size:0.85rem; color:#991b1b; font-weight:600; }
+        .btn-logout { background:#dc2626; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:500; }
+        .content { padding:25px; }
+        .card { background:white; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:20px; overflow:hidden; }
+        .card-header { padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+        .card-header h4 { font-size:0.95rem; font-weight:600; }
+        .card-header h4 i { color:#dc2626; margin-right:6px; }
+        .data-table { width:100%; border-collapse:collapse; }
+        .data-table th { text-align:left; padding:11px 20px; background:#f8fafc; font-weight:600; font-size:0.72rem; color:#64748b; text-transform:uppercase; }
+        .data-table td { padding:12px 20px; border-bottom:1px solid #f1f5f9; font-size:0.85rem; }
+        .data-table tr:hover { background:#f8fafc; }
+        .badge { padding:3px 9px; border-radius:20px; font-size:0.7rem; font-weight:600; }
+        .badge-success { background:#d1fae5; color:#065f46; }
+        .badge-warning { background:#fef3c7; color:#92400e; }
+        .badge-danger { background:#fee2e2; color:#991b1b; }
+        .badge-info { background:#dbeafe; color:#1e40af; }
+        .btn { padding:6px 12px; border:none; border-radius:7px; font-size:0.78rem; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+        .btn-success { background:#10b981; color:white; }
+        .btn-danger { background:#dc2626; color:white; }
+        .btn-warning { background:#f59e0b; color:white; }
+        .btn-sm { padding:4px 9px; font-size:0.72rem; }
+        .btn-primary { background:#2563eb; color:white; }
+        .sprow-l { font-size:.8rem; font-weight:700; color:#334155; display:block; margin-bottom:5px; }
+        .sphint { font-size:.68rem; color:#94a3b8; margin-top:4px; }
+        .spin { width:100%; padding:10px 13px; border:1.5px solid #e2e8f0; border-radius:9px; font-size:.86rem; box-sizing:border-box; font-family:inherit; }
+        .spin:focus { outline:none; border-color:#10b981; box-shadow:0 0 0 3px rgba(16,185,129,.12); }
+        .spreq { color:#ef4444; }
+        .sptoggle { position:relative; width:46px; height:26px; background:#10b981; border-radius:20px; cursor:pointer; transition:.2s; flex:none; display:inline-block; vertical-align:middle; }
+        .sptoggle.off { background:#d1d5db; }
+        .sptoggle::after { content:''; position:absolute; top:3px; left:23px; width:20px; height:20px; background:#fff; border-radius:50%; transition:.2s; }
+        .sptoggle.off::after { left:3px; }
+        .spcolgrid { display:grid; grid-template-columns:repeat(6,1fr); gap:9px; }
+        .spcol { border:1.5px solid #e2e8f0; border-radius:9px; padding:9px 4px; text-align:center; cursor:pointer; transition:.15s; }
+        .spcol:hover { border-color:#10b981; }
+        .spcol.on { border-color:#10b981; background:#ecfdf5; }
+        .spcol .c { width:26px; height:26px; border-radius:50%; margin:0 auto 5px; border:1px solid rgba(0,0,0,.08); }
+        .spcol p { font-size:.62rem; font-weight:600; color:#475569; margin:0; }
+        .spszp { padding:6px 14px; border-radius:16px; font-size:.74rem; font-weight:700; cursor:pointer; background:#f1f5f9; color:#475569; border:none; }
+        .spszp.on { background:#10b981; color:#fff; }
+        .spszc { padding:7px 13px; border-radius:9px; font-size:.76rem; font-weight:700; cursor:pointer; background:#fff; color:#475569; border:1.5px solid #e2e8f0; }
+        .spszc.on { background:#10b981; color:#fff; border-color:#10b981; }
+        .spchip { background:#ecfdf5; color:#047857; font-size:.7rem; font-weight:800; padding:4px 10px; border-radius:14px; display:inline-block; }
+        .spup { width:110px; height:110px; border:2px dashed #cbd5e1; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#94a3b8; cursor:pointer; font-size:.72rem; font-weight:700; gap:6px; }
+        .spup:hover { border-color:#10b981; color:#10b981; }
+        .spgalbox { border:1.5px dashed #e2e8f0; border-radius:10px; padding:16px; text-align:center; color:#94a3b8; font-size:.78rem; margin-top:12px; }
+        .spthumb { position:relative; width:74px; height:74px; border-radius:10px; overflow:hidden; border:2px solid #e2e8f0; flex:none; }
+        .spthumb img { width:100%; height:100%; object-fit:cover; }
+        .spthumb .x { position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%; background:#ef4444; color:#fff; border:none; font-size:.6rem; cursor:pointer; line-height:1; }
+        .spthumb .main { position:absolute; bottom:0; left:0; right:0; background:rgba(16,185,129,.92); color:#fff; font-size:.55rem; text-align:center; font-weight:700; }
+        .sppsum { background:#f8fafc; border-radius:10px; padding:14px; margin-top:14px; }
+        .sppsum .r { display:flex; padding:5px 0; font-size:.8rem; border-bottom:1px dashed #eef0f6; }
+        .sppsum .r:last-child { border-bottom:none; }
+        .sppsum .r b { width:45%; color:#64748b; font-weight:600; }
+        .sppsum .r span { flex:1; text-align:right; font-weight:600; color:#1e293b; }
+        .sptk { color:#10b981; font-weight:800; }
+        .spstab { padding:10px 13px; font-size:.8rem; font-weight:800; color:#64748b; cursor:pointer; border-bottom:2.5px solid transparent; margin-bottom:-2px; white-space:nowrap; }
+        .spstab.on { color:#10b981; border-bottom-color:#10b981; }
+        .modal-overlay { position:fixed; inset:0; background:rgba(15,23,42,0.65); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+        .modal-overlay.show { display:flex; }
+        .modal { background:white; border-radius:16px; width:100%; box-shadow:0 30px 80px rgba(0,0,0,.35); animation:mup .25s ease; }
+        @keyframes mup { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+        .empty { text-align:center; padding:40px; color:#94a3b8; }
+        .empty i { font-size:2.5rem; display:block; margin-bottom:10px; opacity:0.4; }
+        .shop-cell { display:flex; align-items:center; gap:10px; }
+        .shop-cell .lg { width:40px; height:40px; border-radius:8px; background:#fef3c7; display:flex; align-items:center; justify-content:center; color:#d97706; overflow:hidden; flex-shrink:0; }
+        .shop-cell .lg img { width:100%; height:100%; object-fit:cover; }
+    </style>
+
+
+
+
+<style id="lx-sb-final">
+/* ===== ADMIN SIDEBAR v4 — fresh premium design (authoritative) ===== */
+body .lx-sidebar { position:fixed !important; left:0 !important; top:0 !important; bottom:0 !important; width:264px !important; background:linear-gradient(180deg,#0d1226 0%,#171233 100%) !important; border-right:1px solid rgba(129,140,248,.14) !important; z-index:600 !important; overflow-y:auto !important; overflow-x:hidden !important; display:flex !important; flex-direction:column !important; transform:none !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; font-family:'Inter','Hind Siliguri',sans-serif !important; }
+body .lx-sidebar::before { content:'' !important; position:absolute !important; top:-80px !important; right:-60px !important; width:260px !important; height:260px !important; background:radial-gradient(circle,rgba(99,102,241,.18),transparent 70%) !important; pointer-events:none !important; }
+body .lx-brand { display:flex !important; align-items:center !important; gap:12px !important; padding:20px 18px !important; border-bottom:1px solid rgba(129,140,248,.14) !important; position:relative !important; }
+body .lx-brand-ic { width:42px !important; height:42px !important; border-radius:13px !important; background:linear-gradient(135deg,#6366f1,#a855f7) !important; display:flex !important; align-items:center !important; justify-content:center !important; color:#fff !important; font-size:1.05rem !important; box-shadow:0 8px 20px rgba(99,102,241,.4) !important; flex-shrink:0 !important; }
+body .lx-brand-tx b { color:#fff !important; font-size:1.02rem !important; font-weight:900 !important; display:block !important; line-height:1.2 !important; }
+body .lx-brand-tx small { color:#818cf8 !important; font-size:.6rem !important; font-weight:800 !important; letter-spacing:2px !important; }
+body .lx-close { margin-left:auto !important; background:rgba(255,255,255,.06) !important; border:none !important; color:#94a3b8 !important; width:30px !important; height:30px !important; border-radius:9px !important; cursor:pointer !important; font-size:1rem !important; display:none !important; align-items:center !important; justify-content:center !important; }
+body .lx-close:hover { background:#fee2e2 !important; color:#dc2626 !important; }
+body .lx-menu { padding:14px 12px !important; flex:1 !important; }
+body .sec-label { font-size:.6rem !important; font-weight:900 !important; letter-spacing:2.2px !important; color:#6b7280 !important; text-transform:uppercase !important; padding:14px 12px 6px !important; display:flex !important; align-items:center !important; gap:8px !important; }
+body .sec-label::before { content:'' !important; width:14px !important; height:2px !important; background:linear-gradient(90deg,#6366f1,#a855f7) !important; border-radius:2px !important; }
+body .sb-item { position:relative !important; display:flex !important; align-items:center !important; gap:11px !important; padding:9px 12px !important; margin:3px 0 !important; border-radius:12px !important; color:#b6c2e2 !important; text-decoration:none !important; font-size:.86rem !important; font-weight:600 !important; transition:all .2s !important; border:1px solid transparent !important; background:transparent !important; opacity:1 !important; visibility:visible !important; pointer-events:auto !important; box-shadow:none !important; transform:none !important; }
+body .sb-item .sb-ico { width:30px !important; height:30px !important; border-radius:9px !important; background:rgba(255,255,255,.05) !important; display:flex !important; align-items:center !important; justify-content:center !important; font-size:.82rem !important; flex-shrink:0 !important; transition:all .2s !important; }
+body .sb-item .sb-txt { flex:1 !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; display:block !important; }
+body .sb-item:hover { background:rgba(99,102,241,.13) !important; color:#fff !important; }
+body .sb-item:hover .sb-ico { background:rgba(99,102,241,.3) !important; }
+body .sb-item.on { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; border-color:rgba(129,140,248,.35) !important; }
+body .sb-item.on::before { content:'' !important; position:absolute !important; left:-12px !important; top:50% !important; transform:translateY(-50%) !important; width:3.5px !important; height:60% !important; background:linear-gradient(180deg,#818cf8,#c084fc) !important; border-radius:3px !important; }
+body .sb-item.on .sb-ico { background:linear-gradient(135deg,#6366f1,#a855f7) !important; color:#fff !important; }
+/* page-এর নিচের inline-highlight script সবসময় হারাবে */
+body .sb-item[style] { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; }
+body .sb-badge { background:#fbbf24 !important; color:#1e293b !important; font-size:.62rem !important; padding:1px 8px !important; border-radius:10px !important; font-weight:800 !important; margin-left:auto !important; }
+body .main { margin-left:264px !important; min-height:100vh !important; }
+body .side-overlay { display:none !important; position:fixed !important; inset:0 !important; background:rgba(7,10,26,.6) !important; z-index:590 !important; backdrop-filter:blur(2px) !important; }
+body .side-overlay.show { display:block !important; pointer-events:auto !important; }
+body .hamburger { display:none !important; }
+/* ===== মোবাইল/ট্যাবলেট: slide drawer ===== */
+@media (max-width:1024px) {
+    body .main { margin-left:0 !important; }
+    body .lx-sidebar { transform:translateX(-100%) !important; box-shadow:none !important; }
+    body .lx-sidebar.open { transform:none !important; box-shadow:30px 0 70px rgba(7,10,26,.6) !important; }
+    body .lx-close { display:flex !important; }
+    body .hamburger { display:inline-flex !important; }
+    body { overflow-x:hidden !important; }
+}
+</style>
+
+
+
+
+
+<style id="lx-ovf-fix">
+@media(max-width:768px){ body{overflow-x:hidden !important} }
+</style>
+
+<style id="lx-admin-referral">
+/* ============ Admin Referral (#37–#41, #47) ============ */
+.ar-wrap { max-width:1300px; margin:0 auto; }
+.ar-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:18px; }
+.ar-stat { background:#fff; border-radius:15px; padding:17px 16px; box-shadow:0 3px 14px rgba(15,23,42,.06); display:flex; align-items:center; gap:13px; }
+.ar-stat .si { width:44px; height:44px; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex:0 0 44px; }
+.ar-stat .lb { font-size:.7rem; color:#64748b; font-weight:700; margin-bottom:3px; line-height:1.3; }
+.ar-stat .vl { font-size:1.3rem; font-weight:900; color:#0f172a; line-height:1.1; }
+.ar-card { background:#fff; border-radius:15px; box-shadow:0 3px 14px rgba(15,23,42,.06); overflow:hidden; margin-bottom:18px; }
+.ar-card-head { padding:16px 18px; border-bottom:1px solid #eef2f7; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+.ar-card-head h4 { font-size:.95rem; font-weight:900; display:flex; align-items:center; gap:9px; }
+.ar-card-head h4 i { color:#dc2626; }
+.ar-search { padding:9px 14px; border:1.5px solid #e2e8f0; border-radius:10px; font-family:inherit; font-size:.82rem; min-width:200px; outline:none; }
+.ar-search:focus { border-color:#fca5a5; }
+.ar-tw { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+table.ar-t { width:100%; border-collapse:collapse; min-width:1020px; }
+table.ar-t th { background:#f8fafc; padding:11px 14px; text-align:left; font-size:.66rem; font-weight:900; text-transform:uppercase; letter-spacing:.5px; color:#64748b; border-bottom:1px solid #eef2f7; white-space:nowrap; }
+table.ar-t td { padding:12px 14px; font-size:.82rem; border-bottom:1px solid #f1f5f9; color:#334155; vertical-align:middle; }
+table.ar-t tbody tr:hover { background:#fafbff; }
+.ar-nm { font-weight:800; color:#0f172a; }
+.ar-sub { font-size:.7rem; color:#94a3b8; }
+.ar-code { font-family:'Courier New',monospace; font-weight:900; color:#b91c1c; background:#fef2f2; padding:3px 9px; border-radius:7px; font-size:.76rem; letter-spacing:.6px; display:inline-block; }
+.ar-pill { font-size:.66rem; font-weight:900; padding:3px 9px; border-radius:999px; display:inline-block; text-transform:capitalize; white-space:nowrap; }
+.ar-pill.approved { background:#dcfce7; color:#166534; }
+.ar-pill.pending { background:#fef9c3; color:#854d0e; }
+.ar-pill.banned, .ar-pill.rejected { background:#fee2e2; color:#991b1c; }
+.ar-pill.t1 { background:#dcfce7; color:#166534; }
+.ar-pill.t2 { background:#fef3c7; color:#b45309; }
+.ar-pill.credited { background:#dcfce7; color:#166534; }
+.ar-pill.reversed { background:#fee2e2; color:#991b1c; }
+.ar-btn { border:none; border-radius:9px; padding:8px 13px; font-weight:800; font-size:.74rem; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-family:inherit; transition:.2s; white-space:nowrap; }
+.ar-btn.pri { background:#dc2626; color:#fff; }
+.ar-btn.pri:hover { background:#b91c1c; transform:translateY(-1px); }
+.ar-btn.sec { background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe; }
+.ar-btn.sec:hover { background:#e0e7ff; }
+.ar-empty { text-align:center; padding:44px 20px; color:#94a3b8; }
+.ar-empty i { font-size:2.2rem; display:block; margin-bottom:11px; opacity:.45; }
+.ar-empty b { display:block; color:#475569; margin-bottom:5px; }
+.ar-total { background:#f8fafc; border-top:2px solid #e2e8f0; padding:13px 16px; display:flex; justify-content:space-between; align-items:center; font-weight:900; font-size:.95rem; }
+.ar-total .v { color:#dc2626; font-size:1.1rem; }
+.ar-sumrow { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; padding:14px 16px; background:#fafbff; border-bottom:1px solid #eef2f7; }
+.ar-sumrow div { background:#fff; border:1px solid #eef2f7; border-radius:11px; padding:11px 13px; }
+.ar-sumrow .l { font-size:.66rem; color:#94a3b8; font-weight:800; text-transform:uppercase; letter-spacing:.4px; margin-bottom:3px; }
+.ar-sumrow .v { font-size:1.02rem; font-weight:900; color:#0f172a; }
+@media (max-width:1100px) { .ar-stats { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:768px) {
+    .ar-stats { grid-template-columns:1fr 1fr; gap:10px; }
+    .ar-stat { flex-direction:column; text-align:center; gap:8px; padding:13px 10px; }
+    .ar-stat .vl { font-size:1.08rem; }
+    .ar-card-head { padding:14px 13px; }
+    .ar-search { width:100%; min-width:0; }
+    .ar-sumrow { grid-template-columns:1fr 1fr; }
+}
+@media (max-width:420px) { .ar-stats { grid-template-columns:1fr; } }
+</style>
+
+<style id="lx-admin-supref">
+/* Supplier referral page accents + 7-KPI grid */
+.sr-note{display:flex;align-items:flex-start;gap:10px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:13px;padding:12px 15px;margin-bottom:16px;font-size:.78rem;line-height:1.6}
+.sr-note i{margin-top:2px;flex:none}
+.sr-note a{color:#b45309;font-weight:800}
+.sr-stats{grid-template-columns:repeat(4,1fr)}
+.ar-card-head h4 i{color:#b45309}
+.ar-code{color:#b45309;background:#fef3c7}
+.ar-total .v{color:#b45309}
+@media (max-width:1100px){ .sr-stats{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:768px){ .sr-stats{grid-template-columns:1fr 1fr} }
+@media (max-width:420px){ .sr-stats{grid-template-columns:1fr} }
+</style>
+<style id="lx-orders-badge-n">.orders-badge-n{color:#fbbf24;font-weight:900;font-size:.72rem}.orders-badge-n:empty{display:none}</style>
+<style id="admin-mobile-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   The admin topbar measured about 474px across on a 390px phone (25px padding, an
+   h2 at 1.2rem, 12px gaps, a wide user pill), so the logout button was pushed past
+   the right edge. Several admin tables are also built by JS with NO .table-scroll
+   wrapper, so they widened the whole page instead of scrolling.
+   EVERY rule below sits inside a max-width query, so the DESKTOP LAYOUT IS
+   UNCHANGED. This is an ADDED block — no existing rule is modified or removed. */
+@media (max-width:768px){
+  .topbar { padding:10px 12px; gap:8px; }
+  .topbar h2 { font-size:.92rem; }
+  .topbar h2 i { margin-right:4px; }
+  .topbar-right { gap:6px; }
+  .user-pill { padding:5px 9px; font-size:.72rem; }
+  .btn-logout { padding:7px 10px; }
+  /* a table without a scroll wrapper would otherwise push the page wide */
+  .data-table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%; }
+}
+</style>
+<style id="panel-fullwidth-fix">
+/* 2026-09-16 — FULL-WIDTH FIX for the admin and supplier panels (this request).
+   The whole page sat in a narrow column with empty space on the right, because the
+   base rule reserves the sidebar with `margin-left`, and a block element with
+   margin-left and width:auto is only (100% - that) wide. A LATER rule in the same
+   file re-asserted the margin with !important, so the earlier mobile override lost.
+   This block is the LAST thing in the document, so it wins, and it resets width as
+   well as margin. Desktop is untouched — everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<aside class="lx-sidebar sidebar" id="sidebar">
+    <div class="lx-brand">
+        <span class="lx-brand-ic"><i class="fas fa-user-shield"></i></span>
+        <div class="lx-brand-tx"><b>AdminHub</b><small>CONTROL PANEL</small></div>
+        <button class="lx-close" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+    <nav class="lx-menu">
+        <div class="sec-label">Main</div>
+        <a href="dashboard.html" class="sb-item"><span class="sb-ico"><i class="fas fa-chart-line"></i></span><span class="sb-txt">Dashboard</span></a>
+        <a href="orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-shopping-cart"></i></span><span class="sb-txt">All Orders<span class="orders-badge-n" id="ordersBadgeN"></span></span><span class="orders-badge" style="display:none;margin-left:auto;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:.62rem;font-weight:800"></span></a>
+        <a href="multi-supplier-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-people-arrows"></i></span><span class="sb-txt">Multi-Supplier Orders<span class="orders-badge-n" id="msCount"></span></span></a>
+        <a href="products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box"></i></span><span class="sb-txt">Products</span></a>
+        <div class="sec-label">Users</div>
+        <a href="resellers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-users"></i></span><span class="sb-txt">Resellers</span></a>
+        <a href="suppliers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-warehouse"></i></span><span class="sb-txt">Suppliers</span></a>
+        <a href="supplier-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-boxes-stacked"></i></span><span class="sb-txt">Supplier Products</span></a>
+        <a href="add-reseller.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Add Reseller</span></a>
+        <a href="add-supplier.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck"></i></span><span class="sb-txt">Add Supplier</span></a>
+        <a href="approvals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-check"></i></span><span class="sb-txt">Approvals</span></a>
+        <a href="withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-money-bill-wave"></i></span><span class="sb-txt">Withdrawals</span></a>
+        <a href="supplier-withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-hand-holding-dollar"></i></span><span class="sb-txt">Supplier Withdraw</span></a>
+        <a href="transactions.html" class="sb-item"><span class="sb-ico"><i class="fas fa-receipt"></i></span><span class="sb-txt">Transaction History</span></a>
+        <a href="moderators.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-shield"></i></span><span class="sb-txt">Moderators</span></a>
+        <div class="sec-label">Referral</div>
+        <a href="referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Reseller Referral</span></a>
+        <a href="supplier-referral.html" class="sb-item on"><span class="sb-ico"><i class="fas fa-truck-arrow-right"></i></span><span class="sb-txt">Supplier Referral</span></a>
+        <a href="myshop-orders.html" class="sb-item on"><span class="sb-ico"><i class="fas fa-bag-shopping"></i></span><span class="sb-txt">My Shop Orders</span></a>
+        <a href="myshop-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box-open"></i></span><span class="sb-txt">My Shop Products</span></a>
+        <div class="sec-label">Offers &amp; Banners</div>
+        <a href="add-offer.html" class="sb-item"><span class="sb-ico"><i class="fas fa-plus-circle"></i></span><span class="sb-txt">Add Offers</span></a>
+        <a href="manage-offers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-gift"></i></span><span class="sb-txt">Manage Offers</span></a>
+        <a href="add-banner.html" class="sb-item"><span class="sb-ico"><i class="fas fa-image"></i></span><span class="sb-txt">Add Banners</span></a>
+        <a href="manage-banners.html" class="sb-item"><span class="sb-ico"><i class="fas fa-images"></i></span><span class="sb-txt">Manage Banners</span></a>
+        <div class="sec-label">System</div>
+        <a href="messages.html" class="sb-item"><span class="sb-ico"><i class="fas fa-comments"></i></span><span class="sb-txt">Messages<span class="orders-badge-n" id="msgBadgeN"></span></span></a>
+        <a href="settings.html" class="sb-item"><span class="sb-ico"><i class="fas fa-cog"></i></span><span class="sb-txt">Settings</span></a>
+        <a href="../index.html" class="sb-item"><span class="sb-ico"><i class="fas fa-globe"></i></span><span class="sb-txt">Visit Site</span></a>
+    </nav>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+        <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h2><i class="fas fa-bag-shopping"></i> My Shop Orders</h2>
+        <div class="topbar-right">
+            <div class="user-pill"><i class="fas fa-user-shield"></i> Admin</div>
+            <button class="btn-logout" onclick="sessionStorage.clear();window.location.href='login.html'"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content">
+    <div class="ar-wrap">
+<style id="lx-admin-msorders">
+/* ITEM 3 — full-screen layout.
+   This page is a wide data table (16 columns, min-width 1400px) so it must use the
+   whole viewport instead of sitting inside the 1300px .ar-wrap that the other admin
+   pages use. We widen only this page's wrap — no global rule is touched, so every
+   other admin page keeps its existing width.
+   The sidebar offset is inherited from `.main` (264px desktop / 0 under 1024px),
+   so the grid stays correct on every breakpoint. */
+.main > .content > .ar-wrap{max-width:none;width:100%;padding-left:18px;padding-right:18px;box-sizing:border-box}
+@media(min-width:1600px){ .main > .content > .ar-wrap{padding-left:26px;padding-right:26px} }
+@media(max-width:1024px){ .main > .content > .ar-wrap{padding-left:14px;padding-right:14px} }
+@media(max-width:600px){ .main > .content > .ar-wrap{padding-left:10px;padding-right:10px} }
+.am-bar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:14px;background:#fff;padding:12px 14px;border-radius:14px;box-shadow:0 2px 10px rgba(15,23,42,.06)}
+.am-bar .sp{flex:1}
+.am-btn{border:none;border-radius:10px;padding:9px 15px;font-weight:800;font-size:.75rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.am-btn:disabled{opacity:.45;cursor:not-allowed}
+.am-btn.pri{background:#dc2626;color:#fff}
+.am-btn.pri:hover:not(:disabled){background:#b91c1c;transform:translateY(-1px)}
+.am-btn.gh{background:#f1f5f9;color:#475569}
+.am-btn.gh:hover{background:#e2e8f0}
+.am-btn.ok{background:#0d9488;color:#fff}
+.am-btn.vio{background:#7c3aed;color:#fff}
+.am-sel{padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.78rem;font-family:inherit;background:#fff}
+table.am-t{width:100%;border-collapse:collapse;min-width:1400px}
+table.am-t th{background:#f8fafc;padding:11px 12px;text-align:left;font-size:.63rem;font-weight:900;text-transform:uppercase;letter-spacing:.5px;color:#64748b;border-bottom:1px solid #eef2f7;white-space:nowrap}
+table.am-t td{padding:11px 12px;font-size:.78rem;border-bottom:1px solid #f1f5f9;color:#334155;vertical-align:middle}
+table.am-t tbody tr:hover{background:#fafbff}
+/* serial number — 1 = newest order, always at the top */
+.am-ser{flex:none;min-width:26px;height:26px;padding:0 7px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;font-size:.68rem;font-weight:900;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(99,102,241,.3)}
+/* full product list of the order — one line per product, never truncated */
+.am-plist{max-width:230px;max-height:96px;overflow-y:auto}
+.am-plist .am-pname{font-size:.73rem;font-weight:700;color:#1e293b;line-height:1.5;padding-left:11px;position:relative}
+.am-plist .am-pname::before{content:'';position:absolute;left:0;top:.52em;width:5px;height:5px;border-radius:50%;background:#a5b4fc}
+.am-pimg{width:52px;height:52px;border-radius:10px;object-fit:contain;border:1px solid #e2e8f0;background:#f8fafc;display:block}
+.am-pimg-ph{width:52px;height:52px;border-radius:10px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#cbd5e1}
+.am-nm{font-weight:800;color:#0f172a}
+.am-sub{font-size:.66rem;color:#94a3b8}
+.am-pill{font-size:.6rem;font-weight:900;padding:3px 9px;border-radius:999px;display:inline-block;white-space:nowrap}
+.am-pill.new{background:#dbeafe;color:#1e40af}
+.am-pill.delivered{background:#dcfce7;color:#166534}
+.am-pill.pending{background:#fef3c7;color:#854d0e}
+.am-pill.cancel{background:#fee2e2;color:#991b1b}
+.am-pill.own{background:#eef2ff;color:#4338ca}
+.am-pill.mixed{background:#fef3c7;color:#b45309}
+.am-cons{font-size:.66rem;font-weight:800;color:#065f46;background:#ecfdf5;border-radius:7px;padding:2px 8px;display:inline-block;margin-top:3px}
+/* summary strip — totals over the currently listed orders */
+.am-sum{display:grid;grid-template-columns:repeat(6,1fr);gap:11px;margin-bottom:14px}
+.am-sum:empty{display:none}
+.am-stat{background:#fff;border-radius:13px;padding:13px 14px;box-shadow:0 2px 10px rgba(15,23,42,.06);display:flex;align-items:center;gap:11px;min-width:0}
+.am-stat .si{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex:none}
+.am-stat .l{font-size:.62rem;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;line-height:1.3}
+.am-stat .v{font-size:1.02rem;font-weight:900;color:#0f172a;line-height:1.15}
+.am-stat .s{font-size:.62rem;font-weight:700;color:#94a3b8}
+@media(max-width:1400px){ .am-sum{grid-template-columns:repeat(3,1fr)} }
+@media(max-width:768px){ .am-sum{grid-template-columns:repeat(2,1fr)} .am-plist{max-width:none} }
+.am-note{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:13px;padding:12px 15px;font-size:.78rem;margin-bottom:16px;line-height:1.6}
+/* detail modal — section header + full product table */
+.am-sechd{padding:13px 16px 8px;font-size:.7rem;font-weight:900;letter-spacing:.7px;text-transform:uppercase;color:#64748b;display:flex;align-items:center;gap:8px}
+.am-sechd i{color:#6366f1}
+.am-sechd::after{content:'';flex:1;height:1px;background:#eef2f7}
+.am-tw2{overflow-x:auto;padding:0 16px}
+table.am-dt{width:100%;border-collapse:collapse;min-width:640px}
+table.am-dt th{background:#f8fafc;padding:9px 11px;text-align:left;font-size:.62rem;font-weight:900;text-transform:uppercase;letter-spacing:.5px;color:#64748b;border-bottom:1px solid #eef2f7;white-space:nowrap}
+table.am-dt td{padding:10px 11px;font-size:.78rem;border-bottom:1px solid #f1f5f9;color:#334155;vertical-align:middle}
+table.am-dt tfoot td{background:#fafbff;border-top:2px solid #eef2f7;border-bottom:none;font-size:.82rem}
+table.am-dt tbody tr:hover{background:#fafbff}
+@media(max-width:900px){ .am-bar .sp{display:none} .am-btn{flex:1;justify-content:center} }
+/* ITEM 3 — the summary strip now has the full width to breathe */
+@media(min-width:1500px){ .am-sum{grid-template-columns:repeat(6,1fr);gap:14px} }
+</style>
+
+<div class="am-note">
+    <i class="fas fa-circle-info"></i>
+    <b>My Shop Orders</b> — কাস্টমার reseller-এর My Shop storefront থেকে যে অর্ডার করে। এই অর্ডারগুলো <b>Normal Admin Orders</b> পেজে দেখানো হয় না।
+</div>
+
+<div class="am-bar">
+    <button class="am-btn gh" onclick="amSelectAll()"><i class="fas fa-check-double"></i> Select All</button>
+    <button class="am-btn pri" onclick="amSendSteadfast()" id="amSfBtn" disabled><i class="fas fa-truck"></i> Send to Steadfast</button>
+    <button class="am-btn gh" onclick="amPrintBulk()" id="amPrBtn" disabled><i class="fas fa-print"></i> Bulk Print</button>
+    <button class="am-btn vio" onclick="amBulkFraud()" id="amFrBtn" disabled><i class="fas fa-shield"></i> Fraud Check</button>
+    <div class="sp"></div>
+    <select class="am-sel" id="amReseller" onchange="amRender()"><option value="">All Resellers</option></select>
+    <select class="am-sel" id="amStatus" onchange="amRender()">
+        <option value="">All Status</option>
+        <option value="new">New</option>
+        <option value="pending">Pending</option>
+        <option value="delivered">Delivered</option>
+        <option value="cancelled">Cancelled</option>
+    </select>
+</div>
+
+<div class="am-sum" id="amSum"></div>
+
+<div class="ar-card">
+    <div class="ar-card-head">
+        <h4><i class="fas fa-bag-shopping"></i> My Shop Orders (<span id="amCount">0</span>)</h4>
+        <input class="ar-search" id="amSearch" placeholder="Search order / customer / phone..." oninput="amRender()">
+    </div>
+    <div class="ar-tw">
+        <table class="am-t">
+            <thead><tr>
+                <th style="width:34px"></th>
+                <th style="width:40px" title="ক্রম — ১ = সর্বশেষ order">#</th>
+                <th>Order</th><th>Reseller Shop</th><th>Image</th>
+                <th>Products (<span id="amProdTotal">0</span>)</th>
+                <th style="width:56px">Prod.</th><th style="width:56px">Qty</th>
+                <th>Variant / Size / Color</th><th>Customer</th><th>Address</th>
+                <th>Total</th><th>Payment</th><th>Status</th><th>Delivery</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="amBody"></tbody>
+        </table>
+    </div>
+</div>
+
+    </div>
+    </div>
+</main>
+
+<div class="modal-overlay" id="moModal" onclick="if(event.target===this)closeMo('moModal')"><div class="modal" style="max-width:940px;max-height:88vh;overflow-y:auto;position:relative"></div></div>
+
+<script src="../app.js"></script><script>
+/* ADMIN SESSION GUARD (2026-09-15) — this page had none.
+   With no session it rendered My Shop orders / products, i.e. reseller
+   business names, order ids and CUSTOMER NAMES, to anyone who opened the
+   file. Every guarded admin page uses exactly this: no admin/moderator
+   session -> straight to login, plus the same 3s watchdog. */
+(function () {
+    try {
+        var _uid = sessionStorage.getItem('user_id');
+        var _ut = sessionStorage.getItem('user_type');
+        if (!_uid || (_ut !== 'admin' && _ut !== 'moderator')) {
+            sessionStorage.clear();
+            window.location.replace('login.html');
+            return;
+        }
+        setInterval(function () {
+            var t = sessionStorage.getItem('user_type');
+            if (t && (t !== 'admin' && t !== 'moderator')) {
+                sessionStorage.clear();
+                window.location.replace('login.html');
+            }
+        }, 3000);
+    } catch (e) {}
+})();
+</script>
+<script>(function(){function paint(){try{var n=(typeof adminNewOrderCount==="function")?adminNewOrderCount():(typeof adminOrderBadgeCount==="function"?adminOrderBadgeCount():0);var els=document.querySelectorAll(".orders-badge");for(var i=0;i<els.length;i++){els[i].textContent=n;els[i].style.display=n>0?"inline-block":"none";}}catch(e){}var lb=document.getElementById("ordersBadgeN");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+function aEsc(v){return String(v===undefined||v===null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function aMoney(n){try{return formatCurrency(n||0)}catch(e){return '\u09F3'+(n||0)}}
+function openMo(id,html){var ov=document.getElementById(id);if(!ov)return;var b=ov.querySelector('.modal');if(b)b.innerHTML=html;ov.classList.add('active');ov.style.display='flex'}
+window.closeMo=function(id){var ov=document.getElementById(id);if(!ov)return;ov.classList.remove('active');ov.style.display='none'};
+</script>
+<script>
+/* ================= Admin — My Shop Orders (#26, #27, #32 - #39) ================= */
+var amSel = {};
+
+/* ==========================================================================
+   ORDER SERIAL + ORDERING (single source of truth for this page)
+   --------------------------------------------------------------------------
+   The list is ALWAYS sorted newest-first and the sequence number is stamped
+   AFTER the sort, so the newest order is #1 at the very top and the one before
+   it is #2 — exactly like the reseller-side My Shop Orders page.
+   Sorting on `date` alone is not enough (several orders can share a date, and a
+   legacy row may carry none), so the tie-breakers are:
+     1. date        (newest first; missing date sinks to the bottom)
+     2. createdAt   (real creation timestamp, when present)
+     3. id sequence (ORD-000123 -> 123, so ORD-000012 > ORD-000009)
+     4. array order (stable last resort)
+   ========================================================================== */
+function amIdSeq(id) {
+    var m = String(id === undefined || id === null ? '' : id).match(/(\d+)\s*$/);
+    return m ? (parseInt(m[1], 10) || 0) : 0;
+}
+function amTimeOf(v) {
+    if (v === undefined || v === null || v === '') return 0;
+    if (typeof v === 'number') return isNaN(v) ? 0 : v;
+    var s = String(v).trim();
+    if (!s) return 0;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) s += 'T00:00:00';
+    var t = Date.parse(s);
+    return isNaN(t) ? 0 : t;
+}
+function amSortNewestFirst(list) {
+    var indexed = [];
+    for (var i = 0; i < list.length; i++) indexed.push({ o: list[i], i: i });
+    indexed.sort(function (a, b) {
+        var da = amTimeOf(a.o.date), db = amTimeOf(b.o.date);
+        if (da !== db) return db - da;
+        var ca = amTimeOf(a.o.createdAt || a.o.created_at || a.o.time || a.o.orderedAt);
+        var cb = amTimeOf(b.o.createdAt || b.o.created_at || b.o.time || b.o.orderedAt);
+        if (ca !== cb) return cb - ca;
+        var sa = amIdSeq(a.o.id), sb = amIdSeq(b.o.id);
+        if (sa !== sb) return sb - sa;
+        return a.i - b.i;
+    });
+    var out = [];
+    for (var j = 0; j < indexed.length; j++) {
+        var o = indexed[j].o;
+        o.__amSer = j + 1;                                /* 1 = newest */
+        out.push(o);
+    }
+    return out;
+}
+function amAll() {
+    /* Backend-routed via app.js: EVERY order that carries at least one
+       reseller-owned line — the pure own-product order AND the mixed order
+       (which adminNormalOrders() keeps out of All Orders). Ownership fields
+       (resellerId / shop_id / product_owner_id / order item) are preserved as
+       stored, so one reseller's order can never be shown as another's. */
+    var list = (typeof adminMyShopOrders === 'function') ? adminMyShopOrders() : myShopOrders();
+    var rid = document.getElementById('amReseller') ? String(document.getElementById('amReseller').value || '') : '';
+    var st = document.getElementById('amStatus') ? String(document.getElementById('amStatus').value || '') : '';
+    var q = document.getElementById('amSearch') ? String(document.getElementById('amSearch').value || '').toLowerCase().trim() : '';
+    var out = [];
+    for (var i = 0; i < list.length; i++) {
+        var o = list[i];
+        /* Resolve the owner the same way the rest of the page does (resellerId,
+           then shop_id) so filtering on "All Resellers" (empty value) can never
+           be mistaken for "orders that belong to nobody". */
+        var orid = amOwnRid(o);
+        if (rid && String(orid === null || orid === undefined ? '' : orid) !== rid) continue;
+        if (st && String(o.status || '') !== st) continue;
+        if (q) {
+            var hay = (String(o.id) + ' ' + (o.customer || '') + ' ' + (o.phone || '')).toLowerCase();
+            if (hay.indexOf(q) === -1) continue;
+        }
+        out.push(o);
+    }
+    return amSortNewestFirst(out);
+}
+function amResellerName(id) {
+    var list = getData(DB_KEYS.RESELLERS) || [];
+    for (var i = 0; i < list.length; i++) {
+        if (String(list[i].id) === String(id)) return list[i].businessName || list[i].shop_name || list[i].shopName || list[i].name || ('#' + id);
+    }
+    return '#' + id;
+}
+function amFillResellers() {
+    var el = document.getElementById('amReseller');
+    if (!el) return;
+    /* same backend-routed set as amAll() so a mixed order's reseller is listed too */
+    var orders = (typeof adminMyShopOrders === 'function') ? adminMyShopOrders() : myShopOrders(), seen = {}, h = '<option value="">All Resellers</option>';
+    for (var i = 0; i < orders.length; i++) {
+        var id = String(orders[i].resellerId || orders[i].shop_id || '');
+        if (!id || seen[id]) continue;
+        seen[id] = true;
+        h += '<option value="' + aEsc(id) + '">' + aEsc(amResellerName(id)) + '</option>';
+    }
+    el.innerHTML = h;
+}
+/* ==========================================================================
+   OWN-LINE PROJECTION
+   --------------------------------------------------------------------------
+   Admin → My Shop Orders is the RESELLER's own-product view, so it must show
+   the reseller-owned lines of every order — on a MIXED order the admin/supplier
+   lines belong to All Orders / Product-wise Summary and must not be repeated
+   here. Everything (table row, detail modal, invoice, counters, variant
+   summary, totals) reads from these helpers so the three surfaces can never
+   disagree. Legacy rows with no ownership tag fall back to all items, and a
+   single-product order with no items[] at all is synthesised.
+   ========================================================================== */
+function amOwnRid(o) { return (o && (o.resellerId !== undefined && o.resellerId !== null && o.resellerId !== '') ? o.resellerId : (o ? o.shop_id : null)); }
+function amHasOwnLine(o) {
+    if (!o) return false;
+    if (o.items && o.items.length) {
+        for (var i = 0; i < o.items.length; i++) {
+            var it = o.items[i] || {};
+            /* admin-side test: true for ANY reseller's owned line */
+            if (typeof orderItemIsResellerOwned === 'function' && orderItemIsResellerOwned(it)) return true;
+        }
+        return false;
+    }
+    return true;   /* single-product legacy row — its one item is the reseller's */
+}
+/* Admin -> My Shop Orders shows the COMPLETE order — every line the customer
+   bought from this shop, whether it is the reseller's own product or a
+   platform/supplier one.
+   This used to return ONLY the reseller-owned lines (`orderOwnLineItems`), so a
+   MIXED order (reseller product + supplier product bought together in My Shop)
+   rendered as if it were missing products, and its product/item counts and its
+   total were all understated. */
+function amItems(o) {
+    if (!o) return [];
+    var all = (typeof orderLineItems === 'function') ? orderLineItems(o) : (o.items || []);
+    if (all && all.length) return all;
+    return [{ productId: o.productId, name: o.productName || 'Product', qty: o.qty || 1, price: o.productPrice || 0, size: o.size, color: o.color, variant: o.variant, image: o.image }];
+}
+/* Reseller-owned lines only. Kept separate and correct for an own-product-only
+   breakdown — the order view above must NOT use it. */
+function amOwnItems(o) {
+    if (!o) return [];
+    var rid = amOwnRid(o);
+    if (rid !== null && rid !== undefined && rid !== '' && typeof orderOwnLineItems === 'function') return orderOwnLineItems(o, rid);
+    return amItems(o);
+}
+/* Counters / variant summary — all over the COMPLETE order, matching amItems(). */
+function amProductCount(o) { return amItems(o).length; }
+function amItemCount(o) {
+    var items = amItems(o), n = 0;
+    for (var i = 0; i < items.length; i++) n += (Number(items[i].qty) || 1);
+    return n;
+}
+function amVariantSummaryOf(o) { return orderVariantSummary(o); }
+/* Reseller-owned selling subtotal (qty x selling price) — the reseller's own
+   share of a mixed order. The order view no longer uses this (it shows the whole
+   order); it is kept correct for an own-product-only breakdown. */
+function amOwnSubtotal(o) {
+    var items = amOwnItems(o), t = 0;
+    for (var i = 0; i < items.length; i++) {
+        var it = items[i] || {}, q = Number(it.qty) || 1;
+        var sp = (typeof itemSellingPrice === 'function') ? itemSellingPrice(it) : (Number(it.selling_price) || Number(it.price) || 0);
+        t += sp * q;
+    }
+    return t;
+}
+/* The COMPLETE order amount — the stored `amount` (subtotal + delivery) the
+   customer actually owes. A mixed order is no longer reduced to the
+   reseller-owned subtotal, because this page now shows the whole order: a row
+   listing every product but showing only part of the money would be its own bug. */
+function amGrandTotal(o) {
+    var amt = Number(o && o.amount) || 0;
+    if (amt) return Math.round(amt);
+    var items = amItems(o), t = 0;
+    for (var i = 0; i < items.length; i++) {
+        var it = items[i] || {}, q = Number(it.qty) || 1;
+        t += amItemSell(it) * q;
+    }
+    return Math.round(t);
+}
+function amItemSell(it) {
+    if (typeof itemSellingPrice === 'function') return itemSellingPrice(it);
+    return Number(it.selling_price) || Number(it.price) || 0;
+}
+function amFirstImage(o) {
+    var items = amItems(o);
+    for (var i = 0; i < items.length; i++) {
+        var it = items[i] || {};
+        if (it.image) return it.image;
+        var p = findProductById(it.productId);
+        if (p && p.image) return p.image;
+    }
+    return '';
+}
+function amVariantText(o) {
+    var vs = amVariantSummaryOf(o), parts = [];
+    for (var sz in vs.sizes) if (Object.prototype.hasOwnProperty.call(vs.sizes, sz)) parts.push('Size ' + sz + ' ×' + vs.sizes[sz]);
+    for (var cl in vs.colors) if (Object.prototype.hasOwnProperty.call(vs.colors, cl)) parts.push(cl + ' ×' + vs.colors[cl]);
+    for (var vr in vs.variants) if (Object.prototype.hasOwnProperty.call(vs.variants, vr)) parts.push(vr + ' ×' + vs.variants[vr]);
+    return parts.length ? parts.join(', ') : '—';
+}
+/* Product names of the own lines — the full list, never truncated. */
+function amProductNamesAll(o) {
+    var items = amItems(o), out = [];
+    for (var i = 0; i < items.length; i++) out.push(items[i].name || 'Product');
+    return out;
+}
+function amProductNames(o) {
+    var names = amProductNamesAll(o), shown = [];
+    for (var i = 0; i < names.length && i < 3; i++) shown.push(names[i]);
+    return shown.join(', ') + (names.length > 3 ? ' +' + (names.length - 3) + ' more' : '');
+}
+function amPill(s) {
+    var k = String(s || 'new').toLowerCase();
+    var cls = (k === 'delivered') ? 'delivered' : (k === 'new' ? 'new' : (k === 'cancel' || k === 'cancelled' || k === 'returned' || k === 'rejected' ? 'cancel' : 'pending'));
+    return '<span class="am-pill ' + cls + '">' + aEsc(s || 'new') + '</span>';
+}
+/* "Own Product" when the order is entirely the reseller's own products; "Mixed"
+   when it also contains platform (admin/supplier) lines. The row now lists EVERY
+   line of the order, so the pill is a label, not a warning that products are
+   missing — it tells the admin at a glance that this order also has lines that
+   are handled in All Orders. */
+function amKindPill(o) {
+    var mixed = false;
+    try { mixed = (typeof orderIsMixedSource === 'function') ? orderIsMixedSource(o, amOwnRid(o)) : false; } catch (e) { mixed = false; }
+    return mixed
+        ? '<span class="am-pill mixed">Mixed</span>'
+        : '<span class="am-pill own">Own Product</span>';
+}
+function amSelected() {
+    var list = amAll(), out = [];
+    for (var i = 0; i < list.length; i++) if (amSel[list[i].id]) out.push(list[i]);
+    return out;
+}
+function amToggle(id, el) { if (el && el.checked) amSel[id] = true; else delete amSel[id]; amSync(); }
+function amSelectAll() {
+    var list = amAll(), on = true;
+    for (var i = 0; i < list.length; i++) if (amSel[list[i].id]) { on = false; break; }
+    amSel = {};
+    if (on) for (var j = 0; j < list.length; j++) amSel[list[j].id] = true;
+    amRender();
+}
+function amSync() {
+    var n = amSelected().length;
+    var ids = ['amSfBtn', 'amPrBtn', 'amFrBtn'];
+    /* 2026-09-19 — name the courier the admin actually chose (this request) */
+    var labels = ['Send to ' + amCourierName(), 'Bulk Print', 'Fraud Check'];
+    for (var i = 0; i < ids.length; i++) {
+        var b = document.getElementById(ids[i]);
+        if (b) { b.disabled = n === 0; b.innerHTML = '<i class="fas fa-' + (i === 0 ? 'truck' : i === 1 ? 'print' : 'shield') + '"></i> ' + labels[i] + (n ? ' (' + n + ')' : ''); }
+    }
+}
+/* ==========================================================================
+   SUMMARY STRIP — totals across the CURRENTLY LISTED (filtered) orders.
+   Everything is derived from the own-line projection, so a mixed order
+   contributes only the reseller's own part — the admin/supplier lines are
+   counted on the All Orders / Product-wise Summary side instead.
+   ========================================================================== */
+function amSummary(list) {
+    var box = document.getElementById('amSum');
+    if (!box) return;
+    var orders = list.length, products = 0, items = 0, value = 0, pending = 0, delivered = 0, mixed = 0;
+    for (var i = 0; i < list.length; i++) {
+        var o = list[i];
+        products += amProductCount(o);
+        items += amItemCount(o);
+        value += amGrandTotal(o);
+        var st = String(o.status || 'new').toLowerCase();
+        if (st === 'delivered') delivered++;
+        else if (st !== 'cancel' && st !== 'cancelled' && st !== 'returned' && st !== 'rejected' && st !== 'failed') pending++;
+        var mx = false;
+        try { mx = (typeof orderIsMixedSource === 'function') ? orderIsMixedSource(o, amOwnRid(o)) : false; } catch (e) { mx = false; }
+        if (mx) mixed++;
+    }
+    var pt = document.getElementById('amProdTotal');
+    if (pt) pt.textContent = products;
+    box.innerHTML =
+        '<div class="am-stat"><span class="si" style="background:#eef2ff;color:#4338ca"><i class="fas fa-bag-shopping"></i></span>' +
+        '<div><div class="l">Orders</div><div class="v">' + aEsc(orders) + '</div></div></div>' +
+        '<div class="am-stat"><span class="si" style="background:#ecfdf5;color:#047857"><i class="fas fa-box-open"></i></span>' +
+        '<div><div class="l">Products</div><div class="v">' + aEsc(products) + '</div><div class="s">' + aEsc(items) + ' item(s)</div></div></div>' +
+        '<div class="am-stat"><span class="si" style="background:#fff7ed;color:#c2410c"><i class="fas fa-hourglass-half"></i></span>' +
+        '<div><div class="l">Active</div><div class="v">' + aEsc(pending) + '</div></div></div>' +
+        '<div class="am-stat"><span class="si" style="background:#dcfce7;color:#166534"><i class="fas fa-circle-check"></i></span>' +
+        '<div><div class="l">Delivered</div><div class="v">' + aEsc(delivered) + '</div></div></div>' +
+        '<div class="am-stat"><span class="si" style="background:#fef3c7;color:#b45309"><i class="fas fa-code-branch"></i></span>' +
+        '<div><div class="l">Mixed Orders</div><div class="v">' + aEsc(mixed) + '</div></div></div>' +
+        '<div class="am-stat"><span class="si" style="background:#fef2f2;color:#b91c1c"><i class="fas fa-bangladeshi-taka-sign"></i></span>' +
+        '<div><div class="l">Own-Product Value</div><div class="v">' + aMoney(value) + '</div></div></div>';
+}
+function amRender() {
+    var list = amAll();
+    var tb = document.getElementById('amBody');
+    var c = document.getElementById('amCount');
+    if (c) c.textContent = list.length;
+    amSummary(list);
+    if (!tb) return;
+    if (!list.length) {
+        tb.innerHTML = '<tr><td colspan="16"><div class="ar-empty"><i class="fas fa-bag-shopping"></i><b>কোনো My Shop order নেই</b></div></td></tr>';
+        amSync(); return;
+    }
+    var h = '';
+    for (var i = 0; i < list.length; i++) {
+        var o = list[i];
+        var img = amFirstImage(o);
+        var cons = o.steadfastConsignment || o.consignment_id || '';
+        var ser = o.__amSer || (i + 1);
+        var names = amProductNamesAll(o), nameHtml = '';
+        for (var n = 0; n < names.length; n++) nameHtml += '<div class="am-pname">' + aEsc(names[n]) + '</div>';
+        h += '<tr data-serial="' + aEsc(ser) + '">' +
+            '<td><input type="checkbox" ' + (amSel[o.id] ? 'checked' : '') + ' onchange="amToggle(\'' + aEsc(o.id) + '\',this)" style="width:17px;height:17px;cursor:pointer"></td>' +
+            '<td><span class="am-ser" title="Order #' + aEsc(ser) + ' — সর্বশেষ order সবার উপরে">' + aEsc(ser) + '</span></td>' +
+            '<td><span class="am-nm">' + aEsc(o.id) + '</span><div class="am-sub">' + aEsc(String(o.date || '').slice(0, 10)) + '</div>' +
+            (cons ? '<div class="am-cons"><i class="fas fa-truck"></i> ' + aEsc(cons) + '</div>' : '') + '</td>' +
+            '<td><span class="am-nm">' + aEsc(amResellerName(o.resellerId || o.shop_id)) + '</span><div class="am-sub">#' + aEsc(o.resellerId || o.shop_id) + '</div></td>' +
+            '<td>' + (img ? '<img class="am-pimg" src="' + aEsc(img) + '">' : '<div class="am-pimg-ph"><i class="fas fa-image"></i></div>') + '</td>' +
+            '<td><div class="am-plist">' + nameHtml + '</div></td>' +
+            '<td style="text-align:center"><b>' + aEsc(amProductCount(o)) + '</b><div class="am-sub">product(s)</div></td>' +
+            '<td style="text-align:center"><b>' + aEsc(amItemCount(o)) + '</b><div class="am-sub">item(s)</div></td>' +
+            '<td style="max-width:150px">' + aEsc(amVariantText(o)) + '</td>' +
+            '<td><span class="am-nm">' + aEsc(o.customer || '—') + '</span><div class="am-sub">' + aEsc(o.phone || '—') + '</div></td>' +
+            '<td style="max-width:180px">' + aEsc(o.address || '—') + '</td>' +
+            '<td><b>' + aMoney(amGrandTotal(o)) + '</b></td>' +
+            '<td>' + aEsc(o.paymentMethod || 'COD') + '</td>' +
+            '<td>' + amPill(o.status) + '<div class="am-sub">' + amKindPill(o) + '</div></td>' +
+            '<td>' + aEsc(typeof orderShippingLabel === 'function' ? orderShippingLabel(o) : (o.shippingMethod || '—')) + '<div class="am-sub">' + aMoney(o.shippingCharge || 0) + '</div></td>' +
+            '<td><div style="display:flex;gap:5px;flex-wrap:wrap">' +
+            '<button class="am-btn vio" style="padding:6px 10px;font-size:.68rem" onclick="amFraud(\'' + aEsc(o.id) + '\')"><i class="fas fa-shield"></i></button>' +
+            '<button class="am-btn gh" style="padding:6px 10px;font-size:.68rem" onclick="amView(\'' + aEsc(o.id) + '\')"><i class="fas fa-eye"></i></button>' +
+            '<button class="am-btn gh" style="padding:6px 10px;font-size:.68rem" onclick="amPrint(\'' + aEsc(o.id) + '\')"><i class="fas fa-print"></i></button>' +
+            '</div></td></tr>';
+    }
+    tb.innerHTML = h;
+    amSync();
+}
+function amFind(id) {
+    var list = amAll();
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
+}
+function amView(id) {
+    var o = amFind(id);
+    if (!o) return;
+    var items = amItems(o), rows = '', ownSub = 0;
+    for (var i = 0; i < items.length; i++) {
+        var it = items[i] || {};
+        var p = findProductById(it.productId) || {};
+        var im = it.image || p.image || '';
+        var q = Number(it.qty) || 1, sp = amItemSell(it), line = sp * q;
+        ownSub += line;
+        rows += '<tr><td>' + (im ? '<img class="am-pimg" src="' + aEsc(im) + '">' : '<div class="am-pimg-ph"><i class="fas fa-image"></i></div>') + '</td>' +
+            '<td><b>' + aEsc(it.name || 'Product') + '</b>' +
+            (it.sku ? '<div class="am-sub">SKU: ' + aEsc(it.sku) + '</div>' : '') + '</td>' +
+            '<td>' + aEsc([it.size, it.color, it.variant].filter(function (x) { return !!x; }).join(' / ') || '—') + '</td>' +
+            '<td style="text-align:center"><b>' + aEsc(q) + '</b></td>' +
+            '<td style="text-align:right">' + aMoney(sp) + '</td>' +
+            '<td style="text-align:right"><b>' + aMoney(line) + '</b></td></tr>';
+    }
+    var total = amGrandTotal(o);
+    var ser = o.__amSer || 0;
+    var h = '<div class="modal-header"><h3><i class="fas fa-bag-shopping"></i> ' + (ser ? '#' + aEsc(ser) + ' · ' : '') + aEsc(o.id) + '</h3><button class="modal-close" onclick="closeMo(\'moModal\')"><i class="fas fa-times"></i></button></div>';
+    h += '<div class="ar-sumrow">' +
+        '<div><div class="l">Reseller Shop</div><div class="v" style="font-size:.8rem">' + aEsc(amResellerName(o.resellerId || o.shop_id)) + '</div></div>' +
+        '<div><div class="l">Customer</div><div class="v" style="font-size:.8rem">' + aEsc(o.customer || '—') + '</div></div>' +
+        '<div><div class="l">Phone</div><div class="v" style="font-size:.8rem">' + aEsc(o.phone || '—') + '</div></div>' +
+        '<div><div class="l">Order Total</div><div class="v">' + aMoney(total) + '</div></div>' +
+        '<div><div class="l">Status</div><div class="v" style="font-size:.8rem">' + amPill(o.status) + '</div></div>' +
+        '<div><div class="l">Products / Items</div><div class="v">' + aEsc(amProductCount(o)) + ' / ' + aEsc(amItemCount(o)) + '</div></div>' +
+        '</div>';
+    /* Full product breakdown — what was ordered and how many. */
+    h += '<div class="am-sechd"><i class="fas fa-box-open"></i> Ordered Products (' + aEsc(items.length) + ' product' + (items.length === 1 ? '' : 's') + ', ' + aEsc(amItemCount(o)) + ' item' + (amItemCount(o) === 1 ? '' : 's') + ')</div>';
+    h += '<div class="am-tw2"><table class="am-dt"><thead><tr><th>Image</th><th>Product</th><th>Variant</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr></thead><tbody>' + rows + '</tbody>' +
+         '<tfoot><tr><td colspan="5" style="text-align:right;font-weight:900">Total</td><td style="text-align:right;font-weight:900">' + aMoney(total) + '</td></tr></tfoot></table></div>';
+    h += '<div class="am-sechd"><i class="fas fa-clipboard-list"></i> Order &amp; Delivery Details</div>';
+    h += '<div style="padding:0 16px 12px;font-size:.78rem;line-height:1.9">' +
+         '<b>Order ID:</b> ' + aEsc(o.id) + ' &nbsp;·&nbsp; <b>Date:</b> ' + aEsc(String(o.date || '').slice(0, 10)) +
+         '<br><b>Address:</b> ' + aEsc(o.address || '—') +
+         '<br><b>Payment:</b> ' + aEsc(o.paymentMethod || 'COD') +
+         '<br><b>Delivery:</b> ' + aEsc(typeof orderShippingLabel === 'function' ? orderShippingLabel(o) : (o.shippingMethod || '—')) + ' (' + aMoney(o.shippingCharge || 0) + ')' +
+         '<br><b>Steadfast Consignment ID:</b> ' + aEsc(o.steadfastConsignment || o.consignment_id || '—') +
+         '<br><b>Source:</b> ' + aEsc(orderSourceLabel(o)) + '</div>';
+    h += '<div id="amFraudBox-' + aEsc(o.id) + '" style="padding:0 16px 14px"></div>';
+    openMo('moModal', h);
+}
+
+/* ---------- Fraud Check (#32) ---------- */
+function amCfg() {
+    var s = getOne(DB_KEYS.SETTINGS);
+    return { k: s.sf_api_key || '', sec: s.sf_secret_key || '', fraud: s.sf_fraud_url || 'https://check.steadfast.com.bd/api/v1/fraud', proxy: s.sf_proxy || '' };
+}
+function amCallFraud(phone, cb) {
+    var k = amCfg();
+    if (k.proxy) {
+/* 2026-09-17 — BUG FIX: the call sent no credentials, so the server proxy
+           rejected it with 400 and the check always failed. The admin's saved
+           keys now ride along. No key is stored in this file. */
+        var _st = {}; try { _st = getOne(DB_KEYS.SETTINGS) || {}; } catch (e) {}
+        fetch(k.proxy, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'fraud', phone: phone , apiKey: _st.sf_api_key || '', secretKey: _st.sf_secret_key || ''}) })
+            .then(function (r) { return r.json(); }).then(function (j) { cb(null, j); }).catch(function (e) { cb(e); });
+        return;
+    }
+    fetch(k.fraud, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Api-Key': k.k, 'Secret-Key': k.sec }, body: JSON.stringify({ api_key: k.k, secret_key: k.sec, customer_phone_number: phone }) })
+        .then(function (r) { return r.json(); }).then(function (j) { cb(null, j); }).catch(function (e) { cb(e); });
+}
+function amFraudHtml(phone, d) {
+    var tot = d.total_delivered || d.total_delivery || 0;
+    var ok = d.successful_delivery || d.total_success || 0;
+    var cn = d.cancelled_delivery || d.total_cancel || 0;
+    var rate = tot ? Math.round(ok * 100 / tot) : 0;
+    var risk = cn > ok;
+    return '<b>🛡 Fraud Check (' + aEsc(phone) + '):</b> Total: <b>' + aEsc(tot) + '</b> | Success: <b style="color:#16a34a">' + aEsc(ok) +
+        '</b> | Cancelled: <b style="color:#dc2626">' + aEsc(cn) + '</b> | Rate: <b>' + aEsc(rate) + '%</b> | <b style="color:' +
+        (risk ? '#dc2626' : '#16a34a') + '">' + (risk ? 'HIGH RISK ⚠️' : 'OK ✓') + '</b>';
+}
+function amFraud(id) {
+    var o = amFind(id);
+    if (!o) return;
+    amCallFraud(o.phone, function (err, j) {
+        var d = (j && j.data) ? j.data : (j || {});
+        var html = err
+            ? '<div style="padding:12px 14px;background:#fee2e2;color:#991b1b;border-radius:10px;font-size:.78rem">Fraud check করা যায়নি (নেটওয়ার্ক/CORS)।</div>'
+            : '<div style="padding:12px 14px;background:#faf5ff;border:1px solid #e9d5ff;border-radius:10px;font-size:.78rem;color:#5b21b6">' + amFraudHtml(o.phone, d) + '</div>';
+        var inModal = document.getElementById('amFraudBox-' + id);
+        if (inModal) { inModal.innerHTML = html; return; }
+        openMo('moModal', '<div class="modal-header"><h3><i class="fas fa-shield"></i> Fraud Check</h3><button class="modal-close" onclick="closeMo(\'moModal\')"><i class="fas fa-times"></i></button></div>' + html.replace('padding:12px 14px', 'padding:14px 16px'));
+    });
+}
+function amBulkFraud() {
+    var sel = amSelected();
+    if (!sel.length) return;
+    var h = '<div class="modal-header"><h3><i class="fas fa-shield"></i> Fraud Check</h3><button class="modal-close" onclick="closeMo(\'moModal\')"><i class="fas fa-times"></i></button></div><div id="amBulkOut" style="padding:14px 16px"><i class="fas fa-spinner fa-spin"></i> চেক হচ্ছে...</div>';
+    openMo('moModal', h);
+    var out = '', done = 0;
+    for (var i = 0; i < sel.length; i++) {
+        (function (o) {
+            amCallFraud(o.phone, function (err, j) {
+                var d = (j && j.data) ? j.data : (j || {});
+                out += '<div style="padding:11px 13px;border-bottom:1px solid #f1f5f9;font-size:.78rem">' +
+                    (err ? '<b>' + aEsc(o.id) + '</b> — fraud check ব্যর্থ' : ('<b>' + aEsc(o.id) + '</b> — ' + amFraudHtml(o.phone, d))) + '</div>';
+                done++;
+                var box = document.getElementById('amBulkOut');
+                if (box) box.innerHTML = out + (done < sel.length ? '<div style="padding:8px;color:#64748b"><i class="fas fa-spinner fa-spin"></i> ' + done + '/' + sel.length + '</div>' : '');
+            });
+        })(sel[i]);
+    }
+}
+
+/* ---------- Steadfast (#33 - #36) ---------- */
+/* 2026-09-19 — the admin may now book to ANY courier (this request).
+   STEADFAST KEEPS THIS PROVEN PATH EXACTLY AS IT WAS; any other courier goes
+   through the shared admin-courier layer, which calls that courier's own
+   endpoint (or the configured proxy). */
+function amCourierName() { return (typeof rhAdminCourierName === 'function') ? rhAdminCourierName() : 'Steadfast'; }
+function amCallCreate(payload, cb) {
+    if (typeof rhAdminCourierActive === 'function' && rhAdminCourierActive() !== 'steadfast') {
+        rhAdminCourierBook(payload, cb);
+        return;
+    }
+    var k = amCfg();
+    if (k.proxy) {
+        fetch(k.proxy, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create', order: payload }) })
+            .then(function (r) { return r.json(); }).then(function (j) { cb(null, j); }).catch(function (e) { cb(e); });
+        return;
+    }
+    fetch('https://portal.steadfast.com.bd/api/v1/create_order', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Api-Key': k.k, 'Secret-Key': k.sec }, body: JSON.stringify(payload) })
+        .then(function (r) { return r.json(); }).then(function (j) { cb(null, j); }).catch(function (e) { cb(e); });
+}
+function amAlready(o) { return !!(o.steadfastConsignment || o.consignment_id); }
+function amSendSteadfast() {
+    var sel = amSelected();
+    if (!sel.length) return;
+    var fresh = [];
+    for (var i = 0; i < sel.length; i++) if (!amAlready(sel[i])) fresh.push(sel[i]);
+    if (!fresh.length) { showToast('Already sent to ' + amCourierName(), 'warning'); return; }
+    var done = 0, okN = 0;
+    for (var j = 0; j < fresh.length; j++) {
+        (function (o) {
+            var payload = { invoice: String(o.id), recipient_name: o.customer || '', recipient_phone: String(o.phone || '').replace(/\D/g, ''), recipient_address: o.address || '', cod_amount: Number(o.amount) || 0, note: amResellerName(o.resellerId) + ' My Shop order ' + o.id };
+            amCallCreate(payload, function (err, res) {
+                done++;
+                var cid = (res && res.consignment && (res.consignment.consignment_id || res.consignment.tracking_code)) || (res && res.consignment_id) || (res && res.tracking_code) || '';
+                if (!err && cid) {
+                    var orders = getData(DB_KEYS.ORDERS) || [];
+                    for (var k = 0; k < orders.length; k++) {
+                        if (orders[k].id === o.id) { orders[k].steadfastConsignment = cid; orders[k].consignment_id = cid; orders[k].steadfastSentAt = new Date().toISOString(); break; }
+                    }
+                    setData(DB_KEYS.ORDERS, orders);
+                    okN++;
+                }
+                if (done === fresh.length) {
+                    showToast(okN + ' order ' + amCourierName() + '-এ পাঠানো হয়েছে', okN ? 'success' : 'error');
+                    amSel = {}; amRender();
+                }
+            });
+        })(fresh[j]);
+    }
+}
+
+/* ---------- Print (#37 - #39) ---------- */
+function amPrintHtml(o) {
+    var items = amItems(o), rows = '', vs = amVariantSummaryOf(o), total = amGrandTotal(o);
+    for (var i = 0; i < items.length; i++) {
+        var it = items[i] || {};
+        var q = Number(it.qty) || 1, sp = amItemSell(it);
+        rows += '<tr><td>' + aEsc(it.name || 'Product') + '</td><td>' + aEsc([it.size, it.color, it.variant].filter(function (x) { return !!x; }).join(' / ') || '—') + '</td><td>' + aEsc(q) + '</td><td>' + aEsc(sp) + '</td><td>' + aEsc(sp * q) + '</td></tr>';
+    }
+    var vsum = '';
+    for (var sz in vs.sizes) if (Object.prototype.hasOwnProperty.call(vs.sizes, sz)) vsum += 'Size ' + aEsc(sz) + ' — ' + aEsc(vs.sizes[sz]) + ' &nbsp; ';
+    for (var cl in vs.colors) if (Object.prototype.hasOwnProperty.call(vs.colors, cl)) vsum += 'Color ' + aEsc(cl) + ' — ' + aEsc(vs.colors[cl]) + ' &nbsp; ';
+    for (var vr in vs.variants) if (Object.prototype.hasOwnProperty.call(vs.variants, vr)) vsum += aEsc(vr) + ' — ' + aEsc(vs.variants[vr]) + ' &nbsp; ';
+    var bn = amResellerName(o.resellerId || o.shop_id);
+    return '<div class="inv" style="page-break-after:always">' +
+        '<div class="ih"><h2>' + aEsc(bn) + '</h2><p>My Shop Order Invoice</p></div>' +
+        '<table class="im"><tr><td><b>Order ID</b><br>' + (o.__amSer ? '#' + aEsc(o.__amSer) + ' · ' : '') + aEsc(o.id) + '</td><td><b>Order Date</b><br>' + aEsc(String(o.date || '').slice(0, 10)) + '</td>' +
+        '<td><b>Steadfast Consignment ID</b><br>' + aEsc(o.steadfastConsignment || o.consignment_id || '—') + '</td><td><b>Total</b><br>৳' + aEsc(total) + '</td></tr></table>' +
+        '<div class="ib"><h4>Customer Information</h4><p><b>Name:</b> ' + aEsc(o.customer || '—') + '<br><b>Phone:</b> ' + aEsc(o.phone || '—') + '<br><b>Address:</b> ' + aEsc(o.address || '—') + '</p></div>' +
+        '<table class="it"><thead><tr><th>Product</th><th>Variant</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+        (vsum ? '<p class="vs"><b>Variant Summary:</b> ' + vsum + '</p>' : '') +
+        '<p class="vt"><b>Summary:</b> ' + aEsc(amProductCount(o)) + ' Products / ' + aEsc(amItemCount(o)) + ' Items &nbsp;&nbsp; <b>Total: ৳' + aEsc(total) + '</b></p></div>';
+}
+function amDoPrint(html) {
+    var w = window.open('', '_blank', 'width=820,height=1000');
+    if (!w) { showToast('Popup blocked — print করতে popup allow করুন।', 'error'); return; }
+    w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>My Shop Invoice</title><style>' +
+        'body{font-family:Inter,Arial,sans-serif;color:#111;padding:22px}.inv{margin-bottom:26px}' +
+        '.ih{border-bottom:3px solid #dc2626;padding-bottom:10px;margin-bottom:12px}.ih h2{font-size:1.4rem;margin:0 0 3px}.ih p{margin:0;font-size:.78rem;color:#64748b;font-weight:700;letter-spacing:1px}' +
+        'table.im{width:100%;border-collapse:collapse;margin-bottom:12px}table.im td{border:1px solid #e2e8f0;padding:8px 10px;font-size:.76rem;width:25%}' +
+        '.ib{margin-bottom:12px}.ib h4{margin:0 0 5px;font-size:.8rem}.ib p{margin:0;font-size:.78rem;line-height:1.7}' +
+        'table.it{width:100%;border-collapse:collapse;margin-bottom:10px}table.it th{background:#f1f5f9;padding:8px;text-align:left;font-size:.72rem;border:1px solid #e2e8f0}table.it td{padding:8px;font-size:.76rem;border:1px solid #e2e8f0}' +
+        '.vs,.vt{font-size:.76rem;margin:6px 0}@media print{body{padding:0}}' +
+        '</style></head><body>' + html + '</body></html>');
+    w.document.close();
+    setTimeout(function () { try { w.focus(); w.print(); } catch (e) {} }, 350);
+}
+function amPrint(id) { var o = amFind(id); if (o) amDoPrint(amPrintHtml(o)); }
+function amPrintBulk() {
+    var sel = amSelected();
+    if (!sel.length) return;
+    var h = '';
+    for (var i = 0; i < sel.length; i++) h += amPrintHtml(sel[i]);
+    amDoPrint(h);
+}
+
+amFillResellers();
+amRender();
+
+</script>
+<script>
+/* ADMIN ONLY (this request) — hide the Moderators entry from a moderator session.
+   The Moderators page itself also bounces a moderator, so this is the second
+   layer, not the only one. */
+(function () {
+    try {
+        if (sessionStorage.getItem('user_type') !== 'admin') {
+            document.querySelectorAll('.sb-item[href="moderators.html"]').forEach(function (a) { a.style.display = 'none'; });
+        }
+    } catch (e) {}
+})();
+</script>
+</body>
+</html>

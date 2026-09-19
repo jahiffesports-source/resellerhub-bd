@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Banners - Admin - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#f1f5f9; color:#1e293b; }
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:240px; background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%); color:#cbd5e1; z-index:100; overflow-y:auto; }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid #334155; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:38px; height:38px; background:linear-gradient(135deg,#dc2626,#b91c1c); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; }
+        .sidebar-logo h3 { color:white; font-size:1rem; }
+        .sidebar-logo small { color:#94a3b8; font-size:0.7rem; display:block; }
+        .sidebar-menu { list-style:none; padding:12px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:10px 20px; color:#cbd5e1; text-decoration:none; font-size:0.88rem; }
+        .sidebar-menu a:hover { background:rgba(255,255,255,0.05); color:white; }
+        .sidebar-menu a.active { background:#dc2626; color:white; }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 20px 5px; color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+        .main { margin-left:240px; min-height:100vh; }
+        .topbar { background:white; padding:14px 25px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:sticky; top:0; z-index:50; }
+        .topbar h2 { font-size:1.2rem; font-weight:600; }
+        .topbar h2 i { color:#dc2626; margin-right:8px; }
+        .user-pill { display:flex; align-items:center; gap:8px; padding:6px 14px; background:#fee2e2; border-radius:30px; font-size:0.85rem; color:#991b1b; font-weight:600; }
+        .btn-logout { background:#dc2626; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:500; }
+        .content { padding:25px; }
+        .card { background:white; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:20px; overflow:hidden; }
+        .card-header { padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+        .card-header h4 { font-size:0.95rem; font-weight:600; }
+        .card-header h4 i { color:#dc2626; margin-right:6px; }
+        .data-table { width:100%; border-collapse:collapse; }
+        .data-table th { text-align:left; padding:11px 20px; background:#f8fafc; font-weight:600; font-size:0.72rem; color:#64748b; text-transform:uppercase; }
+        .data-table td { padding:12px 20px; border-bottom:1px solid #f1f5f9; font-size:0.85rem; }
+        .data-table tr:hover { background:#f8fafc; }
+        .badge { padding:3px 9px; border-radius:20px; font-size:0.7rem; font-weight:600; }
+        .badge-success { background:#d1fae5; color:#065f46; }
+        .badge-warning { background:#fef3c7; color:#92400e; }
+        .badge-danger { background:#fee2e2; color:#991b1b; }
+        .badge-info { background:#dbeafe; color:#1e40af; }
+        .btn { padding:6px 12px; border:none; border-radius:7px; font-size:0.78rem; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+        .btn-success { background:#10b981; color:white; }
+        .btn-danger { background:#dc2626; color:white; }
+        .btn-warning { background:#f59e0b; color:white; }
+        .btn-sm { padding:4px 9px; font-size:0.72rem; }
+        .btn-primary { background:#2563eb; color:white; }
+        .sprow-l { font-size:.8rem; font-weight:700; color:#334155; display:block; margin-bottom:5px; }
+        .sphint { font-size:.68rem; color:#94a3b8; margin-top:4px; }
+        .spin { width:100%; padding:10px 13px; border:1.5px solid #e2e8f0; border-radius:9px; font-size:.86rem; box-sizing:border-box; font-family:inherit; }
+        .spin:focus { outline:none; border-color:#10b981; box-shadow:0 0 0 3px rgba(16,185,129,.12); }
+        .spreq { color:#ef4444; }
+        .sptoggle { position:relative; width:46px; height:26px; background:#10b981; border-radius:20px; cursor:pointer; transition:.2s; flex:none; display:inline-block; vertical-align:middle; }
+        .sptoggle.off { background:#d1d5db; }
+        .sptoggle::after { content:''; position:absolute; top:3px; left:23px; width:20px; height:20px; background:#fff; border-radius:50%; transition:.2s; }
+        .sptoggle.off::after { left:3px; }
+        .spcolgrid { display:grid; grid-template-columns:repeat(6,1fr); gap:9px; }
+        .spcol { border:1.5px solid #e2e8f0; border-radius:9px; padding:9px 4px; text-align:center; cursor:pointer; transition:.15s; }
+        .spcol:hover { border-color:#10b981; }
+        .spcol.on { border-color:#10b981; background:#ecfdf5; }
+        .spcol .c { width:26px; height:26px; border-radius:50%; margin:0 auto 5px; border:1px solid rgba(0,0,0,.08); }
+        .spcol p { font-size:.62rem; font-weight:600; color:#475569; margin:0; }
+        .spszp { padding:6px 14px; border-radius:16px; font-size:.74rem; font-weight:700; cursor:pointer; background:#f1f5f9; color:#475569; border:none; }
+        .spszp.on { background:#10b981; color:#fff; }
+        .spszc { padding:7px 13px; border-radius:9px; font-size:.76rem; font-weight:700; cursor:pointer; background:#fff; color:#475569; border:1.5px solid #e2e8f0; }
+        .spszc.on { background:#10b981; color:#fff; border-color:#10b981; }
+        .spchip { background:#ecfdf5; color:#047857; font-size:.7rem; font-weight:800; padding:4px 10px; border-radius:14px; display:inline-block; }
+        .spup { width:110px; height:110px; border:2px dashed #cbd5e1; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#94a3b8; cursor:pointer; font-size:.72rem; font-weight:700; gap:6px; }
+        .spup:hover { border-color:#10b981; color:#10b981; }
+        .spgalbox { border:1.5px dashed #e2e8f0; border-radius:10px; padding:16px; text-align:center; color:#94a3b8; font-size:.78rem; margin-top:12px; }
+        .spthumb { position:relative; width:74px; height:74px; border-radius:10px; overflow:hidden; border:2px solid #e2e8f0; flex:none; }
+        .spthumb img { width:100%; height:100%; object-fit:cover; }
+        .spthumb .x { position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%; background:#ef4444; color:#fff; border:none; font-size:.6rem; cursor:pointer; line-height:1; }
+        .spthumb .main { position:absolute; bottom:0; left:0; right:0; background:rgba(16,185,129,.92); color:#fff; font-size:.55rem; text-align:center; font-weight:700; }
+        .sppsum { background:#f8fafc; border-radius:10px; padding:14px; margin-top:14px; }
+        .sppsum .r { display:flex; padding:5px 0; font-size:.8rem; border-bottom:1px dashed #eef0f6; }
+        .sppsum .r:last-child { border-bottom:none; }
+        .sppsum .r b { width:45%; color:#64748b; font-weight:600; }
+        .sppsum .r span { flex:1; text-align:right; font-weight:600; color:#1e293b; }
+        .sptk { color:#10b981; font-weight:800; }
+        .spstab { padding:10px 13px; font-size:.8rem; font-weight:800; color:#64748b; cursor:pointer; border-bottom:2.5px solid transparent; margin-bottom:-2px; white-space:nowrap; }
+        .spstab.on { color:#10b981; border-bottom-color:#10b981; }
+        .modal-overlay { position:fixed; inset:0; background:rgba(15,23,42,0.65); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+        .modal-overlay.show { display:flex; }
+        .modal { background:white; border-radius:16px; width:100%; box-shadow:0 30px 80px rgba(0,0,0,.35); animation:mup .25s ease; }
+        @keyframes mup { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+        .empty { text-align:center; padding:40px; color:#94a3b8; }
+        .empty i { font-size:2.5rem; display:block; margin-bottom:10px; opacity:0.4; }
+        .shop-cell { display:flex; align-items:center; gap:10px; }
+        .shop-cell .lg { width:40px; height:40px; border-radius:8px; background:#fef3c7; display:flex; align-items:center; justify-content:center; color:#d97706; overflow:hidden; flex-shrink:0; }
+        .shop-cell .lg img { width:100%; height:100%; object-fit:cover; }
+    </style>
+
+
+
+
+<style id="lx-sb-final">
+/* ===== ADMIN SIDEBAR v4 — fresh premium design (authoritative) ===== */
+body .lx-sidebar { position:fixed !important; left:0 !important; top:0 !important; bottom:0 !important; width:264px !important; background:linear-gradient(180deg,#0d1226 0%,#171233 100%) !important; border-right:1px solid rgba(129,140,248,.14) !important; z-index:600 !important; overflow-y:auto !important; overflow-x:hidden !important; display:flex !important; flex-direction:column !important; transform:none !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; font-family:'Inter','Hind Siliguri',sans-serif !important; }
+body .lx-sidebar::before { content:'' !important; position:absolute !important; top:-80px !important; right:-60px !important; width:260px !important; height:260px !important; background:radial-gradient(circle,rgba(99,102,241,.18),transparent 70%) !important; pointer-events:none !important; }
+body .lx-brand { display:flex !important; align-items:center !important; gap:12px !important; padding:20px 18px !important; border-bottom:1px solid rgba(129,140,248,.14) !important; position:relative !important; }
+body .lx-brand-ic { width:42px !important; height:42px !important; border-radius:13px !important; background:linear-gradient(135deg,#6366f1,#a855f7) !important; display:flex !important; align-items:center !important; justify-content:center !important; color:#fff !important; font-size:1.05rem !important; box-shadow:0 8px 20px rgba(99,102,241,.4) !important; flex-shrink:0 !important; }
+body .lx-brand-tx b { color:#fff !important; font-size:1.02rem !important; font-weight:900 !important; display:block !important; line-height:1.2 !important; }
+body .lx-brand-tx small { color:#818cf8 !important; font-size:.6rem !important; font-weight:800 !important; letter-spacing:2px !important; }
+body .lx-close { margin-left:auto !important; background:rgba(255,255,255,.06) !important; border:none !important; color:#94a3b8 !important; width:30px !important; height:30px !important; border-radius:9px !important; cursor:pointer !important; font-size:1rem !important; display:none !important; align-items:center !important; justify-content:center !important; }
+body .lx-close:hover { background:#fee2e2 !important; color:#dc2626 !important; }
+body .lx-menu { padding:14px 12px !important; flex:1 !important; }
+body .sec-label { font-size:.6rem !important; font-weight:900 !important; letter-spacing:2.2px !important; color:#6b7280 !important; text-transform:uppercase !important; padding:14px 12px 6px !important; display:flex !important; align-items:center !important; gap:8px !important; }
+body .sec-label::before { content:'' !important; width:14px !important; height:2px !important; background:linear-gradient(90deg,#6366f1,#a855f7) !important; border-radius:2px !important; }
+body .sb-item { position:relative !important; display:flex !important; align-items:center !important; gap:11px !important; padding:9px 12px !important; margin:3px 0 !important; border-radius:12px !important; color:#b6c2e2 !important; text-decoration:none !important; font-size:.86rem !important; font-weight:600 !important; transition:all .2s !important; border:1px solid transparent !important; background:transparent !important; opacity:1 !important; visibility:visible !important; pointer-events:auto !important; box-shadow:none !important; transform:none !important; }
+body .sb-item .sb-ico { width:30px !important; height:30px !important; border-radius:9px !important; background:rgba(255,255,255,.05) !important; display:flex !important; align-items:center !important; justify-content:center !important; font-size:.82rem !important; flex-shrink:0 !important; transition:all .2s !important; }
+body .sb-item .sb-txt { flex:1 !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; display:block !important; }
+body .sb-item:hover { background:rgba(99,102,241,.13) !important; color:#fff !important; }
+body .sb-item:hover .sb-ico { background:rgba(99,102,241,.3) !important; }
+body .sb-item.on { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; border-color:rgba(129,140,248,.35) !important; }
+body .sb-item.on::before { content:'' !important; position:absolute !important; left:-12px !important; top:50% !important; transform:translateY(-50%) !important; width:3.5px !important; height:60% !important; background:linear-gradient(180deg,#818cf8,#c084fc) !important; border-radius:3px !important; }
+body .sb-item.on .sb-ico { background:linear-gradient(135deg,#6366f1,#a855f7) !important; color:#fff !important; }
+/* page-এর নিচের inline-highlight script সবসময় হারাবে */
+body .sb-item[style] { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; }
+body .sb-badge { background:#fbbf24 !important; color:#1e293b !important; font-size:.62rem !important; padding:1px 8px !important; border-radius:10px !important; font-weight:800 !important; margin-left:auto !important; }
+body .main { margin-left:264px !important; min-height:100vh !important; }
+body .side-overlay { display:none !important; position:fixed !important; inset:0 !important; background:rgba(7,10,26,.6) !important; z-index:590 !important; backdrop-filter:blur(2px) !important; }
+body .side-overlay.show { display:block !important; pointer-events:auto !important; }
+body .hamburger { display:none !important; }
+/* ===== মোবাইল/ট্যাবলেট: slide drawer ===== */
+@media (max-width:1024px) {
+    body .main { margin-left:0 !important; }
+    body .lx-sidebar { transform:translateX(-100%) !important; box-shadow:none !important; }
+    body .lx-sidebar.open { transform:none !important; box-shadow:30px 0 70px rgba(7,10,26,.6) !important; }
+    body .lx-close { display:flex !important; }
+    body .hamburger { display:inline-flex !important; }
+    body { overflow-x:hidden !important; }
+}
+</style>
+
+
+
+
+
+<style id="lx-ovf-fix">
+@media(max-width:768px){ body{overflow-x:hidden !important} }
+</style>
+
+<style id="lx-admin-referral">
+/* ============ Admin Referral (#37–#41, #47) ============ */
+.ar-wrap { max-width:1300px; margin:0 auto; }
+.ar-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:18px; }
+.ar-stat { background:#fff; border-radius:15px; padding:17px 16px; box-shadow:0 3px 14px rgba(15,23,42,.06); display:flex; align-items:center; gap:13px; }
+.ar-stat .si { width:44px; height:44px; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex:0 0 44px; }
+.ar-stat .lb { font-size:.7rem; color:#64748b; font-weight:700; margin-bottom:3px; line-height:1.3; }
+.ar-stat .vl { font-size:1.3rem; font-weight:900; color:#0f172a; line-height:1.1; }
+.ar-card { background:#fff; border-radius:15px; box-shadow:0 3px 14px rgba(15,23,42,.06); overflow:hidden; margin-bottom:18px; }
+.ar-card-head { padding:16px 18px; border-bottom:1px solid #eef2f7; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+.ar-card-head h4 { font-size:.95rem; font-weight:900; display:flex; align-items:center; gap:9px; }
+.ar-card-head h4 i { color:#dc2626; }
+.ar-search { padding:9px 14px; border:1.5px solid #e2e8f0; border-radius:10px; font-family:inherit; font-size:.82rem; min-width:200px; outline:none; }
+.ar-search:focus { border-color:#fca5a5; }
+.ar-tw { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+table.ar-t { width:100%; border-collapse:collapse; min-width:1020px; }
+table.ar-t th { background:#f8fafc; padding:11px 14px; text-align:left; font-size:.66rem; font-weight:900; text-transform:uppercase; letter-spacing:.5px; color:#64748b; border-bottom:1px solid #eef2f7; white-space:nowrap; }
+table.ar-t td { padding:12px 14px; font-size:.82rem; border-bottom:1px solid #f1f5f9; color:#334155; vertical-align:middle; }
+table.ar-t tbody tr:hover { background:#fafbff; }
+.ar-nm { font-weight:800; color:#0f172a; }
+.ar-sub { font-size:.7rem; color:#94a3b8; }
+.ar-code { font-family:'Courier New',monospace; font-weight:900; color:#b91c1c; background:#fef2f2; padding:3px 9px; border-radius:7px; font-size:.76rem; letter-spacing:.6px; display:inline-block; }
+.ar-pill { font-size:.66rem; font-weight:900; padding:3px 9px; border-radius:999px; display:inline-block; text-transform:capitalize; white-space:nowrap; }
+.ar-pill.approved { background:#dcfce7; color:#166534; }
+.ar-pill.pending { background:#fef9c3; color:#854d0e; }
+.ar-pill.banned, .ar-pill.rejected { background:#fee2e2; color:#991b1c; }
+.ar-pill.t1 { background:#dcfce7; color:#166534; }
+.ar-pill.t2 { background:#fef3c7; color:#b45309; }
+.ar-pill.credited { background:#dcfce7; color:#166534; }
+.ar-pill.reversed { background:#fee2e2; color:#991b1c; }
+.ar-btn { border:none; border-radius:9px; padding:8px 13px; font-weight:800; font-size:.74rem; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-family:inherit; transition:.2s; white-space:nowrap; }
+.ar-btn.pri { background:#dc2626; color:#fff; }
+.ar-btn.pri:hover { background:#b91c1c; transform:translateY(-1px); }
+.ar-btn.sec { background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe; }
+.ar-btn.sec:hover { background:#e0e7ff; }
+.ar-empty { text-align:center; padding:44px 20px; color:#94a3b8; }
+.ar-empty i { font-size:2.2rem; display:block; margin-bottom:11px; opacity:.45; }
+.ar-empty b { display:block; color:#475569; margin-bottom:5px; }
+.ar-total { background:#f8fafc; border-top:2px solid #e2e8f0; padding:13px 16px; display:flex; justify-content:space-between; align-items:center; font-weight:900; font-size:.95rem; }
+.ar-total .v { color:#dc2626; font-size:1.1rem; }
+.ar-sumrow { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; padding:14px 16px; background:#fafbff; border-bottom:1px solid #eef2f7; }
+.ar-sumrow div { background:#fff; border:1px solid #eef2f7; border-radius:11px; padding:11px 13px; }
+.ar-sumrow .l { font-size:.66rem; color:#94a3b8; font-weight:800; text-transform:uppercase; letter-spacing:.4px; margin-bottom:3px; }
+.ar-sumrow .v { font-size:1.02rem; font-weight:900; color:#0f172a; }
+@media (max-width:1100px) { .ar-stats { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:768px) {
+    .ar-stats { grid-template-columns:1fr 1fr; gap:10px; }
+    .ar-stat { flex-direction:column; text-align:center; gap:8px; padding:13px 10px; }
+    .ar-stat .vl { font-size:1.08rem; }
+    .ar-card-head { padding:14px 13px; }
+    .ar-search { width:100%; min-width:0; }
+    .ar-sumrow { grid-template-columns:1fr 1fr; }
+}
+@media (max-width:420px) { .ar-stats { grid-template-columns:1fr; } }
+</style>
+
+<style id="lx-admin-supref">
+/* Supplier referral page accents + 7-KPI grid */
+.sr-note{display:flex;align-items:flex-start;gap:10px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:13px;padding:12px 15px;margin-bottom:16px;font-size:.78rem;line-height:1.6}
+.sr-note i{margin-top:2px;flex:none}
+.sr-note a{color:#b45309;font-weight:800}
+.sr-stats{grid-template-columns:repeat(4,1fr)}
+.ar-card-head h4 i{color:#b45309}
+.ar-code{color:#b45309;background:#fef3c7}
+.ar-total .v{color:#b45309}
+@media (max-width:1100px){ .sr-stats{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:768px){ .sr-stats{grid-template-columns:1fr 1fr} }
+@media (max-width:420px){ .sr-stats{grid-template-columns:1fr} }
+</style>
+<style id="lx-orders-badge-n">.orders-badge-n{color:#fbbf24;font-weight:900;font-size:.72rem}.orders-badge-n:empty{display:none}</style>
+<style id="admin-mobile-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   The admin topbar measured about 474px across on a 390px phone (25px padding, an
+   h2 at 1.2rem, 12px gaps, a wide user pill), so the logout button was pushed past
+   the right edge. Several admin tables are also built by JS with NO .table-scroll
+   wrapper, so they widened the whole page instead of scrolling.
+   EVERY rule below sits inside a max-width query, so the DESKTOP LAYOUT IS
+   UNCHANGED. This is an ADDED block — no existing rule is modified or removed. */
+@media (max-width:768px){
+  .topbar { padding:10px 12px; gap:8px; }
+  .topbar h2 { font-size:.92rem; }
+  .topbar h2 i { margin-right:4px; }
+  .topbar-right { gap:6px; }
+  .user-pill { padding:5px 9px; font-size:.72rem; }
+  .btn-logout { padding:7px 10px; }
+  /* a table without a scroll wrapper would otherwise push the page wide */
+  .data-table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%; }
+}
+</style>
+<style id="panel-fullwidth-fix">
+/* 2026-09-16 — FULL-WIDTH FIX for the admin and supplier panels (this request).
+   The whole page sat in a narrow column with empty space on the right, because the
+   base rule reserves the sidebar with `margin-left`, and a block element with
+   margin-left and width:auto is only (100% - that) wide. A LATER rule in the same
+   file re-asserted the margin with !important, so the earlier mobile override lost.
+   This block is the LAST thing in the document, so it wins, and it resets width as
+   well as margin. Desktop is untouched — everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<aside class="lx-sidebar sidebar" id="sidebar">
+    <div class="lx-brand">
+        <span class="lx-brand-ic"><i class="fas fa-user-shield"></i></span>
+        <div class="lx-brand-tx"><b>AdminHub</b><small>CONTROL PANEL</small></div>
+        <button class="lx-close" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+    <nav class="lx-menu">
+        <div class="sec-label">Main</div>
+        <a href="dashboard.html" class="sb-item"><span class="sb-ico"><i class="fas fa-chart-line"></i></span><span class="sb-txt">Dashboard</span></a>
+        <a href="orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-shopping-cart"></i></span><span class="sb-txt">All Orders<span class="orders-badge-n" id="ordersBadgeN"></span></span><span class="orders-badge" style="display:none;margin-left:auto;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:.62rem;font-weight:800"></span></a>
+        <a href="multi-supplier-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-people-arrows"></i></span><span class="sb-txt">Multi-Supplier Orders<span class="orders-badge-n" id="msCount"></span></span></a>
+        <a href="products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box"></i></span><span class="sb-txt">Products</span></a>
+        <div class="sec-label">Users</div>
+        <a href="resellers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-users"></i></span><span class="sb-txt">Resellers</span></a>
+        <a href="suppliers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-warehouse"></i></span><span class="sb-txt">Suppliers</span></a>
+        <a href="supplier-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-boxes-stacked"></i></span><span class="sb-txt">Supplier Products</span></a>
+        <a href="add-reseller.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Add Reseller</span></a>
+        <a href="add-supplier.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck"></i></span><span class="sb-txt">Add Supplier</span></a>
+        <a href="approvals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-check"></i></span><span class="sb-txt">Approvals</span></a>
+        <a href="withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-money-bill-wave"></i></span><span class="sb-txt">Withdrawals</span></a>
+        <a href="supplier-withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-hand-holding-dollar"></i></span><span class="sb-txt">Supplier Withdraw</span></a>
+        <a href="transactions.html" class="sb-item"><span class="sb-ico"><i class="fas fa-receipt"></i></span><span class="sb-txt">Transaction History</span></a>
+        <a href="moderators.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-shield"></i></span><span class="sb-txt">Moderators</span></a>
+        <div class="sec-label">Referral</div>
+        <a href="referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Reseller Referral</span></a>
+        <a href="supplier-referral.html" class="sb-item on"><span class="sb-ico"><i class="fas fa-truck-arrow-right"></i></span><span class="sb-txt">Supplier Referral</span></a>
+                <a href="myshop-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-bag-shopping"></i></span><span class="sb-txt">My Shop Orders</span></a>
+        <a href="myshop-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box-open"></i></span><span class="sb-txt">My Shop Products</span></a>
+        <div class="sec-label">Offers &amp; Banners</div>
+        <a href="add-offer.html" class="sb-item"><span class="sb-ico"><i class="fas fa-plus-circle"></i></span><span class="sb-txt">Add Offers</span></a>
+        <a href="manage-offers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-gift"></i></span><span class="sb-txt">Manage Offers</span></a>
+        <a href="add-banner.html" class="sb-item on""><span class="sb-ico"><i class="fas fa-image"></i></span><span class="sb-txt">Add Banners</span></a>
+        <a href="manage-banners.html" class="sb-item"><span class="sb-ico"><i class="fas fa-images"></i></span><span class="sb-txt">Manage Banners</span></a>
+        <div class="sec-label">System</div>
+        <a href="messages.html" class="sb-item"><span class="sb-ico"><i class="fas fa-comments"></i></span><span class="sb-txt">Messages<span class="orders-badge-n" id="msgBadgeN"></span></span></a>
+        <a href="settings.html" class="sb-item"><span class="sb-ico"><i class="fas fa-cog"></i></span><span class="sb-txt">Settings</span></a>
+        <a href="../index.html" class="sb-item"><span class="sb-ico"><i class="fas fa-globe"></i></span><span class="sb-txt">Visit Site</span></a>
+    </nav>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+        <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h2><i class="fas fa-comments"></i> Messages</h2>
+        <div class="topbar-right">
+            <div class="user-pill"><i class="fas fa-user-shield"></i> Admin</div>
+            <button class="btn-logout" onclick="sessionStorage.clear();window.location.href='login.html'"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+    <div class="content">
+        <!-- items 5-9: the admin inbox — one row per tenant conversation -->
+        <style id="lx-admin-msg">
+            .am-grid{display:grid;grid-template-columns:372px 1fr;gap:18px;align-items:start}
+            @media(max-width:1080px){.am-grid{grid-template-columns:1fr}}
+            .am-card{background:#fff;border-radius:16px;box-shadow:0 2px 14px rgba(15,23,42,.07);overflow:hidden}
+            .am-head{padding:15px 18px;border-bottom:1px solid #eef2f6;display:flex;justify-content:space-between;align-items:center;gap:10px;background:linear-gradient(180deg,#fff,#fcfdfe)}
+            .am-head h4{font-size:.92rem;font-weight:800}
+            .am-head h4 i{color:#dc2626;margin-right:7px}
+
+            /* ---- conversation list ---- */
+            .am-row{padding:13px 16px;border-bottom:1px solid #f4f7fa;cursor:pointer;transition:background .15s,border-color .15s;display:flex;gap:11px;align-items:flex-start;min-height:44px}
+            .am-row:hover{background:#f8fafc}
+            .am-row.on{background:#fff5f5;box-shadow:inset 3px 0 0 #dc2626}
+            .am-row.ended{opacity:.72}
+            .am-row.ended .r1 b{text-decoration:line-through;text-decoration-color:#cbd5e1}
+            .am-av{width:38px;height:38px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.9rem;color:#fff;background:linear-gradient(135deg,#dc2626,#b91c1c)}
+            .am-av.sup{background:linear-gradient(135deg,#7c3aed,#6d28d9)}
+            .am-av img{width:100%;height:100%;object-fit:cover;border-radius:11px}
+            .am-row .rmain{min-width:0;flex:1}
+            .am-row .r1{display:flex;align-items:center;gap:6px;font-size:.86rem;font-weight:800;line-height:1.3}
+            .am-row .r1 .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
+            .am-row .r2{font-size:.75rem;color:#64748b;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+            .am-row .r3{margin-top:7px;display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+            .am-row .r4{margin-top:5px;font-size:.68rem;color:#94a3b8}
+
+            /* ---- thread panel ---- */
+            .am-thread{background:#fff;border-radius:16px;box-shadow:0 2px 14px rgba(15,23,42,.07);display:flex;flex-direction:column;min-height:580px;overflow:hidden}
+            .am-th-h{padding:13px 18px;border-bottom:1px solid #eef2f6;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:linear-gradient(180deg,#fff,#fcfdfe)}
+            .am-th-who{display:flex;align-items:center;gap:11px;min-width:0}
+            .am-th-who h4{font-size:.98rem;font-weight:900;line-height:1.25}
+            .am-th-who p{font-size:.74rem;color:#64748b;margin-top:3px}
+            .am-th-act{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+            .am-body{padding:20px;overflow-y:auto;flex:1;max-height:56vh;background:linear-gradient(180deg,#f8fafc,#f6f9fb)}
+            .am-bub{max-width:78%;padding:11px 15px;border-radius:16px;margin-bottom:14px;font-size:.87rem;line-height:1.55;word-break:break-word;box-shadow:0 1px 2px rgba(15,23,42,.05)}
+            .am-bub.them{background:#fff;border:1px solid #e8edf3;border-bottom-left-radius:5px}
+            .am-bub.me{background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;margin-left:auto;border-bottom-right-radius:5px}
+            .am-bub .meta{font-size:.68rem;opacity:.7;margin-top:7px;display:block}
+            .am-bub .pctx{margin-top:8px;padding:9px 12px;border-radius:11px;background:#eef2ff;font-size:.74rem;color:#3730a3;line-height:1.65}
+            .am-bub.me .pctx{background:rgba(255,255,255,.2);color:#fff}
+            .am-bub img{max-width:210px;border-radius:11px;margin-top:8px;display:block;cursor:zoom-in;border:1px solid rgba(15,23,42,.08)}
+            /* order context card (#6, #15) */
+            .am-octx{margin-top:8px;border-radius:11px;overflow:hidden;border:1px solid #fed7aa;background:#fffbeb}
+            .am-octx .oh{padding:7px 12px;background:#fef3c7;font-size:.72rem;font-weight:900;color:#92400e;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+            .am-octx .ob{padding:9px 12px;font-size:.73rem;color:#78350f;line-height:1.7}
+            .am-octx .ob b{color:#7c2d12}
+            .am-bub.me .am-octx{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.35)}
+            .am-bub.me .am-octx .oh{background:rgba(255,255,255,.2);color:#fff}
+            .am-bub.me .am-octx .ob{color:#fff}
+            .am-bub.me .am-octx .ob b{color:#fff}
+
+            .am-form{padding:14px 18px;border-top:1px solid #eef2f6;background:#fff}
+            .am-form textarea{width:100%;padding:11px 15px;border:1.5px solid #e2e8f0;border-radius:12px;font-size:.88rem;font-family:inherit;resize:vertical;min-height:46px;box-sizing:border-box}
+            .am-form textarea:focus{outline:none;border-color:#dc2626}
+            .am-send{background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;border:none;padding:11px 22px;border-radius:12px;font-weight:800;cursor:pointer;font-size:.85rem;margin-top:10px;min-height:44px}
+            .am-send:disabled{opacity:.6;cursor:not-allowed}
+            .am-empty{padding:46px 20px;text-align:center;color:#64748b;font-size:.86rem}
+
+            /* ---- chips ---- */
+            .am-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:.67rem;font-weight:800;white-space:nowrap}
+            .am-tag.res{background:#dbeafe;color:#1e40af}
+            .am-tag.sup{background:#ede9fe;color:#5b21b6}
+            .am-tag.prod{background:#fef3c7;color:#92400e}
+            .am-tag.gen{background:#f1f5f9;color:#475569}
+            .am-tag.img{background:#d1fae5;color:#065f46}
+            .am-tag.ord{background:#ffedd5;color:#c2410c}
+            .am-tag.src-res{background:#fee2e2;color:#b91c1c}
+            .am-tag.src-sup{background:#ede9fe;color:#5b21b6}
+            .am-tag.src-adm{background:#e0f2fe;color:#0369a1}
+            .am-st{display:inline-flex;align-items:center;gap:5px;padding:3px 11px;border-radius:20px;font-size:.68rem;font-weight:900;letter-spacing:.02em}
+            .am-st.active{background:#dcfce7;color:#15803d}
+            .am-st.ended{background:#e2e8f0;color:#475569}
+            .am-n{background:#ef4444;color:#fff;font-size:.64rem;font-weight:900;padding:1px 7px;border-radius:10px;margin-left:auto}
+            /* End Chat / Reopen (#1) — always a real, tap-sized button */
+            .am-end{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:11px;font-weight:800;font-size:.8rem;cursor:pointer;border:1.5px solid;min-height:40px;background:#fff}
+            .am-end.end{border-color:#dc2626;color:#dc2626}
+            .am-end.end:hover{background:#dc2626;color:#fff}
+            .am-end.re{border-color:#16a34a;color:#16a34a}
+            .am-end.re:hover{background:#16a34a;color:#fff}
+            .am-imgfull{position:fixed;inset:0;background:rgba(15,23,42,.88);display:none;align-items:center;justify-content:center;z-index:2000;cursor:zoom-out}
+            .am-imgfull.show{display:flex}
+            .am-imgfull img{max-width:92%;max-height:92%;border-radius:12px}
+            /* #3 — nothing shrinks or disappears on mobile */
+            @media(max-width:640px){
+                .am-grid{gap:12px}
+                .am-body{max-height:none;padding:14px}
+                .am-bub{max-width:90%}
+                .am-th-h{padding:11px 13px}
+                .am-th-act{width:100%}
+                .am-end{flex:1;justify-content:center}
+                .am-row{padding:11px 12px}
+                .am-row .r1 .nm{max-width:120px}
+            }
+        </style>
+
+        <div class="card" style="margin-bottom:18px">
+            <div class="card-header">
+                <h4><i class="fas fa-comments"></i> Messages from Resellers &amp; Suppliers</h4>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <select id="amFilter" class="spin" style="width:auto;padding:7px 11px;font-size:.82rem" onchange="amPaint()">
+                        <option value="all">All messages</option>
+                        <option value="active">Active chats</option>
+                        <option value="ended">Ended chats</option>
+                        <option value="reseller">Resellers only</option>
+                        <option value="supplier">Suppliers only</option>
+                        <option value="unread">Unread only</option>
+                        <option value="product">With a product</option>
+                        <option value="order">With an order</option>
+                        <option value="general">General only</option>
+                    </select>
+                    <input id="amSearch" class="spin" style="width:210px;padding:7px 11px;font-size:.82rem" placeholder="নাম / প্রোডাক্ট / মেসেজ খুঁজুন..." oninput="amPaint()">
+                </div>
+            </div>
+        </div>
+
+        <div class="am-grid">
+            <div class="am-card">
+                <div class="am-head"><h4><i class="fas fa-inbox"></i> Inbox</h4><span class="badge badge-danger" id="amTotalN">0</span></div>
+                <div id="amList"></div>
+            </div>
+            <div class="am-thread">
+                <div class="am-th-h">
+                    <div class="am-th-who">
+                        <div class="am-av" id="amWhoAv"><i class="fas fa-comments"></i></div>
+                        <div style="min-width:0">
+                            <h4 id="amWho">কোনো কথোপকথন সিলেক্ট করুন</h4>
+                            <p id="amWhoSub">বাম দিকের তালিকা থেকে একটি কথোপকথন বেছে নিন। এখানে পুরো হিস্টোরি দেখা যাবে ও রিপ্লাই দেওয়া যাবে।</p>
+                        </div>
+                    </div>
+                    <div class="am-th-act" id="amThAct"></div>
+                </div>
+                <div class="am-body" id="amBody"><div class="am-empty"><i class="fas fa-comments" style="font-size:2rem;color:#cbd5e1"></i><br><br>একটি কথোপকথন সিলেক্ট করুন।</div></div>
+                <div class="am-form" id="amFormWrap" style="display:none">
+                    <textarea id="amReply" placeholder="রিপ্লাই লিখুন..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();amSend();}"></textarea>
+                    <button class="am-send" id="amSendBtn" onclick="amSend()"><i class="fas fa-paper-plane"></i> Reply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<div class="am-imgfull" id="amImgFull" onclick="this.classList.remove('show')"><img id="amImgFullSrc" alt=""></div>
+
+<script src="../app.js"></script>
+<script>(function(){function paint(){try{var n=(typeof adminNewOrderCount==="function")?adminNewOrderCount():0;var els=document.querySelectorAll(".orders-badge");for(var i=0;i<els.length;i++){els[i].textContent=n;els[i].style.display=n>0?"inline-block":"none";}var lb=document.getElementById("ordersBadgeN");if(lb)lb.textContent=n>0?(" ("+n+")"):"";var mb=document.getElementById("msgBadgeN");if(mb){var u=(typeof unreadForAdmin==="function")?unreadForAdmin():0;mb.textContent=u>0?(" ("+u+")"):"";}}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_messages")===0||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+(function () {
+    /* ---------- items 5-9: admin side of the Message system ---------- */
+    var selectedKey = '';
+
+    function esc(s) { return String(s === undefined || s === null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+    function tagFor(type) {
+        if (type === 'reseller') return '<span class="am-tag res"><i class="fas fa-store"></i> Reseller</span>';
+        if (type === 'supplier') return '<span class="am-tag sup"><i class="fas fa-warehouse"></i> Supplier</span>';
+        return '';
+    }
+
+    /* #12 — the product source badge, resolved from real ownership data. */
+    function srcTag(t) {
+        if (t === 'reseller') return '<span class="am-tag src-res">Reseller Product</span>';
+        if (t === 'supplier') return '<span class="am-tag src-sup">Supplier Product</span>';
+        if (t === 'admin') return '<span class="am-tag src-adm">Admin Product</span>';
+        return '';
+    }
+    /* #16 — the Active / Ended status chip */
+    function statusChip(ended) {
+        return ended
+            ? '<span class="am-st ended"><i class="fas fa-lock"></i> Ended</span>'
+            : '<span class="am-st active"><i class="fas fa-circle"></i> Active</span>';
+    }
+    function avatarOf(r) {
+        var nm = r.businessName || r.userName || ('#' + r.userId);
+        var initial = String(nm).trim().charAt(0).toUpperCase() || '?';
+        return '<div class="am-av' + (r.userType === 'supplier' ? ' sup' : '') + '">' + esc(initial) + '</div>';
+    }
+
+    function currentList() {
+        var rows = adminMessageInbox();
+        var f = document.getElementById('amFilter').value;
+        var q = String(document.getElementById('amSearch').value || '').trim().toLowerCase();
+        if (f === 'reseller') rows = rows.filter(function (r) { return r.userType === 'reseller'; });
+        else if (f === 'supplier') rows = rows.filter(function (r) { return r.userType === 'supplier'; });
+        else if (f === 'unread') rows = rows.filter(function (r) { return r.unread > 0; });
+        else if (f === 'product') rows = rows.filter(function (r) { return !!r.productId; });
+        else if (f === 'order') rows = rows.filter(function (r) { return !!r.orderId; });
+        else if (f === 'general') rows = rows.filter(function (r) { return !r.productId; });
+        /* #16 — Active / Ended chats */
+        else if (f === 'active') rows = rows.filter(function (r) { return !r.ended; });
+        else if (f === 'ended') rows = rows.filter(function (r) { return !!r.ended; });
+        if (q) rows = rows.filter(function (r) {
+            return (String(r.userName) + ' ' + String(r.businessName) + ' ' + String(r.productName) + ' ' + String(r.orderId) + ' ' + String(r.lastText)).toLowerCase().indexOf(q) !== -1;
+        });
+        return rows;
+    }
+
+    window.amPaint = function () {
+        var rows = currentList();
+        document.getElementById('amTotalN').textContent = rows.length;
+        var el = document.getElementById('amList');
+        if (!rows.length) {
+            el.innerHTML = '<div class="am-empty"><i class="fas fa-inbox" style="font-size:1.7rem;color:#cbd5e1"></i><br><br>কোনো মেসেজ নেই।</div>';
+            return;
+        }
+        var h = '';
+        for (var i = 0; i < rows.length; i++) {
+            var r = rows[i];
+            var ctx = '';
+            if (r.orderId) ctx += '<span class="am-tag ord"><i class="fas fa-receipt"></i> Order #' + esc(r.orderId) + '</span>';
+            if (r.productId) ctx += '<span class="am-tag prod"><i class="fas fa-box"></i> ' + esc(r.productName || ('#' + r.productId)) + '</span>';
+            else if (!r.orderId) ctx += '<span class="am-tag gen">General</span>';
+            if (r.hasImage) ctx += '<span class="am-tag img"><i class="fas fa-image"></i></span>';
+            ctx += srcTag(r.productOwnerType);
+            h += '<div class="am-row' + (r.key === selectedKey ? ' on' : '') + (r.ended ? ' ended' : '') + '" onclick="amOpen(\'' + esc(r.key).replace(/'/g, "\\'") + '\')">' +
+                 avatarOf(r) +
+                 '<div class="rmain">' +
+                 '<div class="r1"><span class="nm">' + esc(r.businessName || r.userName || ('#' + r.userId)) + '</span>' +
+                 ' ' + tagFor(r.userType) + statusChip(r.ended) +
+                 (r.unread > 0 ? '<span class="am-n">' + r.unread + '</span>' : '') + '</div>' +
+                 '<div class="r2">' + esc(r.lastText || (r.hasImage ? '[image]' : '')) + '</div>' +
+                 '<div class="r3">' + ctx + '</div>' +
+                 '<div class="r4">' + r.messageCount + ' msg · ' + esc(formatDate(r.lastAt)) + '</div>' +
+                 '</div></div>';
+        }
+        el.innerHTML = h;
+    };
+
+    window.amOpen = function (key) {
+        selectedKey = key;
+        var parts = String(key).split('|');
+        var uType = parts[0], uId = parts[1];
+        var t = getThread(uType, uId);
+        var who = document.getElementById('amWho');
+        var sub = document.getElementById('amWhoSub');
+        var av = document.getElementById('amWhoAv');
+        var act = document.getElementById('amThAct');
+        if (!t) { amPaint(); return; }
+        var nm = t.businessName || t.userName || ('#' + t.userId);
+        if (av) av.innerHTML = esc(String(nm).trim().charAt(0).toUpperCase() || '?');
+        who.innerHTML = esc(nm) + ' ' + tagFor(t.userType);
+        sub.innerHTML = 'Sender: <b>' + esc(t.userName || '-') + '</b> · Type: <b>' + esc(t.userType) + '</b> · ID: <b>#' + esc(t.userId) + '</b>' +
+                        (t.businessName ? ' · Business: <b>' + esc(t.businessName) + '</b>' : '');
+        /* #1 — End Chat / Reopen. Always rendered once a thread is open. */
+        if (act) {
+            var ended = (typeof msgThreadEnded === 'function') ? msgThreadEnded(t) : false;
+            act.innerHTML = statusChip(ended) +
+                (ended
+                    ? '<button class="am-end re" onclick="amReopenChat()"><i class="fas fa-rotate-left"></i> Reopen Chat</button>'
+                    : '<button class="am-end end" onclick="amEndChat()"><i class="fas fa-flag-checkered"></i> End Chat</button>');
+        }
+        amRenderThread(t);
+        document.getElementById('amFormWrap').style.display = 'block';
+        markThreadRead(uType, uId, 'admin');
+        amPaint();
+    };
+
+    /* #1, #17 — flip the status ONLY. No message, image or context is removed. */
+    window.amEndChat = function () {
+        if (!selectedKey) return;
+        var parts = String(selectedKey).split('|');
+        if (!confirm('এই conversation-টি End করবেন?\n\nপুরো chat history সংরক্ষিত থাকবে — শুধু status "Ended" হবে।')) return;
+        var r = msgEndChat(parts[0], parts[1]);
+        if (!r || !r.ok) { showToast('End করা যায়নি।', 'error'); return; }
+        showToast('Conversation ended — history সংরক্ষিত আছে।', 'success');
+        amOpen(selectedKey);
+    };
+    window.amReopenChat = function () {
+        if (!selectedKey) return;
+        var parts = String(selectedKey).split('|');
+        var r = msgReopenChat(parts[0], parts[1]);
+        if (!r || !r.ok) { showToast('Reopen করা যায়নি।', 'error'); return; }
+        showToast('Conversation আবার Active হয়েছে।', 'success');
+        amOpen(selectedKey);
+    };
+
+    function amRenderThread(t) {
+        var el = document.getElementById('amBody');
+        var ms = t.messages || [];
+        if (!ms.length) { el.innerHTML = '<div class="am-empty">এই কথোপকথনে এখনো মেসেজ নেই।</div>'; return; }
+        var h = '';
+        for (var i = 0; i < ms.length; i++) {
+            var x = ms[i];
+            var mine = x.from === 'admin';
+            var inner = '';
+            /* #6 — order context card: number, status, product, variant, qty, source */
+            var oc = x.orderContext;
+            if (x.orderId) {
+                if (!oc && typeof msgOrderContext === 'function') {
+                    oc = msgOrderContext(x.orderId, 'admin', '', x.orderItemIndex);
+                }
+                if (!oc) oc = { orderNumber: x.orderId, status: '', amount: 0, date: '' };
+                /* #1/#2/#3 — the Order ID comes from the ACTUAL order record
+                   (x.orderId / oc.orderNumber), never from a temporary or
+                   hardcoded value. Shown together with product, owner,
+                   variant, qty and status. */
+                inner += '<div class="am-octx">' +
+                         '<div class="oh"><span><i class="fas fa-receipt"></i> Order ID: #' + esc(oc.orderNumber || x.orderId) + '</span>' +
+                         (oc.status ? '<span>' + esc(oc.status) + '</span>' : '') + '</div>' +
+                         '<div class="ob">' +
+                         (oc.itemProductName ? '<b>Product:</b> ' + esc(oc.itemProductName) + '<br>' : '') +
+                         ((oc.itemProductOwnerName || oc.itemProductOwnerType) ? '<b>Product Owner:</b> ' + esc(oc.itemProductOwnerName || oc.itemProductOwnerType) + '<br>' : '') +
+                         (oc.itemVariant ? '<b>Variant:</b> ' + esc(oc.itemVariant) + '<br>' : '') +
+                         (oc.itemQty ? '<b>Quantity:</b> ' + esc(oc.itemQty) + '<br>' : '') +
+                         (oc.status ? '<b>Order Status:</b> ' + esc(oc.status) + '<br>' : '') +
+                         (oc.date ? '<b>Date:</b> ' + esc(oc.date) + '<br>' : '') +
+                         (oc.amount ? '<b>Amount:</b> ' + esc(formatCurrency(oc.amount)) : '') +
+                         '</div></div>';
+            }
+            /* product context + its source (#12) */
+            if (x.productId) {
+                inner += '<div class="pctx"><b><i class="fas fa-box"></i> ' + esc(x.productName || ('#' + x.productId)) + '</b><br>' +
+                         'Product ID: ' + esc(x.productId) + '<br>' +
+                         'Product owner: ' + esc(x.productOwnerName || x.productOwnerType || '-') + '<br>' +
+                         srcTag(x.productOwnerType) + '</div>';
+            } else if (!x.orderId) {
+                inner += '<div class="pctx" style="background:#f1f5f9;color:#475569">General Message</div>';
+            }
+            if (x.text) inner += '<div style="margin-top:7px">' + esc(x.text) + '</div>';
+            if (x.image) inner += '<img src="' + x.image + '" alt="attachment" onclick="amZoom(this.src)" onerror="rhImgLost(this)" onload="rhImgBack(this)">';
+            inner += '<span class="meta">' + (mine ? 'Admin (you)' : esc(x.senderType || t.userType)) + ' · ' + formatDate(x.at) + '</span>';
+            h += '<div class="am-bub ' + (mine ? 'me' : 'them') + '">' + inner + '</div>';
+        }
+        el.innerHTML = h;
+        el.scrollTop = el.scrollHeight;
+    }
+    window.amZoom = function (src) {
+        document.getElementById('amImgFullSrc').src = src;
+        document.getElementById('amImgFull').classList.add('show');
+    };
+
+    window.amSend = function () {
+        if (!selectedKey) return;
+        var parts = String(selectedKey).split('|');
+        var uType = parts[0], uId = parts[1];
+        var ta = document.getElementById('amReply');
+        var txt = ta.value.trim();
+        if (!txt) { showToast('রিপ্লাই লিখুন।', 'error'); return; }
+        var btn = document.getElementById('amSendBtn');
+        btn.disabled = true;
+        var r = sendChatMessage(uType, uId, 'admin', txt, '', '', { senderType: 'admin' });
+        btn.disabled = false;
+        if (!r.ok) { showToast(r.message || 'পাঠানো যায়নি।', 'error'); return; }
+        ta.value = '';
+        var t = getThread(uType, uId);
+        amRenderThread(t);
+        amPaint();
+        showToast('রিপ্লাই পাঠানো হয়েছে।', 'success');
+    };
+
+    amPaint();
+    setInterval(function () { amPaint(); }, 6000);
+})();
+</script>
+<script>
+/* ADMIN ONLY (this request) — hide the Moderators entry from a moderator session.
+   The Moderators page itself also bounces a moderator, so this is the second
+   layer, not the only one. */
+(function () {
+    try {
+        if (sessionStorage.getItem('user_type') !== 'admin') {
+            document.querySelectorAll('.sb-item[href="moderators.html"]').forEach(function (a) { a.style.display = 'none'; });
+        }
+    } catch (e) {}
+})();
+</script>
+</body>
+</html>

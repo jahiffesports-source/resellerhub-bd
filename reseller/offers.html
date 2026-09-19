@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offers - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root { --pri:#4f46e5; --prid:#4338ca; --vio:#7c3aed; --grn:#10b981; --gold:#fbbf24; --dark:#0f172a; --gray:#64748b; }
+        body { font-family:'Inter','Hind Siliguri',sans-serif; background:#eef1f9; color:#1e293b; padding-bottom:70px; overflow-x:hidden; }
+
+        /* ===== Animations ===== */
+        @keyframes dashUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:none} }
+        @keyframes dashSide { from{opacity:0;transform:translateX(-24px)} to{opacity:1;transform:none} }
+        @keyframes iconBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        @keyframes drift { 0%,100%{transform:translate(0,0) rotate(0)} 33%{transform:translate(24px,-18px) rotate(3deg)} 66%{transform:translate(-16px,14px) rotate(-2deg)} }
+        @keyframes welcomeShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        @keyframes barGrow { from{height:0 !important} }
+        @keyframes tilePop { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:none} }
+        .sidebar-header, .sidebar-menu a { animation:dashSide .4s ease both; }
+        .welcome { animation:dashUp .55s .1s ease both; }
+        .quick-row .quick-btn:nth-child(1) { animation:dashUp .5s .18s ease both; }
+        .quick-row .quick-btn:nth-child(2) { animation:dashUp .5s .24s ease both; }
+        .quick-row .quick-btn:nth-child(3) { animation:dashUp .5s .3s ease both; }
+        .quick-row .quick-btn:nth-child(4) { animation:dashUp .5s .36s ease both; }
+        .stats-grid .stat-card:nth-child(1) { animation:dashUp .5s .3s ease both; }
+        .stats-grid .stat-card:nth-child(2) { animation:dashUp .5s .38s ease both; }
+        .stats-grid .stat-card:nth-child(3) { animation:dashUp .5s .46s ease both; }
+        .stats-grid .stat-card:nth-child(4) { animation:dashUp .5s .54s ease both; }
+        .card { animation:dashUp .55s .5s ease both; }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:248px; background:linear-gradient(180deg,#0b1029 0%,#151a3a 100%); color:#c7d2fe; z-index:200; overflow-y:auto; transition:transform 0.3s; box-shadow:4px 0 24px rgba(11,16,41,.35); }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; justify-content:space-between; align-items:center; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:40px; height:40px; background:linear-gradient(135deg,var(--pri),var(--vio)); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .sidebar-logo h3 { color:white; font-size:1rem; font-weight:900; }
+        .sidebar-logo small { color:#818cf8; font-size:0.66rem; display:block; font-weight:700; letter-spacing:1px; }
+        .sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; }
+        .sidebar-menu { list-style:none; padding:12px 10px; }
+        .sidebar-menu li { margin:3px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:11px 15px; color:#c7d2fe; text-decoration:none; font-size:0.88rem; font-weight:600; border-radius:11px; transition:all .22s; }
+        .sidebar-menu a:hover { background:rgba(129,140,248,.14); color:white; transform:translateX(4px); }
+        .sidebar-menu a.active { background:linear-gradient(135deg,var(--pri),var(--vio)); color:white; box-shadow:0 8px 20px rgba(79,70,229,.4); }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 15px 5px; color:#6366f1; font-size:0.66rem; text-transform:uppercase; letter-spacing:1.4px; font-weight:800; }
+        .menu-badge { background:var(--gold); color:#1e293b; font-size:0.68rem; padding:1px 8px; border-radius:10px; font-weight:800; margin-left:auto; }
+        .menu-badge-n { color:var(--gold); font-weight:900; }
+
+        .side-overlay { display:none; position:fixed; inset:0; background:rgba(11,16,41,.55); z-index:150; backdrop-filter:blur(2px); }
+
+        /* ===== MAIN ===== */
+        .main { margin-left:248px; min-height:100vh; }
+        .topbar { background:rgba(255,255,255,.88); backdrop-filter:blur(12px); padding:12px 22px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 14px rgba(15,23,42,.06); position:sticky; top:0; z-index:100; }
+        .topbar-left { display:flex; align-items:center; gap:12px; }
+        .hamburger { display:none; background:none; border:none; font-size:1.3rem; color:#1e293b; cursor:pointer; padding:4px; }
+        .topbar h2 { font-size:1.12rem; font-weight:800; }
+        .topbar-right { display:flex; align-items:center; gap:8px; }
+        .topbar-balance { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#7c2d12; padding:7px 15px; border-radius:22px; font-weight:800; font-size:0.84rem; white-space:nowrap; box-shadow:0 4px 12px rgba(245,158,11,.35); }
+        .topbar-user { display:flex; align-items:center; gap:7px; padding:6px 14px; background:#eef2ff; color:var(--pri); border-radius:22px; font-size:0.84rem; font-weight:700; }
+        .btn-logout { background:#fee2e2; color:#dc2626; border:none; padding:8px 12px; border-radius:10px; cursor:pointer; font-size:0.85rem; transition:all .25s; }
+        .btn-logout:hover { background:#dc2626; color:#fff; transform:translateY(-1px); }
+
+        .content { padding:22px 28px; width:100%; }
+
+        /* ===== Welcome — index hero style (dark + orbit) ===== */
+        .welcome { background:radial-gradient(700px 400px at 80% 10%, #312e81 0%, transparent 55%), radial-gradient(500px 320px at 8% 90%, #1e1b4b 0%, transparent 55%), linear-gradient(150deg,#0b1029,#12102e 60%,#181436); color:white; padding:30px 32px; border-radius:26px; margin-bottom:22px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; position:relative; overflow:hidden; box-shadow:0 22px 50px rgba(11,16,41,.4); animation:dashUp .55s .1s ease both; }
+        .w-orbit { position:absolute; border:1px solid rgba(129,140,248,.22); border-radius:50%; pointer-events:none; }
+        .w-orbit.o1 { width:340px; height:340px; top:-140px; right:-80px; animation:drift 14s ease-in-out infinite; }
+        .w-orbit.o2 { width:240px; height:240px; bottom:-110px; left:-60px; animation:drift 18s ease-in-out infinite reverse; }
+        .w-kicker { display:inline-flex; align-items:center; gap:7px; background:rgba(129,140,248,.18); border:1px solid rgba(129,140,248,.45); color:#c7d2fe; font-size:.66rem; font-weight:900; letter-spacing:1.6px; padding:5px 14px; border-radius:18px; margin-bottom:12px; position:relative; }
+        .welcome h3 { font-size:1.5rem; font-weight:900; margin-bottom:4px; position:relative; }
+        .w-grad { background:linear-gradient(90deg,#a5b4fc,#f0abfc,#67e8f9); background-size:200% auto; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; animation:welcomeShift 5s linear infinite; }
+        .welcome p { opacity:0.92; font-size:0.9rem; position:relative; }
+        .welcome .ref-code { background:rgba(129,140,248,.25); border:1px solid rgba(129,140,248,.4); padding:3px 12px; border-radius:14px; font-weight:800; font-size:0.76rem; position:relative; }
+        .btn-welcome { background:linear-gradient(135deg,var(--grn),#059669); color:white; padding:14px 26px; border-radius:14px; border:none; font-weight:800; cursor:pointer; font-size:0.92rem; white-space:nowrap; position:relative; transition:all .28s; box-shadow:0 12px 28px rgba(16,185,129,.4); }
+        .btn-welcome:hover { transform:translateY(-3px); box-shadow:0 18px 36px rgba(16,185,129,.5); }
+
+        /* Pending banner */
+        .pending-banner { background:linear-gradient(135deg,#fef3c7,#fde68a); border-left:5px solid #f59e0b; padding:15px 19px; border-radius:14px; margin-bottom:18px; }
+        .pending-banner h4 { color:#92400e; font-size:0.95rem; margin-bottom:3px; }
+        .pending-banner p { color:#78350f; font-size:0.85rem; }
+
+        /* ===== Kickers (index-style section badges) ===== */
+        .kick { display:inline-flex; align-items:center; font-size:.6rem; font-weight:900; letter-spacing:1.6px; color:var(--pri); background:#eef2ff; padding:4px 12px; border-radius:16px; margin-right:9px; vertical-align:2px; }
+
+        /* Stats */
+        .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:15px; margin-bottom:20px; }
+        .stat-card { background:white; padding:19px; border-radius:18px; box-shadow:0 3px 14px rgba(15,23,42,.05); border:1px solid #eef2f7; display:flex; align-items:center; gap:14px; transition:all .28s; }
+        .stat-card:hover { transform:translateY(-4px); box-shadow:0 16px 32px rgba(15,23,42,.11); }
+        .stat-icon { width:52px; height:52px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:1.35rem; flex-shrink:0; }
+        .stat-icon.green { background:linear-gradient(135deg,#d1fae5,#a7f3d0); color:#059669; }
+        .stat-icon.blue { background:linear-gradient(135deg,#e0e7ff,#c7d2fe); color:var(--pri); }
+        .stat-icon.orange { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#d97706; }
+        .stat-icon.purple { background:linear-gradient(135deg,#ede9fe,#ddd6fe); color:#7c3aed; }
+        .stat-card .label { font-size:0.74rem; color:var(--gray); margin-bottom:3px; font-weight:700; }
+        .stat-card .value { font-size:1.32rem; font-weight:900; }
+
+        /* Quick actions */
+        .quick-row { display:grid; grid-template-columns:repeat(4,1fr); gap:13px; margin-bottom:20px; }
+        .quick-btn { background:white; border:1px solid #eef2f7; border-radius:18px; padding:17px 10px; cursor:pointer; text-align:center; box-shadow:0 3px 12px rgba(15,23,42,.05); transition:all .25s; text-decoration:none; }
+        .quick-btn:hover { transform:translateY(-4px); box-shadow:0 14px 30px rgba(79,70,229,.14); border-color:#c7d2fe; }
+        .quick-btn .qi { width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin:0 auto 9px; transition:transform .3s; }
+        .quick-btn:hover .qi { transform:scale(1.12) rotate(-6deg); }
+        .quick-btn p { font-size:0.8rem; font-weight:700; color:#334155; }
+
+        /* ===== SALES ANALYTICS ===== */
+        .analytics { background:white; border-radius:20px; border:1px solid #eef2f7; box-shadow:0 4px 16px rgba(15,23,42,.05); padding:20px 22px; margin-bottom:20px; animation:dashUp .55s .48s ease both; }
+        .analytics-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:8px; }
+        .analytics-head h4 { font-size:0.95rem; font-weight:800; }
+        .analytics-head small { color:var(--gray); font-size:.72rem; font-weight:700; }
+        .atile-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+        .atile { border-radius:16px; padding:14px 16px; text-align:center; animation:tilePop .45s ease both; transition:transform .25s; }
+        .atile:hover { transform:translateY(-3px); }
+        .atile:nth-child(2) { animation-delay:.08s; } .atile:nth-child(3) { animation-delay:.16s; } .atile:nth-child(4) { animation-delay:.24s; }
+        .atile .tl { font-size:.64rem; font-weight:800; letter-spacing:.8px; text-transform:uppercase; opacity:.85; }
+        .atile .tv { font-size:1.18rem; font-weight:900; margin-top:3px; }
+        .atile.t-ind { background:linear-gradient(135deg,#e0e7ff,#c7d2fe); color:#3730a3; }
+        .atile.t-grn { background:linear-gradient(135deg,#d1fae5,#a7f3d0); color:#065f46; }
+        .atile.t-amb { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#92400e; }
+        .atile.t-vio { background:linear-gradient(135deg,#ede9fe,#ddd6fe); color:#5b21b6; }
+        .achart { display:flex; align-items:flex-end; gap:10px; height:170px; padding:6px 4px 0; }
+        .acol { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
+        .abar { width:100%; max-width:44px; border-radius:9px 9px 4px 4px; background:linear-gradient(180deg,var(--pri),var(--vio)); min-height:5px; transition:height .8s cubic-bezier(.2,.8,.3,1); box-shadow:0 4px 10px rgba(79,70,229,.25); position:relative; }
+        .abar:hover { filter:brightness(1.15); }
+        .abar .av { position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-size:.62rem; font-weight:800; color:var(--pri); white-space:nowrap; opacity:0; transition:opacity .3s; }
+        .acol:hover .av { opacity:1; }
+        .abar.zero { background:#e2e8f0; box-shadow:none; }
+        .abar.zero .av { color:#94a3b8; }
+        .alab { font-size:.64rem; font-weight:800; color:var(--gray); }
+        .duo { display:grid; grid-template-columns:1.6fr 1fr; gap:20px; align-items:start; }
+
+        .card { background:white; border-radius:20px; box-shadow:0 4px 16px rgba(15,23,42,.05); border:1px solid #eef2f7; margin-bottom:20px; overflow:hidden; animation:dashUp .55s .5s ease both; }
+        .card-header { padding:15px 20px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; }
+        .card-header h4 { font-size:0.95rem; font-weight:800; }
+        .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+        .data-table { width:100%; border-collapse:collapse; min-width:600px; }
+        .data-table th { text-align:left; padding:11px 18px; background:#f8fafc; font-weight:700; font-size:0.68rem; color:var(--gray); text-transform:uppercase; white-space:nowrap; }
+        .data-table td { padding:12px 18px; border-bottom:1px solid #f4f6fb; font-size:0.84rem; }
+        .data-table tr:hover { background:#f8faff; }
+        .badge { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; white-space:nowrap; }
+        .b-delivered { background:#d1fae5; color:#065f46; }
+        .b-shipped { background:#e0e7ff; color:#4338ca; }
+        .b-processing { background:#e0f2fe; color:#0369a1; }
+        .b-cancelled { background:#fee2e2; color:#991b1b; }
+        .b-new { background:#fef3c7; color:#92400e; }
+        .b-pending { background:#fef3c7; color:#92400e; }
+        .b-confirmed { background:#dbeafe; color:#1e40af; }
+        .b-packaging { background:#ede9fe; color:#6d28d9; }
+        .b-shipping { background:#e0e7ff; color:#4338ca; }
+        .b-wfr { background:#fef9c3; color:#854d0e; }
+        .b-returned { background:#ffe4e6; color:#9f1239; }
+        .btn { padding:6px 12px; border:none; border-radius:8px; font-size:0.8rem; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:5px; transition:all .22s; }
+        .btn-primary { background:linear-gradient(135deg,var(--pri),var(--prid)); color:white; }
+        .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 14px rgba(79,70,229,.35); }
+        .empty { text-align:center; padding:38px 16px; color:var(--gray); }
+        .empty i { font-size:2.2rem; margin-bottom:8px; opacity:0.4; }
+        .empty a { color:var(--pri); font-weight:700; }
+
+        .notif-item { padding:12px 18px; border-bottom:1px solid #f4f6fb; display:flex; gap:11px; align-items:flex-start; font-size:0.86rem; transition:background .2s; }
+        .notif-item:hover { background:#f8faff; }
+        .notif-item:last-child { border-bottom:none; }
+        .notif-item i { color:var(--pri); margin-top:3px; }
+
+        /* ===== MOBILE BOTTOM NAV ===== */
+        .bottom-nav { display:none; position:fixed; bottom:10px; left:12px; right:12px; background:rgba(255,255,255,.92); backdrop-filter:blur(14px); border:1px solid #eef2f7; box-shadow:0 10px 30px rgba(15,23,42,.16); z-index:400; padding:7px 6px calc(7px + env(safe-area-inset-bottom)); border-radius:20px; }
+        .bottom-nav a { display:flex; flex-direction:column; align-items:center; gap:2px; text-decoration:none; color:#94a3b8; font-size:0.62rem; font-weight:700; padding:6px 6px; border-radius:12px; flex:1; transition:all .2s; }
+        .bottom-nav a i { font-size:1.12rem; }
+        .bottom-nav a.active { color:var(--pri); background:#eef2ff; }
+        .bn-menu { background:linear-gradient(135deg,var(--pri),var(--vio)); color:#fff; border-radius:14px; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .bn-menu i { color:#fff; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width:1024px) { .stats-grid { grid-template-columns:repeat(2,1fr); } .quick-row { grid-template-columns:repeat(4,1fr); } .duo { grid-template-columns:1fr; } .atile-row { grid-template-columns:1fr 1fr; } }
+        @media (max-width:768px) {
+            body { padding-bottom:86px; }
+            .sidebar { transform:translateX(-100%); width:272px; }
+            .sidebar.open { transform:translateX(0); }
+            .side-overlay.show { display:block; }
+            .sidebar-close-m { display:block; }
+            .main { margin-left:0; }
+            .hamburger { display:block; }
+            .topbar-user span { max-width:78px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+            .stats-grid { grid-template-columns:1fr 1fr; gap:10px; }
+            .stat-card { padding:14px 12px; flex-direction:column; text-align:center; gap:8px; }
+            .stat-card .value { font-size:1.12rem; }
+            .quick-row { grid-template-columns:repeat(2,1fr); gap:10px; }
+            .welcome { flex-direction:column; text-align:center; padding:24px 18px; }
+            .btn-welcome { width:100%; }
+            .bottom-nav { display:flex; }
+            .content { padding:14px; }
+            .topbar { padding:11px 14px; }
+            /* 2026-09-16 — MOBILE FIX (this request). The topbar measured about 440px
+               across on a 390px phone, so the logout button was pushed past the right
+               edge and looked cut off. These rules tighten the SAME header so it fits a
+               narrow screen. Nothing is hidden and nothing outside this media query is
+               touched, so the desktop layout is unchanged. */
+            .topbar { padding:10px 12px; }
+            .topbar-left { gap:8px; }
+            .topbar h2 { font-size:.98rem; }
+            .topbar-right { gap:6px; }
+            .topbar-balance { padding:6px 10px; font-size:.78rem; }
+            .topbar-user { padding:5px 10px; font-size:.78rem; }
+            .topbar-user span { max-width:52px; }
+
+            .atile-row { grid-template-columns:1fr 1fr; gap:9px; }
+            .achart { gap:5px; height:130px; }
+            .analytics { padding:16px 14px; }
+        }
+        @media (max-width:400px) { .quick-row { grid-template-columns:1fr 1fr; } .stats-grid { grid-template-columns:1fr 1fr; } }
+
+</style>
+
+<style id="lx-nav-force">
+@media(max-width:768px){
+    .bottom-nav{display:flex !important;position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;opacity:1 !important;visibility:visible !important;transform:none !important}
+    body{padding-bottom:86px !important}
+}
+</style>
+
+<style id="lx-bnav">
+/* ===== Complete bottom-nav styling ===== */
+.bottom-nav{position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;display:flex !important;align-items:stretch;background:rgba(255,255,255,.97) !important;backdrop-filter:blur(14px);border:1px solid #e8ecf4 !important;border-radius:18px !important;box-shadow:0 -4px 24px rgba(15,23,42,.14) !important;padding:7px 6px calc(7px + env(safe-area-inset-bottom)) !important}
+.bottom-nav a,.bottom-nav button{flex:1 !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;gap:3px !important;padding:7px 2px !important;border:none !important;background:none !important;color:#7b879c !important;font-size:.62rem !important;font-weight:700 !important;text-decoration:none !important;cursor:pointer !important;border-radius:12px !important;font-family:inherit !important;line-height:1.2 !important}
+.bottom-nav a i,.bottom-nav button i{font-size:1.18rem !important;line-height:1 !important}
+.bottom-nav a span,.bottom-nav button span{display:block !important}
+.bottom-nav a:hover,.bottom-nav button:hover{color:#4f46e5 !important;background:#eef2ff !important;transform:translateY(-2px)}
+.bottom-nav a.active{color:#4f46e5 !important;background:#eef2ff !important}
+.bottom-nav .bn-menu{color:#4f46e5 !important;background:#eef2ff !important;box-shadow:none !important;border-radius:12px !important}
+.bottom-nav .bn-menu:hover{background:#e0e7ff !important}
+.bottom-nav .bn-menu i,.bottom-nav .bn-menu span{color:#4f46e5 !important}
+body{padding-bottom:86px !important}
+@media(min-width:769px){
+    .bottom-nav{display:none !important}
+    body{padding-bottom:0 !important}
+}
+</style>
+
+<style>
+@media(max-width:768px){
+    .sidebar{transform:translateX(-100%) !important;transition:transform .32s cubic-bezier(.2,.8,.3,1) !important;display:block !important}
+    .sidebar.open{transform:translateX(0) !important;box-shadow:24px 0 60px rgba(11,16,41,.45) !important}
+}
+</style>
+
+<style id="lx-logout-fix">
+/* Logout fix: the open sidebar must paint ABOVE the fixed mobile bottom-nav,
+   otherwise the last menu item (Logout) is covered and un-tappable. */
+.sidebar{ z-index:900 !important; }
+.side-overlay{ z-index:880 !important; }
+.sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+@supports selector(:has(*)){
+  body:has(.sidebar.open) .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+}
+@media(min-width:769px){ .sidebar-menu{ padding-bottom:12px !important; } }
+</style>
+
+<style id="lx-sidebar-fix">
+/* ===== Reseller sidebar — canonical & stable (do not mutate at runtime) ===== */
+/* 1) Labels and section headings are ALWAYS visible. The old template hid
+      .sidebar-menu a span and .sidebar-divider under 768px, which made menu
+      text disappear and the "Account" heading vanish on some pages. */
+.sidebar .sidebar-menu a span{ display:inline !important; }
+.sidebar .sidebar-menu .sidebar-divider,
+.sidebar .sidebar-divider{ display:block !important; }
+.sidebar .sidebar-logo h3{ display:block !important; }
+.sidebar .sidebar-logo small{ display:block !important; }
+
+/* 2) Fixed geometry — the sidebar is never collapsed to a 70px icon rail. */
+.sidebar{ width:248px !important; z-index:900 !important; overflow-y:auto !important; }
+.side-overlay{ z-index:880 !important; }
+@media(min-width:769px){
+    .main{ margin-left:248px !important; }
+    .sidebar{ transform:none !important; }
+}
+@media(max-width:768px){
+    .main{ margin-left:0 !important; }
+    .sidebar{ transform:translateX(-100%) !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; display:block !important; }
+    .sidebar.open{ transform:translateX(0) !important; box-shadow:24px 0 60px rgba(11,16,41,.45) !important; }
+}
+
+/* 3) Row geometry is locked: the "All Orders" counter is absolutely positioned
+      so a changing number can never push the rows below it up or down. */
+.sidebar .sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.sidebar .sidebar-menu li{ position:relative; display:block; margin:3px 0; }
+.sidebar .sidebar-menu a{ display:flex !important; align-items:center; gap:12px; padding:11px 15px; }
+.sidebar .menu-badge{ position:absolute; right:12px; top:50%; transform:translateY(-50%); margin-left:0 !important; }
+
+/* 4) Mobile: hide the bottom nav while the drawer is open so the last item
+      (Logout) is never covered. */
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+
+/* 5) Close button inside the drawer on mobile. */
+.sidebar .sidebar-close-m{ display:none; }
+@media(max-width:768px){ .sidebar .sidebar-close-m{ display:block !important; } }
+</style>
+
+<style id="reseller-hamburger-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   Every reseller page hides the hamburger with ".hamburger{display:none}", but most
+   pages never turn it back ON at mobile width — only products.html did. So on a phone
+   there was no way to open the sidebar on Products, Orders, Wallet, Withdrawals,
+   Courier, Messages, Support, Profile, Referral or Website Integration.
+   This shows the SAME existing button (onclick="menuToggle()") at mobile width only.
+   It is an ADDED block and lives entirely inside a max-width query, so the DESKTOP
+   LAYOUT IS UNCHANGED. */
+@media (max-width:768px){
+  .hamburger { display:block !important; }
+}
+</style>
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon"><i class="fas fa-store"></i></div>
+            <div><h3>ResellerHub</h3><small>Reseller Panel</small></div>
+        </div>
+        
+        <button class="sidebar-close-m" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+        <ul class="sidebar-menu">
+        <li class="sidebar-divider">Main</li>
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+        <li><a href="products.html"><i class="fas fa-box"></i> <span>Products</span></a></li>
+        <li><a href="my-shop.html"><i class="fas fa-store"></i> <span>My Shop</span></a></li>
+        <li><a href="transactions.html"><i class="fas fa-right-left"></i> <span>Transactions</span></a></li>
+        <li class="sidebar-divider">Orders</li>
+        <li><a href="my-orders.html"><i class="fas fa-list"></i> <span>All Orders<span class="menu-badge-n" id="ordersBadgeLabel"></span></span></a> <span class="menu-badge" id="ordersBadge" style="display:none">0</span></li>
+        <li><a href="order.html"><i class="fas fa-cart-plus"></i> <span>Add New Order</span></a></li>
+        <li><a href="offers.html" class="active"><i class="fas fa-gift"></i> <span>Offers</span></a></li>
+        <li><a href="shop-categories.html"><i class="fas fa-sitemap"></i> <span>Shop Categories</span></a></li>
+        <li class="sidebar-divider">My Shop</li>
+        <li><a href="my-shop-settings.html"><i class="fas fa-sliders"></i> <span>Shop Settings</span></a></li>
+        <li><a href="my-products.html"><i class="fas fa-box-open"></i> <span>My Products</span></a></li>
+        <li><a href="my-shop-orders.html"><i class="fas fa-bag-shopping"></i> <span>My Shop Orders</span></a></li>
+        <li><a href="customer-messages.html"><i class="fas fa-comment-dots"></i> <span>Customer Messages<span class="menu-badge-n" id="cmsgBadgeLabel"></span></span></a></li>
+        <li class="sidebar-divider">Account</li>
+        <li><a href="wallet.html"><i class="fas fa-wallet"></i> <span>Wallet</span></a></li>
+        <li><a href="withdrawals.html"><i class="fas fa-money-bill-wave"></i> <span>Withdrawals</span></a></li>
+        <li><a href="courier.html"><i class="fas fa-truck"></i> <span>Courier</span></a></li>
+        <li><a href="messages.html"><i class="fas fa-comments"></i> <span>Messages<span class="menu-badge-n" id="msgBadgeLabel"></span></span></a></li>
+        <li><a href="support.html"><i class="fas fa-headset"></i> <span>Support</span></a></li>
+        <li><a href="profile.html"><i class="fas fa-user-cog"></i> <span>Profile</span></a></li>
+        <li><a href="referral.html"><i class="fas fa-user-plus"></i> <span>Referral</span></a></li>
+        <li><a href="website-integration.html"><i class="fas fa-plug"></i> <span>Website Integration</span></a></li>
+        <li><a href="../index.html"><i class="fas fa-globe"></i> <span>Visit Site</span></a></li>
+        <li><a href="javascript:void(0)" onclick="resellerLogout()" style="color:#dc2626"><i class="fas fa-right-from-bracket"></i> <span>Logout</span></a></li>
+    </ul>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+        <div class="topbar-left">
+            <button class="hamburger" onclick="toggleSidebar(true)"><i class="fas fa-bars"></i></button>
+            <h2><i class="fas fa-gift" style="color:#2563eb;margin-right:6px;"></i> Offers</h2>
+        </div>
+        <div class="topbar-right">
+            <div class="topbar-balance"><i class="fas fa-coins"></i> <span id="topBalance">0</span></div>
+            <div class="topbar-user"><i class="fas fa-user" style="color:#2563eb;"></i> <span id="userName">User</span></div>
+            <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content">
+<style id="lx-offers">
+/* ===== Offers page (isolated classes — nothing global) ===== */
+.of-hero{background:linear-gradient(120deg,#4f46e5 0%,#7c3aed 55%,#a855f7 100%);color:#fff;border-radius:18px;padding:24px 26px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;gap:18px;position:relative;overflow:hidden}
+.of-hero:after{content:'';position:absolute;right:-45px;top:-65px;width:210px;height:210px;border-radius:50%;background:rgba(255,255,255,.10)}
+.of-hero-tx{position:relative;z-index:1;min-width:0}
+.of-kick{display:inline-block;background:rgba(255,255,255,.22);padding:4px 12px;border-radius:20px;font-size:.62rem;font-weight:800;letter-spacing:1.2px;margin-bottom:9px}
+.of-hero h1{font-size:1.4rem;font-weight:900;margin-bottom:6px;line-height:1.25}
+.of-hero p{font-size:.82rem;opacity:.94;line-height:1.6;max-width:620px}
+.of-hero-ic{position:relative;z-index:1;font-size:2.6rem;opacity:.9;flex:none}
+.of-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.of-stat{background:#fff;border-radius:14px;padding:15px 16px;box-shadow:0 2px 12px rgba(15,23,42,.06)}
+.of-stat .l{font-size:.62rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.of-stat .v{font-size:1.25rem;font-weight:900;color:#0f172a;line-height:1.15}
+.of-stat .v.g{color:#16a34a}
+.of-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.of-chip{padding:8px 15px;border-radius:20px;font-size:.74rem;font-weight:800;background:#fff;border:1.5px solid #e2e8f0;color:#475569;cursor:pointer;font-family:inherit;transition:all .16s}
+.of-chip:hover{border-color:#a5b4fc;color:#4338ca}
+.of-chip.on{background:linear-gradient(135deg,#4f46e5,#7c3aed);border-color:transparent;color:#fff;box-shadow:0 5px 14px rgba(79,70,229,.28)}
+.of-list{display:grid;grid-template-columns:1fr;gap:16px}
+.of-card{background:#fff;border-radius:16px;box-shadow:0 2px 14px rgba(15,23,42,.07);overflow:hidden;transition:box-shadow .2s}
+.of-card:hover{box-shadow:0 8px 26px rgba(15,23,42,.11)}
+.of-card.dim{opacity:.72}
+/* Deep-link spotlight — a banner click lands on this exact card and flashes it
+   so the user can see which offer the banner was advertising. */
+.of-card.of-spot{box-shadow:0 0 0 3px rgba(79,70,229,.55),0 12px 34px rgba(79,70,229,.22);animation:ofSpot 1.3s ease 2}
+@keyframes ofSpot{0%,100%{box-shadow:0 0 0 3px rgba(79,70,229,.55),0 12px 34px rgba(79,70,229,.22)}50%{box-shadow:0 0 0 5px rgba(124,58,237,.75),0 16px 40px rgba(124,58,237,.3)}}
+.of-bn{display:block;width:100%;background:#f1f5f9;position:relative}
+/* Same root cause as the dashboard strip: `height:auto` + `max-height:190px` +
+   `object-fit:cover` clamped the box and then scaled/cropped the artwork to
+   fill it (up to 79% of a square banner removed), so banners looked zoomed and
+   chopped. The box now owns a 4:1 ratio and the image is CONTAINED, never
+   cropped — the admin's recommended 1200x300 geometry displays perfectly. */
+.of-bn img{display:block;width:100%;height:auto;aspect-ratio:4/1;object-fit:contain;object-position:center;background:#f1f5f9}
+.of-bn.multi{display:flex;gap:6px;padding:6px;overflow-x:auto}
+.of-bn.multi img{width:calc(50% - 3px);aspect-ratio:2/1;border-radius:10px;flex:none;cursor:pointer}
+@media(max-width:600px){
+  .of-bn img{aspect-ratio:2/1}
+  .of-bn.multi img{width:85%}
+}
+.of-body{padding:18px 20px}
+.of-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+.of-title{font-size:1.02rem;font-weight:900;color:#0f172a;line-height:1.3}
+.of-badge{font-size:.63rem;font-weight:900;padding:4px 11px;border-radius:999px;white-space:nowrap;flex:none}
+.of-badge.available{background:#dbeafe;color:#1e40af}
+.of-badge.in_progress{background:#fef3c7;color:#854d0e}
+.of-badge.ready{background:#dcfce7;color:#166534}
+.of-badge.claimed{background:#e0e7ff;color:#3730a3}
+.of-badge.expired,.of-badge.closed{background:#f1f5f9;color:#64748b}
+.of-badge.limit_reached{background:#fee2e2;color:#991b1b}
+.of-badge.not_eligible{background:#f1f5f9;color:#94a3b8}
+.of-desc{font-size:.82rem;color:#475569;line-height:1.65;margin-bottom:14px;white-space:pre-wrap;word-break:break-word}
+.of-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.of-mi{background:#f8fafc;border:1px solid #eef2f7;border-radius:10px;padding:8px 12px;font-size:.7rem;font-weight:700;color:#64748b}
+.of-mi b{color:#0f172a;display:block;font-size:.8rem;margin-top:2px;font-weight:900}
+.of-prog{margin-bottom:14px}
+.of-prog-h{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.76rem;font-weight:800;color:#334155;margin-bottom:7px;flex-wrap:wrap}
+.of-prog-h span{color:#64748b;font-weight:700}
+.of-bar{height:11px;background:#f1f5f9;border-radius:20px;overflow:hidden}
+.of-bar i{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#4f46e5,#7c3aed);transition:width .6s cubic-bezier(.2,.8,.3,1)}
+.of-bar.done i{background:linear-gradient(90deg,#10b981,#059669)}
+.of-time{font-size:.72rem;font-weight:700;color:#b45309;margin-top:7px}
+.of-time.ok{color:#166534}
+.of-time.bad{color:#b91c1c}
+.of-note{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:11px;padding:11px 14px;font-size:.78rem;line-height:1.6;margin-bottom:14px}
+.of-note.ok{background:#f0fdf4;border-color:#bbf7d0;color:#166534}
+.of-note.bad{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+.of-acts{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.of-btn{border:none;border-radius:11px;padding:11px 22px;font-weight:800;font-size:.8rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:8px;transition:all .2s}
+.of-btn.pri{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff}
+.of-btn.pri:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 18px rgba(79,70,229,.3)}
+.of-btn.ok{background:linear-gradient(135deg,#10b981,#059669);color:#fff}
+.of-btn.ok:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 18px rgba(16,185,129,.3)}
+.of-btn.gh{background:#f1f5f9;color:#475569}
+.of-btn:disabled{opacity:.55;cursor:not-allowed;transform:none !important;box-shadow:none !important}
+.of-ref{font-size:.68rem;color:#94a3b8;font-weight:700;font-family:'Courier New',monospace}
+.of-empty{background:#fff;border-radius:16px;padding:56px 24px;text-align:center;box-shadow:0 2px 14px rgba(15,23,42,.06);color:#94a3b8}
+.of-empty i{font-size:2.6rem;display:block;margin-bottom:14px;opacity:.45}
+.of-empty b{display:block;color:#475569;font-size:.95rem;margin-bottom:6px}
+@media(max-width:1100px){ .of-stats{grid-template-columns:repeat(3,1fr)} }
+@media(max-width:860px){ .of-stats{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:560px){
+ .of-hero{padding:18px 16px} .of-hero h1{font-size:1.15rem} .of-hero-ic{display:none}
+ .of-body{padding:15px 15px}
+ .of-stats{grid-template-columns:1fr 1fr;gap:9px}
+ .of-stat{padding:12px 12px} .of-stat .v{font-size:1.05rem}
+ .of-btn{flex:1;justify-content:center}
+}
+</style>
+
+<div class="of-hero">
+    <div class="of-hero-tx">
+        <span class="of-kick"><i class="fas fa-gift"></i> RESELLER OFFERS</span>
+        <h1>অর্ডার সম্পন্ন করুন, Reward জিতে নিন</h1>
+        <p>Target পূরণ করে Cash reward আপনার wallet-এ নিন। প্রতিটি reseller-এর progress সম্পূর্ণ আলাদা।</p>
+    </div>
+    <div class="of-hero-ic"><i class="fas fa-gift"></i></div>
+</div>
+
+<div class="of-stats" id="ofStats"></div>
+<div class="of-filters" id="ofFilters"></div>
+<div class="of-list" id="ofList"></div>
+
+    </div>
+</main>
+
+<script src="../app.js"></script><script>(function(){function paint(){try{var b=document.getElementById("ordersBadge");var uid=sessionStorage.getItem("user_id");if(!uid)return;if(sessionStorage.getItem("user_type")!=="reseller")return;var n=(typeof resellerNewOrderCount==="function")?resellerNewOrderCount(uid):0;if(b){b.textContent=n;b.style.display=n>0?"inline-block":"none";}var lb=document.getElementById("ordersBadgeLabel");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+/* ---- session / identity (never trust a URL param) ---- */
+var uid = sessionStorage.getItem('user_id');
+var utype = sessionStorage.getItem('user_type');
+if (!uid || utype !== 'reseller') { window.location.replace('login.html'); }
+var ME = null;
+function loadMe() {
+    var list = getData(DB_KEYS.RESELLERS) || [];
+    for (var i = 0; i < list.length; i++) { if (String(list[i].id) === String(uid)) { ME = list[i]; break; } }
+    return !!ME;
+}
+if (!loadMe()) { sessionStorage.clear(); window.location.replace('login.html'); }
+var RID = ME ? ME.id : null;
+function sEsc(v) {
+    return String(v === undefined || v === null ? '' : v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function sMoney(n) { return '\u09F3' + (Number(n) || 0).toLocaleString('en-IN'); }
+function sSet(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; }
+function sHtml(id, v) { var e = document.getElementById(id); if (e) e.innerHTML = v; }
+try {
+    sSet('userName', ME.businessName || ME.name || 'Reseller');
+    sSet('topBalance', (Number(ME.balance) || 0).toLocaleString('en-IN'));
+} catch (e) {}
+</script>
+<script>
+/* ================= Reseller Offers page ================= */
+var ofFilter = 'all';
+var ofBusy = {};
+
+function ofFmtDate(ms) {
+    if (!ms) return '—';
+    try { return new Date(ms).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); }
+    catch (e) { return '—'; }
+}
+function ofRemaining(ms) {
+    if (!ms) return '';
+    var diff = ms - Date.now();
+    if (diff <= 0) return 'সময় শেষ';
+    var d = Math.floor(diff / 86400000);
+    var h = Math.floor((diff % 86400000) / 3600000);
+    if (d > 0) return d + ' দিন ' + h + ' ঘণ্টা বাকি';
+    var m = Math.floor((diff % 3600000) / 60000);
+    return h + ' ঘণ্টা ' + m + ' মিনিট বাকি';
+}
+
+function ofRenderStats(list) {
+    var active = 0, prog = 0, ready = 0, claimed = 0, earned = 0;
+    for (var i = 0; i < list.length; i++) {
+        var st = offerStatusFor(list[i], RID);
+        if (st === 'available' || st === 'in_progress') { active++; if (st === 'in_progress') prog++; }
+        if (st === 'ready') ready++;
+        if (st === 'claimed') {
+            claimed++;
+            var s = getOfferState(list[i].id, RID);
+            if (s && s.rewardMethod === 'cash') earned += Number(s.rewardAmount) || 0;
+        }
+    }
+    var cards = [
+        { l: 'Active Offers', v: active },
+        { l: 'In Progress', v: prog },
+        { l: 'Ready to Claim', v: ready },
+        { l: 'Rewards Earned', v: sMoney(earned), g: earned > 0 }
+    ];
+    var h = '';
+    for (var j = 0; j < cards.length; j++) {
+        h += '<div class="of-stat"><div class="l">' + sEsc(cards[j].l) + '</div><div class="v' + (cards[j].g ? ' g' : '') + '">' + sEsc(cards[j].v) + '</div></div>';
+    }
+    sHtml('ofStats', h);
+}
+
+function ofRenderFilters(list) {
+    var groups = { all: 'All', available: 'Available', in_progress: 'In Progress', ready: 'Ready to Claim', claimed: 'Claimed', expired: 'Expired / Closed' };
+    var h = '';
+    for (var k in groups) {
+        if (!Object.prototype.hasOwnProperty.call(groups, k)) continue;
+        h += '<button class="of-chip' + (ofFilter === k ? ' on' : '') + '" onclick="ofSetFilter(\'' + k + '\')">' + groups[k] + '</button>';
+    }
+    sHtml('ofFilters', h);
+}
+window.ofSetFilter = function (f) { ofFilter = f; ofRender(); };
+
+function ofMatchFilter(o, st) {
+    if (ofFilter === 'all') return true;
+    if (ofFilter === 'expired') return (st === 'expired' || st === 'closed' || st === 'limit_reached' || st === 'not_eligible');
+    return st === ofFilter;
+}
+
+function ofBannerHtml(o) {
+    var bs = offerBanners(o);
+    if (!bs.length) return '';
+    if (bs.length === 1) {
+        var b = bs[0];
+        var link = bannerLinkTarget(b);
+        var inner = '<img src="' + sEsc(b.image || '') + '" alt="' + sEsc(b.title || 'Offer banner') + '" loading="lazy">';
+        if (link) return '<a class="of-bn" href="' + sEsc(link) + '" target="_blank" rel="noopener">' + inner + '</a>';
+        return '<div class="of-bn">' + inner + '</div>';
+    }
+    var h = '<div class="of-bn multi">';
+    for (var i = 0; i < bs.length; i++) {
+        var b2 = bs[i], l2 = bannerLinkTarget(b2);
+        var img = '<img src="' + sEsc(b2.image || '') + '" alt="' + sEsc(b2.title || 'Offer banner') + '" loading="lazy">';
+        h += l2 ? '<a href="' + sEsc(l2) + '" target="_blank" rel="noopener">' + img + '</a>' : img;
+    }
+    return h + '</div>';
+}
+
+function ofCardHtml(o) {
+    var st = offerStatusFor(o, RID);
+    var pr = offerProgress(o, RID);
+    var state = getOfferState(o.id, RID);
+    var validUntil = offerValidUntilMs(o);
+    var limit = Number(o.claimLimit) || 0;
+    var used = offerClaimsUsed(o);
+
+    var meta = '';
+    meta += '<div class="of-mi">Target<b>' + sEsc(pr.target) + ' orders</b></div>';
+    meta += '<div class="of-mi">Reward<b>' + sEsc(offerRewardLabel(o)) + '</b></div>';
+    if (Number(o.windowDays)) meta += '<div class="of-mi">Completion Window<b>' + sEsc(o.windowDays) + ' দিন</b></div>';
+    if (validUntil) meta += '<div class="of-mi">Offer Valid Till<b>' + sEsc(ofFmtDate(validUntil)) + '</b></div>';
+    meta += '<div class="of-mi">Claim Limit<b>' + (limit > 0 ? (used + ' / ' + limit) : 'Unlimited') + '</b></div>';
+
+    var prog = '';
+    if (pr.started && (st === 'in_progress' || st === 'ready' || st === 'claimed')) {
+        prog = '<div class="of-prog"><div class="of-prog-h"><b>Progress</b><span>' + sEsc(pr.count) + ' / ' + sEsc(pr.target) + ' delivered orders</span></div>' +
+            '<div class="of-bar' + (pr.complete ? ' done' : '') + '"><i style="width:' + pr.pct + '%"></i></div>';
+        if (st !== 'claimed' && pr.deadlineMs) {
+            var bad = Date.now() > pr.deadlineMs;
+            prog += '<div class="of-time ' + (bad ? 'bad' : (pr.pct >= 80 ? 'ok' : '')) + '">' +
+                (bad ? 'Completion window শেষ — ' + sEsc(ofFmtDate(pr.deadlineMs)) : 'Deadline: ' + sEsc(ofFmtDate(pr.deadlineMs)) + ' • ' + sEsc(ofRemaining(pr.deadlineMs))) + '</div>';
+        }
+        prog += '</div>';
+    }
+
+    var note = '';
+    if (st === 'claimed') {
+        var isCash = state && state.rewardMethod === 'cash';
+        note = '<div class="of-note ok"><b>✓ Claimed</b> — ' + (isCash ? sEsc(sMoney(state.rewardAmount)) + ' আপনার wallet-এ যোগ হয়েছে।' : 'Reward link claim করা হয়েছে।') +
+            (state && state.rewardRef ? '<br><span class="of-ref">Ref: ' + sEsc(state.rewardRef) + '</span>' : '') + '</div>';
+    } else if (st === 'ready') {
+        note = '<div class="of-note ok"><b>🎉 Target পূরণ হয়েছে!</b> এখনই reward claim করুন।</div>';
+    } else if (st === 'expired') {
+        note = '<div class="of-note">' + sEsc(o.closedMessage || 'এই offer-এর সময় শেষ হয়ে গেছে।') + '</div>';
+    } else if (st === 'closed') {
+        note = '<div class="of-note">' + sEsc(o.closedMessage || 'এই offer বন্ধ করে দেওয়া হয়েছে।') + '</div>';
+    } else if (st === 'limit_reached') {
+        note = '<div class="of-note bad">Global claim limit পূর্ণ হয়ে গেছে — আর claim করা যাবে না।</div>';
+    } else if (st === 'not_eligible') {
+        note = '<div class="of-note">আপনি এই offer-এর জন্য eligible নন।</div>';
+    } else if (st === 'available') {
+        note = '<div class="of-note">Offer শুরু করতে <b>Start</b> চাপুন — তারপর থেকে ' + sEsc(o.windowDays || 0) + ' দিনের মধ্যে ' + sEsc(pr.target) + 'টি delivered order করতে হবে।</div>';
+    }
+
+    var acts = '';
+    var oid = sEsc(o.id);
+    if (st === 'available') {
+        acts = '<button class="of-btn pri" onclick="ofStart(\'' + oid + '\')"><i class="fas fa-play"></i> Start Offer</button>';
+    } else if (st === 'in_progress') {
+        acts = '<button class="of-btn gh" disabled><i class="fas fa-spinner"></i> In Progress — ' + sEsc(pr.count) + '/' + sEsc(pr.target) + '</button>';
+    } else if (st === 'ready') {
+        acts = '<button class="of-btn ok" onclick="ofClaim(\'' + oid + '\')"><i class="fas fa-gift"></i> Claim Reward' +
+            (o.rewardMethod === 'link' ? '' : ' — ' + sEsc(sMoney(o.rewardAmount))) + '</button>';
+    } else if (st === 'claimed') {
+        acts = '<button class="of-btn gh" disabled><i class="fas fa-check"></i> Claimed</button>';
+    } else {
+        acts = '<button class="of-btn gh" disabled><i class="fas fa-lock"></i> ' + sEsc(offerStatusLabel(st)) + '</button>';
+    }
+
+    return '<div class="of-card' + ((st === 'expired' || st === 'closed' || st === 'claimed' || st === 'limit_reached') ? ' dim' : '') + '" data-offer-id="' + sEsc(o.id) + '">' +
+        ofBannerHtml(o) +
+        '<div class="of-body">' +
+        '<div class="of-top"><div class="of-title">' + sEsc(o.title || ('Offer #' + o.id)) + '</div>' +
+        '<span class="of-badge ' + st + '">' + sEsc(offerStatusLabel(st)) + '</span></div>' +
+        (o.description ? '<div class="of-desc">' + sEsc(o.description) + '</div>' : '') +
+        '<div class="of-meta">' + meta + '</div>' +
+        prog + note +
+        '<div class="of-acts">' + acts + '</div>' +
+        '</div></div>';
+}
+
+function ofRender() {
+    var all = offersForReseller(RID);
+    ofRenderStats(all);
+    ofRenderFilters(all);
+    var shown = [];
+    for (var i = 0; i < all.length; i++) {
+        if (ofMatchFilter(all[i], offerStatusFor(all[i], RID))) shown.push(all[i]);
+    }
+    if (!shown.length) {
+        sHtml('ofList', '<div class="of-empty"><i class="fas fa-gift"></i><b>' +
+            (all.length ? 'এই filter-এ কোনো offer নেই' : 'এখনো কোনো offer নেই') +
+            '</b>' + (all.length ? 'অন্য filter দেখুন।' : 'Admin নতুন offer যোগ করলে এখানে দেখা যাবে।') + '</div>');
+        return;
+    }
+    var h = '';
+    for (var j = 0; j < shown.length; j++) h += ofCardHtml(shown[j]);
+    sHtml('ofList', h);
+    ofSpotlight();
+}
+
+/* ---------- deep link (?offer=<id>) ----------
+   The dashboard banner links here with the offer it belongs to. Without this
+   the click only reached a generic list and the user could not tell WHICH
+   offer the banner advertised — the reported "click does not open offers".
+   We scroll that card into view and flash it, and we clear a filter that would
+   have hidden it, so the target is always actually visible. */
+function ofSpotlight() {
+    var id = '';
+    try { id = new URLSearchParams(location.search).get('offer') || ''; } catch (e) { id = ''; }
+    if (!id) return;
+    var card = document.querySelector('.of-card[data-offer-id="' + String(id).replace(/"/g, '') + '"]');
+    if (!card) {
+        /* the card exists but a filter is hiding it -> clear the filter and retry */
+        if (typeof ofFilter !== 'undefined' && ofFilter && ofFilter !== 'all') {
+            ofFilter = 'all';
+            try { ofRender(); } catch (e) {}
+            card = document.querySelector('.of-card[data-offer-id="' + String(id).replace(/"/g, '') + '"]');
+        }
+    }
+    if (!card) return;
+    /* jsdom (and some very old browsers) have no scrollIntoView — guard it so a
+       missing method can never abort the deep-link, and so the harness stays
+       clean. The spotlight class must still be applied either way. */
+    try {
+        if (typeof card.scrollIntoView === 'function') card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (e) { /* scroll is cosmetic — never fatal */ }
+    card.classList.add('of-spot');
+    setTimeout(function () { card.classList.remove('of-spot'); }, 2600);
+}
+
+/* ---------- actions ---------- */
+window.ofStart = function (offerId) {
+    if (ofBusy[offerId]) return;
+    ofBusy[offerId] = true;
+    var r = startOffer(offerId, RID);
+    delete ofBusy[offerId];
+    if (!r.ok) { showToast(r.message, 'error'); return; }
+    showToast('Offer শুরু হয়েছে — এখন থেকে count হবে!', 'success');
+    ofRender();
+};
+
+window.ofClaim = function (offerId) {
+    if (ofBusy[offerId]) return;              /* double-click guard */
+    ofBusy[offerId] = true;
+    var btn = event && event.target ? event.target.closest('button') : null;
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing…'; }
+    var r = claimOffer(offerId, RID);
+    delete ofBusy[offerId];
+    if (!r.ok) {
+        showToast(r.message, r.already ? 'warning' : 'error');
+        ofRender();
+        return;
+    }
+    if (r.method === 'link') {
+        showToast('Reward claim হয়েছে — link খোলা হচ্ছে।', 'success');
+        if (r.link) { try { window.open(r.link, '_blank', 'noopener'); } catch (e) {} }
+    } else {
+        showToast('🎉 ' + r.message, 'success');
+        loadMe();
+        try { sSet('topBalance', (Number(ME.balance) || 0).toLocaleString('en-IN')); } catch (e) {}
+    }
+    ofRender();
+};
+
+ofRender();
+
+</script>
+</body>
+</html>

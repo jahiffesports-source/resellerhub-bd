@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transactions - ResellerHub BD</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body {font-family:'Inter',sans-serif;background:#f5f6fa;color:#1e293b;padding-bottom:50px; overflow-x:hidden; }
+.top{background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;padding:18px 20px;position:sticky;top:0;z-index:100;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+/* 2026-09-19 — FULL SCREEN (this request).
+   Both the header row and the content row were capped at 1000px and centred
+   (`.top-in` / `.wrap`), so on a desktop this page rendered as a narrow column
+   with a large empty gap to its right — every other reseller panel page uses
+   `.content{max-width:100%}` and fills the width. The caps are lifted here.
+   Nothing else changes: the sidebar offset (.top, .wrap{margin-left:248px}),
+   the 16px side gutter and the 20px top gap are all still in place, so the
+   content simply spans the full width beside the sidebar. */
+.top-in{max-width:100%;margin:0 auto;display:flex;align-items:center;gap:14px}
+.top-in a{color:#93c5fd;font-size:.82rem;font-weight:700}
+.top-in h1{font-size:1.05rem;font-weight:800}
+.wrap{max-width:100%;margin:20px auto;padding:0 16px}
+.balcard{background:linear-gradient(135deg,#10b981,#059669);color:#fff;border-radius:16px;padding:24px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.balcard .lab{font-size:.75rem;opacity:.9;font-weight:700;letter-spacing:1px}
+.balcard .amt{font-size:2rem;font-weight:900}
+.balcard .side{text-align:right;font-size:.75rem;font-weight:700;opacity:.95}
+.filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.fchip{padding:8px 18px;border-radius:20px;font-size:.78rem;font-weight:800;background:#fff;border:1.5px solid #e2e8f0;cursor:pointer;color:#475569}
+.fchip.on{background:#2563eb;border-color:#2563eb;color:#fff}
+.card{background:#fff;border-radius:14px;box-shadow:0 3px 14px rgba(15,23,42,.06);overflow:hidden;margin-bottom:16px}
+.tx{display:flex;align-items:center;gap:13px;padding:14px 16px;border-bottom:1px solid #f3f4f6}
+.tx:last-child{border:none}
+.tx .ic{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex:none}
+.tx .ic.cr{background:#dcfce7;color:#16a34a}
+.tx .ic.db{background:#fee2e2;color:#dc2626}
+.tx .mid{flex:1;min-width:0}
+.tx .mid b{font-size:.85rem;display:block}
+.tx .mid small{color:#64748b;font-size:.7rem;display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx .amt{text-align:right}
+.tx .amt b{font-size:.9rem;display:block}
+.tx .amt.cr b{color:#16a34a}
+.tx .amt.db b{color:#dc2626}
+.tx .amt small{font-size:.65rem;color:#94a3b8}
+.tag{display:inline-block;font-size:.58rem;font-weight:800;padding:2px 8px;border-radius:10px;margin-top:3px}
+.tag.w{background:#fef3c7;color:#a16207}
+.tag.a{background:#ede9fe;color:#6d28d9}
+.tag.f{background:#fee2e2;color:#b91c1c}
+.tag.o{background:#dcfce7;color:#15803d}
+.tag.r{background:#e0e7ff;color:#4338ca}
+.empty{text-align:center;color:#94a3b8;padding:50px 16px;font-size:.9rem}
+.note-box{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;font-size:.78rem;color:#92400e;margin:14px 0 4px}
+@media(max-width:600px){.balcard .amt{font-size:1.5rem}}
+</style>
+
+<style id="lx-theme">
+/* ============ ResellerHub Premium Theme (visual-only overrides) ============ */
+:root { --lx-pri:#4f46e5; --lx-prid:#4338ca; --lx-vio:#7c3aed; --lx-grn:#10b981; }
+@keyframes lxPgUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+@keyframes lxPop { from{opacity:0;transform:scale(.94)} to{opacity:1;transform:none} }
+@keyframes lxRow { from{opacity:0;transform:translateX(-14px)} to{opacity:1;transform:none} }
+
+body { background:#eef1f9 !important; }
+
+/* ---- Sidebar (same classes as dashboard theme) ---- */
+.sidebar { background:linear-gradient(180deg,#0b1029 0%,#151a3a 100%) !important; box-shadow:4px 0 24px rgba(11,16,41,.35); }
+.sidebar-logo-icon { background:linear-gradient(135deg,#4f46e5,#7c3aed) !important; border-radius:12px !important; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+.sidebar-logo h3 { font-weight:900 !important; }
+.sidebar-logo small { color:#818cf8 !important; font-weight:700; letter-spacing:1px; }
+.sidebar-menu { padding:12px 10px !important; }
+.sidebar-menu a { border-radius:11px !important; margin:3px 0; font-weight:600 !important; transition:all .22s !important; }
+.sidebar-menu a:hover { background:rgba(129,140,248,.14) !important; color:#fff !important; transform:translateX(4px); }
+.sidebar-menu a.active { background:linear-gradient(135deg,#4f46e5,#7c3aed) !important; color:#fff !important; box-shadow:0 8px 20px rgba(79,70,229,.4) !important; }
+.sidebar-divider { color:#6366f1 !important; font-weight:800 !important; letter-spacing:1.4px !important; }
+.menu-badge { box-shadow:0 3px 8px rgba(245,158,11,.4); }
+
+/* ---- Topbar ---- */
+.topbar { background:rgba(255,255,255,.88) !important; backdrop-filter:blur(12px); box-shadow:0 2px 14px rgba(15,23,42,.06) !important; }
+            /* 2026-09-16 — MOBILE FIX (this request). The topbar measured about 440px
+               across on a 390px phone, so the logout button was pushed past the right
+               edge and looked cut off. These rules tighten the SAME header so it fits a
+               narrow screen. Nothing is hidden and nothing outside this media query is
+               touched, so the desktop layout is unchanged. */
+            .topbar { padding:10px 12px; }
+            .topbar-left { gap:8px; }
+            .topbar h2 { font-size:.98rem; }
+            .topbar-right { gap:6px; }
+            .topbar-balance { padding:6px 10px; font-size:.78rem; }
+            .topbar-user { padding:5px 10px; font-size:.78rem; }
+            .topbar-user span { max-width:52px; }
+
+.topbar-balance { background:linear-gradient(135deg,#fbbf24,#f59e0b) !important; color:#7c2d12 !important; font-weight:800 !important; box-shadow:0 4px 12px rgba(245,158,11,.35); }
+.topbar-user { background:#eef2ff !important; color:#4f46e5 !important; font-weight:700 !important; }
+.btn-logout { background:#fee2e2 !important; color:#dc2626 !important; transition:all .25s !important; }
+.btn-logout:hover { background:#dc2626 !important; color:#fff !important; transform:translateY(-1px); }
+
+/* ---- Cards & tables ---- */
+.card { border-radius:20px !important; border:1px solid #eef2f7 !important; box-shadow:0 4px 16px rgba(15,23,42,.05) !important; transition:box-shadow .28s, transform .28s !important; animation:lxPgUp .5s ease both; }
+.card:hover { box-shadow:0 16px 34px rgba(15,23,42,.1) !important; }
+.card-header h4 i { color:#4f46e5 !important; }
+.data-table th { font-weight:700 !important; }
+.data-table tr:hover td { background:#f8faff !important; }
+.badge { font-weight:700 !important; }
+
+/* ---- Buttons ---- */
+.btn { border-radius:9px !important; transition:all .25s !important; }
+.btn-primary { background:linear-gradient(135deg,#4f46e5,#4338ca) !important; }
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 18px rgba(79,70,229,.35); }
+.btn-success { background:linear-gradient(135deg,#10b981,#059669) !important; }
+.btn-success:hover { transform:translateY(-2px); box-shadow:0 8px 18px rgba(16,185,129,.35); }
+
+/* ---- Stats / status cards ---- */
+.stat-card { border-radius:18px !important; border:1px solid #eef2f7 !important; box-shadow:0 3px 14px rgba(15,23,42,.05) !important; transition:all .28s !important; animation:lxPgUp .5s ease both; }
+.stat-card:hover { transform:translateY(-4px) !important; box-shadow:0 16px 32px rgba(15,23,42,.11) !important; }
+.status-cards .stat-card:nth-child(1), .stats-row .stat-card:nth-child(1) { animation-delay:.08s; }
+.status-cards .stat-card:nth-child(2), .stats-row .stat-card:nth-child(2) { animation-delay:.16s; }
+.status-cards .stat-card:nth-child(3), .stats-row .stat-card:nth-child(3) { animation-delay:.24s; }
+.status-cards .stat-card:nth-child(4), .stats-row .stat-card:nth-child(4) { animation-delay:.32s; }
+.stat-icon.green { background:linear-gradient(135deg,#d1fae5,#a7f3d0) !important; color:#059669 !important; }
+.stat-icon.blue { background:linear-gradient(135deg,#e0e7ff,#c7d2fe) !important; color:#4f46e5 !important; }
+.stat-icon.orange { background:linear-gradient(135deg,#fef3c7,#fde68a) !important; color:#d97706 !important; }
+.stat-icon.purple { background:linear-gradient(135deg,#ede9fe,#ddd6fe) !important; color:#7c3aed !important; }
+
+/* ---- Inputs ---- */
+input,select,textarea { border-radius:10px !important; transition:border-color .2s, box-shadow .2s !important; }
+input:focus,select:focus,textarea:focus { border-color:#4f46e5 !important; box-shadow:0 0 0 3px rgba(79,70,229,.12) !important; outline:none !important; }
+
+/* ---- Modals ---- */
+.modal-overlay.show .modal { animation:lxPop .32s cubic-bezier(.2,.9,.3,1.15) both; }
+
+/* ---- Content entrance ---- */
+.content > * { animation:lxPgUp .5s ease both; }
+.content > *:nth-child(2) { animation-delay:.08s; }
+.content > *:nth-child(3) { animation-delay:.16s; }
+.content > *:nth-child(4) { animation-delay:.24s; }
+.content > *:nth-child(5) { animation-delay:.32s; }
+
+/* ---- Floating bottom nav (products page) ---- */
+.bottom-nav { background:rgba(255,255,255,.92) !important; backdrop-filter:blur(14px); border:1px solid #eef2f7 !important; border-radius:20px !important; bottom:10px !important; left:12px !important; right:12px !important; box-shadow:0 10px 30px rgba(15,23,42,.16) !important; }
+.bottom-nav a.active { color:#4f46e5 !important; background:#eef2ff !important; }
+
+/* ---- Page-specific polish ---- */
+.products-grid { animation:lxPgUp .5s .2s ease both; }
+.section-head h2 { font-weight:900 !important; }
+.courier-card, .contact-card { border-radius:18px !important; transition:all .28s !important; }
+.courier-card:hover, .contact-card:hover { transform:translateY(-4px); box-shadow:0 16px 34px rgba(15,23,42,.12) !important; }
+.profile-header { border-radius:20px !important; overflow:hidden; }
+.panel { border-radius:20px !important; border:1px solid #eef2f7 !important; box-shadow:0 4px 16px rgba(15,23,42,.05) !important; }
+.balcard { border-radius:20px !important; }
+.fchip { transition:all .2s !important; }
+.fchip:hover { transform:translateY(-2px); }
+.tx { transition:background .2s !important; }
+.tx:hover { background:#f8faff !important; }
+.welcome { border-radius:22px !important; }
+</style>
+
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+
+/* 2026-09-17 — the sidebar was missing on this page, so opening Transactions removed
+   the whole nav and every item below it appeared to jump. This page now carries the
+   same sidebar as the other reseller pages, and the content is pushed right to make
+   room for it. Nothing else on the page is changed. */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:248px;overflow-y:auto;z-index:50}
+.top, .wrap{margin-left:248px}
+/* 2026-09-18 — the sidebar is NO LONGER display:none here. It is a drawer that
+   slides in from the left, so the bottom nav's "Menu" button finally has
+   something to open. The .open state lives in lx-sidebar-restore below. */
+@media(max-width:900px){ .top, .wrap{margin-left:0} }
+</style>
+
+<style id="lx-sidebar-restore">
+/* ============================================================================
+   2026-09-18 — SIDEBAR RESTORED (this request)
+   ----------------------------------------------------------------------------
+   This page was retro-fitted with a sidebar on 2026-09-17, but only the
+   one-line geometry patch came with it. The BASE layout — .sidebar-header,
+   .sidebar-logo, .sidebar-close-m, .sidebar-menu li, .sidebar-menu a i,
+   .menu-badge-n — was never carried over, so the header collapsed and the menu
+   rows fell back to inline text. That is why this panel's sidebar looked
+   squeezed next to every other panel's.
+
+   The rules below are copied VERBATIM from reseller/customer-messages.html, a
+   page whose sidebar is correct. Nothing is retyped by hand. Every selector is
+   scoped to the sidebar, so no other part of this page can be affected, and the
+   block sits LAST in <head> so it wins on equal specificity.
+
+   The animation is the same one the other panels use: `dashSide` slides the
+   header and each menu row in from the left while fading them up.
+   ============================================================================ */
+
+/* --- the entrance the other panels have on their sidebar --- */
+@keyframes dashSide { from{opacity:0;transform:translateX(-24px)} to{opacity:1;transform:none} }
+.sidebar-header, .sidebar-menu a { animation:dashSide .4s ease both; }
+
+/* --- base sidebar layout (verbatim from customer-messages.html) --- */
+.sidebar { position:fixed; left:0; top:0; bottom:0; width:248px; background:linear-gradient(180deg,#0b1029 0%,#151a3a 100%); color:#c7d2fe; z-index:200; overflow-y:auto; transition:transform 0.3s; box-shadow:4px 0 24px rgba(11,16,41,.35); }
+.sidebar-header { padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; justify-content:space-between; align-items:center; }
+.sidebar-logo { display:flex; align-items:center; gap:10px; }
+.sidebar-logo-icon { width:40px; height:40px; background:linear-gradient(135deg,#4f46e5,#7c3aed); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+.sidebar-logo h3 { color:white; font-size:1rem; font-weight:900; }
+.sidebar-logo small { color:#818cf8; font-size:0.66rem; display:block; font-weight:700; letter-spacing:1px; }
+.sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; }
+.sidebar-menu { list-style:none; padding:12px 10px; }
+.sidebar-menu li { margin:3px 0; }
+.sidebar-menu a { display:flex; align-items:center; gap:12px; padding:11px 15px; color:#c7d2fe; text-decoration:none; font-size:0.88rem; font-weight:600; border-radius:11px; transition:all .22s; }
+.sidebar-menu a:hover { background:rgba(129,140,248,.14); color:white; transform:translateX(4px); }
+.sidebar-menu a.active { background:linear-gradient(135deg,#4f46e5,#7c3aed); color:white; box-shadow:0 8px 20px rgba(79,70,229,.4); }
+.sidebar-menu a i { width:18px; text-align:center; }
+.sidebar-divider { padding:15px 15px 5px; color:#6366f1; font-size:0.66rem; text-transform:uppercase; letter-spacing:1.4px; font-weight:800; }
+.menu-badge { background:#fbbf24; color:#1e293b; font-size:0.68rem; padding:1px 8px; border-radius:10px; font-weight:800; margin-left:auto; }
+.menu-badge-n { color:#fbbf24; font-weight:900; }
+.side-overlay { display:none; position:fixed; inset:0; background:rgba(11,16,41,.55); z-index:150; backdrop-filter:blur(2px); }
+.side-overlay.show { display:block; }
+.sidebar.open { transform:translateX(0); }
+
+/* --- the canonical sidebar geometry (verbatim from lx-sidebar-fix) --- */
+.sidebar .sidebar-menu a span{ display:inline !important; }
+.sidebar .sidebar-menu .sidebar-divider,
+.sidebar .sidebar-divider{ display:block !important; }
+.sidebar .sidebar-logo h3{ display:block !important; }
+.sidebar .sidebar-logo small{ display:block !important; }
+.sidebar{ width:248px !important; z-index:900 !important; overflow-y:auto !important; }
+.side-overlay{ z-index:880 !important; }
+.sidebar .sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.sidebar .sidebar-menu li{ position:relative; display:block; margin:3px 0; }
+.sidebar .sidebar-menu a{ display:flex !important; align-items:center; gap:12px; padding:11px 15px; }
+.sidebar .menu-badge{ position:absolute; right:12px; top:50%; transform:translateY(-50%); margin-left:0 !important; }
+.sidebar .sidebar-close-m{ display:none; }
+
+/* --- MOBILE DRAWER (2026-09-18, this request) -------------------------------
+   This page hid the sidebar completely at ≤900px, so the bottom nav's "Menu"
+   button had nothing to open: app.js's menuToggle() ran, found the drawer, and
+   then threw "toggleSidebar is not defined" — nothing happened at all.
+   The sidebar is now a real drawer, exactly like the other panels: it slides in
+   from the left over the page, and the × inside it or a tap on the overlay
+   closes it. 900px is this page's own breakpoint — the same one the rule above
+   uses to drop the content margin. */
+@media(max-width:900px){
+    .sidebar{ display:block !important; transform:translateX(-100%) !important;
+              transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; }
+    .sidebar.open{ transform:translateX(0) !important; box-shadow:24px 0 60px rgba(11,16,41,.45) !important; }
+    .sidebar .sidebar-close-m{ display:block !important; }
+}
+
+/* --- the drawer must paint above the fixed mobile bottom-nav (lx-logout-fix) --- */
+.sidebar{ z-index:900 !important; }
+.side-overlay{ z-index:880 !important; }
+.sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+</style>
+</head>
+<body>
+<div class="sidebar" id="rhSidebar">
+<div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon"><i class="fas fa-store"></i></div>
+            <div><h3>ResellerHub</h3><small>Reseller Panel</small></div>
+        </div>
+        
+        <button class="sidebar-close-m" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+        <ul class="sidebar-menu">
+        <li class="sidebar-divider">Main</li>
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+        <li><a href="products.html"><i class="fas fa-box"></i> <span>Products</span></a></li>
+        <li><a href="my-shop.html"><i class="fas fa-store"></i> <span>My Shop</span></a></li>
+        <li><a href="transactions.html" class="active"><i class="fas fa-right-left"></i> <span>Transactions</span></a></li>
+        <li class="sidebar-divider">Orders</li>
+        <li><a href="my-orders.html"><i class="fas fa-list"></i> <span>All Orders<span class="menu-badge-n" id="ordersBadgeLabel"></span></span></a> <span class="menu-badge" id="ordersBadge" style="display:none">0</span></li>
+        <li><a href="order.html"><i class="fas fa-cart-plus"></i> <span>Add New Order</span></a></li>
+        <li><a href="offers.html"><i class="fas fa-gift"></i> <span>Offers</span></a></li>
+        <li class="sidebar-divider">My Shop</li>
+        <li><a href="shop-categories.html"><i class="fas fa-sitemap"></i> <span>Shop Categories</span></a></li>
+        <li><a href="my-shop-settings.html"><i class="fas fa-sliders"></i> <span>Shop Settings</span></a></li>
+        <li><a href="my-products.html"><i class="fas fa-box-open"></i> <span>My Products</span></a></li>
+        <li><a href="my-shop-orders.html"><i class="fas fa-bag-shopping"></i> <span>My Shop Orders</span></a></li>
+        <li><a href="customer-messages.html"><i class="fas fa-comment-dots"></i> <span>Customer Messages<span class="menu-badge-n" id="cmsgBadgeLabel"></span></span></a></li>
+        <li class="sidebar-divider">Account</li>
+        <li><a href="wallet.html"><i class="fas fa-wallet"></i> <span>Wallet</span></a></li>
+        <li><a href="withdrawals.html"><i class="fas fa-money-bill-wave"></i> <span>Withdrawals</span></a></li>
+        <li><a href="courier.html"><i class="fas fa-truck"></i> <span>Courier</span></a></li>
+        <li><a href="messages.html"><i class="fas fa-comments"></i> <span>Messages<span class="menu-badge-n" id="msgBadgeLabel"></span></span></a></li>
+        <li><a href="support.html"><i class="fas fa-headset"></i> <span>Support</span></a></li>
+        <li><a href="profile.html"><i class="fas fa-user-cog"></i> <span>Profile</span></a></li>
+        <li><a href="referral.html"><i class="fas fa-user-plus"></i> <span>Referral</span></a></li>
+        <li><a href="website-integration.html"><i class="fas fa-plug"></i> <span>Website Integration</span></a></li>
+        <li><a href="../index.html"><i class="fas fa-globe"></i> <span>Visit Site</span></a></li>
+        <li><a href="javascript:void(0)" onclick="resellerLogout()" style="color:#dc2626"><i class="fas fa-right-from-bracket"></i> <span>Logout</span></a></li>
+    </ul>
+</div>
+<!-- 2026-09-18 — the overlay every other panel page ships with. app.js's shared
+     toggleSidebar() opens the drawer and then reveals this IF IT EXISTS, so
+     without it the drawer opened with no dimmed backdrop and no way to close it
+     by tapping outside. -->
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+
+<div class="top"><div class="top-in">
+    <a href="dashboard.html"><i class="fas fa-arrow-left"></i> Dashboard</a>
+    <h1><i class="fas fa-right-left" style="color:#34d399;margin-right:6px"></i> Transactions</h1>
+</div></div>
+
+<div class="wrap">
+    <div class="balcard">
+        <div><div class="lab">CURRENT BALANCE</div><div class="amt" id="curBal">৳0</div></div>
+        <div class="side">
+            <div>Total Credit: <b id="totCr">৳0</b></div>
+            <div>Total Debit: <b id="totDb">৳0</b></div>
+        </div>
+    </div>
+
+    <div class="note-box"><i class="fas fa-circle-info"></i> এখানে আপনার সব টাকার হিসাব — উইথড্র, অ্যাডমিন যোগ/বাদ, ফেইল ডেলিভারি চার্জ, অর্ডার প্রফিট এবং <b>Referral Commission</b> (Order সহ) — কারণসহ দেখতে পাবেন।</div>
+
+    <div class="filters">
+        <div class="fchip on" onclick="setF('all',this)">All</div>
+        <div class="fchip" onclick="setF('credit',this)">Credit (+)</div>
+        <div class="fchip" onclick="setF('debit',this)">Debit (−)</div>
+        <div class="fchip" onclick="setF('withdraw',this)">Withdraw</div>
+        <div class="fchip" onclick="setF('admin',this)">Admin</div>
+        <div class="fchip" onclick="setF('failed_delivery',this)">Failed Delivery</div>
+        <div class="fchip" onclick="setF('referral',this)">Referral</div>
+    </div>
+
+    <div class="card" id="txList"></div>
+</div>
+
+<script src="../app.js"></script><script>(function(){function paint(){try{var b=document.getElementById("ordersBadge");var uid=sessionStorage.getItem("user_id");if(!uid)return;if(sessionStorage.getItem("user_type")!=="reseller")return;var n=(typeof resellerNewOrderCount==="function")?resellerNewOrderCount(uid):0;if(b){b.textContent=n;b.style.display=n>0?"inline-block":"none";}var lb=document.getElementById("ordersBadgeLabel");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+(function(){
+var uid=sessionStorage.getItem('user_id');
+if(!uid||sessionStorage.getItem('user_type')!=='reseller'){window.location.replace('login.html');return}
+var filt='all';
+/* Referral commissions are stored in this same transaction list (#34) — make sure
+   any newly delivered / cancelled orders are reflected before we render. */
+try{ if(typeof syncReferralCommissions==='function') syncReferralCommissions(); }catch(e){}
+
+function myTx(){var t=getData(DB_KEYS.TRANSACTIONS)||[];var r=[];for(var i=0;i<t.length;i++){if(String(t[i].resellerId)===String(uid))r.push(t[i])}return r}
+
+function render(){
+    var resellers=getData(DB_KEYS.RESELLERS)||[];var me=null;
+    for(var i=0;i<resellers.length;i++){if(String(resellers[i].id)===String(uid)){me=resellers[i];break}}
+    document.getElementById('curBal').textContent=formatCurrency(me?me.balance||0:0);
+    var tx=myTx();var cr=0,db=0;
+    for(var j=0;j<tx.length;j++){if(tx[j].type==='credit')cr+=tx[j].amount;else db+=tx[j].amount}
+    document.getElementById('totCr').textContent=formatCurrency(cr);
+    document.getElementById('totDb').textContent=formatCurrency(db);
+    var list=tx;
+    if(filt!=='all'){var f=[];for(var k=0;k<tx.length;k++){
+        if(filt==='credit'&&tx[k].type==='credit')f.push(tx[k]);
+        else if(filt==='debit'&&tx[k].type==='debit')f.push(tx[k]);
+        else if(filt!=='credit'&&filt!=='debit'&&tx[k].source===filt)f.push(tx[k]);
+    }list=f}
+    var h='';
+    var ICONS={withdraw:['fa-money-bill-transfer','w','Withdrawal'],admin:['fa-user-shield','a','Admin'],failed_delivery:['fa-truck-ramp-box','f','Failed Delivery'],order_profit:['fa-sack-dollar','o','Order Profit'],referral:['fa-user-plus','r','Referral Commission'],offer_reward:['fa-gift','o','Offer Reward'],system:['fa-circle-info','a','System']};
+    for(var m=0;m<list.length;m++){
+        var t=list[m];var ic=ICONS[t.source]||ICONS.system;
+        h+='<div class="tx"><div class="ic '+t.type+'"><i class="fas '+ic[0]+'"></i></div>'+
+           '<div class="mid"><b>'+(t.note||ic[2])+'</b><small>'+formatDate(t.date)+' • '+ic[2]+'</small><span class="tag '+ic[1]+'">'+ic[2]+'</span></div>'+
+           '<div class="amt '+t.type+'"><b>'+(t.type==='credit'?'+':'−')+formatCurrency(t.amount)+'</b><small>TX: '+t.id+'</small></div></div>';
+    }
+    document.getElementById('txList').innerHTML=h||'<div class="empty"><i class="fas fa-receipt" style="font-size:2.2rem"></i><br><br>No transactions yet</div>';
+}
+window.setF=function(f,el){filt=f;var cs=document.querySelectorAll('.fchip');for(var i=0;i<cs.length;i++)cs[i].classList.remove('on');el.classList.add('on');render()};
+render();
+setInterval(render,8000);
+})();
+</script>
+<!-- 2026-09-18 — no local toggleSidebar is needed here: app.js defines a SHARED
+     one (window.toggleSidebar) that opens the drawer, reveals #sideOverlay and
+     marks the body. The missing piece was the overlay ELEMENT in the markup,
+     added above — not the function. -->
+</body>
+</html>

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResellerHub BD - বাংলাদেশের #১ রিসেলার প্ল্যাটফর্ম</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root { --pri:#4f46e5; --prid:#4338ca; --vio:#7c3aed; --grn:#10b981; --gold:#fbbf24; --dark:#0f172a; --gray:#64748b; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        /* 2026-09-16 — MOBILE FIX. The body already had overflow-x:hidden, but when
+           only the body carries it the page can still be dragged sideways in some
+           mobile browsers, which is what shifted the hero off-screen. Setting it on
+           html as well makes the clip reliable. One property added. */
+        html { scroll-behavior:smooth; overflow-x:hidden; }
+        body { font-family:'Inter','Hind Siliguri',sans-serif; color:#1e293b; background:#fff; overflow-x:hidden; }
+        a { text-decoration:none; color:inherit; }
+        .container { max-width:1240px; margin:0 auto; padding:0 22px; }
+
+        /* ===== Animations ===== */
+        @keyframes fadeUp { from{opacity:0;transform:translateY(26px)} to{opacity:1;transform:none} }
+        @keyframes slideL { from{opacity:0;transform:translateX(-40px)} to{opacity:1;transform:none} }
+        @keyframes slideR { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:none} }
+        @keyframes drift { 0%,100%{transform:translate(0,0) rotate(0deg)} 33%{transform:translate(26px,-22px) rotate(4deg)} 66%{transform:translate(-18px,16px) rotate(-3deg)} }
+        @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+        @keyframes gradientMove { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        @keyframes countPop { from{opacity:0;transform:scale(.6)} to{opacity:1;transform:scale(1)} }
+        .rv { opacity:0; transform:translateY(30px); transition:opacity .8s cubic-bezier(.2,.7,.3,1), transform .8s cubic-bezier(.2,.7,.3,1); }
+        .rv.on { opacity:1; transform:none; }
+        .rv.d1{transition-delay:.12s} .rv.d2{transition-delay:.24s} .rv.d3{transition-delay:.36s}
+
+        /* ===== Nav ===== */
+        .nav { position:fixed; top:0; left:0; right:0; width:100%; background:rgba(11,16,41,.92); backdrop-filter:blur(16px); border-bottom:1px solid rgba(255,255,255,.1); z-index:1000; display:flex; align-items:center; justify-content:space-between; padding:12px 44px; box-shadow:0 10px 34px rgba(15,23,42,.35); animation:fadeUp .7s ease both; }
+        .nav .logo { display:flex; align-items:center; gap:10px; color:#fff; font-weight:900; font-size:1.08rem; }
+        .nav .logo .ic { width:38px; height:38px; border-radius:11px; background:linear-gradient(135deg,var(--pri),var(--vio)); display:flex; align-items:center; justify-content:center; font-size:1rem; }
+        .nav .links { display:flex; gap:20px; list-style:none; align-items:center; flex-wrap:nowrap !important; white-space:nowrap; }
+        .nav .links li { flex:none; }
+        .nav .links a { color:#cbd5e1; font-size:.88rem; font-weight:600; transition:color .2s; }
+        .nav .links a:hover { color:#fff; }
+        .nav .links a.hi { background:linear-gradient(135deg,var(--grn),#059669) !important; color:#fff !important; padding:10px 20px !important; border-radius:12px; font-weight:800 !important; box-shadow:0 6px 18px rgba(16,185,129,.45) !important; display:inline-flex !important; align-items:center; gap:7px; font-size:.9rem !important; }
+        .nav .links a.hi:hover { filter:brightness(1.12); }
+
+        /* ===== Hero ===== */
+        .hero { min-height:100vh; padding-top:110px; background:radial-gradient(1200px 700px at 78% 18%, #3730a3 0%, transparent 55%), radial-gradient(900px 600px at 12% 85%, #312e81 0%, transparent 55%), linear-gradient(160deg,#0b1029,#0f172a 55%,#12102e); display:flex; align-items:center; padding:130px 0 70px; position:relative; overflow:hidden; }
+        .hero .orbit { position:absolute; border:1px solid rgba(129,140,248,.16); border-radius:50%; }
+        .hero .o1 { width:640px; height:640px; top:-180px; right:-160px; animation:drift 16s ease-in-out infinite; }
+        .hero .o2 { width:420px; height:420px; bottom:-140px; left:-110px; animation:drift 20s ease-in-out infinite reverse; }
+        .hero-grid { max-width:1240px; margin:0 auto; padding:0 22px; display:grid; grid-template-columns:1.15fr 1fr; gap:56px; align-items:center; position:relative; z-index:2; width:100%; }
+        .tagline { display:inline-flex; align-items:center; gap:9px; background:rgba(99,102,241,.16); border:1px solid rgba(129,140,248,.4); color:#c7d2fe; padding:7px 16px; border-radius:24px; font-size:.78rem; font-weight:800; letter-spacing:.4px; margin-bottom:20px; animation:slideL .7s ease both; }
+        .tagline .dot { width:8px; height:8px; border-radius:50%; background:#34d399; box-shadow:0 0 0 0 rgba(52,211,153,.6); animation:bob 2.4s ease-in-out infinite; }
+        .hero h1 { color:#fff; font-size:3.35rem; font-weight:900; line-height:1.16; margin-bottom:18px; animation:slideL .75s .1s ease both; }
+        .hero h1 .grad { background:linear-gradient(90deg,#a5b4fc,#f0abfc,#67e8f9); background-size:200% auto; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; animation:gradientMove 5s linear infinite; }
+        .hero .sub { color:#94a3b8; font-size:1.08rem; max-width:540px; margin-bottom:30px; animation:slideL .75s .2s ease both; }
+        .hero .btns { display:flex; gap:13px; flex-wrap:wrap; margin-bottom:34px; animation:slideL .75s .3s ease both; }
+        .btn { padding:13px 26px; border-radius:13px; font-weight:800; font-size:.95rem; display:inline-flex; align-items:center; gap:9px; border:none; cursor:pointer; transition:all .28s; }
+        .btn-grn { background:linear-gradient(135deg,var(--grn),#059669); color:#fff; box-shadow:0 10px 26px rgba(16,185,129,.35); }
+        .btn-grn:hover { transform:translateY(-3px); box-shadow:0 16px 36px rgba(16,185,129,.45); }
+        .btn-shop { background:linear-gradient(135deg,var(--pri),var(--vio)); color:#fff; box-shadow:0 10px 26px rgba(79,70,229,.4); }
+        .btn-shop:hover { transform:translateY(-3px); box-shadow:0 16px 38px rgba(79,70,229,.5); }
+        .btn-ghost { background:transparent; color:#e2e8f0; border:1.5px solid rgba(255,255,255,.25); }
+        .btn-ghost:hover { background:rgba(255,255,255,.1); }
+        .hero .mini-stats { display:flex; gap:38px; flex-wrap:wrap; animation:slideL .75s .42s ease both; }
+        .mstat b { color:#fff; font-size:1.9rem; font-weight:900; display:block; }
+        .mstat b .n { color:#a5b4fc; }
+        .mstat span { color:#64748b; font-size:.82rem; font-weight:600; }
+        /* hero visual: stacked product cards */
+        .hero-visual { position:relative; height:460px; animation:slideR .8s .25s ease both; }
+        .pfloat { position:absolute; background:rgba(255,255,255,.06); backdrop-filter:blur(14px); border:1px solid rgba(255,255,255,.14); border-radius:20px; padding:14px; width:190px; box-shadow:0 24px 60px rgba(0,0,0,.45); transition:transform .35s; }
+        .pfloat:hover { transform:scale(1.05) rotate(0deg) !important; z-index:5; }
+        .pfloat .ph { height:120px; border-radius:14px; background:linear-gradient(135deg,#312e81,#4f46e5); display:flex; align-items:center; justify-content:center; color:#c7d2fe; font-size:2.2rem; margin-bottom:10px; overflow:hidden; }
+        .pfloat .ph img { width:100%; height:100%; object-fit:cover; border-radius:12px; }
+        .pfloat b { color:#fff; font-size:.76rem; display:block; line-height:1.3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .pfloat .locked { display:flex; align-items:center; gap:6px; color:#fde047; font-size:.68rem; font-weight:800; margin-top:7px; }
+        .pf1 { top:12px; left:30px; transform:rotate(-5deg); animation:bob 6s ease-in-out infinite; }
+        .pf2 { top:110px; right:20px; transform:rotate(4deg); animation:bob 7s .8s ease-in-out infinite; }
+        .pf3 { bottom:30px; left:90px; transform:rotate(2deg); animation:bob 8s 1.6s ease-in-out infinite; }
+        .hero-badge { position:absolute; top:-8px; right:36px; background:linear-gradient(135deg,var(--grn),#059669); color:#fff; border-radius:14px; padding:10px 16px; font-size:.72rem; font-weight:900; box-shadow:0 12px 30px rgba(16,185,129,.4); animation:bob 5s ease-in-out infinite; }
+
+        /* ===== Marquee ===== */
+        .mq { background:linear-gradient(90deg,var(--pri),var(--vio),var(--pri)); background-size:200% auto; animation:gradientMove 8s linear infinite; color:#fff; padding:11px 0; font-weight:800; font-size:.82rem; overflow:hidden; white-space:nowrap; }
+        .mq-in { display:inline-block; animation:mqmove 24s linear infinite; }
+        @keyframes mqmove { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+        .mq-in span { margin:0 30px; }
+
+        /* ===== Sections ===== */
+        section { padding:90px 0; }
+        .sec-head { text-align:center; max-width:640px; margin:0 auto 54px; }
+        .sec-head .kicker { display:inline-flex; align-items:center; gap:7px; font-size:.74rem; font-weight:900; letter-spacing:2px; color:var(--pri); background:#eef2ff; padding:7px 18px; border-radius:22px; margin-bottom:14px; }
+        .sec-head h2 { font-size:2.4rem; font-weight:900; color:var(--dark); margin-bottom:12px; }
+        .sec-head p { color:var(--gray); font-size:1.02rem; }
+
+        /* Features bento */
+        .features { background:#fff; }
+        .bento { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+        .bcard { background:#f8fafc; border:1px solid #eef2f7; border-radius:22px; padding:30px 26px; transition:all .3s; position:relative; overflow:hidden; }
+        .bcard::after { content:''; position:absolute; top:0; left:0; width:100%; height:3.5px; background:linear-gradient(90deg,var(--pri),var(--vio)); transform:scaleX(0); transform-origin:left; transition:transform .4s; }
+        .bcard:hover { transform:translateY(-6px); box-shadow:0 22px 44px rgba(15,23,42,.1); background:#fff; }
+        .bcard:hover::after { transform:scaleX(1); }
+        .bcard .bi { width:58px; height:58px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; margin-bottom:18px; }
+        .bcard:nth-child(odd) .bi { background:#eef2ff; color:var(--pri); }
+        .bcard:nth-child(even) .bi { background:#f0fdf4; color:#059669; }
+        .bcard h4 { font-size:1.05rem; font-weight:800; margin-bottom:6px; }
+        .bcard p { color:var(--gray); font-size:.88rem; }
+
+        /* Our products promo band */
+        .opband { background:linear-gradient(135deg,var(--dark),#1e1b4b); position:relative; overflow:hidden; }
+        .opband .container { display:grid; grid-template-columns:1.2fr 1fr; gap:44px; align-items:center; position:relative; z-index:1; }
+        .opband .kicker { color:#a5b4fc; font-size:.74rem; font-weight:900; letter-spacing:2px; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+        .opband h2 { color:#fff; font-size:2.2rem; font-weight:900; margin-bottom:14px; }
+        .opband p { color:#94a3b8; margin-bottom:24px; max-width:480px; }
+        .opband .lockrow { display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:12px 16px; margin-bottom:24px; max-width:440px; }
+        .opband .lockrow i { color:#fde047; font-size:1.1rem; }
+        .opband .lockrow span { color:#e2e8f0; font-size:.84rem; font-weight:700; }
+        .opband-visual { position:relative; height:300px; }
+        .opcard-f { position:absolute; width:150px; background:#fff; border-radius:16px; padding:10px; box-shadow:0 26px 60px rgba(0,0,0,.5); }
+        .opcard-f .ph { height:90px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.8rem; overflow:hidden; }
+        .opcard-f .ph img { width:100%; height:100%; object-fit:cover; }
+        .opcard-f b { font-size:.68rem; color:var(--dark); display:block; margin-top:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .opcard-f .lock { color:#b45309; background:#fef3c7; font-size:.6rem; font-weight:900; padding:3px 8px; border-radius:8px; display:inline-flex; align-items:center; gap:5px; margin-top:6px; }
+        .of1 { top:20px; left:40px; transform:rotate(-6deg); animation:bob 7s ease-in-out infinite; }
+        .of2 { top:60px; right:60px; transform:rotate(5deg); animation:bob 9s .7s ease-in-out infinite; z-index:2; }
+
+        /* Categories */
+        .cats-sec { background:#fff; }
+        .cat-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:18px; }
+        .cat-card { background:#f8fafc; border:1px solid #eef2f7; padding:26px 14px; text-align:center; border-radius:20px; cursor:pointer; transition:all .28s; }
+        .cat-card:hover { transform:translateY(-6px); border-color:#c7d2fe; box-shadow:0 16px 34px rgba(79,70,229,.12); background:#fff; }
+        .cat-icon { width:66px; height:66px; background:linear-gradient(135deg,#eef2ff,#e0e7ff); color:var(--pri); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 13px; font-size:1.5rem; overflow:hidden; transition:transform .3s; }
+        .cat-card:hover .cat-icon { transform:scale(1.12); }
+        .cat-card h4 { font-size:.92rem; }
+        .cat-card p { font-size:.76rem; color:var(--gray); margin-top:2px; }
+
+        /* Steps timeline */
+        .steps-sec { background:linear-gradient(180deg,#f8fafc,#fff); }
+        .steps { display:grid; grid-template-columns:repeat(4,1fr); gap:24px; position:relative; }
+        .steps::before { content:''; position:absolute; top:34px; left:12%; right:12%; height:2.5px; background:repeating-linear-gradient(90deg,#c7d2fe 0 10px,transparent 10px 20px); }
+        .step { text-align:center; position:relative; padding:0 10px; }
+        .step .num { width:68px; height:68px; border-radius:22px; background:#fff; border:2.5px solid var(--pri); color:var(--pri); display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:900; margin:0 auto 18px; box-shadow:0 10px 24px rgba(79,70,229,.18); position:relative; z-index:1; transition:all .3s; }
+        .step:hover .num { background:var(--pri); color:#fff; transform:rotate(-6deg) scale(1.08); }
+        .step h4 { font-size:1.02rem; font-weight:800; margin-bottom:6px; }
+        .step p { color:var(--gray); font-size:.86rem; }
+
+        /* Testimonials */
+        .testi-sec { background:#fff; }
+        .testi { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+        .tcard { background:#f8fafc; border:1px solid #eef2f7; border-radius:20px; padding:26px; transition:all .3s; }
+        .tcard:hover { transform:translateY(-5px); box-shadow:0 18px 40px rgba(15,23,42,.1); background:#fff; }
+        .tcard .stars { color:#f59e0b; margin-bottom:12px; font-size:.85rem; }
+        .tcard p { font-size:.9rem; color:#334155; margin-bottom:16px; line-height:1.7; }
+        .tcard .who { display:flex; align-items:center; gap:11px; }
+        .tcard .who .av { width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,var(--pri),var(--vio)); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:900; }
+        .tcard .who b { font-size:.85rem; display:block; }
+        .tcard .who small { color:var(--gray); font-size:.72rem; }
+
+        /* Login panels */
+        .login-sec { background:linear-gradient(180deg,#fff,#f8fafc); }
+        .lgrid { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+        .lcard { background:#fff; border-radius:24px; padding:38px 28px; text-align:center; border:1px solid #eef2f7; box-shadow:0 8px 30px rgba(15,23,42,.06); transition:all .3s; }
+        .lcard:hover { transform:translateY(-7px); box-shadow:0 26px 55px rgba(15,23,42,.14); }
+        .lcard .ic { width:76px; height:76px; border-radius:22px; display:flex; align-items:center; justify-content:center; margin:0 auto 18px; font-size:1.9rem; transition:transform .3s; }
+        .lcard:hover .ic { transform:scale(1.1) rotate(-6deg); }
+        .lcard.rr .ic { background:#eef2ff; color:var(--pri); }
+        .lcard.ss .ic { background:#fffbeb; color:#d97706; }
+        .lcard.aa .ic { background:#fef2f2; color:#dc2626; }
+        .lcard h3 { font-size:1.3rem; font-weight:900; margin-bottom:8px; }
+        .lcard p { color:var(--gray); font-size:.87rem; margin-bottom:22px; }
+        .lcard .btn { width:100%; justify-content:center; }
+        .btn-pri { background:linear-gradient(135deg,var(--pri),var(--prid)); color:#fff; }
+        .btn-pri:hover { filter:brightness(1.1); transform:translateY(-2px); }
+        .btn-amb { background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; }
+        .btn-amb:hover { filter:brightness(1.08); transform:translateY(-2px); }
+        .btn-red { background:#dc2626; color:#fff; }
+        .btn-red:hover { background:#b91c1c; transform:translateY(-2px); }
+
+        /* CTA */
+        .cta { background:linear-gradient(135deg,var(--pri),var(--vio)); padding:76px 0; text-align:center; color:#fff; position:relative; overflow:hidden; }
+        .cta::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at 20% 30%,rgba(255,255,255,.14),transparent 40%),radial-gradient(circle at 80% 70%,rgba(255,255,255,.1),transparent 40%); }
+        .cta h2 { font-size:2.2rem; font-weight:900; margin-bottom:12px; position:relative; }
+        .cta p { opacity:.92; margin-bottom:28px; position:relative; }
+        .cta .btns { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; position:relative; }
+        .cta .btn-w { background:#fff; color:var(--pri); padding:14px 30px; border-radius:13px; font-weight:900; transition:all .28s; display:inline-flex; align-items:center; gap:9px; }
+        .cta .btn-w:hover { transform:translateY(-3px); box-shadow:0 18px 40px rgba(0,0,0,.25); }
+        .cta .btn-o { background:transparent; border:2px solid rgba(255,255,255,.6); color:#fff; padding:14px 30px; border-radius:13px; font-weight:800; transition:all .28s; display:inline-flex; align-items:center; gap:9px; }
+        .cta .btn-o:hover { background:rgba(255,255,255,.15); }
+
+        /* Footer */
+        .footer { background:#0b1029; color:#94a3b8; padding:64px 0 0; }
+        .fgrid { display:grid; grid-template-columns:2fr 1fr 1fr 1.5fr; gap:46px; margin-bottom:38px; }
+        .fbrand .logo { display:flex; align-items:center; gap:10px; color:#fff; font-weight:900; font-size:1.15rem; margin-bottom:14px; }
+        .fbrand .logo .ic { width:38px; height:38px; border-radius:11px; background:linear-gradient(135deg,var(--pri),var(--vio)); display:flex; align-items:center; justify-content:center; }
+        .fbrand p { font-size:.88rem; line-height:1.75; margin-bottom:18px; }
+        .fsoc { display:flex; gap:9px; }
+        .fsoc a { width:38px; height:38px; background:rgba(255,255,255,.08); border-radius:10px; display:flex; align-items:center; justify-content:center; color:#cbd5e1; transition:all .25s; }
+        .fsoc a:hover { background:var(--pri); color:#fff; transform:translateY(-3px); }
+        .fcol h4 { color:#fff; font-size:.95rem; margin-bottom:16px; }
+        .fcol ul { list-style:none; }
+        .fcol li { margin-bottom:9px; }
+        .fcol a { font-size:.87rem; transition:color .2s, padding-left .2s; }
+        .fcol a:hover { color:#a5b4fc; padding-left:4px; }
+        .fcontact li { display:flex; align-items:flex-start; gap:10px; margin-bottom:12px; font-size:.87rem; }
+        .fcontact i { color:#a5b4fc; margin-top:4px; min-width:15px; }
+        .fbot { border-top:1px solid rgba(255,255,255,.08); padding:22px 0; text-align:center; font-size:.8rem; color:#64748b; }
+
+        /* Floating */
+        .fl { position:fixed; bottom:24px; right:24px; display:flex; flex-direction:column; gap:11px; z-index:999; }
+        .fl button { width:54px; height:54px; border-radius:50%; border:none; color:#fff; font-size:1.35rem; cursor:pointer; box-shadow:0 10px 26px rgba(0,0,0,.25); transition:transform .25s; }
+        .fl button:hover { transform:scale(1.12); }
+        .fl .wa { background:#25D366; }
+        .fl .ph { background:linear-gradient(135deg,var(--pri),var(--vio)); }
+
+        @media (max-width:1024px) { .bento,.testi,.lgrid { grid-template-columns:repeat(2,1fr); } .cat-grid { grid-template-columns:repeat(3,1fr); } .fgrid { grid-template-columns:repeat(2,1fr); } .opband .container { grid-template-columns:1fr; } .opband-visual { display:none; } }
+        @media (max-width:1024px) {
+            .hide-mid { display:none; }
+            .nav .links { gap:14px; }
+        }
+        .nav-mlogin { display:none; }
+        @media (max-width:768px) {
+            .nav-mlogin { display:inline-flex !important; align-items:center; gap:7px; background:linear-gradient(135deg,var(--grn),#059669); color:#fff !important; padding:10px 18px; border-radius:12px; font-weight:800; font-size:.84rem; text-decoration:none; box-shadow:0 6px 18px rgba(16,185,129,.45); transition:all .25s; white-space:nowrap; }
+            .nav-mlogin:hover { transform:translateY(-2px); box-shadow:0 10px 24px rgba(16,185,129,.55); }
+            .nav-mlogin i { font-size:.95rem; }
+        }
+        @media (max-width:768px) {
+            .nav { top:10px; left:12px; right:12px; width:auto; border-radius:18px; padding:10px 14px; background:rgba(15,23,42,.82); border:1px solid rgba(255,255,255,.1); box-shadow:0 12px 40px rgba(15,23,42,.35); }
+            .nav .links { display:none; }
+            .hero { padding-top:110px; } .hero-grid { grid-template-columns:1fr; gap:40px; text-align:center; }
+            .hero h1 { font-size:2.15rem; } .hero .sub { margin:0 auto 28px; } .hero .btns,.hero .mini-stats { justify-content:center; }
+            .hero-visual { height:auto; max-width:440px; margin:0 auto; width:100%; display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:0 6px; }
+            .pfloat { position:static !important; width:100%; transform:none !important; animation:none !important; }
+            .pfloat .ph { height:92px; font-size:1.7rem; }
+            .pfloat b { font-size:.68rem; white-space:normal; }
+            .hero-badge { position:static; display:inline-flex; margin:0 auto 6px; }
+            .hero-visual .hero-badge-wrap { grid-column:1/-1; text-align:center; }
+            .bento,.testi,.lgrid,.cat-grid,.fgrid { grid-template-columns:1fr 1fr; }
+            .steps { grid-template-columns:1fr 1fr; gap:30px 16px; } .steps::before { display:none; }
+        }
+        @media (max-width:520px) { .bento,.testi,.lgrid,.cat-grid { grid-template-columns:1fr; } }
+    </style>
+
+<style id="public-mobile-nav-fix">
+/* 2026-09-17 — MOBILE FIX (this request). The public site injects a FIXED bottom nav
+   (`.bottom-nav.rh-auto-bnav`, ~62px tall, sitting at bottom:10px), but nothing made
+   room for it. Three symptoms, one cause:
+     1. the floating WhatsApp button (`.fl`, bottom:24px, z-index:999) sat INSIDE the
+        nav and painted on top of it;
+     2. the footer's last lines were hidden under the nav;
+     3. page content (e.g. a product title) was cut off at the bottom.
+   This block reserves space for the bar, lifts the float above it, and gives the
+   footer its own bottom padding. Desktop is untouched — everything is inside a
+   max-width query. */
+@media (max-width:1024px){
+  body { padding-bottom: calc(86px + env(safe-area-inset-bottom)) !important; }
+  .footer { padding-bottom: 28px !important; }
+  .fl { bottom: calc(84px + env(safe-area-inset-bottom)) !important; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+    <a href="index.html" class="logo"><span class="ic"><i class="fas fa-store"></i></span> ResellerHub</a>
+    <a href="reseller/login.html" class="nav-mlogin"><i class="fas fa-right-to-bracket"></i><span>Login</span></a>
+    <ul class="links">
+        <li><a href="#home">হোম</a></li>
+        <li><a href="#features">বৈশিষ্ট্য</a></li>
+        <li><a href="shop.html">আমাদের প্রোডাক্ট</a></li>
+        <li class="hide-mid"><a href="#categories">ক্যাটাগরি</a></li>
+        <li class="hide-mid"><a href="#how">কিভাবে কাজ করে</a></li>
+        <li><a href="#login" style="display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#10b981,#059669);color:#ffffff;padding:11px 22px;border-radius:12px;font-weight:800;font-size:.9rem;box-shadow:0 6px 18px rgba(16,185,129,.45);white-space:nowrap;"><i class="fas fa-right-to-bracket"></i> লগইন</a></li>
+    </ul>
+</nav>
+
+<section class="hero" id="home">
+    <div class="orbit o1"></div><div class="orbit o2"></div>
+    <div class="hero-grid">
+        <div>
+            <span class="tagline"><span class="dot"></span> বাংলাদেশের #১ রিসেলার প্ল্যাটফর্ম</span>
+            <h1>শূন্য বিনিয়োগে<br>শুরু করুন <span class="grad">অনলাইন ব্যবসা</span></h1>
+            <p class="sub">কোনো পণ্য কিনতে হবে না, কোনো টাকা জমা দিতে হবে না। প্রোডাক্ট বেছে নিন, অর্ডার দিন — প্যাকিং, ডেলিভারি সব আমরা দেখব। আপনি শুধু প্রফিট নিন!</p>
+            <div class="btns">
+                <a href="reseller/register.html" class="btn btn-grn"><i class="fas fa-user-plus"></i> ফ্রি রেজিস্ট্রেশন করুন</a>
+                <a href="shop.html" class="btn btn-shop"><i class="fas fa-store"></i> আমাদের প্রোডাক্ট দেখুন</a>
+                <a href="#login" class="btn btn-ghost"><i class="fas fa-right-to-bracket"></i> Login</a>
+            </div>
+            <div class="mini-stats">
+                <div class="mstat"><b><span class="n" data-count="10000">0</span>+</b><span>অ্যাক্টিভ রিসেলার</span></div>
+                <div class="mstat"><b><span class="n" data-count="500">0</span>+</b><span>পণ্য সমূহ</span></div>
+                <div class="mstat"><b><span class="n" data-count="64">0</span></b><span>জেলায় ডেলিভারি</span></div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="hero-badge-wrap"><span class="hero-badge">🔒 রিসেলার লগইনে দাম আনলক</span></div>
+            <div class="pfloat pf1"><div class="ph"><i class="fas fa-shirt"></i></div><b>Premium T-Shirt Collection</b><div class="locked"><i class="fas fa-lock"></i> Price locked</div></div>
+            <div class="pfloat pf2"><div class="ph"><i class="fas fa-headphones"></i></div><b>Wireless Earbuds Pro</b><div class="locked"><i class="fas fa-lock"></i> Price locked</div></div>
+            <div class="pfloat pf3"><div class="ph"><i class="fas fa-bag-shopping"></i></div><b>Designer Handbag</b><div class="locked"><i class="fas fa-lock"></i> Price locked</div></div>
+        </div>
+    </div>
+</section>
+
+<div class="mq"><div class="mq-in">
+    <span>🚚 ৬৪ জেলায় ডেলিভারি</span><span>💰 শূন্য বিনিয়োগ</span><span>📦 ৫০০+ পণ্য</span><span>🔒 লগইনে প্রোডাক্টের দাম আনলক</span><span>✅ ক্যাশ অন ডেলিভারি</span><span>🤝 হাজারো সফল রিসেলার</span><span>🚚 ৬৪ জেলায় ডেলিভারি</span><span>💰 শূন্য বিনিয়োগ</span><span>📦 ৫০০+ পণ্য</span><span>🔒 লগইনে প্রোডাক্টের দাম আনলক</span><span>✅ ক্যাশ অন ডেলিভারি</span><span>🤝 হাজারো সফল রিসেলার</span>
+</div></div>
+
+<section class="features" id="features">
+    <div class="container">
+        <div class="sec-head rv">
+            <span class="kicker">OUR FEATURES</span>
+            <h2>রিসেলিং-এর সবকিছু এক জায়গায়</h2>
+            <p>ব্যবসা চালানোর জন্য যা যা দরকার — সব প্রস্তুত</p>
+        </div>
+        <div class="bento">
+            <div class="bcard rv d1"><div class="bi"><i class="fas fa-boxes-stacked"></i></div><h4>কোনো স্টক নেই</h4><p>পণ্য কিনতে হবে না — অর্ডার দিলেই আমরা পাঠাব</p></div>
+            <div class="bcard rv d2"><div class="bi"><i class="fas fa-coins"></i></div><h4>শূন্য বিনিয়োগ</h4><p>ফ্রি রেজিস্ট্রেশন, কোনো মাসিক ফি নেই</p></div>
+            <div class="bcard rv d3"><div class="bi"><i class="fas fa-truck-fast"></i></div><h4>ফুল ডেলিভারি</h4><p>প্যাকেজিং থেকে শিপিং — সব আমরা সামলাই</p></div>
+            <div class="bcard rv d1"><div class="bi"><i class="fas fa-shield-halved"></i></div><h4>নিরাপদ পেমেন্ট</h4><p>bKash, Nagad, Rocket — যেভাবে সুবিধা</p></div>
+            <div class="bcard rv d2"><div class="bi"><i class="fas fa-headset"></i></div><h4>২৪/৭ সাপোর্ট</h4><p>যেকোনো সময় সাহায্য পাবেন</p></div>
+            <div class="bcard rv d3"><div class="bi"><i class="fas fa-chart-line"></i></div><h4>উচ্চ প্রফিট</h4><p>প্রতিটি অর্ডারে সর্বোচ্চ মার্জিন</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- আমাদের প্রোডাক্ট promo → shop.html -->
+<section class="opband" id="products">
+    <div class="container">
+        <div>
+            <div class="kicker"><i class="fas fa-store"></i> OUR PRODUCTS</div>
+            <h2>৫০০+ প্রোডাক্টের ক্যাটালগ ঘুরে দেখুন</h2>
+            <p>ফ্যাশন থেকে ইলেকট্রনিক্স — প্রতিটা ক্যাটাগরিতে চাহিদাসম্পন্ন প্রোডাক্ট। দাম দেখতে রিসেলার অ্যাকাউন্ট লাগবে।</p>
+            <div class="lockrow"><i class="fas fa-lock"></i><span>প্রোডাক্টের দাম লক করা — রেজিস্টার/লগইন করলেই আনলক</span></div>
+            <a href="shop.html" class="btn btn-shop btn" style="padding:15px 32px;font-size:1rem;"><i class="fas fa-arrow-right"></i> প্রোডাক্ট ক্যাটালগ দেখুন</a>
+        </div>
+        <div class="opband-visual">
+            <div class="opcard-f of1"><div class="ph" style="background:#eef2ff;color:#4f46e5;"><i class="fas fa-gift"></i></div><b>Gift Combo Box</b><span class="lock"><i class="fas fa-lock"></i> Locked</span></div>
+            <div class="opcard-f of2"><div class="ph" style="background:#fdf2f8;color:#db2777;"><i class="fas fa-watch"></i></div><b>Smart Watch Series</b><span class="lock"><i class="fas fa-lock"></i> Locked</span></div>
+        </div>
+    </div>
+</section>
+
+<section class="cats-sec" id="categories">
+    <div class="container">
+        <div class="sec-head rv">
+            <span class="kicker">CATEGORIES</span>
+            <h2>ক্যাটাগরি সমূহ</h2>
+            <p>আপনার পছন্দের ক্যাটাগরিতে ক্লিক করে প্রোডাক্ট দেখুন</p>
+        </div>
+        <div class="cat-grid" id="categoriesGrid"></div>
+    </div>
+</section>
+
+<section class="steps-sec" id="how">
+    <div class="container">
+        <div class="sec-head rv">
+            <span class="kicker">HOW IT WORKS</span>
+            <h2>মাত্র ৪ ধাপে ব্যবসা শুরু</h2>
+            <p>সহজ, দ্রুত এবং সম্পূর্ণ ফ্রি</p>
+        </div>
+        <div class="steps">
+            <div class="step rv d1"><div class="num">১</div><h4>রেজিস্টার করুন</h4><p>ফ্রি-তে অ্যাকাউন্ট খুলুন</p></div>
+            <div class="step rv d2"><div class="num">২</div><h4>পণ্য বাছাই করুন</h4><p>৫০০+ পণ্য থেকে পছন্দের বেছে নিন</p></div>
+            <div class="step rv d3"><div class="num">৩</div><h4>অর্ডার দিন</h4><p>গ্রাহকের তথ্য দিয়ে অর্ডার কনফার্ম করুন</p></div>
+            <div class="step rv"><div class="num">৪</div><h4>প্রফিট আয় করুন</h4><p>ডেলিভারির পর সাথে সাথে টাকা</p></div>
+        </div>
+    </div>
+</section>
+
+<section class="testi-sec">
+    <div class="container">
+        <div class="sec-head rv">
+            <span class="kicker">SUCCESS STORIES</span>
+            <h2>রিসেলাররা যা বলেন</h2>
+            <p>হাজারো রিসেলার ইতিমধ্যেই সফল হয়েছেন</p>
+        </div>
+        <div class="testi">
+            <div class="tcard rv d1"><div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div><p>"প্রথম মাসেই ৩০+ অর্ডার দিয়েছি। ডেলিভারি সিস্টেম এত সহজ যে ঘরে বসেই ব্যবসা চালাচ্ছি।"</p><div class="who"><div class="av">র</div><div><b>রাহিম উদ্দিন</b><small>ঢাকা</small></div></div></div>
+            <div class="tcard rv d2"><div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div><p>"প্রোডাক্টের দাম আর কোয়ালিটি — দুটোই দারুণ। কাস্টমার রিপিট অর্ডার দিচ্ছে বারবার।"</p><div class="who"><div class="av">স</div><div><b>সুমাইয়া আক্তার</b><small>চট্টগ্রাম</small></div></div></div>
+            <div class="tcard rv d3"><div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div><p>"ক্যাশ অন ডেলিভারিতে কাস্টমার ভরসা পায়। প্রফিট ওয়ালেটে পাওয়ার পর উইথড্রও দ্রুত।"</p><div class="who"><div class="av">জ</div><div><b>জাহিদ হাসান</b><small>সিলেট</small></div></div></div>
+        </div>
+    </div>
+</section>
+
+<section class="login-sec" id="login">
+    <div class="container">
+        <div class="sec-head rv">
+            <span class="kicker">LOGIN</span>
+            <h2>আপনার প্যানেলে প্রবেশ করুন</h2>
+            <p>আপনার অ্যাকাউন্টে লগইন করুন</p>
+        </div>
+        <div class="lgrid">
+            <div class="lcard rr rv d1"><div class="ic"><i class="fas fa-store"></i></div><h3>Reseller Panel</h3><p>Login করে অর্ডার করুন, প্রফিট আয় করুন</p><a href="reseller/login.html" class="btn btn-pri"><i class="fas fa-right-to-bracket"></i> Login as Reseller</a></div>
+            <div class="lcard ss rv d2"><div class="ic"><i class="fas fa-warehouse"></i></div><h3>Supplier Panel</h3><p>প্রোডাক্ট upload করুন, নিজের shop চালান</p><a href="supplier/index.html" class="btn btn-amb"><i class="fas fa-warehouse"></i> Supplier Login / Register</a></div>
+            <div class="lcard aa rv d3"><div class="ic"><i class="fas fa-user-shield"></i></div><h3>Admin Panel</h3><p>সবকিছু manage করুন এক জায়গা থেকে</p><a href="admin/login.html" class="btn btn-red"><i class="fas fa-user-shield"></i> Login as Admin</a></div>
+        </div>
+    </div>
+</section>
+
+<section class="cta">
+    <div class="container">
+        <h2 class="rv">আজই শুরু করুন আপনার যাত্রা!</h2>
+        <p class="rv d1">হাজারো সফল রিসেলারদের সাথে যোগ দিন — শূন্য বিনিয়োগে ব্যবসা!</p>
+        <div class="btns rv d2">
+            <a href="reseller/register.html" class="btn-w"><i class="fas fa-user-plus"></i> ফ্রি রেজিস্ট্রেশন</a>
+            <a href="tel:01997904792" class="btn-o"><i class="fas fa-phone"></i> 01997904792</a>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="container">
+        <div class="fgrid">
+            <div class="fbrand">
+                <div class="logo"><span class="ic"><i class="fas fa-store"></i></span> ResellerHub BD</div>
+                <p>বাংলাদেশের #১ রিসেলার প্ল্যাটফর্ম। শূন্য বিনিয়োগে অনলাইন ব্যবসা শুরু করুন আজই — আপনার স্বপ্নের ব্যবসা গড়ুন আমাদের সাথে।</p>
+                <div class="fsoc">
+                    <a href="https://www.facebook.com/" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://www.youtube.com/channel/UCj7mGCRxCkCjFmg_plsO5Og/" target="_blank"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+            <div class="fcol">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="shop.html">আমাদের প্রোডাক্ট</a></li>
+                    <li><a href="#categories">Categories</a></li>
+                    <li><a href="#how">How It Works</a></li>
+                </ul>
+            </div>
+            <div class="fcol">
+                <h4>Login</h4>
+                <ul>
+                    <li><a href="reseller/login.html">Reseller Login</a></li>
+                    <li><a href="admin/login.html">Admin Login</a></li>
+                    <li><a href="reseller/register.html">Register</a></li>
+                </ul>
+            </div>
+            <div class="fcol">
+                <h4>Contact Us</h4>
+                <ul class="fcontact">
+                    <li><i class="fas fa-phone"></i> <a href="tel:01997904792">01997904792</a></li>
+                    <li><i class="fas fa-envelope"></i> <a href="mailto:stylexshopping@gmail.com">stylexshopping@gmail.com</a></li>
+                    <li><i class="fas fa-globe"></i> <a href="https://resellerhubbd.com/" target="_blank">resellerhubbd.com/</a></li>
+                    <li><i class="fas fa-location-dot"></i> Dhaka, Bangladesh</li>
+                </ul>
+            </div>
+        </div>
+        <div class="fbot"><p>&copy; 2024 ResellerHub BD. All rights reserved. | Powered by Stylex Shopping</p></div>
+    </div>
+</footer>
+
+<div class="fl">
+    <button class="wa" onclick="window.open('https://wa.me/8801997904792','_blank')"><i class="fab fa-whatsapp"></i></button>
+    <button class="ph" onclick="window.location='tel:01997904792'"><i class="fas fa-phone"></i></button>
+</div>
+
+<script src="app.js"></script>
+<script>
+// Categories
+var cats = getData(DB_KEYS.CATEGORIES) || [];
+document.getElementById('categoriesGrid').innerHTML = cats.map(function(c) {
+    return '<div class="cat-card" onclick="window.location.href=\'shop.html\'">' +
+        '<div class="cat-icon">' + (c.image ? '<img src="' + c.image + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">' : '<i class="fas ' + c.icon + '"></i>') + '</div>' +
+        '<h4>' + c.name + '</h4><p>' + c.count + '+ পণ্য</p></div>';
+}).join('');
+
+/* 2026-09-15 — both of these used IntersectionObserver unguarded, so on any
+   browser without it the whole block threw and the rest of this script never ran.
+   Every current browser has it, but the guard costs nothing.
+   IMPORTANT: `.rv` starts at `opacity:0` and only becomes visible when the `on`
+   class is added — so the fallback MUST reveal the elements itself. Guarding
+   without a fallback would leave the page blank, which is worse than the error. */
+if (typeof IntersectionObserver === 'function') {
+    // Scroll reveal
+    var io = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('on'); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.rv').forEach(function(el) { io.observe(el); });
+} else {
+    document.querySelectorAll('.rv').forEach(function(el) { el.classList.add('on'); });
+}
+
+if (typeof IntersectionObserver === 'function') {
+    // Animated counters
+    var cio = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+            if (!e.isIntersecting) return;
+            var el = e.target, target = parseInt(el.getAttribute('data-count')), start = null;
+            function step(ts) {
+                if (!start) start = ts;
+                var p = Math.min((ts - start) / 1400, 1);
+                el.textContent = Math.floor(target * (1 - Math.pow(1 - p, 3))).toLocaleString('en-IN');
+                if (p < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+            cio.unobserve(el);
+        });
+    }, { threshold: 0.4 });
+    document.querySelectorAll('[data-count]').forEach(function(el) { cio.observe(el); });
+} else {
+    /* show the final figure straight away rather than leaving the counter blank */
+    document.querySelectorAll('[data-count]').forEach(function(el) {
+        el.textContent = Number(el.getAttribute('data-count') || 0).toLocaleString('en-IN');
+    });
+}
+</script>
+</body>
+</html>

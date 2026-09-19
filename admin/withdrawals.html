@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Withdrawals - Admin - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#f1f5f9; color:#1e293b; }
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:240px; background:#1e293b; color:#cbd5e1; z-index:100; overflow-y:auto; }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid #334155; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:38px; height:38px; background:linear-gradient(135deg,#dc2626,#b91c1c); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; }
+        .sidebar-logo h3 { color:white; font-size:1rem; }
+        .sidebar-logo small { color:#94a3b8; font-size:0.7rem; display:block; }
+        .sidebar-menu { list-style:none; padding:12px 0; }
+        .sidebar-menu li { margin:2px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:10px 20px; color:#cbd5e1; text-decoration:none; font-size:0.88rem; }
+        .sidebar-menu a:hover { background:rgba(255,255,255,0.05); color:white; }
+        .sidebar-menu a.active { background:#dc2626; color:white; }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 20px 5px; color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+        .main { margin-left:240px; min-height:100vh; }
+        .topbar { background:white; padding:14px 25px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:sticky; top:0; z-index:50; }
+        .topbar h2 { font-size:1.2rem; font-weight:600; }
+        .topbar h2 i { color:#dc2626; margin-right:8px; }
+        .topbar-right { display:flex; align-items:center; gap:12px; }
+        .user-pill { display:flex; align-items:center; gap:8px; padding:6px 14px; background:#fee2e2; border-radius:30px; font-size:0.85rem; color:#991b1b; font-weight:600; }
+        .btn-logout { background:#dc2626; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:500; }
+        .content { padding:25px; }
+        .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:20px; }
+        .stat-card { background:white; border-radius:12px; padding:18px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+        .stat-card .label { color:#64748b; font-size:0.78rem; margin-bottom:4px; }
+        .stat-card .value { font-size:1.4rem; font-weight:800; }
+        .card { background:white; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:20px; }
+        .card-header { padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+        .card-header h4 { font-size:0.95rem; font-weight:600; }
+        .card-header h4 i { color:#dc2626; margin-right:6px; }
+        .card-header select { padding:7px 12px; border:1px solid #e2e8f0; border-radius:6px; font-size:0.85rem; }
+        .data-table { width:100%; border-collapse:collapse; }
+        .data-table th { text-align:left; padding:11px 20px; background:#f8fafc; font-weight:600; font-size:0.72rem; color:#64748b; text-transform:uppercase; }
+        .data-table td { padding:12px 20px; border-bottom:1px solid #f1f5f9; font-size:0.85rem; }
+        .data-table tr:hover { background:#f8fafc; }
+        .badge { padding:3px 9px; border-radius:20px; font-size:0.7rem; font-weight:600; }
+        .badge-success { background:#d1fae5; color:#065f46; }
+        .badge-warning { background:#fef3c7; color:#92400e; }
+        .badge-danger { background:#fee2e2; color:#991b1b; }
+        .btn { padding:7px 12px; border:none; border-radius:7px; font-size:0.82rem; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:5px; }
+        .btn-primary { background:#2563eb; color:white; }
+        .btn-success { background:#10b981; color:white; }
+        .btn-danger { background:#dc2626; color:white; }
+        .btn-sm { padding:4px 9px; font-size:0.75rem; }
+        .empty { text-align:center; padding:50px 20px; color:#64748b; }
+        .empty i { font-size:3rem; margin-bottom:12px; opacity:0.4; }
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+        .modal-overlay.show { display:flex; }
+        .modal { background:white; border-radius:14px; width:100%; max-width:550px; max-height:92vh; overflow-y:auto; }
+        .modal-header { padding:16px 22px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; }
+        .modal-close { background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b; line-height:1; }
+        .modal-body { padding:20px; }
+        .modal-footer { padding:14px 22px; border-top:1px solid #e2e8f0; display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; }
+        .detail-row { display:flex; padding:9px 0; border-bottom:1px solid #f1f5f9; }
+        .detail-row strong { min-width:130px; color:#64748b; font-size:0.85rem; }
+        .detail-row span { font-size:0.9rem; font-weight:500; }
+        @media (max-width:768px) { .sidebar { width:240px; } .sidebar-logo h3, .sidebar-logo small, .sidebar-menu a span, .sidebar-divider { display:initial; } .main { margin-left:70px; } .stats-row { grid-template-columns:1fr; } }
+    </style>
+
+
+
+
+<style id="lx-sb-final">
+/* ===== ADMIN SIDEBAR v4 — fresh premium design (authoritative) ===== */
+body .lx-sidebar { position:fixed !important; left:0 !important; top:0 !important; bottom:0 !important; width:264px !important; background:linear-gradient(180deg,#0d1226 0%,#171233 100%) !important; border-right:1px solid rgba(129,140,248,.14) !important; z-index:600 !important; overflow-y:auto !important; overflow-x:hidden !important; display:flex !important; flex-direction:column !important; transform:none !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; font-family:'Inter','Hind Siliguri',sans-serif !important; }
+body .lx-sidebar::before { content:'' !important; position:absolute !important; top:-80px !important; right:-60px !important; width:260px !important; height:260px !important; background:radial-gradient(circle,rgba(99,102,241,.18),transparent 70%) !important; pointer-events:none !important; }
+body .lx-brand { display:flex !important; align-items:center !important; gap:12px !important; padding:20px 18px !important; border-bottom:1px solid rgba(129,140,248,.14) !important; position:relative !important; }
+body .lx-brand-ic { width:42px !important; height:42px !important; border-radius:13px !important; background:linear-gradient(135deg,#6366f1,#a855f7) !important; display:flex !important; align-items:center !important; justify-content:center !important; color:#fff !important; font-size:1.05rem !important; box-shadow:0 8px 20px rgba(99,102,241,.4) !important; flex-shrink:0 !important; }
+body .lx-brand-tx b { color:#fff !important; font-size:1.02rem !important; font-weight:900 !important; display:block !important; line-height:1.2 !important; }
+body .lx-brand-tx small { color:#818cf8 !important; font-size:.6rem !important; font-weight:800 !important; letter-spacing:2px !important; }
+body .lx-close { margin-left:auto !important; background:rgba(255,255,255,.06) !important; border:none !important; color:#94a3b8 !important; width:30px !important; height:30px !important; border-radius:9px !important; cursor:pointer !important; font-size:1rem !important; display:none !important; align-items:center !important; justify-content:center !important; }
+body .lx-close:hover { background:#fee2e2 !important; color:#dc2626 !important; }
+body .lx-menu { padding:14px 12px !important; flex:1 !important; }
+body .sec-label { font-size:.6rem !important; font-weight:900 !important; letter-spacing:2.2px !important; color:#6b7280 !important; text-transform:uppercase !important; padding:14px 12px 6px !important; display:flex !important; align-items:center !important; gap:8px !important; }
+body .sec-label::before { content:'' !important; width:14px !important; height:2px !important; background:linear-gradient(90deg,#6366f1,#a855f7) !important; border-radius:2px !important; }
+body .sb-item { position:relative !important; display:flex !important; align-items:center !important; gap:11px !important; padding:9px 12px !important; margin:3px 0 !important; border-radius:12px !important; color:#b6c2e2 !important; text-decoration:none !important; font-size:.86rem !important; font-weight:600 !important; transition:all .2s !important; border:1px solid transparent !important; background:transparent !important; opacity:1 !important; visibility:visible !important; pointer-events:auto !important; box-shadow:none !important; transform:none !important; }
+body .sb-item .sb-ico { width:30px !important; height:30px !important; border-radius:9px !important; background:rgba(255,255,255,.05) !important; display:flex !important; align-items:center !important; justify-content:center !important; font-size:.82rem !important; flex-shrink:0 !important; transition:all .2s !important; }
+body .sb-item .sb-txt { flex:1 !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; display:block !important; }
+body .sb-item:hover { background:rgba(99,102,241,.13) !important; color:#fff !important; }
+body .sb-item:hover .sb-ico { background:rgba(99,102,241,.3) !important; }
+body .sb-item.on { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; border-color:rgba(129,140,248,.35) !important; }
+body .sb-item.on::before { content:'' !important; position:absolute !important; left:-12px !important; top:50% !important; transform:translateY(-50%) !important; width:3.5px !important; height:60% !important; background:linear-gradient(180deg,#818cf8,#c084fc) !important; border-radius:3px !important; }
+body .sb-item.on .sb-ico { background:linear-gradient(135deg,#6366f1,#a855f7) !important; color:#fff !important; }
+/* page-এর নিচের inline-highlight script সবসময় হারাবে */
+body .sb-item[style] { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; }
+body .sb-badge { background:#fbbf24 !important; color:#1e293b !important; font-size:.62rem !important; padding:1px 8px !important; border-radius:10px !important; font-weight:800 !important; margin-left:auto !important; }
+body .main { margin-left:264px !important; min-height:100vh !important; }
+body .side-overlay { display:none !important; position:fixed !important; inset:0 !important; background:rgba(7,10,26,.6) !important; z-index:590 !important; backdrop-filter:blur(2px) !important; }
+body .side-overlay.show { display:block !important; pointer-events:auto !important; }
+body .hamburger { display:none !important; }
+/* ===== মোবাইল/ট্যাবলেট: slide drawer ===== */
+@media (max-width:1024px) {
+    body .main { margin-left:0 !important; }
+    body .lx-sidebar { transform:translateX(-100%) !important; box-shadow:none !important; }
+    body .lx-sidebar.open { transform:none !important; box-shadow:30px 0 70px rgba(7,10,26,.6) !important; }
+    body .lx-close { display:flex !important; }
+    body .hamburger { display:inline-flex !important; }
+    body { overflow-x:hidden !important; }
+}
+</style>
+
+
+
+
+
+<style id="lx-ovf-fix">
+@media(max-width:768px){ body{overflow-x:hidden !important} }
+</style>
+<style id="lx-orders-badge-n">.orders-badge-n{color:#fbbf24;font-weight:900;font-size:.72rem}.orders-badge-n:empty{display:none}</style>
+<style id="admin-mobile-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   The admin topbar measured about 474px across on a 390px phone (25px padding, an
+   h2 at 1.2rem, 12px gaps, a wide user pill), so the logout button was pushed past
+   the right edge. Several admin tables are also built by JS with NO .table-scroll
+   wrapper, so they widened the whole page instead of scrolling.
+   EVERY rule below sits inside a max-width query, so the DESKTOP LAYOUT IS
+   UNCHANGED. This is an ADDED block — no existing rule is modified or removed. */
+@media (max-width:768px){
+  .topbar { padding:10px 12px; gap:8px; }
+  .topbar h2 { font-size:.92rem; }
+  .topbar h2 i { margin-right:4px; }
+  .topbar-right { gap:6px; }
+  .user-pill { padding:5px 9px; font-size:.72rem; }
+  .btn-logout { padding:7px 10px; }
+  /* a table without a scroll wrapper would otherwise push the page wide */
+  .data-table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%; }
+}
+</style>
+<style id="panel-fullwidth-fix">
+/* 2026-09-16 — FULL-WIDTH FIX for the admin and supplier panels (this request).
+   The whole page sat in a narrow column with empty space on the right, because the
+   base rule reserves the sidebar with `margin-left`, and a block element with
+   margin-left and width:auto is only (100% - that) wide. A LATER rule in the same
+   file re-asserted the margin with !important, so the earlier mobile override lost.
+   This block is the LAST thing in the document, so it wins, and it resets width as
+   well as margin. Desktop is untouched — everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+<style id="wb-detail-css">
+/* ============================================================================
+   2026-09-18 — THE WITHDRAWAL BREAKDOWN POPUP (this request)
+   The SAME markup and classes on the reseller's page, the admin's reseller
+   withdrawals page and the admin's supplier withdrawals page, so all three
+   explain the same money the same way.
+   ============================================================================ */
+.wb-eye{border:1.5px solid #e2e8f0;background:#fff;color:#4f46e5;border-radius:9px;padding:7px 12px;font-size:.72rem;font-weight:800;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:transform .2s,background .2s,border-color .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.wb-eye:hover{background:#eef2ff;border-color:#c7d2fe;transform:translateY(-1px)}
+.wb-eye:active{transform:scale(.95)}
+@keyframes wbFade{from{opacity:0}to{opacity:1}}
+@keyframes wbPop{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+.wb-ov{position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:1500;display:flex;align-items:center;justify-content:center;padding:16px;animation:wbFade .2s ease both}
+.wb-box{background:#fff;border-radius:18px;max-width:560px;width:100%;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.4);display:flex;flex-direction:column;max-height:90vh;animation:wbPop .32s cubic-bezier(.22,.9,.32,1.1) both}
+.wb-hd{display:flex;align-items:center;justify-content:space-between;padding:15px 19px;border-bottom:1px solid #eef2f7;background:#f8fafc;flex:none}
+.wb-hd b{font-size:.94rem;font-weight:900;display:flex;align-items:center;gap:8px}
+.wb-hd b i{color:#4f46e5}
+.wb-hd button{border:none;background:none;font-size:1.55rem;line-height:1;color:#94a3b8;cursor:pointer;transition:color .2s,transform .2s}
+.wb-hd button:hover{color:#dc2626;transform:rotate(90deg)}
+.wb-bd{padding:18px 19px;overflow-y:auto}
+.wb-ft{padding:13px 19px;border-top:1px solid #eef2f7;background:#f8fafc;text-align:right;flex:none}
+.wb-ft button{border:none;border-radius:10px;padding:10px 20px;font-size:.82rem;font-weight:800;cursor:pointer;font-family:inherit;background:#e2e8f0;color:#334155}
+.wb-head{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border-radius:15px;padding:16px 18px;margin-bottom:16px}
+.wb-amt{font-size:1.6rem;font-weight:900;line-height:1.2}
+.wb-sub{font-size:.76rem;opacity:.92;margin-top:4px;font-weight:700}
+.wb-st{background:rgba(255,255,255,.25);border-radius:20px;padding:1px 9px;font-size:.66rem;font-weight:900;text-transform:capitalize}
+.wb-note{font-size:.72rem;opacity:.85;margin-top:6px}
+.wb-sec{margin-bottom:16px}
+.wb-sec h5{font-size:.72rem;font-weight:900;color:#64748b;letter-spacing:.4px;text-transform:uppercase;margin-bottom:9px;display:flex;align-items:center;gap:7px}
+.wb-sec h5 i{color:#4f46e5}
+.wb-list{display:flex;flex-direction:column;gap:7px}
+.wb-item{display:flex;align-items:center;gap:11px;background:#f8fafc;border:1px solid #eef2f7;border-radius:12px;padding:10px 13px;transition:transform .2s,border-color .2s}
+.wb-item:hover{transform:translateX(3px);border-color:#dbe2ee}
+.wb-ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none;font-size:.85rem;background:#eef2ff;color:#4f46e5}
+.wb-ic.ord{background:#dcfce7;color:#15803d}
+.wb-ic.wd{background:#e0e7ff;color:#4338ca}
+.wb-ic.adm{background:#fef3c7;color:#b45309}
+.wb-ic.bad{background:#fee2e2;color:#dc2626}
+.wb-mid{flex:1;min-width:0}
+.wb-mid b{font-size:.8rem;font-weight:800;color:#0f172a;display:block}
+.wb-mid small{font-size:.68rem;color:#94a3b8;display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wb-v{font-size:.84rem;font-weight:900;color:#15803d;flex:none}
+.wb-v.minus{color:#dc2626}
+.wb-total{display:flex;justify-content:space-between;align-items:center;background:#eef2ff;border:1px solid #c7d2fe;border-radius:12px;padding:11px 14px;margin-top:9px;font-size:.8rem;font-weight:800;color:#3730a3}
+.wb-total b{font-size:.95rem;font-weight:900}
+.wb-total b.minus{color:#dc2626}
+.wb-none{font-size:.78rem;color:#94a3b8;background:#f8fafc;border:1px dashed #e2e8f0;border-radius:11px;padding:12px 14px;line-height:1.6}
+@media(max-width:520px){ .wb-amt{font-size:1.35rem} }
+@media(prefers-reduced-motion:reduce){ .wb-ov,.wb-box{animation:none !important} .wb-eye,.wb-item{transition:none !important} }
+</style>
+</head>
+<body>
+<aside class="lx-sidebar sidebar" id="sidebar">
+    <div class="lx-brand">
+        <span class="lx-brand-ic"><i class="fas fa-user-shield"></i></span>
+        <div class="lx-brand-tx"><b>AdminHub</b><small>CONTROL PANEL</small></div>
+        <button class="lx-close" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+    <nav class="lx-menu">
+        <div class="sec-label">Main</div>
+        <a href="dashboard.html" class="sb-item"><span class="sb-ico"><i class="fas fa-chart-line"></i></span><span class="sb-txt">Dashboard</span></a>
+        <a href="orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-shopping-cart"></i></span><span class="sb-txt">All Orders<span class="orders-badge-n" id="ordersBadgeN"></span></span><span class="orders-badge" style="display:none;margin-left:auto;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:.62rem;font-weight:800"></span></a>
+        <a href="multi-supplier-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-people-arrows"></i></span><span class="sb-txt">Multi-Supplier Orders<span class="orders-badge-n" id="msCount"></span></span></a>
+        <a href="products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box"></i></span><span class="sb-txt">Products</span></a>
+        <div class="sec-label">Users</div>
+        <a href="resellers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-users"></i></span><span class="sb-txt">Resellers</span></a>
+        <a href="suppliers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-warehouse"></i></span><span class="sb-txt">Suppliers</span></a>
+        <a href="supplier-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-boxes-stacked"></i></span><span class="sb-txt">Supplier Products</span></a>
+        <a href="add-reseller.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Add Reseller</span></a>
+        <a href="add-supplier.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck"></i></span><span class="sb-txt">Add Supplier</span></a>
+        <a href="approvals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-check"></i></span><span class="sb-txt">Approvals</span></a>
+        <a href="withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-money-bill-wave"></i></span><span class="sb-txt">Withdrawals</span></a>
+        <a href="supplier-withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-hand-holding-dollar"></i></span><span class="sb-txt">Supplier Withdraw</span></a>
+        <a href="transactions.html" class="sb-item"><span class="sb-ico"><i class="fas fa-receipt"></i></span><span class="sb-txt">Transaction History</span></a>
+        <a href="moderators.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-shield"></i></span><span class="sb-txt">Moderators</span></a>
+        <div class="sec-label">Referral</div>
+        <a href="referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Reseller Referral</span></a>
+        <a href="supplier-referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck-arrow-right"></i></span><span class="sb-txt">Supplier Referral</span></a>
+                <a href="myshop-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-bag-shopping"></i></span><span class="sb-txt">My Shop Orders</span></a>
+        <a href="myshop-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box-open"></i></span><span class="sb-txt">My Shop Products</span></a>
+        <div class="sec-label">Offers &amp; Banners</div>
+        <a href="add-offer.html" class="sb-item"><span class="sb-ico"><i class="fas fa-plus-circle"></i></span><span class="sb-txt">Add Offers</span></a>
+        <a href="manage-offers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-gift"></i></span><span class="sb-txt">Manage Offers</span></a>
+        <a href="add-banner.html" class="sb-item"><span class="sb-ico"><i class="fas fa-image"></i></span><span class="sb-txt">Add Banners</span></a>
+        <a href="manage-banners.html" class="sb-item"><span class="sb-ico"><i class="fas fa-images"></i></span><span class="sb-txt">Manage Banners</span></a>
+        <div class="sec-label">System</div>
+        <a href="messages.html" class="sb-item"><span class="sb-ico"><i class="fas fa-comments"></i></span><span class="sb-txt">Messages<span class="orders-badge-n" id="msgBadgeN"></span></span></a>
+        <a href="settings.html" class="sb-item"><span class="sb-ico"><i class="fas fa-cog"></i></span><span class="sb-txt">Settings</span></a>
+        <a href="../index.html" class="sb-item"><span class="sb-ico"><i class="fas fa-globe"></i></span><span class="sb-txt">Visit Site</span></a>
+    </nav>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+            <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h2><i class="fas fa-money-bill-wave"></i> Withdrawal Requests</h2>
+        <div class="topbar-right">
+            <div class="user-pill"><i class="fas fa-user-shield"></i> Admin</div>
+            <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="stats-row">
+            <div class="stat-card"><div class="label">Pending Requests</div><div class="value" id="stPending">0</div></div>
+            <div class="stat-card"><div class="label">Pending Amount</div><div class="value" id="stAmount" style="color:#f59e0b;">0</div></div>
+            <div class="stat-card"><div class="label">Total Approved</div><div class="value" id="stApproved" style="color:#10b981;">0</div></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-history"></i> All Requests</h4>
+                <select id="statusFilter" onchange="loadWds()">
+                    <option value="">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+            </div>
+            <div id="wdsTable"></div>
+        </div>
+    </div>
+</main>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="wdModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Withdrawal Details</h3>
+            <button class="modal-close" type="button" onclick="closeModal('wdModal')">&times;</button>
+        </div>
+        <div class="modal-body" id="wdBody"></div>
+        <div class="modal-footer" id="wdActions"></div>
+    </div>
+</div>
+
+<script src="../app.js"></script>
+<script>
+(function() {
+    var userId = sessionStorage.getItem('user_id');
+    var userType = sessionStorage.getItem('user_type');
+    if (!userId || (userType !== 'admin' && userType !== 'moderator')) { sessionStorage.clear(); window.location.replace('login.html'); return; } setInterval(function(){ var t=sessionStorage.getItem('user_type'); if(t && (t!=='admin' && t!=='moderator')){ sessionStorage.clear(); window.location.replace('login.html'); } },3000);
+
+    function statusBadge(s) {
+        var c = 'warning';
+        if (s === 'approved') c = 'success';
+        else if (s === 'rejected') c = 'danger';
+        return '<span class="badge badge-' + c + '">' + s + '</span>';
+    }
+
+    /* 2026-09-15 — the markup calls this from an inline handler (an on* attribute), and an
+       inline handler runs in GLOBAL scope. It was declared inside this page IIFE, so the
+       call threw "loadWds is not defined" and the control did nothing. Function declarations
+       hoist, so exposing it here is safe. */
+    window.loadWds = loadWds;
+    function loadWds() {
+        var wds = getData(DB_KEYS.WITHDRAWALS);
+        var filter = document.getElementById('statusFilter').value;
+        var list = [];
+        for (var i = 0; i < wds.length; i++) {
+            if (!filter || wds[i].status === filter) list.push(wds[i]);
+        }
+        list.reverse();
+
+        var pendCount = 0, pendAmt = 0, apprAmt = 0;
+        for (var s = 0; s < wds.length; s++) {
+            if (wds[s].status === 'pending') { pendCount++; pendAmt += wds[s].amount; }
+            if (wds[s].status === 'approved') apprAmt += wds[s].amount;
+        }
+        document.getElementById('stPending').textContent = pendCount;
+        document.getElementById('stAmount').textContent = formatCurrency(pendAmt);
+        document.getElementById('stApproved').textContent = formatCurrency(apprAmt);
+
+        if (!list.length) {
+            document.getElementById('wdsTable').innerHTML = '<div class="empty"><i class="fas fa-money-bill-wave"></i><br>No withdrawal requests</div>';
+            return;
+        }
+
+        var html = '<table class="data-table"><thead><tr><th>ID</th><th>Reseller</th><th>Amount</th><th>Method</th><th>Account</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+        for (var j = 0; j < list.length; j++) {
+            var w = list[j];
+            html += '<tr>' +
+                '<td><strong>' + w.id + '</strong></td>' +
+                '<td>' + w.resellerName + '</td>' +
+                '<td style="color:#2563eb;font-weight:700;">' + formatCurrency(w.amount) + '</td>' +
+                '<td>' + w.method + '</td>' +
+                '<td>' + w.account + '</td>' +
+                '<td>' + formatDate(w.date) + '</td>' +
+                '<td>' + statusBadge(w.status) + '</td>' +
+                '<td><button class="btn btn-sm btn-primary" onclick="viewWd(\'' + w.id + '\')"><i class="fas fa-eye"></i></button>' +
+                (w.status === 'pending' ? ' <button class="btn btn-sm btn-success" onclick="approveWd(\'' + w.id + '\')"><i class="fas fa-check"></i></button> <button class="btn btn-sm btn-danger" onclick="rejectWd(\'' + w.id + '\')"><i class="fas fa-times"></i></button>' : '') +
+                '</td></tr>';
+        }
+        html += '</tbody></table>';
+        document.getElementById('wdsTable').innerHTML = html;
+    }
+
+    function viewWd(wdId) {
+        var wds = getData(DB_KEYS.WITHDRAWALS);
+        var w = null;
+        for (var i = 0; i < wds.length; i++) { if (wds[i].id === wdId) { w = wds[i]; break; } }
+        if (!w) return;
+
+        // Get reseller balance
+        var resellers = getData(DB_KEYS.RESELLERS);
+        var balance = 0;
+        for (var r = 0; r < resellers.length; r++) { if (resellers[r].id === w.resellerId) { balance = resellers[r].balance; break; } }
+
+        var html = '<div class="detail-row"><strong>Request ID</strong><span>' + w.id + '</span></div>' +
+            '<div class="detail-row"><strong>Reseller</strong><span>' + w.resellerName + '</span></div>' +
+            '<div class="detail-row"><strong>Phone</strong><span>' + w.phone + '</span></div>' +
+            '<div class="detail-row"><strong>Amount</strong><span style="color:#2563eb;font-weight:700;font-size:1.15rem;">' + formatCurrency(w.amount) + '</span></div>' +
+            '<div class="detail-row"><strong>Method</strong><span>' + w.method + '</span></div>' +
+            '<div class="detail-row"><strong>Send To Account</strong><span style="color:#dc2626;font-weight:700;">' + w.account + '</span></div>' +
+            '<div class="detail-row"><strong>Reseller Balance</strong><span>' + formatCurrency(balance) + '</span></div>' +
+            '<div class="detail-row"><strong>Request Date</strong><span>' + formatDate(w.date) + '</span></div>' +
+            '<div class="detail-row" style="border:none;"><strong>Status</strong><span>' + statusBadge(w.status) + '</span></div>' +
+            (w.note ? '<div style="background:#fef3c7;padding:12px;border-radius:8px;margin-top:10px;font-size:0.88rem;"><strong>Reseller Note:</strong> ' + w.note + '</div>' : '');
+
+        /* 2026-09-18 (this request) — WHERE THIS MONEY CAME FROM.
+           The admin must be able to see which orders' profits and which referral
+           commissions funded the withdrawal, and which charges were taken out in
+           the same period — the same breakdown the reseller sees on their own
+           page, from the same function, so the two can never disagree. */
+        try {
+            var _bd = withdrawalBreakdown('reseller', w.resellerId, w.id);
+            if (_bd && _bd.found) {
+                html += '<div style="margin-top:18px;border-top:1px solid #eef2f7;padding-top:16px;">' +
+                        '<div style="font-size:.72rem;font-weight:900;color:#64748b;letter-spacing:.4px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:7px;">' +
+                        '<i class="fas fa-receipt" style="color:#4f46e5;"></i> এই টাকা কোথা থেকে এলো</div>' +
+                        withdrawalBreakdownHtml(_bd) + '</div>';
+            }
+        } catch (e) { }
+
+        document.getElementById('wdBody').innerHTML = html;
+        var actions = '<button class="btn" style="background:#e2e8f0;color:#1e293b;" onclick="closeModal(\'wdModal\')">Close</button>';
+        if (w.status === 'pending') {
+            actions += '<button class="btn btn-danger" onclick="rejectWd(\'' + w.id + '\')"><i class="fas fa-times"></i> Reject</button>';
+            actions += '<button class="btn btn-success" onclick="approveWd(\'' + w.id + '\')"><i class="fas fa-check"></i> Approve & Send Money</button>';
+        }
+        document.getElementById('wdActions').innerHTML = actions;
+        document.getElementById('wdModal').classList.add('show');
+    }
+
+    function approveWd(wdId) {
+        /* 2026-09-15 — a moderator may VIEW this page but must never move money.
+           Approving a withdrawal is the moment real money is sent, so it is
+           guarded with the same helper every delete action already uses. */
+        if (typeof blockIfModerator === 'function' && blockIfModerator('উইথড্র অ্যাপ্রুভ')) return;
+        if (!confirm('Approve this withdrawal? Make sure you have sent the money to the account first!')) return;
+        var wds = getData(DB_KEYS.WITHDRAWALS);
+        var w = null;
+        for (var i = 0; i < wds.length; i++) { if (wds[i].id === wdId) { w = wds[i]; break; } }
+        if (!w || w.status !== 'pending') return;
+        /* 2026-09-15 — MONEY FIX. The amount is checked when the request is RAISED,
+           but the balance can fall before the admin gets to it — an order deleted,
+           a failed-delivery charge, another withdrawal approved first. Approving a
+           stale request used to pay out the full amount and then clamp the balance
+           to zero, so the money left the business and the shortfall vanished with
+           no record that it was owed. Refuse instead, and say why. */
+        /* 2026-09-19 — THE MONEY ALREADY LEFT THE BALANCE WHEN THE REQUEST WAS
+           RAISED (withdrawalReserve). Two consequences, both handled here:
+             · approving must NOT deduct a second time;
+             · the old "balance is less than the request" guard is now WRONG — the
+               balance is legitimately lower by exactly this request, so keeping it
+               would block every approval.
+           What is left is to mark it approved and count it as money actually sent. */
+        w.status = 'approved';
+        w.approvedDate = new Date().toISOString().split('T')[0];
+        setData(DB_KEYS.WITHDRAWALS, wds);
+
+        var resellers = getData(DB_KEYS.RESELLERS);
+        for (var j = 0; j < resellers.length; j++) {
+            if (resellers[j].id === w.resellerId) {
+                resellers[j].totalWithdraw = (resellers[j].totalWithdraw || 0) + w.amount;
+                break;
+            }
+        }
+        setData(DB_KEYS.RESELLERS, resellers);
+        addNotification(w.resellerId, 'withdrawal_approved', 'Your withdrawal of ' + formatCurrency(w.amount) + ' has been approved and sent via ' + w.method + ' to ' + w.account + '.', true);
+        logActivity('withdrawal_approved', w.id + ': ' + formatCurrency(w.amount) + ' to ' + w.account);
+        showToast('Withdrawal approved!', 'success');
+        closeModal('wdModal');
+        loadWds();
+    }
+
+    function rejectWd(wdId) {
+        if (!confirm('Reject this withdrawal request?')) return;
+        var wds = getData(DB_KEYS.WITHDRAWALS);
+        var w = null;
+        for (var i = 0; i < wds.length; i++) { if (wds[i].id === wdId) { w = wds[i]; break; } }
+        if (!w) return;
+        if (w.status !== 'pending') return;          /* never refund twice */
+        /* 2026-09-19 — THE MONEY MUST COME BACK. It left the balance when the
+           request was raised, so rejecting has to return it — otherwise the
+           amount would simply vanish. withdrawalRefund() also writes the matching
+           credit so the wallet ledger shows where it came from. */
+        try { withdrawalRefund('reseller', w.resellerId, w.amount, w.id, 'Withdrawal ' + w.id + ' rejected — money returned'); } catch (e) { }
+        w.status = 'rejected';
+        w.rejectedDate = new Date().toISOString().split('T')[0];
+        setData(DB_KEYS.WITHDRAWALS, wds);
+        addNotification(w.resellerId, 'withdrawal_rejected', 'Your withdrawal request of ' + formatCurrency(w.amount) + ' was rejected — the money is back in your balance. Contact support: 01997904792');
+        logActivity('withdrawal_rejected', w.id);
+        showToast('Withdrawal rejected — the amount is back in the reseller\'s balance.', 'warning');
+        closeModal('wdModal');
+        loadWds();
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+    window.viewWd = viewWd;
+    window.approveWd = approveWd;
+    window.rejectWd = rejectWd;
+    window.closeModal = closeModal;
+    window.doLogout = doLogout;
+
+    loadWds();
+    setInterval(function() { loadWds(); }, 8000);
+})();
+</script>
+    <script src="assistant.js"></script><script>(function(){function paint(){try{var n=(typeof adminNewOrderCount==="function")?adminNewOrderCount():(typeof adminOrderBadgeCount==="function"?adminOrderBadgeCount():0);var els=document.querySelectorAll(".orders-badge");for(var i=0;i<els.length;i++){els[i].textContent=n;els[i].style.display=n>0?"inline-block":"none";}}catch(e){}var lb=document.getElementById("ordersBadgeN");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>\r\n<script>document.addEventListener('DOMContentLoaded',function(){var p=location.pathname.split('/').pop();var sel=null;if(p==='add-reseller.html')sel='resellers.html';else if(p==='supplier-products.html')sel='suppliers.html';else sel=p;document.querySelectorAll('.smenu a,.sidebar a,.sidebar-menu a').forEach(function(a){if(a.getAttribute('href')===sel){a.classList.add('active');a.style.background='#10b981';a.style.color='#fff';a.style.fontWeight='800'}})});</script>
+
+<script>
+/* Admin sidebar toggle (additive) */
+if (!window.toggleSidebar) {
+    window.toggleSidebar = function(open) {
+        var sb = document.querySelector('.sidebar');
+        if (!sb) return;
+        if (open === undefined) open = !sb.classList.contains('open');
+        sb.classList.toggle('open', open);
+        var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+        if (ov) ov.classList.toggle('show', open);
+    };
+}
+</script>
+
+
+<script id="lx-auto-active">
+(function() {
+    var page = location.pathname.split('/').pop();
+    document.querySelectorAll('.sb-item').forEach(function(a) {
+        var href = (a.getAttribute('href') || '').split('?')[0];
+        if (href === page) a.classList.add('on');
+    });
+    /* ADMIN ONLY (this request) — a moderator must not see the Moderators page,
+       which is the one screen that could let them recruit another moderator.
+       The page itself also bounces a moderator; this hides the door as well. */
+    try {
+        if (sessionStorage.getItem('user_type') !== 'admin') {
+            document.querySelectorAll('.sb-item[href="moderators.html"]').forEach(function (a) { a.style.display = 'none'; });
+        }
+    } catch (e) {}
+})();
+</script>
+</body>
+</html>
+

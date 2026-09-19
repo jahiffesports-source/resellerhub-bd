@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Shop Products - Admin - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#f1f5f9; color:#1e293b; }
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:240px; background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%); color:#cbd5e1; z-index:100; overflow-y:auto; }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid #334155; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:38px; height:38px; background:linear-gradient(135deg,#dc2626,#b91c1c); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; }
+        .sidebar-logo h3 { color:white; font-size:1rem; }
+        .sidebar-logo small { color:#94a3b8; font-size:0.7rem; display:block; }
+        .sidebar-menu { list-style:none; padding:12px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:10px 20px; color:#cbd5e1; text-decoration:none; font-size:0.88rem; }
+        .sidebar-menu a:hover { background:rgba(255,255,255,0.05); color:white; }
+        .sidebar-menu a.active { background:#dc2626; color:white; }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 20px 5px; color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+        .main { margin-left:240px; min-height:100vh; }
+        .topbar { background:white; padding:14px 25px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:sticky; top:0; z-index:50; }
+        .topbar h2 { font-size:1.2rem; font-weight:600; }
+        .topbar h2 i { color:#dc2626; margin-right:8px; }
+        .user-pill { display:flex; align-items:center; gap:8px; padding:6px 14px; background:#fee2e2; border-radius:30px; font-size:0.85rem; color:#991b1b; font-weight:600; }
+        .btn-logout { background:#dc2626; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:500; }
+        .content { padding:25px; }
+        .card { background:white; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:20px; overflow:hidden; }
+        .card-header { padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+        .card-header h4 { font-size:0.95rem; font-weight:600; }
+        .card-header h4 i { color:#dc2626; margin-right:6px; }
+        .data-table { width:100%; border-collapse:collapse; }
+        .data-table th { text-align:left; padding:11px 20px; background:#f8fafc; font-weight:600; font-size:0.72rem; color:#64748b; text-transform:uppercase; }
+        .data-table td { padding:12px 20px; border-bottom:1px solid #f1f5f9; font-size:0.85rem; }
+        .data-table tr:hover { background:#f8fafc; }
+        .badge { padding:3px 9px; border-radius:20px; font-size:0.7rem; font-weight:600; }
+        .badge-success { background:#d1fae5; color:#065f46; }
+        .badge-warning { background:#fef3c7; color:#92400e; }
+        .badge-danger { background:#fee2e2; color:#991b1b; }
+        .badge-info { background:#dbeafe; color:#1e40af; }
+        .btn { padding:6px 12px; border:none; border-radius:7px; font-size:0.78rem; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+        .btn-success { background:#10b981; color:white; }
+        .btn-danger { background:#dc2626; color:white; }
+        .btn-warning { background:#f59e0b; color:white; }
+        .btn-sm { padding:4px 9px; font-size:0.72rem; }
+        .btn-primary { background:#2563eb; color:white; }
+        .sprow-l { font-size:.8rem; font-weight:700; color:#334155; display:block; margin-bottom:5px; }
+        .sphint { font-size:.68rem; color:#94a3b8; margin-top:4px; }
+        .spin { width:100%; padding:10px 13px; border:1.5px solid #e2e8f0; border-radius:9px; font-size:.86rem; box-sizing:border-box; font-family:inherit; }
+        .spin:focus { outline:none; border-color:#10b981; box-shadow:0 0 0 3px rgba(16,185,129,.12); }
+        .spreq { color:#ef4444; }
+        .sptoggle { position:relative; width:46px; height:26px; background:#10b981; border-radius:20px; cursor:pointer; transition:.2s; flex:none; display:inline-block; vertical-align:middle; }
+        .sptoggle.off { background:#d1d5db; }
+        .sptoggle::after { content:''; position:absolute; top:3px; left:23px; width:20px; height:20px; background:#fff; border-radius:50%; transition:.2s; }
+        .sptoggle.off::after { left:3px; }
+        .spcolgrid { display:grid; grid-template-columns:repeat(6,1fr); gap:9px; }
+        .spcol { border:1.5px solid #e2e8f0; border-radius:9px; padding:9px 4px; text-align:center; cursor:pointer; transition:.15s; }
+        .spcol:hover { border-color:#10b981; }
+        .spcol.on { border-color:#10b981; background:#ecfdf5; }
+        .spcol .c { width:26px; height:26px; border-radius:50%; margin:0 auto 5px; border:1px solid rgba(0,0,0,.08); }
+        .spcol p { font-size:.62rem; font-weight:600; color:#475569; margin:0; }
+        .spszp { padding:6px 14px; border-radius:16px; font-size:.74rem; font-weight:700; cursor:pointer; background:#f1f5f9; color:#475569; border:none; }
+        .spszp.on { background:#10b981; color:#fff; }
+        .spszc { padding:7px 13px; border-radius:9px; font-size:.76rem; font-weight:700; cursor:pointer; background:#fff; color:#475569; border:1.5px solid #e2e8f0; }
+        .spszc.on { background:#10b981; color:#fff; border-color:#10b981; }
+        .spchip { background:#ecfdf5; color:#047857; font-size:.7rem; font-weight:800; padding:4px 10px; border-radius:14px; display:inline-block; }
+        .spup { width:110px; height:110px; border:2px dashed #cbd5e1; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#94a3b8; cursor:pointer; font-size:.72rem; font-weight:700; gap:6px; }
+        .spup:hover { border-color:#10b981; color:#10b981; }
+        .spgalbox { border:1.5px dashed #e2e8f0; border-radius:10px; padding:16px; text-align:center; color:#94a3b8; font-size:.78rem; margin-top:12px; }
+        .spthumb { position:relative; width:74px; height:74px; border-radius:10px; overflow:hidden; border:2px solid #e2e8f0; flex:none; }
+        .spthumb img { width:100%; height:100%; object-fit:cover; }
+        .spthumb .x { position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%; background:#ef4444; color:#fff; border:none; font-size:.6rem; cursor:pointer; line-height:1; }
+        .spthumb .main { position:absolute; bottom:0; left:0; right:0; background:rgba(16,185,129,.92); color:#fff; font-size:.55rem; text-align:center; font-weight:700; }
+        .sppsum { background:#f8fafc; border-radius:10px; padding:14px; margin-top:14px; }
+        .sppsum .r { display:flex; padding:5px 0; font-size:.8rem; border-bottom:1px dashed #eef0f6; }
+        .sppsum .r:last-child { border-bottom:none; }
+        .sppsum .r b { width:45%; color:#64748b; font-weight:600; }
+        .sppsum .r span { flex:1; text-align:right; font-weight:600; color:#1e293b; }
+        .sptk { color:#10b981; font-weight:800; }
+        .spstab { padding:10px 13px; font-size:.8rem; font-weight:800; color:#64748b; cursor:pointer; border-bottom:2.5px solid transparent; margin-bottom:-2px; white-space:nowrap; }
+        .spstab.on { color:#10b981; border-bottom-color:#10b981; }
+        .modal-overlay { position:fixed; inset:0; background:rgba(15,23,42,0.65); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+        .modal-overlay.show { display:flex; }
+        .modal { background:white; border-radius:16px; width:100%; box-shadow:0 30px 80px rgba(0,0,0,.35); animation:mup .25s ease; }
+        @keyframes mup { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+        .empty { text-align:center; padding:40px; color:#94a3b8; }
+        .empty i { font-size:2.5rem; display:block; margin-bottom:10px; opacity:0.4; }
+        .shop-cell { display:flex; align-items:center; gap:10px; }
+        .shop-cell .lg { width:40px; height:40px; border-radius:8px; background:#fef3c7; display:flex; align-items:center; justify-content:center; color:#d97706; overflow:hidden; flex-shrink:0; }
+        .shop-cell .lg img { width:100%; height:100%; object-fit:cover; }
+    </style>
+
+
+
+
+<style id="lx-sb-final">
+/* ===== ADMIN SIDEBAR v4 — fresh premium design (authoritative) ===== */
+body .lx-sidebar { position:fixed !important; left:0 !important; top:0 !important; bottom:0 !important; width:264px !important; background:linear-gradient(180deg,#0d1226 0%,#171233 100%) !important; border-right:1px solid rgba(129,140,248,.14) !important; z-index:600 !important; overflow-y:auto !important; overflow-x:hidden !important; display:flex !important; flex-direction:column !important; transform:none !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; font-family:'Inter','Hind Siliguri',sans-serif !important; }
+body .lx-sidebar::before { content:'' !important; position:absolute !important; top:-80px !important; right:-60px !important; width:260px !important; height:260px !important; background:radial-gradient(circle,rgba(99,102,241,.18),transparent 70%) !important; pointer-events:none !important; }
+body .lx-brand { display:flex !important; align-items:center !important; gap:12px !important; padding:20px 18px !important; border-bottom:1px solid rgba(129,140,248,.14) !important; position:relative !important; }
+body .lx-brand-ic { width:42px !important; height:42px !important; border-radius:13px !important; background:linear-gradient(135deg,#6366f1,#a855f7) !important; display:flex !important; align-items:center !important; justify-content:center !important; color:#fff !important; font-size:1.05rem !important; box-shadow:0 8px 20px rgba(99,102,241,.4) !important; flex-shrink:0 !important; }
+body .lx-brand-tx b { color:#fff !important; font-size:1.02rem !important; font-weight:900 !important; display:block !important; line-height:1.2 !important; }
+body .lx-brand-tx small { color:#818cf8 !important; font-size:.6rem !important; font-weight:800 !important; letter-spacing:2px !important; }
+body .lx-close { margin-left:auto !important; background:rgba(255,255,255,.06) !important; border:none !important; color:#94a3b8 !important; width:30px !important; height:30px !important; border-radius:9px !important; cursor:pointer !important; font-size:1rem !important; display:none !important; align-items:center !important; justify-content:center !important; }
+body .lx-close:hover { background:#fee2e2 !important; color:#dc2626 !important; }
+body .lx-menu { padding:14px 12px !important; flex:1 !important; }
+body .sec-label { font-size:.6rem !important; font-weight:900 !important; letter-spacing:2.2px !important; color:#6b7280 !important; text-transform:uppercase !important; padding:14px 12px 6px !important; display:flex !important; align-items:center !important; gap:8px !important; }
+body .sec-label::before { content:'' !important; width:14px !important; height:2px !important; background:linear-gradient(90deg,#6366f1,#a855f7) !important; border-radius:2px !important; }
+body .sb-item { position:relative !important; display:flex !important; align-items:center !important; gap:11px !important; padding:9px 12px !important; margin:3px 0 !important; border-radius:12px !important; color:#b6c2e2 !important; text-decoration:none !important; font-size:.86rem !important; font-weight:600 !important; transition:all .2s !important; border:1px solid transparent !important; background:transparent !important; opacity:1 !important; visibility:visible !important; pointer-events:auto !important; box-shadow:none !important; transform:none !important; }
+body .sb-item .sb-ico { width:30px !important; height:30px !important; border-radius:9px !important; background:rgba(255,255,255,.05) !important; display:flex !important; align-items:center !important; justify-content:center !important; font-size:.82rem !important; flex-shrink:0 !important; transition:all .2s !important; }
+body .sb-item .sb-txt { flex:1 !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; display:block !important; }
+body .sb-item:hover { background:rgba(99,102,241,.13) !important; color:#fff !important; }
+body .sb-item:hover .sb-ico { background:rgba(99,102,241,.3) !important; }
+body .sb-item.on { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; border-color:rgba(129,140,248,.35) !important; }
+body .sb-item.on::before { content:'' !important; position:absolute !important; left:-12px !important; top:50% !important; transform:translateY(-50%) !important; width:3.5px !important; height:60% !important; background:linear-gradient(180deg,#818cf8,#c084fc) !important; border-radius:3px !important; }
+body .sb-item.on .sb-ico { background:linear-gradient(135deg,#6366f1,#a855f7) !important; color:#fff !important; }
+/* page-এর নিচের inline-highlight script সবসময় হারাবে */
+body .sb-item[style] { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; }
+body .sb-badge { background:#fbbf24 !important; color:#1e293b !important; font-size:.62rem !important; padding:1px 8px !important; border-radius:10px !important; font-weight:800 !important; margin-left:auto !important; }
+body .main { margin-left:264px !important; min-height:100vh !important; }
+body .side-overlay { display:none !important; position:fixed !important; inset:0 !important; background:rgba(7,10,26,.6) !important; z-index:590 !important; backdrop-filter:blur(2px) !important; }
+body .side-overlay.show { display:block !important; pointer-events:auto !important; }
+body .hamburger { display:none !important; }
+/* ===== মোবাইল/ট্যাবলেট: slide drawer ===== */
+@media (max-width:1024px) {
+    body .main { margin-left:0 !important; }
+    body .lx-sidebar { transform:translateX(-100%) !important; box-shadow:none !important; }
+    body .lx-sidebar.open { transform:none !important; box-shadow:30px 0 70px rgba(7,10,26,.6) !important; }
+    body .lx-close { display:flex !important; }
+    body .hamburger { display:inline-flex !important; }
+    body { overflow-x:hidden !important; }
+}
+</style>
+
+
+
+
+
+<style id="lx-ovf-fix">
+@media(max-width:768px){ body{overflow-x:hidden !important} }
+</style>
+
+<style id="lx-admin-referral">
+/* ============ Admin Referral (#37–#41, #47) ============ */
+.ar-wrap { max-width:1300px; margin:0 auto; }
+.ar-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:18px; }
+.ar-stat { background:#fff; border-radius:15px; padding:17px 16px; box-shadow:0 3px 14px rgba(15,23,42,.06); display:flex; align-items:center; gap:13px; }
+.ar-stat .si { width:44px; height:44px; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex:0 0 44px; }
+.ar-stat .lb { font-size:.7rem; color:#64748b; font-weight:700; margin-bottom:3px; line-height:1.3; }
+.ar-stat .vl { font-size:1.3rem; font-weight:900; color:#0f172a; line-height:1.1; }
+.ar-card { background:#fff; border-radius:15px; box-shadow:0 3px 14px rgba(15,23,42,.06); overflow:hidden; margin-bottom:18px; }
+.ar-card-head { padding:16px 18px; border-bottom:1px solid #eef2f7; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+.ar-card-head h4 { font-size:.95rem; font-weight:900; display:flex; align-items:center; gap:9px; }
+.ar-card-head h4 i { color:#dc2626; }
+.ar-search { padding:9px 14px; border:1.5px solid #e2e8f0; border-radius:10px; font-family:inherit; font-size:.82rem; min-width:200px; outline:none; }
+.ar-search:focus { border-color:#fca5a5; }
+.ar-tw { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+table.ar-t { width:100%; border-collapse:collapse; min-width:1020px; }
+table.ar-t th { background:#f8fafc; padding:11px 14px; text-align:left; font-size:.66rem; font-weight:900; text-transform:uppercase; letter-spacing:.5px; color:#64748b; border-bottom:1px solid #eef2f7; white-space:nowrap; }
+table.ar-t td { padding:12px 14px; font-size:.82rem; border-bottom:1px solid #f1f5f9; color:#334155; vertical-align:middle; }
+table.ar-t tbody tr:hover { background:#fafbff; }
+.ar-nm { font-weight:800; color:#0f172a; }
+.ar-sub { font-size:.7rem; color:#94a3b8; }
+.ar-code { font-family:'Courier New',monospace; font-weight:900; color:#b91c1c; background:#fef2f2; padding:3px 9px; border-radius:7px; font-size:.76rem; letter-spacing:.6px; display:inline-block; }
+.ar-pill { font-size:.66rem; font-weight:900; padding:3px 9px; border-radius:999px; display:inline-block; text-transform:capitalize; white-space:nowrap; }
+.ar-pill.approved { background:#dcfce7; color:#166534; }
+.ar-pill.pending { background:#fef9c3; color:#854d0e; }
+.ar-pill.banned, .ar-pill.rejected { background:#fee2e2; color:#991b1c; }
+.ar-pill.t1 { background:#dcfce7; color:#166534; }
+.ar-pill.t2 { background:#fef3c7; color:#b45309; }
+.ar-pill.credited { background:#dcfce7; color:#166534; }
+.ar-pill.reversed { background:#fee2e2; color:#991b1c; }
+.ar-btn { border:none; border-radius:9px; padding:8px 13px; font-weight:800; font-size:.74rem; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-family:inherit; transition:.2s; white-space:nowrap; }
+.ar-btn.pri { background:#dc2626; color:#fff; }
+.ar-btn.pri:hover { background:#b91c1c; transform:translateY(-1px); }
+.ar-btn.sec { background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe; }
+.ar-btn.sec:hover { background:#e0e7ff; }
+.ar-empty { text-align:center; padding:44px 20px; color:#94a3b8; }
+.ar-empty i { font-size:2.2rem; display:block; margin-bottom:11px; opacity:.45; }
+.ar-empty b { display:block; color:#475569; margin-bottom:5px; }
+.ar-total { background:#f8fafc; border-top:2px solid #e2e8f0; padding:13px 16px; display:flex; justify-content:space-between; align-items:center; font-weight:900; font-size:.95rem; }
+.ar-total .v { color:#dc2626; font-size:1.1rem; }
+.ar-sumrow { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; padding:14px 16px; background:#fafbff; border-bottom:1px solid #eef2f7; }
+.ar-sumrow div { background:#fff; border:1px solid #eef2f7; border-radius:11px; padding:11px 13px; }
+.ar-sumrow .l { font-size:.66rem; color:#94a3b8; font-weight:800; text-transform:uppercase; letter-spacing:.4px; margin-bottom:3px; }
+.ar-sumrow .v { font-size:1.02rem; font-weight:900; color:#0f172a; }
+@media (max-width:1100px) { .ar-stats { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:768px) {
+    .ar-stats { grid-template-columns:1fr 1fr; gap:10px; }
+    .ar-stat { flex-direction:column; text-align:center; gap:8px; padding:13px 10px; }
+    .ar-stat .vl { font-size:1.08rem; }
+    .ar-card-head { padding:14px 13px; }
+    .ar-search { width:100%; min-width:0; }
+    .ar-sumrow { grid-template-columns:1fr 1fr; }
+}
+@media (max-width:420px) { .ar-stats { grid-template-columns:1fr; } }
+</style>
+
+<style id="lx-admin-supref">
+/* Supplier referral page accents + 7-KPI grid */
+.sr-note{display:flex;align-items:flex-start;gap:10px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:13px;padding:12px 15px;margin-bottom:16px;font-size:.78rem;line-height:1.6}
+.sr-note i{margin-top:2px;flex:none}
+.sr-note a{color:#b45309;font-weight:800}
+.sr-stats{grid-template-columns:repeat(4,1fr)}
+.ar-card-head h4 i{color:#b45309}
+.ar-code{color:#b45309;background:#fef3c7}
+.ar-total .v{color:#b45309}
+@media (max-width:1100px){ .sr-stats{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:768px){ .sr-stats{grid-template-columns:1fr 1fr} }
+@media (max-width:420px){ .sr-stats{grid-template-columns:1fr} }
+</style>
+<style id="lx-orders-badge-n">.orders-badge-n{color:#fbbf24;font-weight:900;font-size:.72rem}.orders-badge-n:empty{display:none}</style>
+<style id="admin-mobile-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   The admin topbar measured about 474px across on a 390px phone (25px padding, an
+   h2 at 1.2rem, 12px gaps, a wide user pill), so the logout button was pushed past
+   the right edge. Several admin tables are also built by JS with NO .table-scroll
+   wrapper, so they widened the whole page instead of scrolling.
+   EVERY rule below sits inside a max-width query, so the DESKTOP LAYOUT IS
+   UNCHANGED. This is an ADDED block — no existing rule is modified or removed. */
+@media (max-width:768px){
+  .topbar { padding:10px 12px; gap:8px; }
+  .topbar h2 { font-size:.92rem; }
+  .topbar h2 i { margin-right:4px; }
+  .topbar-right { gap:6px; }
+  .user-pill { padding:5px 9px; font-size:.72rem; }
+  .btn-logout { padding:7px 10px; }
+  /* a table without a scroll wrapper would otherwise push the page wide */
+  .data-table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%; }
+}
+</style>
+<style id="panel-fullwidth-fix">
+/* 2026-09-16 — FULL-WIDTH FIX for the admin and supplier panels (this request).
+   The whole page sat in a narrow column with empty space on the right, because the
+   base rule reserves the sidebar with `margin-left`, and a block element with
+   margin-left and width:auto is only (100% - that) wide. A LATER rule in the same
+   file re-asserted the margin with !important, so the earlier mobile override lost.
+   This block is the LAST thing in the document, so it wins, and it resets width as
+   well as margin. Desktop is untouched — everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<aside class="lx-sidebar sidebar" id="sidebar">
+    <div class="lx-brand">
+        <span class="lx-brand-ic"><i class="fas fa-user-shield"></i></span>
+        <div class="lx-brand-tx"><b>AdminHub</b><small>CONTROL PANEL</small></div>
+        <button class="lx-close" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+    <nav class="lx-menu">
+        <div class="sec-label">Main</div>
+        <a href="dashboard.html" class="sb-item"><span class="sb-ico"><i class="fas fa-chart-line"></i></span><span class="sb-txt">Dashboard</span></a>
+        <a href="orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-shopping-cart"></i></span><span class="sb-txt">All Orders<span class="orders-badge-n" id="ordersBadgeN"></span></span><span class="orders-badge" style="display:none;margin-left:auto;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:.62rem;font-weight:800"></span></a>
+        <a href="multi-supplier-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-people-arrows"></i></span><span class="sb-txt">Multi-Supplier Orders<span class="orders-badge-n" id="msCount"></span></span></a>
+        <a href="products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box"></i></span><span class="sb-txt">Products</span></a>
+        <div class="sec-label">Users</div>
+        <a href="resellers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-users"></i></span><span class="sb-txt">Resellers</span></a>
+        <a href="suppliers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-warehouse"></i></span><span class="sb-txt">Suppliers</span></a>
+        <a href="supplier-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-boxes-stacked"></i></span><span class="sb-txt">Supplier Products</span></a>
+        <a href="add-reseller.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Add Reseller</span></a>
+        <a href="add-supplier.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck"></i></span><span class="sb-txt">Add Supplier</span></a>
+        <a href="approvals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-check"></i></span><span class="sb-txt">Approvals</span></a>
+        <a href="withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-money-bill-wave"></i></span><span class="sb-txt">Withdrawals</span></a>
+        <a href="supplier-withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-hand-holding-dollar"></i></span><span class="sb-txt">Supplier Withdraw</span></a>
+        <a href="transactions.html" class="sb-item"><span class="sb-ico"><i class="fas fa-receipt"></i></span><span class="sb-txt">Transaction History</span></a>
+        <a href="moderators.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-shield"></i></span><span class="sb-txt">Moderators</span></a>
+        <div class="sec-label">Referral</div>
+        <a href="referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Reseller Referral</span></a>
+        <a href="supplier-referral.html" class="sb-item on"><span class="sb-ico"><i class="fas fa-truck-arrow-right"></i></span><span class="sb-txt">Supplier Referral</span></a>
+                <a href="myshop-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-bag-shopping"></i></span><span class="sb-txt">My Shop Orders</span></a>
+        <a href="myshop-products.html" class="sb-item on"><span class="sb-ico"><i class="fas fa-box-open"></i></span><span class="sb-txt">My Shop Products</span></a>
+        <div class="sec-label">Offers &amp; Banners</div>
+        <a href="add-offer.html" class="sb-item"><span class="sb-ico"><i class="fas fa-plus-circle"></i></span><span class="sb-txt">Add Offers</span></a>
+        <a href="manage-offers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-gift"></i></span><span class="sb-txt">Manage Offers</span></a>
+        <a href="add-banner.html" class="sb-item"><span class="sb-ico"><i class="fas fa-image"></i></span><span class="sb-txt">Add Banners</span></a>
+        <a href="manage-banners.html" class="sb-item"><span class="sb-ico"><i class="fas fa-images"></i></span><span class="sb-txt">Manage Banners</span></a>
+        <div class="sec-label">System</div>
+        <a href="messages.html" class="sb-item"><span class="sb-ico"><i class="fas fa-comments"></i></span><span class="sb-txt">Messages<span class="orders-badge-n" id="msgBadgeN"></span></span></a>
+        <a href="settings.html" class="sb-item"><span class="sb-ico"><i class="fas fa-cog"></i></span><span class="sb-txt">Settings</span></a>
+        <a href="../index.html" class="sb-item"><span class="sb-ico"><i class="fas fa-globe"></i></span><span class="sb-txt">Visit Site</span></a>
+    </nav>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+        <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h2><i class="fas fa-box-open"></i> My Shop Products</h2>
+        <div class="topbar-right">
+            <div class="user-pill"><i class="fas fa-user-shield"></i> Admin</div>
+            <button class="btn-logout" onclick="sessionStorage.clear();window.location.href='login.html'"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content">
+    <div class="ar-wrap">
+<style id="lx-myshop-products">
+.msp-note{background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:13px;padding:12px 15px;font-size:.78rem;line-height:1.65;margin-bottom:16px}
+.msp-bar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:14px;background:#fff;padding:12px 14px;border-radius:14px;box-shadow:0 2px 10px rgba(15,23,42,.06)}
+.msp-bar .sp{flex:1}
+.msp-inp{padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.8rem;font-family:inherit;background:#fff;min-width:130px}
+.msp-inp:focus{outline:none;border-color:#dc2626}
+table.mt{width:100%;border-collapse:collapse;min-width:1040px}
+table.mt th{background:#f8fafc;padding:11px 12px;text-align:left;font-size:.63rem;font-weight:900;text-transform:uppercase;letter-spacing:.5px;color:#64748b;border-bottom:1px solid #eef2f7;white-space:nowrap}
+table.mt td{padding:11px 12px;font-size:.78rem;border-bottom:1px solid #f1f5f9;color:#334155;vertical-align:middle}
+table.mt tbody tr:hover{background:#fafbff}
+.msp-img{width:46px;height:46px;border-radius:9px;object-fit:contain;border:1px solid #e2e8f0;background:#f8fafc;display:block}
+.msp-ph{width:46px;height:46px;border-radius:9px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#cbd5e1}
+.msp-nm{font-weight:800;color:#0f172a;display:block;max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msp-sub{font-size:.66rem;color:#94a3b8}
+.msp-pill{font-size:.6rem;font-weight:900;padding:3px 9px;border-radius:999px;display:inline-block;white-space:nowrap}
+.msp-pill.ok{background:#dcfce7;color:#166534}
+.msp-pill.low{background:#fef3c7;color:#854d0e}
+.msp-pill.out{background:#fee2e2;color:#991b1b}
+.msp-pill.off{background:#f1f5f9;color:#64748b}
+.msp-btn{border:none;border-radius:9px;padding:7px 11px;font-weight:800;font-size:.7rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.msp-btn.pri{background:#dc2626;color:#fff}
+.msp-btn.gh{background:#f1f5f9;color:#475569}
+.msp-btn.dn{background:#fee2e2;color:#b91c1c}
+.msp-f{margin-bottom:12px}
+.msp-f label{display:block;font-size:.72rem;font-weight:800;color:#475569;margin-bottom:4px}
+.msp-f input,.msp-f textarea,.msp-f select{width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:.82rem;font-family:inherit;box-sizing:border-box}
+.msp-f input:focus,.msp-f textarea:focus,.msp-f select:focus{outline:none;border-color:#dc2626}
+.msp-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.msp-imgs{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.msp-imgs img{width:64px;height:64px;object-fit:contain;border:1px solid #e2e8f0;border-radius:9px;background:#f8fafc}
+.msp-own{background:#fef3c7;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:10px 13px;font-size:.74rem;font-weight:700;margin-bottom:14px;line-height:1.6}
+.msp-op{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:10px;padding:11px 14px;font-size:.76rem;font-weight:700;margin-bottom:14px;line-height:1.6}
+.msp-op .msp-op-t{display:flex;align-items:center;gap:8px;min-width:0}
+.msp-op .msp-op-t b{word-break:break-word}
+.msp-op-clr{background:#4f46e5;color:#fff;border:0;border-radius:8px;padding:7px 13px;font-size:.72rem;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap}
+.msp-op-clr:hover{background:#4338ca}
+@media(max-width:900px){ .msp-bar .sp{display:none} .msp-inp{flex:1} }
+@media(max-width:600px){ .msp-grid2{grid-template-columns:1fr} .msp-btn{flex:1;justify-content:center} }
+/* ===== ITEM 20 — Homepage Sections (admin arranges any shop) ===== */
+.mhs-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:10px;padding:11px 14px;font-size:.76rem;font-weight:700;line-height:1.6;margin-bottom:14px}
+.mhs-bar b{font-weight:900}
+.hs-sec{background:#f8fafc;border:1px solid #eef2f7;border-radius:13px;padding:13px 15px;margin-bottom:12px}
+.hs-sec.hs-d2{margin-left:16px;border-left:3px solid #e0e7ff}
+.hs-sec.hs-d3{margin-left:32px;border-left:3px solid #e0e7ff}
+.hs-sh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px}
+.hs-sh b{font-size:.85rem;font-weight:900;color:#0f172a}
+.hs-sh>span{font-size:.66rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px}
+.hs-sh .msp-btn{margin-left:auto}
+.hs-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.hs-item{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #eef2f7;border-radius:9px;padding:7px 11px;font-size:.78rem}
+.hs-item.pin{border-color:#c7d2fe;background:#f5f7ff}
+.hs-nm{flex:1;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hs-tag{font-size:.6rem;font-weight:900;color:#94a3b8;background:#f1f5f9;border-radius:6px;padding:2px 7px;text-transform:uppercase;letter-spacing:.4px}
+.hs-ops{display:flex;gap:4px}
+.hs-ops button,.hs-mini2{border:1px solid #e2e8f0;background:#fff;color:#475569;border-radius:7px;padding:3px 8px;font-size:.7rem;font-weight:800;cursor:pointer;font-family:inherit;line-height:1.4}
+.hs-ops button:hover{background:#eef2ff;border-color:#c7d2fe}
+.hs-ops button.del:hover{background:#fee2e2;border-color:#fecaca;color:#dc2626}
+.hs-mini2{background:#eef2ff;border-color:#c7d2fe;color:#4338ca}
+.hs-add{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hs-add select{flex:1;min-width:170px;padding:8px 11px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:.76rem;font-family:inherit;background:#fff}
+
+</style>
+
+<div class="msp-note">
+    <b><i class="fas fa-store"></i> My Shop Products</b> — reseller-দের নিজের upload করা product-এর central management। এই product গুলো <b>Main Catalog-এ কখনো যায় না</b> এবং <b>Normal Admin Orders-এও আসে না</b>।
+</div>
+
+<div class="msp-op" id="mspOwnerPanel" style="display:none">
+    <span class="msp-op-t">
+        <i class="fas fa-user-lock"></i>
+        <span><b id="mspOwnerName">—</b> — শুধুমাত্র এই reseller-এর uploaded product (<span id="mspOwnerCount">0</span>টি) দেখানো হচ্ছে।</span>
+    </span>
+    <button type="button" class="msp-op-clr" onclick="mspClearOwnerFilter()"><i class="fas fa-times"></i> All Resellers দেখুন</button>
+</div>
+
+<div class="msp-bar">
+    <input class="msp-inp" id="mspSearch" placeholder="Search product / reseller..." oninput="mspRender()">
+    <select class="msp-inp" id="mspReseller" onchange="mspRender()"><option value="">All Resellers</option></select>
+    <select class="msp-inp" id="mspStock" onchange="mspRender()">
+        <option value="">All Stock</option>
+        <option value="in">In Stock</option>
+        <option value="out">Out of Stock</option>
+    </select>
+    <select class="msp-inp" id="mspStatus" onchange="mspRender()">
+        <option value="">All Status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+        <option value="archived">Archived</option>
+    </select>
+    <select class="msp-inp" id="mspDate" onchange="mspRender()">
+        <option value="">All Time</option>
+        <option value="7">Last 7 days</option>
+        <option value="30">Last 30 days</option>
+        <option value="90">Last 90 days</option>
+    </select>
+    <div class="sp"></div>
+    <span style="font-size:.74rem;font-weight:800;color:#64748b">মোট: <span id="mspCount">0</span></span>
+</div>
+
+
+<div class="ar-card" id="mspHsCard" style="display:none">
+    <div class="ar-card-head">
+        <h4><i class="fas fa-table-cells-large"></i> Homepage Sections — <span id="mspHsWho">—</span></h4>
+    </div>
+    <div style="padding:14px 18px">
+        <div class="mhs-bar">
+            <span><i class="fas fa-layer-group"></i> এই shop-এর হোমপেজে সেকশনের ক্রম — <b>মেইন ক্যাটাগরি → সাব ক্যাটাগরি → সাব-সাব ক্যাটাগরি</b>। প্রতিটি প্রোডাক্ট ঠিক <b>একবারই</b> দেখায় (তার সবচেয়ে নির্দিষ্ট সেকশনে), আর সেকশনের পরে সরাসরি ফুটার।</span>
+            <span id="mspHsPinned">—</span>
+        </div>
+        <div id="mspHsSecs"></div>
+    </div>
+</div>
+
+<div class="ar-card">
+    <div class="ar-card-head">
+        <h4><i class="fas fa-box-open"></i> Reseller Products (<span id="mspCount2">0</span>)</h4>
+    </div>
+    <div class="ar-tw">
+        <table class="mt">
+            <thead><tr>
+                <th>Product</th><th>Reseller (Owner)</th><th>Category</th><th>Variants</th>
+                <th>Price</th><th>Stock</th><th>Status</th><th>Added</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="mspBody"></tbody>
+        </table>
+    </div>
+</div>
+
+    </div>
+    </div>
+</main>
+
+<div class="modal-overlay" id="mspModal" onclick="if(event.target===this)closeMsp()"><div class="modal" style="max-width:860px;max-height:90vh;overflow-y:auto;position:relative"></div></div>
+
+<script src="../app.js"></script><script>
+/* ADMIN SESSION GUARD (2026-09-15) — this page had none.
+   With no session it rendered My Shop orders / products, i.e. reseller
+   business names, order ids and CUSTOMER NAMES, to anyone who opened the
+   file. Every guarded admin page uses exactly this: no admin/moderator
+   session -> straight to login, plus the same 3s watchdog. */
+(function () {
+    try {
+        var _uid = sessionStorage.getItem('user_id');
+        var _ut = sessionStorage.getItem('user_type');
+        if (!_uid || (_ut !== 'admin' && _ut !== 'moderator')) {
+            sessionStorage.clear();
+            window.location.replace('login.html');
+            return;
+        }
+        setInterval(function () {
+            var t = sessionStorage.getItem('user_type');
+            if (t && (t !== 'admin' && t !== 'moderator')) {
+                sessionStorage.clear();
+                window.location.replace('login.html');
+            }
+        }, 3000);
+    } catch (e) {}
+})();
+</script>
+<script>(function(){function paint(){try{var n=(typeof adminNewOrderCount==="function")?adminNewOrderCount():(typeof adminOrderBadgeCount==="function"?adminOrderBadgeCount():0);var els=document.querySelectorAll(".orders-badge");for(var i=0;i<els.length;i++){els[i].textContent=n;els[i].style.display=n>0?"inline-block":"none";}}catch(e){}var lb=document.getElementById("ordersBadgeN");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+function aEsc(v){return String(v===undefined||v===null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function aMoney(n){try{return formatCurrency(n||0)}catch(e){return '\u09F3'+(n||0)}}
+function openMsp(html){var ov=document.getElementById('mspModal');var b=ov.querySelector('.modal');if(b)b.innerHTML=html;ov.classList.add('active');ov.style.display='flex'}
+function closeMsp(){var ov=document.getElementById('mspModal');ov.classList.remove('active');ov.style.display='none'}
+</script>
+<script>
+/* ================= Admin — My Shop Products (PART 4, 5, 6, 7, 8, 30, 31, 32, 35) ================= */
+var mspEditId = null;
+var mspImages = [];
+
+function mspResellers() { return getData(DB_KEYS.RESELLERS) || []; }
+
+/* ---------- PART 5, 6 — ownership scope (?rid=) ----------
+   Reseller List -> "View Products" deep-links to myshop-products.html?rid=<id>.
+   That scope MUST survive the whole page life: the toolbar select, every re-render
+   (search/stock/status/date all call mspRender) and any edit/delete refresh.
+   Keeping it in a module variable — not only in the <select> — means the filter can
+   never silently degrade to "All Resellers" if the option is missing or the select resets. */
+var mspScopeRid = '';          /* '' = all resellers */
+var mspScopeName = '';
+
+function mspResellerName(rid) {
+    if (rid === undefined || rid === null || rid === '') return '—';
+    var rs = mspResellers();
+    for (var i = 0; i < rs.length; i++) {
+        if (String(rs[i].id) !== String(rid)) continue;
+        return rs[i].businessName || rs[i].business || rs[i].shop_name || rs[i].shopName || rs[i].name || ('#' + rid);
+    }
+    return '#' + rid;
+}
+
+/* Called on boot (?rid=) and never by the user. Re-asserts the select + banner + render. */
+window.mspSetScope = function (rid, name) {
+    var v = (rid === undefined || rid === null) ? '' : String(rid);
+    mspScopeRid = v;
+    mspScopeName = v ? (name || mspResellerName(v)) : '';
+    /* the requested reseller must always be selectable, even with zero products */
+    mspFillResellers();
+    var sel = document.getElementById('mspReseller');
+    if (sel) sel.value = v;
+    /* if the select refused the value (should not happen now) fall back to last good */
+    if (sel && v && String(sel.value) !== v) { sel.value = ''; mspScopeRid = ''; mspScopeName = ''; }
+    var panel = document.getElementById('mspOwnerPanel');
+    if (panel) {
+        if (mspScopeRid) {
+            panel.style.display = 'flex';
+            var n = document.getElementById('mspOwnerName'); if (n) n.textContent = mspScopeName;
+        } else {
+            panel.style.display = 'none';
+        }
+    }
+    mspRender();
+};
+
+/* User asked for All Resellers from the banner. */
+window.mspClearOwnerFilter = function () {
+    mspScopeRid = ''; mspScopeName = '';
+    var sel = document.getElementById('mspReseller');
+    if (sel) sel.value = '';
+    var panel = document.getElementById('mspOwnerPanel');
+    if (panel) panel.style.display = 'none';
+    mspRender();
+};
+
+function mspFillResellers() {
+    var el = document.getElementById('mspReseller');
+    if (!el) return;
+    var list = mspResellers(), owners = {}, h = '<option value="">All Resellers</option>';
+    /* resellers that actually own a product … */
+    var prods = adminMyShopProducts();
+    for (var i = 0; i < prods.length; i++) owners[String(productOwnerId(prods[i]))] = 1;
+    for (var j = 0; j < list.length; j++) {
+        if (!owners[String(list[j].id)]) continue;
+        var nm = list[j].businessName || list[j].business || list[j].shop_name || list[j].shopName || list[j].name || ('#' + list[j].id);
+        h += '<option value="' + aEsc(list[j].id) + '">' + aEsc(nm) + '</option>';
+    }
+    /* … plus the currently scoped reseller, even with zero products, so ?rid= can never
+       fail to select and the filter can never fall through to every reseller. */
+    if (mspScopeRid && !owners[String(mspScopeRid)]) {
+        h += '<option value="' + aEsc(mspScopeRid) + '">' + aEsc(mspScopeName || ('#' + mspScopeRid)) + '</option>';
+    }
+    el.innerHTML = h;
+}
+
+function mspStockState(p) {
+    if (p.archived) return 'archived';
+    if (p.is_active === false) return 'inactive';
+    if (!productInStock(p)) return 'out';
+    var s = Number(p.stock) || 0;
+    return s <= 3 ? 'low' : 'ok';
+}
+function mspRender() {
+    var q = String((document.getElementById('mspSearch') || {}).value || '').toLowerCase().trim();
+    var rid = String((document.getElementById('mspReseller') || {}).value || '');
+    /* A manual change of the toolbar select redefines the ownership scope. The boot
+       (?rid=) scope is applied by mspSetScope which sets the select to the same value. */
+    var panel = document.getElementById('mspOwnerPanel');
+    if (rid !== mspScopeRid) {
+        mspScopeRid = rid;
+        mspScopeName = rid ? mspResellerName(rid) : '';
+        if (panel) {
+            panel.style.display = rid ? 'flex' : 'none';
+            if (rid) { var n = document.getElementById('mspOwnerName'); if (n) n.textContent = mspScopeName; }
+        }
+    }
+    var countEl = document.getElementById('mspOwnerCount');
+    var stk = String((document.getElementById('mspStock') || {}).value || '');
+    var stt = String((document.getElementById('mspStatus') || {}).value || '');
+    var days = parseInt((document.getElementById('mspDate') || {}).value || '', 10);
+
+    /* Ownership filter is applied here, once, from the persisted scope — never by the
+       row loop, and never bypassed by the search/stock/status/date filters below. */
+    var list = adminMyShopProducts(mspScopeRid || null);
+
+    list.sort(function (a, b) { return String(b.createdAt || '').localeCompare(String(a.createdAt || '')); });
+
+    var tb = document.getElementById('mspBody');
+    if (!tb) return;
+    var h = '', shown = 0;
+    for (var i = 0; i < list.length; i++) {
+        var p = list[i];
+        var owner = resellerProductOwnerLabel(p);
+        var st = mspStockState(p);
+        if (q && (String(p.name || '') + ' ' + owner).toLowerCase().indexOf(q) === -1) continue;
+        if (stk === 'in' && st === 'out') continue;
+        if (stk === 'out' && st !== 'out') continue;
+        if (stt === 'active' && (p.is_active === false || p.archived)) continue;
+        if (stt === 'inactive' && p.is_active !== false) continue;
+        if (stt === 'archived' && !p.archived) continue;
+        if (days) {
+            var t = new Date(p.createdAt || 0).getTime();
+            if (isNaN(t) || t < Date.now() - days * 86400000) continue;
+        }
+        shown++;
+        var img = productPrimaryImage(p);
+        var vs = productVariants(p);
+        var cat = [p.category, p.section || p.subSection, p.subSub].filter(Boolean).join(' › ');
+        h += '<tr>' +
+            '<td>' + (img ? '<img class="msp-img" src="' + aEsc(img) + '">' : '<div class="msp-ph"><i class="fas fa-image"></i></div>') +
+            '<span class="msp-nm" title="' + aEsc(p.name || '') + '">' + aEsc(p.name || '') + '</span>' +
+            '<span class="msp-sub">#' + aEsc(p.id) + ' • ' + productImageCount(p) + ' image' + (p.videoUrl ? ' • 🎬' : '') + '</span></td>' +
+            '<td><b>' + aEsc(owner) + '</b><span class="msp-sub" style="display:block">#' + aEsc(productOwnerId(p)) + '</span></td>' +
+            '<td>' + aEsc(cat || '—') + '</td>' +
+            '<td>' + (vs.length ? aEsc(vs.length) + ' variants' : '—') + '</td>' +
+            '<td><b>' + aMoney(p.customer_price || 0) + '</b><span class="msp-sub" style="display:block">cost ' + aMoney(p.cost || 0) + '</span></td>' +
+            '<td><b>' + aEsc(p.stock || 0) + '</b></td>' +
+            '<td><span class="msp-pill ' + st + '">' + (st === 'ok' ? 'In Stock' : st === 'low' ? 'Low' : st === 'out' ? 'Out of Stock' : st === 'archived' ? 'Archived' : 'Inactive') + '</span></td>' +
+            '<td>' + aEsc(String(p.createdAt || '').slice(0, 10) || '—') + '</td>' +
+            '<td><div style="display:flex;gap:5px;flex-wrap:wrap">' +
+            '<button class="msp-btn pri" onclick="mspEdit(\'' + aEsc(p.id) + '\')"><i class="fas fa-pen"></i> Edit</button>' +
+            '<button class="msp-btn dn" onclick="mspDelete(\'' + aEsc(p.id) + '\')"><i class="fas fa-trash"></i></button>' +
+            '</div></td></tr>';
+    }
+    var c1 = document.getElementById('mspCount'); if (c1) c1.textContent = shown;
+    var c2 = document.getElementById('mspCount2'); if (c2) c2.textContent = shown;
+    if (countEl) countEl.textContent = shown;
+    tb.innerHTML = h || '<tr><td colspan="9"><div class="ar-empty"><i class="fas fa-box-open"></i><b>' +
+        (mspScopeRid ? 'এই reseller-এর কোনো product নেই' : 'কোনো reseller product নেই') + '</b>' +
+        (mspScopeRid ? 'নির্বাচিত reseller এখনো কোনো product upload করেনি।' : 'Reseller-রা নিজের My Shop-এ product upload করলে এখানে দেখা যাবে।') +
+        '</div></td></tr>';
+    /* ITEM 20 — the sections card follows whatever reseller is in scope */
+    try { mhsRender(); } catch (e) {}
+}
+
+/* ---------- PART 7, 8 — A-to-Z edit that NEVER changes the owner ---------- */
+window.mspEdit = function (id) {
+    var p = findProductById(id);
+    if (!p || !isResellerProduct(p)) { showToast('Reseller product পাওয়া যায়নি।', 'error'); return; }
+    mspEditId = id;
+    mspImages = productImages(p).slice();
+    var cats = getData(DB_KEYS.CATEGORIES) || [];
+    var catOpts = '';
+    for (var i = 0; i < cats.length; i++) {
+        catOpts += '<option value="' + aEsc(cats[i].name) + '"' + (cats[i].name === p.category ? ' selected' : '') + '>' + aEsc(cats[i].name) + '</option>';
+    }
+    var sizes = productSizes(p), colors = productColors(p), vs = productVariants(p);
+    var varRows = '';
+    for (var j = 0; j < vs.length; j++) {
+        varRows += '<tr><td>' + aEsc([vs[j].size, vs[j].color].filter(Boolean).join(' / ') || '—') + '</td>' +
+            '<td><input type="number" min="0" class="msp-vstock" data-i="' + j + '" value="' + aEsc(vs[j].stock || 0) + '" style="width:90px;padding:6px 8px;border:1.5px solid #e2e8f0;border-radius:8px"></td>' +
+            '<td><input type="number" min="0" class="msp-vprice" data-i="' + j + '" value="' + aEsc(vs[j].price || 0) + '" style="width:100px;padding:6px 8px;border:1.5px solid #e2e8f0;border-radius:8px"></td>' +
+            '<td><input type="text" class="msp-vsku" data-i="' + j + '" value="' + aEsc(vs[j].sku || '') + '" style="width:110px;padding:6px 8px;border:1.5px solid #e2e8f0;border-radius:8px"></td></tr>';
+    }
+    var imgs = '';
+    for (var k = 0; k < mspImages.length; k++) imgs += '<img src="' + aEsc(mspImages[k]) + '">';
+
+    var html = '<div class="modal-header"><h3><i class="fas fa-pen"></i> Edit Reseller Product</h3>' +
+        '<button class="modal-close" onclick="closeMsp()"><i class="fas fa-times"></i></button></div>' +
+        '<div style="padding:16px 18px">' +
+        '<div class="msp-own"><i class="fas fa-lock"></i> <b>Owner:</b> ' + aEsc(resellerProductOwnerLabel(p)) +
+        ' (#' + aEsc(productOwnerId(p)) + ') — আপনি edit করলেও product-এর owner <b>পরিবর্তন হবে না</b>।</div>' +
+        '<div class="msp-grid2">' +
+        '<div class="msp-f"><label>Product Name</label><input id="mspName" value="' + aEsc(p.name || '') + '"></div>' +
+        '<div class="msp-f"><label>SKU</label><input id="mspSku" value="' + aEsc(p.sku || '') + '"></div>' +
+        '</div>' +
+        '<div class="msp-f"><label>Description</label><textarea id="mspDesc" rows="2">' + aEsc(p.description || '') + '</textarea></div>' +
+        '<div class="msp-grid2">' +
+        '<div class="msp-f"><label>Category</label><select id="mspCat">' + catOpts + '</select></div>' +
+        '<div class="msp-f"><label>Subcategory</label><input id="mspSub" value="' + aEsc(p.section || p.subSection || '') + '"></div>' +
+        '</div>' +
+        '<div class="msp-f"><label>Sub-subcategory</label><input id="mspSubSub" value="' + aEsc(p.subSub || '') + '"></div>' +
+        '<div class="msp-grid2">' +
+        '<div class="msp-f"><label>Cost Price (৳)</label><input id="mspCost" type="number" min="0" value="' + aEsc(p.cost || 0) + '"></div>' +
+        '<div class="msp-f"><label>Retail Price (৳)</label><input id="mspPrice" type="number" min="0" value="' + aEsc(p.customer_price || 0) + '"></div>' +
+        '</div>' +
+        '<div class="msp-grid2">' +
+        '<div class="msp-f"><label>Stock</label><input id="mspStockEdit" type="number" min="0" value="' + aEsc(p.stock || 0) + '"></div>' +
+        '<div class="msp-f"><label>Discount (%)</label><input id="mspDisc" type="number" min="0" max="90" value="' + aEsc(p.discount || 0) + '"></div>' +
+        '</div>' +
+        '<div class="msp-grid2">' +
+        '<div class="msp-f"><label>Size (কমা দিয়ে)</label><input id="mspSizes" value="' + aEsc(sizes.join(', ')) + '"></div>' +
+        '<div class="msp-f"><label>Variant / Color (কমা দিয়ে)</label><input id="mspColors" value="' + aEsc(colors.join(', ')) + '"></div>' +
+        '</div>' +
+        '<div class="msp-f"><label>Product Video (YouTube link)</label><input id="mspVideo" value="' + aEsc(p.videoUrl || '') + '"></div>' +
+        '<div class="msp-f"><label>Images (' + mspImages.length + '/' + PRODUCT_MAX_IMAGES + ')</label><div class="msp-imgs">' + (imgs || '<span class="msp-sub">কোনো image নেই</span>') + '</div></div>' +
+        (varRows ? '<div class="msp-f"><label>Variants — stock / price / SKU</label>' +
+            '<div style="overflow-x:auto"><table class="mt" style="min-width:0"><thead><tr><th>Variant</th><th>Stock</th><th>Price</th><th>SKU</th></tr></thead><tbody>' + varRows + '</tbody></table></div></div>' : '') +
+        '<div class="msp-grid2">' +
+        '<div class="msp-f"><label>Status</label><select id="mspActive">' +
+        '<option value="1"' + (p.is_active === false ? '' : ' selected') + '>Active</option>' +
+        '<option value="0"' + (p.is_active === false ? ' selected' : '') + '>Inactive</option>' +
+        '</select></div>' +
+        '<div class="msp-f"><label>Owner (read-only)</label><input value="' + aEsc(resellerProductOwnerLabel(p)) + '" readonly style="background:#f8fafc;color:#64748b"></div>' +
+        '</div>' +
+        '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:6px">' +
+        '<button class="msp-btn pri" onclick="mspSave()"><i class="fas fa-save"></i> Save Changes</button>' +
+        '<button class="msp-btn gh" onclick="closeMsp()">Cancel</button>' +
+        '</div></div>';
+    openMsp(html);
+};
+
+window.mspSave = function () {
+    if (!mspEditId) return;
+    var ps = getData(DB_KEYS.PRODUCTS) || [], original = null, idx = -1;
+    for (var i = 0; i < ps.length; i++) { if (String(ps[i].id) === String(mspEditId)) { original = ps[i]; idx = i; break; } }
+    if (!original) { showToast('Product পাওয়া যায়নি।', 'error'); return; }
+    var vg = function (id) { var e = document.getElementById(id); return e ? e.value : ''; };
+    var edited = Object.assign({}, original);
+    edited.name = String(vg('mspName') || '').trim() || original.name;
+    edited.sku = String(vg('mspSku') || '').trim();
+    edited.description = String(vg('mspDesc') || '');
+    edited.category = vg('mspCat') || original.category;
+    edited.section = String(vg('mspSub') || '');
+    edited.subSection = edited.section;
+    edited.subSub = String(vg('mspSubSub') || '');
+    edited.cost = Number(vg('mspCost')) || 0;
+    edited.price = edited.cost;
+    edited.customer_price = Number(vg('mspPrice')) || 0;
+    /* BUG FIX — this used to read `vg('mspStock')`, but the toolbar's STOCK
+       FILTER select already owned that id and comes first in the document, so
+       getElementById always returned the FILTER (value "" / "in" / "out").
+       Number("") and Number("in") are 0/NaN, so saving ANY product edit
+       silently set its stock to 0. The modal field now has its own id. */
+    edited.stock = Number(vg('mspStockEdit')) || 0;
+    edited.discount = Number(vg('mspDisc')) || 0;
+    edited.sizes = String(vg('mspSizes') || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+    edited.colors = String(vg('mspColors') || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+    var rawVideo = String(vg('mspVideo') || '').trim();
+    edited.videoUrl = rawVideo ? (parseYouTubeId(rawVideo) ? youtubeWatchUrl(rawVideo) : '') : '';
+    edited.is_active = (vg('mspActive') === '1');
+    /* variant stock / price / sku */
+    var vs = productVariants(original).slice();
+    var stocks = document.querySelectorAll('.msp-vstock'), prices = document.querySelectorAll('.msp-vprice'), skus = document.querySelectorAll('.msp-vsku');
+    for (var s = 0; s < stocks.length; s++) {
+        var vi = parseInt(stocks[s].getAttribute('data-i'), 10);
+        if (!vs[vi]) continue;
+        vs[vi].stock = Number(stocks[s].value) || 0;
+        if (prices[s]) vs[vi].price = Number(prices[s].value) || 0;
+        if (skus[s]) vs[vi].sku = String(skus[s].value || '');
+    }
+    edited.variants = vs;
+    /* PART 8 — ownership is immutable through this editor */
+    preserveProductOwnership(original, edited);
+    ps[idx] = edited;
+    syncProductStock(ps[idx]);
+    setData(DB_KEYS.PRODUCTS, ps);
+    try { logActivity('admin_edited_reseller_product', 'Admin edited reseller product ' + edited.id + ' (owner unchanged: reseller #' + productOwnerId(edited) + ')'); } catch (e) {}
+    showToast('Product update হয়েছে — owner অপরিবর্তিত ✓', 'success');
+    closeMsp();
+    mspRender();
+};
+
+/* PART 32 — order history থাকলে hard delete নয়, archive */
+window.mspDelete = function (id) {
+    /* MODERATOR (this request) — a moderator may NOT delete a product.
+       They can take it off sale with the Active toggle, which is the
+       supported alternative, so nothing is unreachable for them. */
+    if (typeof blockIfModerator === 'function' && blockIfModerator('প্রোডাক্ট ডিলিট (Out of Stock করুন)')) return;
+    var p = findProductById(id);
+    if (!p) return;
+    var hasOrders = productHasOrders(id);
+    var msg = hasOrders
+        ? 'এই product-এর order history আছে — delete করা যাবে না। বদলে archive (soft-delete) করা হবে, order history অক্ষত থাকবে। চালিয়ে যাবেন?'
+        : 'এই product-টি delete করবেন?';
+    if (!confirm(msg)) return;
+    var r = safeDeleteProduct(id);
+    if (!r.ok) { showToast(r.message, 'error'); return; }
+    try { logActivity('admin_deleted_reseller_product', 'Admin ' + (r.archived ? 'archived' : 'deleted') + ' reseller product ' + id); } catch (e) {}
+    showToast(r.archived ? 'Product archive করা হয়েছে (order history সুরক্ষিত)।' : 'Product delete হয়েছে।', 'success');
+    mspFillResellers();
+    mspRender();
+};
+
+/* ---------- PART 5, 6 — opened from the Reseller List "View Products" ---------- */
+window.mspOpenForReseller = function (rid) {
+    var list = adminMyShopProducts(rid);
+    var name = '#' + rid;
+    var rs = mspResellers();
+    for (var i = 0; i < rs.length; i++) if (String(rs[i].id) === String(rid)) { name = rs[i].businessName || rs[i].name || name; break; }
+    var rows = '';
+    for (var j = 0; j < list.length; j++) {
+        var p = list[j], img = productPrimaryImage(p);
+        rows += '<tr>' +
+            '<td>' + (img ? '<img class="msp-img" src="' + aEsc(img) + '">' : '<div class="msp-ph"><i class="fas fa-image"></i></div>') + '</td>' +
+            '<td><b>' + aEsc(p.name || '') + '</b><span class="msp-sub" style="display:block">#' + aEsc(p.id) + '</span></td>' +
+            '<td>' + aEsc(p.category || '—') + '</td>' +
+            '<td>' + aMoney(p.customer_price || 0) + '</td>' +
+            '<td>' + aEsc(p.stock || 0) + '</td>' +
+            '<td><button class="msp-btn pri" onclick="mspEdit(\'' + aEsc(p.id) + '\')"><i class="fas fa-pen"></i> Edit</button></td></tr>';
+    }
+    var html = '<div class="modal-header"><h3><i class="fas fa-box-open"></i> Products — ' + aEsc(name) + '</h3>' +
+        '<button class="modal-close" onclick="closeMsp()"><i class="fas fa-times"></i></button></div>' +
+        '<div style="padding:14px 18px"><div class="msp-own"><i class="fas fa-user"></i> শুধুমাত্র <b>' + aEsc(name) + '</b>-এর uploaded product দেখানো হচ্ছে (' + list.length + 'টি)।</div>' +
+        '<div style="overflow-x:auto"><table class="mt" style="min-width:0"><thead><tr><th></th><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Action</th></tr></thead><tbody>' +
+        (rows || '<tr><td colspan="6"><div class="ar-empty"><i class="fas fa-box-open"></i><b>এই reseller-এর কোনো product নেই</b></div></td></tr>') +
+        '</tbody></table></div></div>';
+    openMsp(html);
+};
+
+
+/* ==========================================================================
+   ITEM 20 (spec, 2026-09-14) — HOMEPAGE SECTIONS, admin side
+   --------------------------------------------------------------------------
+   The My Shop homepage shows, per main category: its main-category products,
+   then its sub-category products, then its sub-sub-category products — then
+   nothing but the footer. Each product appears exactly ONCE, in its deepest
+   matching section.
+
+   The admin can re-arrange ANY shop from here. It writes the SAME per-reseller
+   store the reseller's own Shop Settings writes (`rh_shop_sections`, keyed by
+   reseller id), so there is one arrangement per shop and no second source of
+   truth. The card follows this page's existing reseller scope: pick a reseller
+   in the toolbar (or arrive via ?rid=) and their sections appear. Placement
+   only — this never edits, hides or deletes a product.
+   ========================================================================== */
+window._mhsSecs = [];
+function mhsJs(v) { return String(v === undefined || v === null ? '' : v).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+function mhsRender() {
+    var card = document.getElementById('mspHsCard');
+    var box = document.getElementById('mspHsSecs');
+    if (!card || !box) return;
+    var rid = mspScopeRid;
+    if (!rid) { card.style.display = 'none'; box.innerHTML = ''; return; }
+    card.style.display = '';
+    var who = document.getElementById('mspHsWho');
+    if (who) who.textContent = mspResellerName(rid);
+
+    var secs = shopHomepageSections(rid);
+    var all = shopVisibleProducts(rid);
+    window._mhsSecs = secs;
+    var totalPinned = 0;
+    for (var t = 0; t < secs.length; t++) totalPinned += shopSectionPinnedIds(rid, secs[t].key).length;
+    var pc = document.getElementById('mspHsPinned');
+    if (pc) pc.textContent = totalPinned ? (totalPinned + 'টি প্রোডাক্ট হাতে সাজানো') : 'সব সেকশন অটোমেটিক';
+
+    var opts = '<option value="">— অন্য সেকশন থেকে প্রোডাক্ট আনুন —</option>';
+    for (var a = 0; a < all.length; a++) {
+        opts += '<option value="' + aEsc(String(all[a].id)) + '">' + aEsc(String(all[a].name || '')) + '</option>';
+    }
+    if (!secs.length) {
+        box.innerHTML = '<div class="ar-empty"><i class="fas fa-box-open"></i><b>কোনো সেকশন নেই</b>' +
+            'এই reseller এখনো কোনো product upload করেনি।</div>';
+        return;
+    }
+    var h = '';
+    for (var i = 0; i < secs.length; i++) {
+        var s = secs[i];
+        var pinned = shopSectionPinnedIds(rid, s.key);
+        var isPin = {};
+        for (var q = 0; q < pinned.length; q++) isPin[String(pinned[q])] = 1;
+        var shown = shopSectionShown(s);
+        h += '<div class="hs-sec hs-d' + s.depth + '" data-sec="' + aEsc(s.key) + '">' +
+             '<div class="hs-sh"><b>' + aEsc(shopSectionTitle(s)) + '</b><span>' + s.total + ' product' + (s.total === 1 ? '' : 's') + '</span>' +
+             (pinned.length ? '<button class="msp-btn" onclick="mhsReset(\'' + mhsJs(s.key) + '\')"><i class="fas fa-rotate-left"></i> Auto</button>' : '') +
+             '</div><div class="hs-list">';
+        if (!shown.length) h += '<div class="hs-item"><span class="hs-nm" style="color:#94a3b8">— খালি —</span></div>';
+        for (var k = 0; k < shown.length; k++) {
+            var p = shown[k], id = String(p.id);
+            h += '<div class="hs-item' + (isPin[id] ? ' pin' : '') + '">' +
+                 '<span class="hs-nm">' + aEsc(String(p.name || '')) + '</span>' +
+                 (isPin[id]
+                    ? '<span class="hs-ops">' +
+                      '<button title="উপরে" onclick="mhsMove(\'' + mhsJs(s.key) + '\',\'' + mhsJs(id) + '\',-1)">\u2191</button>' +
+                      '<button title="নিচে" onclick="mhsMove(\'' + mhsJs(s.key) + '\',\'' + mhsJs(id) + '\',1)">\u2193</button>' +
+                      '<button class="del" title="Auto-তে ফেরান" onclick="mhsUnpin(\'' + mhsJs(s.key) + '\',\'' + mhsJs(id) + '\')">\u2715</button>' +
+                      '</span>'
+                    : '<span class="hs-tag">auto</span>' +
+                      '<button class="hs-mini2" onclick="mhsPin(\'' + mhsJs(s.key) + '\',\'' + mhsJs(id) + '\')">Pin</button>') +
+                 '</div>';
+        }
+        h += '</div><div class="hs-add"><select id="mhsSel' + i + '">' + opts + '</select>' +
+             '<button class="msp-btn pri" onclick="mhsAddHere(' + i + ')"><i class="fas fa-plus"></i> এখানে আনুন</button></div></div>';
+    }
+    box.innerHTML = h;
+}
+window.mhsRender = mhsRender;
+function mhsPin(key, pid) { pinProductToShopSection(mspScopeRid, key, pid); mhsRender(); showToast('সেকশনে pin করা হয়েছে ✓', 'success'); }
+window.mhsPin = mhsPin;
+function mhsUnpin(key, pid) { unpinProductFromShopSection(mspScopeRid, key, pid); mhsRender(); showToast('Auto-তে ফেরানো হয়েছে', 'success'); }
+window.mhsUnpin = mhsUnpin;
+function mhsMove(key, pid, dir) { moveShopSectionPin(mspScopeRid, key, pid, dir); mhsRender(); }
+window.mhsMove = mhsMove;
+function mhsReset(key) { clearShopSectionPins(mspScopeRid, key); mhsRender(); showToast('সেকশনটি আবার অটোমেটিক', 'success'); }
+window.mhsReset = mhsReset;
+function mhsAddHere(i) {
+    var s = window._mhsSecs[i];
+    if (!s) return;
+    var el = document.getElementById('mhsSel' + i);
+    var pid = el ? String(el.value || '') : '';
+    if (!pid) { showToast('আগে একটি প্রোডাক্ট বেছে নিন।', 'warning'); return; }
+    pinProductToShopSection(mspScopeRid, s.key, pid);
+    mhsRender();
+    showToast('প্রোডাক্ট সেকশনে যোগ হয়েছে ✓', 'success');
+}
+window.mhsAddHere = mhsAddHere;
+
+mspFillResellers();
+mspRender();
+mhsRender();
+/* PART 5, 6 — arriving from Reseller List -> View Products: lock the whole page to that
+   reseller. Runs AFTER the first fill/render so the scope is re-asserted on top of it. */
+(function () {
+    try {
+        var m = location.search.match(/[?&]rid=([^&]*)/);
+        if (!m) return;
+        var rid = decodeURIComponent(m[1] || '').trim();
+        if (!rid) return;
+        mspSetScope(rid);
+    } catch (e) {}
+})();
+
+</script>
+<script>
+/* ADMIN ONLY (this request) — hide the Moderators entry from a moderator session.
+   The Moderators page itself also bounces a moderator, so this is the second
+   layer, not the only one. */
+(function () {
+    try {
+        if (sessionStorage.getItem('user_type') !== 'admin') {
+            document.querySelectorAll('.sb-item[href="moderators.html"]').forEach(function (a) { a.style.display = 'none'; });
+        }
+    } catch (e) {}
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Cart - ResellerHub BD</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body {font-family:'Inter',sans-serif;background:#fafafa;color:#1e293b;padding-bottom:64px; overflow-x:hidden; }
+.wrap{max-width:900px;margin:0 auto;padding:20px 16px}
+h1{font-size:1.4rem;font-weight:800;margin-bottom:16px}
+.card{background:#fff;border-radius:10px;border:1px solid #f1f5f9;margin-bottom:14px;overflow:hidden}
+.item{display:flex;gap:14px;padding:14px;border-bottom:1px solid #f4f4f6;align-items:center}
+.item:last-child{border-bottom:none}
+.item img,.item .noimg{width:64px;height:64px;border-radius:8px;object-fit:cover;background:#f8fafc;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:1.4rem}
+.ii{flex:1}.ii h5{font-size:.9rem;margin-bottom:3px}
+.ii small{color:#64748b;font-size:.75rem}
+.ii .pr{color:#db2777;font-weight:700;font-size:.9rem;margin-top:3px;display:block}
+.ii input{width:70px;padding:6px 8px;border:1.5px solid #e2e8f0;border-radius:6px;margin-top:4px;font-size:.85rem;color:#047857;font-weight:600}
+.rmb{background:#fee2e2;color:#dc2626;border:none;width:30px;height:30px;border-radius:7px;cursor:pointer}
+.summary{background:#fff;border-radius:10px;border:1px solid #f1f5f9;padding:18px;margin-top:6px}
+.sr{display:flex;justify-content:space-between;padding:6px 0;font-size:.9rem}
+.sr.t{font-weight:800;color:#ec4899;font-size:1.05rem;border-top:1px dashed #e2e8f0;margin-top:6px;padding-top:10px}
+.sr.pf{color:#047857;font-weight:700}
+.btns{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn{flex:1;padding:13px;border-radius:8px;font-weight:700;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;font-size:.92rem}
+.bk{background:#fff;border:2px solid #e2e8f0;color:#334155}
+.go{background:#ec4899;color:#fff}
+.empty{text-align:center;padding:70px 20px;color:#94a3b8}.empty i{font-size:3rem;display:block;margin-bottom:14px;opacity:.4}.empty a{color:#ec4899;font-weight:700}
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;box-shadow:0 -3px 12px rgba(0,0,0,.08);z-index:300;padding:7px 4px calc(7px + env(safe-area-inset-bottom))}
+.mob-nav a{color:#94a3b8;text-decoration:none;font-size:.6rem;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 8px;flex:1}
+.mob-nav a i{font-size:1.05rem}.mob-nav a.on{color:#ec4899}
+.toast{position:fixed;top:20px;right:20px;background:#10b981;color:#fff;padding:12px 20px;border-radius:10px;font-weight:600;z-index:9999;display:none}
+@media(max-width:768px){body{padding-bottom:64px}.mob-nav{display:flex}}
+</style>
+<link rel="stylesheet" href="rstyle.css"><style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1><i class="fas fa-shopping-cart" style="color:#ec4899;margin-right:8px"></i>My Cart</h1>
+<div class="card" id="cartCard"></div>
+<div id="sumWrap" style="display:none">
+<div class="summary">
+<div class="sr"><span>Items Subtotal:</span><span id="sSub">0</span></div>
+<div class="sr"><span>Total Items:</span><span id="sQty">0</span></div>
+<div class="sr pf"><span>Your Total Profit:</span><span id="sProf">0</span></div>
+<div class="sr t"><span>Cart Total:</span><span id="sTot">0</span></div>
+</div>
+<div class="btns">
+<a href="products.html" class="btn bk"><i class="fas fa-arrow-left"></i> Continue Shopping</a>
+<button class="btn go" onclick="checkoutAll()"><i class="fas fa-bolt"></i> Place Order for All Items</button>
+</div>
+</div>
+</div>
+
+<nav class="mob-nav">
+<a href="dashboard.html"><i class="fas fa-home"></i>Home</a>
+<a href="products.html" class="on"><i class="fas fa-box"></i>Products</a>
+<a href="cart.html"><i class="fas fa-shopping-cart"></i>Cart</a>
+<a href="my-orders.html"><i class="fas fa-list"></i>Orders</a>
+<a href="profile.html"><i class="fas fa-user"></i>Profile</a>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script src="../app.js"></script><script>(function(){function paint(){try{var b=document.getElementById("ordersBadge");var uid=sessionStorage.getItem("user_id");if(!uid)return;if(sessionStorage.getItem("user_type")!=="reseller")return;var n=(typeof resellerNewOrderCount==="function")?resellerNewOrderCount(uid):0;if(b){b.textContent=n;b.style.display=n>0?"inline-block":"none";}var lb=document.getElementById("ordersBadgeLabel");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+(function(){
+var uid=sessionStorage.getItem('user_id');
+if(!uid||sessionStorage.getItem('user_type')!=='reseller'){window.location.replace('login.html');return}
+function ckey(){return 'rh_cart_'+uid}
+function getCart(){try{return JSON.parse(localStorage.getItem(ckey())||'[]')}catch(e){return[]}}
+function setCart(v){localStorage.setItem(ckey(),JSON.stringify(v));render()}
+function render(){
+var c=getCart();
+if(!c.length){document.getElementById('cartCard').innerHTML='<div class="empty"><i class="fas fa-shopping-cart"></i>Your cart is empty<br><a href="products.html">Browse products &rarr;</a></div>';document.getElementById('sumWrap').style.display='none';return}
+var h='',sub=0,prof=0,tq=0;
+for(var i=0;i<c.length;i++){var x=c[i];
+var img=x.image?'<img src="'+x.image+'">':'<div class="noimg"><i class="fas '+x.icon+'"></i></div>';
+sub+=x.resale*x.qty;prof+=(x.resale-x.price)*x.qty;tq+=x.qty;
+h+='<div class="item">'+img+'<div class="ii"><h5>'+x.name+'</h5><small>Size: '+(x.size||'Free')+' | Color: '+(x.color||'-')+' | Qty: '+x.qty+'</small><span class="pr">Resale: '+formatCurrency(x.resale)+'</span><input type="number" value="'+x.resale+'" min="'+x.price+'" onchange="editResale('+i+',this.value)"></div><button class="rmb" onclick="rmItem('+i+')"><i class="fas fa-trash"></i></button></div>'}
+document.getElementById('cartCard').innerHTML=h;
+document.getElementById('sSub').textContent=formatCurrency(sub);
+document.getElementById('sQty').textContent=tq;
+document.getElementById('sProf').textContent=formatCurrency(prof);
+document.getElementById('sTot').textContent=formatCurrency(sub);
+document.getElementById('sumWrap').style.display='block'}
+window.rmItem=function(i){var c=getCart();c.splice(i,1);setCart(c)};
+window.editResale=function(i,v){var c=getCart();var n=parseInt(v)||0;if(n<c[i].price){showToast('Resale cannot be below wholesale!','error');n=c[i].price}c[i].resale=n;setCart(c)};
+window.checkoutAll=function(){var c=getCart();if(!c.length){showToast('Cart is empty!','error');return}
+sessionStorage.setItem('rh_cart_checkout',JSON.stringify(c));
+localStorage.setItem(ckey(),JSON.stringify([]));
+window.location.href='order.html?cart=1'};
+render();
+})();
+</script>
+</body>
+</html>

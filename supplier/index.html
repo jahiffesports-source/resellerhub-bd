@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplier Portal - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; min-height:100vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%); padding:20px; }
+        .card { background:white; border-radius:20px; box-shadow:0 25px 50px rgba(0,0,0,0.25); width:100%; max-width:950px; display:grid; grid-template-columns:1fr 1.2fr; overflow:hidden; }
+        .left { background:linear-gradient(135deg,#b45309,#92400e); color:white; padding:45px 35px; display:flex; flex-direction:column; justify-content:center; }
+        .left i.big { font-size:3.5rem; margin-bottom:18px; }
+        .left h2 { font-size:1.8rem; margin-bottom:10px; }
+        .left p { opacity:0.9; margin-bottom:22px; line-height:1.7; font-size:0.95rem; }
+        .left li { list-style:none; margin-bottom:10px; display:flex; gap:10px; align-items:center; font-size:0.92rem; }
+        .left li i { color:#fbbf24; }
+        .right { padding:40px 35px; max-height:90vh; overflow-y:auto; }
+        .badge-top { display:inline-flex; align-items:center; gap:8px; background:#fef3c7; color:#92400e; padding:6px 14px; border-radius:20px; font-size:0.72rem; font-weight:700; margin-bottom:14px; }
+        .right h1 { font-size:1.6rem; margin-bottom:6px; }
+        .right .sub { color:#64748b; margin-bottom:22px; font-size:0.92rem; }
+        .tabs { display:flex; gap:6px; margin-bottom:20px; background:#f1f5f9; padding:4px; border-radius:10px; }
+        .tab { flex:1; padding:10px; border:none; border-radius:8px; font-weight:700; cursor:pointer; background:transparent; color:#64748b; }
+        .tab.active { background:white; color:#b45309; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+        .form-sec { display:none; }
+        .form-sec.active { display:block; }
+        .fg { margin-bottom:13px; }
+        .fg label { display:block; font-weight:600; font-size:0.83rem; margin-bottom:5px; color:#334155; }
+        .fg label .req { color:#ef4444; }
+        .fg input, .fg textarea, .fg select { width:100%; padding:11px 13px; border:2px solid #e2e8f0; border-radius:8px; font-size:0.92rem; font-family:inherit; }
+        .fg input:focus, .fg textarea:focus { outline:none; border-color:#f59e0b; }
+        .row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .btn { width:100%; padding:13px; border:none; border-radius:10px; font-weight:700; font-size:0.98rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+        .btn-amber { background:linear-gradient(135deg,#f59e0b,#d97706); color:white; margin-top:6px; }
+        .err { background:#fee2e2; color:#dc2626; padding:10px; border-radius:8px; font-size:0.86rem; display:none; margin-bottom:14px; text-align:center; }
+        .ok { background:#fef3c7; border-left:4px solid #f59e0b; padding:14px; border-radius:8px; font-size:0.86rem; color:#92400e; display:none; margin-bottom:14px; }
+        .switch { text-align:center; margin-top:14px; font-size:0.88rem; color:#64748b; }
+        .switch a { color:#d97706; font-weight:700; text-decoration:none; }
+        @media(max-width:800px){ .card { grid-template-columns:1fr; } .left { display:none; } }
+
+        /* ===== Registration stepper + referral step ===== */
+        .step-progress{display:flex;align-items:center;gap:6px;margin-bottom:20px;background:#f8fafc;padding:9px 8px;border-radius:12px;border:1px solid #eef2f7}
+        .step-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative}
+        .step-num{width:30px;height:30px;border-radius:50%;background:#e2e8f0;color:#64748b;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.82rem;transition:all .3s}
+        .step-item span{font-size:.63rem;font-weight:700;color:#94a3b8;text-align:center;line-height:1.2}
+        .step-item.on .step-num{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;box-shadow:0 5px 14px rgba(217,119,6,.4)}
+        .step-item.on span{color:#b45309}
+        .step-item.done .step-num{background:#10b981;color:#fff}
+        .step-item.done span{color:#059669}
+        .step-item:not(:last-child):after{content:'';position:absolute;top:15px;left:calc(50% + 20px);right:calc(-50% + 20px);height:2px;background:#e2e8f0}
+        .step-item.done:not(:last-child):after{background:#10b981}
+        .btn-ghost{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
+        .btn-ghost:hover{background:#e2e8f0}
+        .ref-info-box{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid #fde68a;border-radius:12px;padding:14px 16px;margin-bottom:14px}
+        .ref-info-h{font-size:.82rem;font-weight:800;color:#92400e;display:flex;align-items:center;gap:7px;margin-bottom:9px}
+        .ref-tier{display:flex;flex-direction:column;gap:6px}
+        .ref-tier-row{display:flex;align-items:center;gap:9px;font-size:.77rem;color:#78350f;line-height:1.45}
+        .ref-badge{font-size:.62rem;font-weight:800;padding:2px 9px;border-radius:20px;flex:none}
+        .ref-badge.t1{background:#dbeafe;color:#1d4ed8}
+        .ref-badge.t2{background:#dcfce7;color:#15803d}
+        .ref-note{font-size:.72rem;color:#a16207;margin-top:10px;line-height:1.6}
+        .ref-result{margin:-6px 0 12px;padding:9px 12px;border-radius:9px;font-size:.76rem;font-weight:700;display:none;line-height:1.5}
+        .ref-result.ok{background:#dcfce7;color:#15803d;display:block;border-left:4px solid #16a34a}
+        .ref-result.bad{background:#fee2e2;color:#dc2626;display:block;border-left:4px solid #dc2626}
+        @media(max-width:600px){
+            .step-item span{font-size:.55rem}
+            .step-num{width:26px;height:26px;font-size:.74rem}
+            .step-item:not(:last-child):after{top:13px;left:calc(50% + 17px);right:calc(-50% + 17px)}
+            #sup-step-4 > div[style*="space-between"]{flex-direction:column}
+            #sup-step-4 .btn{width:100% !important;justify-content:center}
+        }
+    </style>
+
+<style>
+/* ===== Login UI polish (visual only) ===== */
+@keyframes lxUp{from{opacity:0;transform:translateY(30px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes lxBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@keyframes lxGlow{0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,0)}50%{box-shadow:0 0 0 10px rgba(99,102,241,.14)}}
+@keyframes lxField{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.login-card,.lcard,.auth-card,.login-box,.card,.abox{animation:lxUp .65s cubic-bezier(.2,.8,.3,1) both !important}
+.login-card .login-card-icon,.lcard .ic,.abox .ic,.login-icon{animation:lxBob 4.5s ease-in-out infinite !important}
+.form-group{animation:lxField .5s ease both}
+.form-group:nth-of-type(1){animation-delay:.15s}
+.form-group:nth-of-type(2){animation-delay:.25s}
+.form-group:nth-of-type(3){animation-delay:.35s}
+input:focus,select:focus,textarea:focus{transform:translateY(-1px);transition:all .25s !important}
+.btn[type=submit],.btn-amber,.btn-primary,.btn-danger{transition:all .28s !important;position:relative;overflow:hidden}
+.btn[type=submit]:hover,.btn-amber:hover,.btn-primary:hover,.btn-danger:hover{transform:translateY(-2px) !important;filter:brightness(1.08);box-shadow:0 12px 26px rgba(15,23,42,.22) !important}
+</style>
+<style id="panel-fullwidth-fix">
+/* 2026-09-16 — FULL-WIDTH FIX for the admin and supplier panels (this request).
+   The whole page sat in a narrow column with empty space on the right, because the
+   base rule reserves the sidebar with `margin-left`, and a block element with
+   margin-left and width:auto is only (100% - that) wide. A LATER rule in the same
+   file re-asserted the margin with !important, so the earlier mobile override lost.
+   This block is the LAST thing in the document, so it wins, and it resets width as
+   well as margin. Desktop is untouched — everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<div class="card">
+    <div class="left">
+        <i class="fas fa-warehouse big"></i>
+        <h2>Become a Supplier</h2>
+        <p>আপনার product-গুলো হাজারো reseller-দের কাছে পৌঁছে দিন। আপনার নিজের shop বানান, product upload করুন, সারা দেশে sell করুন!</p>
+        <ul>
+            <li><i class="fas fa-check-circle"></i> নিজের Shop page (SID code সহ)</li>
+            <li><i class="fas fa-check-circle"></i> Unlimited product upload</li>
+            <li><i class="fas fa-check-circle"></i> Product-এর wholesale price আপনি ঠিক করবেন</li>
+            <li><i class="fas fa-check-circle"></i> Order notification সরাসরি আপনার panel-এ</li>
+            <li><i class="fas fa-check-circle"></i> Shop design করার সুবিধা</li>
+        </ul>
+        <p style="margin-top:20px;font-size:0.8rem;opacity:0.75;"><i class="fas fa-phone"></i> যোগাযোগ: 01997904792</p>
+    </div>
+    <div class="right">
+        <div class="badge-top"><i class="fas fa-warehouse"></i> SUPPLIER PORTAL</div>
+
+        <div id="loginSec">
+            <h1>Supplier Login</h1>
+            <p class="sub">Login to your supplier account</p>
+            <div class="err" id="loginErr">Invalid credentials!</div>
+            <form onsubmit="return doLogin(event)">
+                <div class="fg"><label>Email <span class="req">*</span></label><input type="email" id="lEmail" required autocomplete="off"></div>
+                <div class="fg"><label>Password <span class="req">*</span></label>
+                    <div style="position:relative">
+                        <input type="password" id="lPass" required autocomplete="off" style="width:100%;padding-right:44px;box-sizing:border-box">
+                        <button type="button" onclick="toggleSPass()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#64748b;font-size:1rem;padding:4px"><i class="fas fa-eye" id="sEye"></i></button>
+                    </div>
+                </div>
+                <label style="display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:600;color:#64748b;margin-bottom:12px;cursor:pointer"><input type="checkbox" id="sRemember" style="width:auto"> মনে রাখুন — বারবার login লাগবে না</label>
+                <div style="text-align:right;margin:-6px 0 12px"><a href="#" onclick="return sForgot()" style="color:#b45309;font-weight:700;font-size:.8rem;text-decoration:none"><i class="fas fa-key"></i> Forgot Password?</a></div>
+                <button class="btn btn-amber"><i class="fas fa-right-to-bracket"></i> Login to Supplier Panel</button>
+            </form>
+            <div id="sForgotBox" style="display:none;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:14px;margin-top:14px">
+                <b style="font-size:.85rem;color:#92400e"><i class="fas fa-key"></i> Reset Password (Email Verification)</b>
+                <!-- Step 1 -->
+                <div id="sfStep1" style="margin-top:10px">
+                    <p style="font-size:.75rem;color:#92400e;margin:0 0 10px">আপনার supplier email লিখে code পাঠান।</p>
+                    <div class="fg"><label>Email <span class="req">*</span></label><input type="email" id="sfEmail" style="width:100%;box-sizing:border-box"></div>
+                    <button class="btn btn-amber" style="width:100%" onclick="sfSend()"><i class="fas fa-paper-plane"></i> Send Verification Code to Gmail</button>
+                </div>
+                <!-- Step 2 -->
+                <div id="sfStep2" style="display:none;margin-top:10px">
+                    <p style="font-size:.75rem;color:#92400e;margin:0 0 10px"><i class="fas fa-envelope-open-text"></i> Gmail draft খুলেছে — <b>Send</b> চাপলে code inbox-এ যাবে। সেই <b>6-digit code</b> বসান:</p>
+                    <div class="fg"><input type="text" id="sfCode" placeholder="Enter 6-digit code" maxlength="6" style="width:100%;box-sizing:border-box;text-align:center;font-size:1.1rem;font-weight:800;letter-spacing:8px"></div>
+                    <button class="btn btn-amber" style="width:100%" onclick="sfVerify()"><i class="fas fa-check-circle"></i> Verify Code</button>
+                    <div style="text-align:center;margin-top:8px"><a href="#" onclick="sfSend();return false" style="font-size:.75rem;color:#92400e">Resend code</a></div>
+                </div>
+                <!-- Step 3 -->
+                <div id="sfStep3" style="display:none;margin-top:10px">
+                    <p style="font-size:.75rem;color:#059669;margin:0 0 10px"><i class="fas fa-check-circle"></i> Code verified! নতুন password দিন:</p>
+                    <div class="fg"><label>New Password <span class="req">*</span> (Min 8)</label><input type="password" id="sfNew" minlength="8" style="width:100%;box-sizing:border-box"></div>
+                    <div class="fg"><label>Confirm New Password <span class="req">*</span></label><input type="password" id="sfNew2" minlength="8" style="width:100%;box-sizing:border-box"></div>
+                    <button class="btn btn-amber" style="width:100%" onclick="sfSave()"><i class="fas fa-save"></i> Save New Password</button>
+                </div>
+                <div style="text-align:center;margin-top:8px"><a href="#" onclick="document.getElementById('sForgotBox').style.display='none';return false" style="font-size:.75rem;color:#92400e">Cancel</a></div>
+            </div>
+            <div class="switch">Want to sell on ResellerHub? <a href="#" onclick="showSec('reg')">Apply as Supplier</a></div>
+            <div class="switch"><a href="../index.html"><i class="fas fa-arrow-left"></i> Back to main site</a></div>
+        </div>
+
+        <div id="regSec" style="display:none;">
+            <h1>Supplier Application</h1>
+            <p class="sub">Supplier registration-এ সব তথ্য সঠিকভাবে দিতে হবে। Admin verify করার পর approve হবে।</p>
+            <div class="err" id="regErr"></div>
+            <div class="ok" id="regOk"></div>
+            <div class="step-progress" id="regSteps">
+                <div class="step-item on" id="sup-step-1-item"><div class="step-num">1</div><span>Business</span></div>
+                <div class="step-item" id="sup-step-2-item"><div class="step-num">2</div><span>Contact</span></div>
+                <div class="step-item" id="sup-step-3-item"><div class="step-num">3</div><span>Security</span></div>
+                <div class="step-item" id="sup-step-4-item"><div class="step-num">4</div><span>Referral</span></div>
+            </div>
+
+            <form onsubmit="return doRegister(event)">
+                <!-- ============ STEP 1 : BUSINESS INFO ============ -->
+                <div class="reg-step" id="sup-step-1">
+                    <div class="fg"><label>Company / Shop Name <span class="req">*</span></label><input type="text" id="rShop" required placeholder="e.g. Maxx Fashion BD"></div>
+                    <div class="fg"><label>Owner Name <span class="req">*</span></label><input type="text" id="rName" required></div>
+                    <!-- TRADE LICENSE IS OPTIONAL and is now a PHOTO, not a typed
+                         number: a supplier may not have a licence number at all,
+                         but can always photograph the card/certificate. -->
+                    <div class="fg">
+                        <label>Trade License <small>(ঐচ্ছিক — নম্বর নয়, ছবি)</small></label>
+                        <div id="tradeBox" onclick="document.getElementById('rTradeImg').click()" style="display:flex;align-items:center;gap:11px;border:2px dashed #cbd5e1;border-radius:10px;padding:14px;cursor:pointer;background:#f8fafc;">
+                            <i class="fas fa-cloud-upload-alt" style="font-size:1.5rem;color:#f59e0b;"></i>
+                            <span id="tradeText" style="font-size:.86rem;color:#475569;">ছবি দিতে ক্লিক করুন — Trade License এর ছবি (ঐচ্ছিক)</span>
+                        </div>
+                        <input type="file" id="rTradeImg" accept="image/*" style="display:none" onchange="handleTradeUpload()">
+                        <img id="tradePreview" style="display:none;max-width:100%;max-height:150px;border-radius:8px;margin-top:10px;border:1px solid #e2e8f0;">
+                        <small style="display:block;margin-top:6px;font-size:.76rem;color:#94a3b8;">ট্রেড লাইসেন্স থাকলে তার ছবি দিন (সর্বোচ্চ 8MB) — না থাকলে খালি রাখুন। ছবি স্বয়ংক্রিয়ভাবে ছোট করে সেভ করা হবে।</small>
+                    </div>
+                    <div class="fg">
+                        <label>Voter ID Card Photo <span class="req">*</span></label>
+                        <div id="voterIdBox" onclick="document.getElementById('rVoterId').click()" style="display:flex;align-items:center;gap:11px;border:2px dashed #cbd5e1;border-radius:10px;padding:14px;cursor:pointer;background:#f8fafc;">
+                            <i class="fas fa-cloud-upload-alt" style="font-size:1.5rem;color:#f59e0b;"></i>
+                            <span id="voterIdText" style="font-size:.86rem;color:#475569;">ছবি দিতে ক্লিক করুন — Voter ID কার্ডের ছবি</span>
+                        </div>
+                        <input type="file" id="rVoterId" accept="image/*" style="display:none" onchange="handleVoterIdUpload()">
+                        <img id="voterIdPreview" style="display:none;max-width:100%;max-height:150px;border-radius:8px;margin-top:10px;border:1px solid #e2e8f0;">
+                        <small style="display:block;margin-top:6px;font-size:.76rem;color:#94a3b8;">Voter ID কার্ডের পরিষ্কার ছবি দিন (সর্বোচ্চ 8MB)। ছবি স্বয়ংক্রিয়ভাবে ছোট করে সেভ করা হবে।</small>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;margin-top:6px">
+                        <button type="button" class="btn btn-amber" style="width:auto;padding:11px 26px" onclick="supNextStep(2)">Next <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- ============ STEP 2 : CONTACT ============ -->
+                <div class="reg-step" id="sup-step-2" style="display:none">
+                    <div class="fg"><label>Phone <span class="req">*</span></label><input type="tel" id="rPhone" required placeholder="01XXXXXXXXX"></div>
+                    <div class="fg"><label>Email <span class="req">*</span></label><input type="email" id="rEmail" required></div>
+                    <div class="fg"><label>Full Business Address <span class="req">*</span></label><textarea id="rAddress" rows="2" required></textarea></div>
+                    <div class="fg"><label>What products will you supply? <span class="req">*</span></label><textarea id="rProducts" rows="2" required placeholder="e.g. Mobile accessories, gadgets..."></textarea></div>
+                    <div style="display:flex;justify-content:space-between;gap:10px;margin-top:6px">
+                        <button type="button" class="btn btn-ghost" style="width:auto;padding:11px 22px" onclick="supNextStep(1)"><i class="fas fa-arrow-left"></i> Back</button>
+                        <button type="button" class="btn btn-amber" style="width:auto;padding:11px 26px" onclick="supNextStep(3)">Next <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- ============ STEP 3 : SECURITY ============ -->
+                <div class="reg-step" id="sup-step-3" style="display:none">
+                    <div class="row2">
+                        <div class="fg"><label>Password <span class="req">*</span> <small>(Min 8)</small></label><input type="password" id="rPass" required minlength="8"></div>
+                        <div class="fg"><label>Confirm Password <span class="req">*</span></label><input type="password" id="rPass2" required minlength="8"></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;gap:10px;margin-top:6px">
+                        <button type="button" class="btn btn-ghost" style="width:auto;padding:11px 22px" onclick="supNextStep(2)"><i class="fas fa-arrow-left"></i> Back</button>
+                        <button type="button" class="btn btn-amber" style="width:auto;padding:11px 26px" onclick="supNextStep(4)">Next <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- ============ STEP 4 : REFERRAL (optional) ============ -->
+                <div class="reg-step" id="sup-step-4" style="display:none">
+                    <div class="ref-info-box">
+                        <div class="ref-info-h"><i class="fas fa-gift"></i> Supplier Referral Programme</div>
+                        <div class="ref-tier">
+                            <div class="ref-tier-row"><span class="ref-badge t1">Tier 1</span><span>প্রতিটি <b>Delivered</b> Order-এ <b>৳5</b></span></div>
+                            <div class="ref-tier-row"><span class="ref-badge t2">Tier 2</span><span>প্রতিটি <b>Delivered</b> Order-এ <b>৳10</b> — ৫০+ qualified Supplier refer করলে unlock</span></div>
+                        </div>
+                        <p class="ref-note">কোনো Supplier Referral Code থাকলে এখানে দিন — না থাকলে <b>Skip</b> করে এগিয়ে যান।</p>
+                    </div>
+                    <div class="fg">
+                        <label>Supplier Referral Code <small>(ঐচ্ছিক)</small></label>
+                        <input type="text" id="regReferral" placeholder="আপনার কাছে কোনো Supplier Referral Code থাকলে এখানে দিন" autocomplete="off">
+                    </div>
+                    <div id="refResult"></div>
+                    <div style="display:flex;justify-content:space-between;gap:10px;margin-top:6px;flex-wrap:wrap">
+                        <button type="button" class="btn btn-ghost" style="width:auto;padding:11px 22px" onclick="supNextStep(3)"><i class="fas fa-arrow-left"></i> Back</button>
+                        <div style="display:flex;gap:10px">
+                            <button type="button" class="btn btn-ghost" style="width:auto;padding:11px 22px" onclick="skipSupReferral()">Skip</button>
+                            <button type="submit" class="btn btn-amber" style="width:auto;padding:11px 26px"><i class="fas fa-paper-plane"></i> Submit Application</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="switch">Already a supplier? <a href="#" onclick="showSec('login')">Login here</a></div>
+            <div class="switch"><a href="../index.html"><i class="fas fa-arrow-left"></i> Back to main site</a></div>
+        </div>
+
+        <div id="doneSec" style="display:none;">
+            <div style="text-align:center;padding:20px;">
+                <i class="fas fa-clock" style="font-size:3.5rem;color:#f59e0b;margin-bottom:16px;"></i>
+                <h1 style="font-size:1.4rem;">Application Submitted!</h1>
+                <p class="sub" style="margin-top:10px;">আপনার supplier application admin review-এ আছে। Approve হলে এই email/password দিয়ে login করতে পারবেন।</p>
+                <div style="background:#fef3c7;padding:14px;border-radius:10px;margin:16px 0;font-size:0.9rem;color:#92400e;">
+                    <i class="fas fa-phone"></i> জরুরি হলে: <strong>01997904792</strong><br>
+                    <i class="fas fa-envelope"></i> stylexshopping@gmail.com
+                </div>
+                <a href="../index.html" class="btn btn-amber" style="text-decoration:none;"><i class="fas fa-home"></i> Back to Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../app.js"></script>
+
+<script>
+function showSec(s) {
+    document.getElementById('loginSec').style.display = s === 'login' ? 'block' : 'none';
+    document.getElementById('regSec').style.display = s === 'reg' ? 'block' : 'none';
+    document.getElementById('doneSec').style.display = 'none';
+    if (s === 'reg') {
+        var stp = document.getElementById('regSteps');
+        if (stp) stp.style.display = 'flex';
+        appliedSupRef = null;
+        try { supGoStep(1); } catch (e) {}
+    }
+}
+/* `regErr` is STICKY. It used to auto-hide after 4 seconds, so a REFUSED
+   application looked exactly like a successful one: the applicant walked away
+   believing they had registered and nothing ever reached Admin -> Pending
+   Approvals. Transient login/status messages still auto-hide. */
+function sErr(id, msg, sticky) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = msg;
+    el.style.display = 'block';
+    if (sticky === true || id === 'regErr') return;
+    setTimeout(function() { el.style.display = 'none'; }, 4000);
+}
+function sErrClear(id) { var el = document.getElementById(id); if (el) el.style.display = 'none'; }
+
+function doLogin(e) {
+    e.preventDefault();
+    var email = document.getElementById('lEmail').value.trim();
+    var pass = document.getElementById('lPass').value;
+    var sups = getData(DB_KEYS.SUPPLIERS);
+    var sup = null;
+    for (var i = 0; i < sups.length; i++) {
+        if (sups[i].email.toLowerCase() === email.toLowerCase() && sups[i].password === pass) { sup = sups[i]; break; }
+    }
+    if (!sup) { sErr('loginErr', 'Invalid supplier credentials!'); return false; }
+    if (sup.status === 'pending') { sErr('loginErr', 'Your application is under review. Please wait for admin approval.'); return false; }
+    if (sup.status === 'banned' || sup.status === 'rejected') { sErr('loginErr', 'Your supplier account is ' + sup.status + '. Contact support.'); return false; }
+    sessionStorage.setItem('user_id', String(sup.id));
+    sessionStorage.setItem('user_type', 'supplier');
+    setOnline(sup.id, true);
+    logActivity('supplier_login', sup.shopName + ' logged in');
+    try {
+        // Remember login (item 20): store a SIGNED TOKEN only.
+        // The password is NEVER written to localStorage.
+        if (document.getElementById('sRemember').checked) { savePersistentSession(sup.id, 'supplier'); }
+        else { clearPersistentSession(); }
+    } catch (e) {}
+    // wipe the legacy record created by the old insecure implementation
+    try { localStorage.removeItem('rh_remember_supplier'); } catch (e) {}
+    window.location.href = 'dashboard.html';
+    return false;
+}
+
+function toggleSPass() {
+    var p = document.getElementById('lPass');
+    var e = document.getElementById('sEye');
+    if (p.type === 'password') { p.type = 'text'; e.className = 'fas fa-eye-slash'; }
+    else { p.type = 'password'; e.className = 'fas fa-eye'; }
+}
+// ===== Remember me: auto-login (signed token, no plaintext password) =====
+(function() {
+    // one-time cleanup of the legacy record that stored the password in the clear
+    try { localStorage.removeItem('rh_remember_supplier'); } catch (e) {}
+    try {
+        var sess = (typeof readPersistentSession === 'function') ? readPersistentSession() : null;
+        if (!sess || sess.type !== 'supplier') return;
+        var sups = getData(DB_KEYS.SUPPLIERS) || [];
+        for (var i = 0; i < sups.length; i++) {
+            if (String(sups[i].id) === String(sess.id)) {
+                if (sups[i].status === 'banned' || sups[i].status === 'rejected' || sups[i].status === 'pending') { clearPersistentSession(); return; }
+                sessionStorage.setItem('user_id', String(sups[i].id));
+                sessionStorage.setItem('user_type', 'supplier');
+                sessionStorage.setItem('user_name', sups[i].shopName || sups[i].name);
+                if (typeof setOnline === 'function') setOnline(sups[i].id, true);
+                var cb = document.getElementById('sRemember'); if (cb) cb.checked = true;
+                window.location.replace('dashboard.html');
+                return;
+            }
+        }
+        clearPersistentSession();   // remembered supplier no longer exists
+    } catch (e) {}
+})();
+
+function sForgot() {
+    document.getElementById('sForgotBox').style.display = 'block';
+    document.getElementById('sfStep1').style.display = 'block';
+    document.getElementById('sfStep2').style.display = 'none';
+    document.getElementById('sfStep3').style.display = 'none';
+    return false;
+}
+// ===== Gmail verification code flow =====
+var sfState = { email: '', code: '' };
+function sfSend() {
+    var em = document.getElementById('sfEmail').value.trim().toLowerCase();
+    if (!em) { sErr('loginErr', 'Email লিখুন!'); return; }
+    var sups = getData(DB_KEYS.SUPPLIERS) || [];
+    var found = false;
+    for (var i = 0; i < sups.length; i++) { if (String(sups[i].email || '').toLowerCase() === em) { found = true; break; } }
+    if (!found) { sErr('loginErr', 'এই email দিয়ে কোনো supplier account পাওয়া যায়নি!'); return; }
+    sfState.email = em;
+    sfState.code = String(Math.floor(100000 + Math.random() * 900000));
+    try { sessionStorage.setItem('fp_code_supplier', JSON.stringify({ email: em, code: sfState.code, exp: Date.now() + 600000 })); } catch (e) {}
+    var gm = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(em) + '&su=' + encodeURIComponent('ResellerHub BD — Supplier Password Reset Code') + '&body=' + encodeURIComponent('আপনার supplier verification code: ' + sfState.code + '\n\nএই code ১০ মিনিটের জন্য বৈধ।\n\n— ResellerHub BD Team');
+    window.open(gm, '_blank');
+    document.getElementById('sfStep1').style.display = 'none';
+    document.getElementById('sfStep2').style.display = 'block';
+    document.getElementById('sfStep3').style.display = 'none';
+    sErr('loginErr', 'Gmail draft খোলা হয়েছে — Send চাপলে code inbox-এ যাবে (১০ মিনিট বৈধ)।');
+}
+function sfVerify() {
+    var c = document.getElementById('sfCode').value.trim();
+    var st = null;
+    try { st = JSON.parse(sessionStorage.getItem('fp_code_supplier') || 'null'); } catch (e) {}
+    if (!st) { sErr('loginErr', 'আগে code পাঠান!'); return; }
+    if (Date.now() > st.exp) { sErr('loginErr', 'Code-এর সময় শেষ! Resend করুন।'); return; }
+    if (c !== st.code) { sErr('loginErr', 'ভুল code! আবার চেষ্টা করুন।'); return; }
+    sfState.email = st.email;
+    document.getElementById('sfStep1').style.display = 'none';
+    document.getElementById('sfStep2').style.display = 'none';
+    document.getElementById('sfStep3').style.display = 'block';
+}
+function sfSave() {
+    var p1 = document.getElementById('sfNew').value;
+    var p2 = document.getElementById('sfNew2').value;
+    if (!p1 || p1.length < 8) { sErr('loginErr', 'New password কমপক্ষে ৮ অক্ষরের হতে হবে!'); return; }
+    if (p1 !== p2) { sErr('loginErr', 'দুইটা password মিলছে না!'); return; }
+    var sups = getData(DB_KEYS.SUPPLIERS) || [];
+    for (var i = 0; i < sups.length; i++) {
+        if (String(sups[i].email || '').toLowerCase() === sfState.email.toLowerCase()) { sups[i].password = p1; break; }
+    }
+    setData(DB_KEYS.SUPPLIERS, sups);
+    logActivity('supplier_password_reset', 'Supplier password reset via Gmail code: ' + sfState.email);
+    addNotification(1, 'supplier', 'Supplier password reset via verification code: ' + sfState.email, false);
+    document.getElementById('sForgotBox').style.display = 'none';
+    document.getElementById('lPass').value = p1;
+    showToast('Password reset সফল! এখন login করুন।', 'success');
+}
+
+/* ================= Supplier registration — 4 step wizard ================= */
+var appliedSupRef = null;      // the validated referrer supplier (or null)
+
+function supVal(id) { var el = document.getElementById(id); return el ? String(el.value || '').trim() : ''; }
+
+/* ================= Voter ID card photo =====================================
+   Replaces the typed NID number (2026-09-15): a supplier now proves identity by
+   uploading a Voter ID card photo.
+   STORAGE RULE — this photo travels INSIDE the supplier record in localStorage,
+   the same ~5 MB budget every product and order shares, and the IndexedDB image
+   store is unavailable on file:// origins. A raw phone photo is 1.5-2 MB, which
+   FileReader turns into ~2-2.7 M base64 characters = ~4-5.4 MB — more than the
+   whole budget, so the application could never be saved. It is therefore
+   downscaled to <=1000 px at JPEG 0.72 (~200 KB) BEFORE it is stored.
+   ========================================================================== */
+var voterIdImage = '';
+var voterIdBusy = 0;
+var VOTER_MAX_DIM = 1000;
+var VOTER_JPEG_Q = 0.72;
+/* The Trade License is the same kind of upload: optional, and a PHOTO rather
+   than a typed number. It gets exactly the same treatment. */
+var tradeImage = '';
+var tradeBusy = 0;
+var TRADE_MAX_DIM = 1000;
+var TRADE_JPEG_Q = 0.72;
+
+function compressSupPhoto(dataUrl, maxDim, quality, cb) {
+    var settled = false, timer = null;
+    function finish(out) {
+        if (settled) return;
+        settled = true;
+        try { clearTimeout(timer); } catch (e) {}
+        cb(out && out.length ? out : dataUrl);
+    }
+    /* Safety net: a stalled decode must never leave the applicant with no feedback. */
+    try { timer = setTimeout(function () { finish(dataUrl); }, 2500); } catch (e) {}
+    var img = new Image();
+    img.onload = function () {
+        try {
+            var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+            if (!w || !h) { finish(dataUrl); return; }
+            var scale = Math.min(1, maxDim / Math.max(w, h));
+            var cw = Math.max(1, Math.round(w * scale)), ch = Math.max(1, Math.round(h * scale));
+            var cv = document.createElement('canvas');
+            cv.width = cw; cv.height = ch;
+            var cx = cv.getContext('2d');
+            if (!cx) { finish(dataUrl); return; }
+            cx.drawImage(img, 0, 0, cw, ch);
+            var out = cv.toDataURL('image/jpeg', quality);
+            finish(out && out.length < dataUrl.length ? out : dataUrl);
+        } catch (e) { finish(dataUrl); }
+    };
+    img.onerror = function () { finish(dataUrl); };
+    img.src = dataUrl;
+}
+function compressVoterImage(dataUrl, cb) { return compressSupPhoto(dataUrl, VOTER_MAX_DIM, VOTER_JPEG_Q, cb); }
+function compressTradeImage(dataUrl, cb) { return compressSupPhoto(dataUrl, TRADE_MAX_DIM, TRADE_JPEG_Q, cb); }
+
+/* ---- Trade License photo (OPTIONAL) ------------------------------------
+   Same storage rule as the Voter ID: the image lives inside the supplier
+   record, so it is downscaled before it is ever stored. */
+function handleTradeUpload() {
+    var input = document.getElementById('rTradeImg');
+    var box = document.getElementById('tradeBox');
+    var text = document.getElementById('tradeText');
+    var preview = document.getElementById('tradePreview');
+    var file = input && input.files ? input.files[0] : null;
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) { sErr('regErr', 'Trade License ছবি অনেক বড়! সর্বোচ্চ 8MB।'); return; }
+    tradeBusy++;
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        compressTradeImage(e.target.result, function (small) {
+            tradeImage = small;
+            if (preview) { preview.src = small; preview.style.display = 'block'; }
+            if (text) text.textContent = 'Trade License ছবি যোগ হয়েছে — বদলাতে ক্লিক করুন';
+            if (box) { box.style.borderColor = '#f59e0b'; box.style.background = '#fffbeb'; }
+            sErrClear('regErr');
+            tradeBusy--;
+        });
+    };
+    reader.onerror = function () { tradeBusy--; sErr('regErr', 'ছবিটা পড়া গেল না। অন্য ছবি দিয়ে চেষ্টা করুন।'); };
+    reader.readAsDataURL(file);
+}
+
+function handleVoterIdUpload() {
+    var input = document.getElementById('rVoterId');
+    var box = document.getElementById('voterIdBox');
+    var text = document.getElementById('voterIdText');
+    var preview = document.getElementById('voterIdPreview');
+    var file = input && input.files ? input.files[0] : null;
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) { sErr('regErr', 'Voter ID ছবি অনেক বড়! সর্বোচ্চ 8MB।'); return; }
+    voterIdBusy++;
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        compressVoterImage(e.target.result, function (small) {
+            voterIdImage = small;
+            if (preview) { preview.src = small; preview.style.display = 'block'; }
+            if (text) text.textContent = 'Voter ID ছবি যোগ হয়েছে — বদলাতে ক্লিক করুন';
+            if (box) { box.style.borderColor = '#f59e0b'; box.style.background = '#fffbeb'; }
+            voterIdBusy--;
+        });
+    };
+    reader.onerror = function () { voterIdBusy--; sErr('regErr', 'ছবিটা পড়া গেল না। অন্য ছবি দিয়ে চেষ্টা করুন।'); };
+    reader.readAsDataURL(file);
+}
+
+function supNextStep(step) {
+    /* Validate the step we are leaving before moving on. */
+    if (step > 1 && !supVal('rShop')) { supGoStep(1); sErr('regErr', 'Company / Shop Name দিন!'); return; }
+    if (step > 1 && !supVal('rName')) { supGoStep(1); sErr('regErr', 'Owner Name দিন!'); return; }
+    /* Trade License is OPTIONAL (2026-09-15) — and is a PHOTO, not a number. A
+       small supplier may not have one at all. Identity is proven by the Voter ID
+       card photo instead of a typed NID number. */
+    if (step > 1 && tradeBusy > 0) { supGoStep(1); sErr('regErr', 'একটু অপেক্ষা করুন — Trade License ছবি প্রস্তুত হচ্ছে।'); return; }
+    if (step > 1 && voterIdBusy > 0) { supGoStep(1); sErr('regErr', 'একটু অপেক্ষা করুন — Voter ID ছবি প্রস্তুত হচ্ছে।'); return; }
+    if (step > 1 && !voterIdImage) { supGoStep(1); sErr('regErr', 'Voter ID কার্ডের ছবি দিন!'); return; }
+
+    if (step > 2) {
+        if (!/^01[3-9]\d{8}$/.test(supVal('rPhone'))) { supGoStep(2); sErr('regErr', 'Invalid phone number! (01XXXXXXXXX)'); return; }
+        if (!supVal('rEmail')) { supGoStep(2); sErr('regErr', 'Email দিন!'); return; }
+        if (!supVal('rAddress')) { supGoStep(2); sErr('regErr', 'Full Business Address দিন!'); return; }
+        if (!supVal('rProducts')) { supGoStep(2); sErr('regErr', 'আপনি কী product supply করবেন তা লিখুন!'); return; }
+    }
+    if (step > 3) {
+        var p1 = supVal('rPass'), p2 = supVal('rPass2');
+        if (p1.length < 8) { supGoStep(3); sErr('regErr', 'Password কমপক্ষে ৮ অক্ষরের হতে হবে!'); return; }
+        if (p1 !== p2) { supGoStep(3); sErr('regErr', 'Passwords do not match!'); return; }
+    }
+    supGoStep(step);
+    if (step === 4) applySupReferral(true);
+}
+
+function supGoStep(step) {
+    /* Moving on clears the previous message — the sticky regErr would otherwise
+       stay on screen after the applicant has fixed the problem. */
+    sErrClear('regErr');
+    for (var i = 1; i <= 4; i++) {
+        var pg = document.getElementById('sup-step-' + i);
+        var it = document.getElementById('sup-step-' + i + '-item');
+        if (pg) pg.style.display = (i === step) ? 'block' : 'none';
+        if (it) {
+            it.className = 'step-item' + (i === step ? ' on' : (i < step ? ' done' : ''));
+        }
+    }
+    try { window.scrollTo(0, 0); } catch (e) {}
+}
+
+/* Validate the typed referral code. silent = true while just navigating. */
+function applySupReferral(silent) {
+    var box = document.getElementById('refResult');
+    var raw = supVal('regReferral');
+    if (!raw) {
+        appliedSupRef = null;
+        if (box) { box.className = 'ref-result'; box.textContent = ''; }
+        return true;
+    }
+    var res = validateSupplierReferralCode(raw, { phone: supVal('rPhone'), email: supVal('rEmail') });
+    if (res.none) { appliedSupRef = null; if (box) { box.className = 'ref-result'; box.textContent = ''; } return true; }
+    if (!res.ok) {
+        appliedSupRef = null;
+        if (box) { box.className = 'ref-result bad'; box.textContent = res.message; }
+        if (!silent) sErr('regErr', res.message);
+        return false;
+    }
+    appliedSupRef = res.referrer;
+    if (box) {
+        box.className = 'ref-result ok';
+        box.innerHTML = '<i class="fas fa-check-circle"></i> ' + res.message +
+            ' — Referrer: <b>' + String((res.referrer.shopName || res.referrer.name || '')).replace(/</g, '&lt;') + '</b>';
+    }
+    return true;
+}
+
+function skipSupReferral() {
+    var el = document.getElementById('regReferral');
+    if (el) el.value = '';
+    appliedSupRef = null;
+    var box = document.getElementById('refResult');
+    if (box) { box.className = 'ref-result'; box.textContent = ''; }
+    submitSupRegister();
+}
+
+/* Shared submit path (used by Skip and by the Submit button). */
+function submitSupRegister() {
+    var form = document.querySelector('#regSec form');
+    if (!form) return;
+    if (typeof form.requestSubmit === 'function') { form.requestSubmit(); return; }
+    var ev;
+    try { ev = new Event('submit', { cancelable: true, bubbles: true }); } catch (e) { ev = null; }
+    if (ev) { form.dispatchEvent(ev); return; }
+    doRegister({ preventDefault: function () {} });
+}
+
+function doRegister(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    var shop = supVal('rShop');
+    var name = supVal('rName');
+    var phone = supVal('rPhone');
+    var email = supVal('rEmail');
+    /* There is no typed Trade License NUMBER any more — it is an optional PHOTO
+       (tradeImage). Nothing here can be "missing". */
+    var address = supVal('rAddress');
+    var prods = supVal('rProducts');
+    var p1 = supVal('rPass'), p2 = supVal('rPass2');
+
+    if (!shop || !name) { supGoStep(1); sErr('regErr', 'Business info অসম্পূর্ণ!'); return false; }
+    if (tradeBusy > 0) { supGoStep(1); sErr('regErr', 'একটু অপেক্ষা করুন — Trade License ছবি প্রস্তুত হচ্ছে।'); return false; }
+    if (voterIdBusy > 0) { supGoStep(1); sErr('regErr', 'একটু অপেক্ষা করুন — Voter ID ছবি প্রস্তুত হচ্ছে।'); return false; }
+    if (!voterIdImage) { supGoStep(1); sErr('regErr', 'Voter ID কার্ডের ছবি দিন!'); return false; }
+    if (!/^01[3-9]\d{8}$/.test(phone)) { supGoStep(2); sErr('regErr', 'Invalid phone number!'); return false; }
+    if (!email || !address || !prods) { supGoStep(2); sErr('regErr', 'Contact info অসম্পূর্ণ!'); return false; }
+    if (p1.length < 8) { supGoStep(3); sErr('regErr', 'Password কমপক্ষে ৮ অক্ষরের হতে হবে!'); return false; }
+    if (p1 !== p2) { supGoStep(3); sErr('regErr', 'Passwords do not match!'); return false; }
+
+    /* Referral is re-validated at submit time — never trust the earlier check. */
+    if (!applySupReferral(false)) { supGoStep(4); return false; }
+
+    var sups = getData(DB_KEYS.SUPPLIERS) || [];
+    for (var i = 0; i < sups.length; i++) {
+        if (String(sups[i].email || '').toLowerCase() === email.toLowerCase()) { sErr('regErr', 'Email already registered as supplier!'); return false; }
+        if (String(sups[i].phone || '') === phone) { sErr('regErr', 'Phone already registered!'); return false; }
+    }
+
+    /* Unique referral code from the Business Name, guaranteed collision-free. */
+    try { ensureSupplierReferralCodes(); } catch (e) {}
+    var newRefCode = '';
+    try { newRefCode = generateSupplierReferralCode(shop || name); } catch (e) { newRefCode = ''; }
+
+    var ns = {
+        id: getNextSupplierId(),
+        sid: getNextSupplierSid(),
+        name: name, shopName: shop, email: email, phone: phone, nid: '',
+        /* No typed number — the licence is an OPTIONAL photo. */
+        tradeLicense: '', tradeLicenseImage: tradeImage,
+        voterIdImage: voterIdImage,
+        address: address, productTypes: prods, password: p1,
+        shopDescription: '', shopLogo: '', rating: 0, reviews: 0,
+        balance: 0, status: 'pending', joinDate: new Date().toISOString().split('T')[0],
+        isSupplier: true, lastSeen: new Date().toISOString(),
+        referralCode: newRefCode, referral_code: newRefCode,
+        referredBy: null, referred_by: null
+    };
+    sups.push(ns);
+    /* THE WRITE COMES FIRST AND ITS RESULT IS CHECKED.
+       The Voter ID photo now travels inside this record, so a full localStorage
+       would otherwise lose the whole application while the page still showed
+       "Application Submitted!" — and nothing would reach Admin -> Pending
+       Approvals. The same rule as the reseller registration. */
+    var saved = false;
+    try { saved = setData(DB_KEYS.SUPPLIERS, sups); } catch (e) { saved = false; }
+    if (!saved) {
+        sErr('regErr', 'Application সেভ করা গেল না — browser-এর storage ভরে গেছে। কিছু জায়গা খালি করে আবার চেষ্টা করুন।');
+        return false;
+    }
+
+    /* Lock the referral relation in — one referrer, maximum, forever.
+       Best-effort only: a failure here can no longer discard a saved application. */
+    if (appliedSupRef && String(appliedSupRef.id) !== String(ns.id)) {
+        try { addSupplierReferralRelation(appliedSupRef.id, ns.id, sups); setData(DB_KEYS.SUPPLIERS, sups); } catch (e) {}
+    }
+
+    try {
+        logActivity('supplier_registered', 'New supplier application: ' + shop + ' (' + ns.sid + ')' +
+            (appliedSupRef ? ' — referred by ' + (appliedSupRef.shopName || appliedSupRef.id) : ''));
+    } catch (e) {}
+
+    sErrClear('regErr');
+    document.getElementById('regSec').style.display = 'none';
+    var stp = document.getElementById('regSteps'); if (stp) stp.style.display = 'none';
+    document.getElementById('doneSec').style.display = 'block';
+    return false;
+}
+
+/* Pre-fill the referral code from ?ref=CODE links. */
+(function () {
+    var code = '';
+    try { code = supplierReferralCodeFromUrl(); } catch (e) {}
+    if (!code) return;
+    var el = document.getElementById('regReferral');
+    if (el) el.value = code;
+    var box = document.getElementById('refResult');
+    var res = null;
+    try { res = validateSupplierReferralCode(code, {}); } catch (e) {}
+    if (box && res && res.ok) {
+        box.className = 'ref-result ok';
+        box.innerHTML = '<i class="fas fa-check-circle"></i> ' + res.message +
+            ' — Referrer: <b>' + String((res.referrer.shopName || res.referrer.name || '')).replace(/</g, '&lt;') + '</b>';
+        appliedSupRef = res.referrer;
+    }
+})();
+</script>
+
+
+</body>
+</html>

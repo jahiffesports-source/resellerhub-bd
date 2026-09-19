@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reset data — ResellerHub BD</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Hind Siliguri',system-ui,-apple-system,Segoe UI,sans-serif;background:#0f172a;color:#e2e8f0;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+  .card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:28px 30px;max-width:640px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.4)}
+  h1{margin:0 0 6px;font-size:1.3rem;color:#f8fafc}
+  .sub{color:#94a3b8;font-size:.86rem;margin-bottom:20px;line-height:1.6}
+  .keep{background:#052e16;border:1px solid #166534;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:.84rem;line-height:1.7}
+  .keep b{color:#4ade80}
+  .kill{background:#450a0a;border:1px solid #991b1b;border-radius:10px;padding:12px 14px;margin-bottom:20px;font-size:.84rem;line-height:1.7}
+  .kill b{color:#f87171}
+  button{width:100%;border:none;border-radius:11px;padding:15px;font-size:1rem;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:9px}
+  #go{background:#dc2626;color:#fff}
+  #go:hover{background:#b91c1c}
+  #go:disabled{opacity:.5;cursor:not-allowed}
+  #out{margin-top:18px;display:none;font-size:.86rem;line-height:1.9;white-space:pre-wrap;background:#0f172a;border:1px solid #334155;border-radius:10px;padding:14px}
+  .ok{color:#4ade80}.bad{color:#f87171}.dim{color:#94a3b8}
+  a.go{display:none;margin-top:16px;text-align:center;text-decoration:none;background:#2563eb;color:#fff;border-radius:11px;padding:14px;font-weight:800}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1><i class="fas fa-broom" style="color:#f87171"></i> ডেটা রিসেট</h1>
+  <div class="sub">
+    এটি <b>শুধু ডেটা</b> মুছবে — সাইটের কোড, ডিজাইন বা কোনো ফাইল ছোঁবে না।<br>
+    লোকাল হোস্ট <b>এবং</b> অনলাইন সার্ভার — দুই জায়গাতেই।
+  </div>
+
+  <div class="keep">
+    <b>✅ রাখা হবে</b><br>
+    • <b>Stylex</b> রিসেলার অ্যাকাউন্ট (আপনার নিজের)<br>
+    • <b>অ্যাডমিন</b> অ্যাকাউন্ট ও লগইন<br>
+    • সাইট সেটিংস (থিম, লোগো, SEO, পিক্সেল)
+  </div>
+
+  <div class="kill">
+    <b>🗑️ মুছে যাবে</b><br>
+    • সব <b>অর্ডার</b> ও টাকার হিসাব<br>
+    • সব <b>প্রোডাক্ট</b> ও ছবি<br>
+    • সব <b>কাস্টমার</b> অ্যাকাউন্ট<br>
+    • Stylex ছাড়া বাকি সব <b>রিসেলার</b><br>
+    • সব <b>মেসেজ, লেজার, উইথড্র, নোটিফিকেশন</b>
+  </div>
+
+  <button id="go"><i class="fas fa-triangle-exclamation"></i> হ্যাঁ, সব ডেটা মুছে ফেলুন</button>
+  <div id="out"></div>
+  <a class="go" id="after" href="/">সাইটে যান →</a>
+</div>
+
+<script>
+/* ============================================================================
+   RESET  —  clears the shared data, keeps the code and the admin.
+   ----------------------------------------------------------------------------
+   Written as a standalone page so the running site is never touched. It does
+   three things, in this order:
+
+     1. delete every rh_* key from THIS browser's localStorage, then put back
+        the two things that must survive (the Stylex reseller + the admin),
+     2. POST the same clean payload to the server so the ONLINE store matches,
+     3. reload the site.
+
+   What it deliberately does NOT do: touch any .html/.js file, touch the
+   categories, or delete a reseller other than the extras.
+   ============================================================================ */
+(function () {
+  var out = document.getElementById('out');
+  var btn = document.getElementById('go');
+  function say(html) { out.style.display = 'block'; out.innerHTML += html + '\n'; }
+
+  /* the account that must survive — Stylex, the platform's own shop */
+  function stylexAccount() {
+    var list = [];
+    try { list = JSON.parse(localStorage.getItem('rh_resellers') || '[]'); } catch (e) { list = []; }
+    if (Object.prototype.toString.call(list) !== '[object Array]') list = [];
+    for (var i = 0; i < list.length; i++) {
+      var r = list[i] || {};
+      var n = String(r.businessName || r.shop_name || r.shopName || r.name || '').toLowerCase();
+      if (n.indexOf('stylex') !== -1 || String(r.id) === '1' || String(r.role) === 'admin') return r;
+    }
+    /* nothing matched — keep the first record rather than losing the login */
+    return list.length ? list[0] : null;
+  }
+
+  btn.addEventListener('click', function () {
+    if (!confirm('সব ডেটা মুছে যাবে (Stylex ও অ্যাডমিন ছাড়া)।\n\nলোকাল ও অনলাইন — দুই জায়গাতেই।\n\nনিশ্চিত?')) return;
+    btn.disabled = true;
+    out.style.display = 'block'; out.innerHTML = '';
+    say('<span class="dim">শুরু হচ্ছে…</span>');
+
+    var keepReseller = stylexAccount();
+    say('  রাখা হবে: ' + (keepReseller ? '<b>' + (keepReseller.businessName || keepReseller.name || keepReseller.id) + '</b>' : '<span class="bad">কোনো রিসেলার পাওয়া যায়নি!</span>'));
+
+    /* ---- 1. wipe every rh_* key in this browser ---- */
+    var killed = 0, kept = [];
+    var keys = [];
+    for (var i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i));
+    for (var k = 0; k < keys.length; k++) {
+      var key = keys[k];
+      if (!key || key.indexOf('rh_') !== 0) continue;
+      if (key === 'rh_db_version') { kept.push(key); continue; }   /* the schema marker must stay */
+      if (key === 'rh_resellers' || key === 'rh_admins' || key === 'rh_shop_settings' || key === 'rh_categories') {
+        kept.push(key); continue;                                  /* handled below */
+      }
+      try { localStorage.removeItem(key); killed++; } catch (e) { }
+    }
+    say('  মুছে ফেলা key: <b>' + killed + '</b>');
+
+    /* ---- 2. put back what must survive ---- */
+    try { localStorage.setItem('rh_resellers', JSON.stringify(keepReseller ? [keepReseller] : [])); } catch (e) { }
+    /* the admin record is rebuilt by the app itself on boot (ensureStylexAccount),
+       so clearing it here is safe — but we keep the key so nothing else trips. */
+    say('  রিসেলার তালিকা: শুধু <b>' + (keepReseller ? (keepReseller.businessName || keepReseller.name || keepReseller.id) : '—') + '</b>');
+    say('  ক্যাটাগরি ও সেটিংস: <b>রাখা হয়েছে</b>');
+
+    /* ---- 3. mirror the clean state to the server ---- */
+    say('<span class="dim">সার্ভারে পাঠানো হচ্ছে…</span>');
+    var payload = {};
+    var pushKeys = ['rh_resellers', 'rh_admins', 'rh_categories', 'rh_shop_settings', 'rh_db_version'];
+    for (var p = 0; p < pushKeys.length; p++) {
+      try { var v = localStorage.getItem(pushKeys[p]); if (v !== null) payload[pushKeys[p]] = JSON.parse(v); } catch (e) { }
+    }
+    /* the keys we deleted must be REMOVED on the server too, not left behind */
+    var clearKeys = ['rh_products', 'rh_orders', 'rh_shop_customers', 'rh_shop_categories',
+      'rh_shop_own_categories', 'rh_shop_sections', 'rh_suppliers', 'rh_withdrawals',
+      'rh_messages', 'rh_notifications', 'rh_ledger', 'rh_moderators', 'rh_payouts',
+      'rh_refunds', 'rh_failed_deliveries', 'rh_stock_log', 'rh_activity', 'rh_couriers'];
+    var done = 0, failed = 0, total = clearKeys.length + 1;
+
+    function finish() {
+      done++;
+      if (done < total) return;
+      say('');
+      if (failed) say('<span class="bad">⚠️ ' + failed + 'টি key সার্ভারে মোছা যায়নি।</span>');
+      say('<span class="ok">✅ ডেটা রিসেট সম্পূর্ণ।</span>');
+      say('<span class="dim">এখন সাইট লোড হবে — সব ফাঁকা থাকবে।</span>');
+      document.getElementById('after').style.display = 'block';
+      setTimeout(function () { location.href = '/'; }, 2200);
+    }
+
+    /* send the kept payload first */
+    fetch('/api/store', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bulk: payload })
+    }).then(function () { finish(); }).catch(function () { failed++; finish(); });
+
+    /* then null out every key we deleted locally */
+    for (var c = 0; c < clearKeys.length; c++) {
+      (function (key) {
+        fetch('/api/store', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: key, value: null })
+        }).then(function () { finish(); }).catch(function () { failed++; finish(); });
+      })(clearKeys[c]);
+    }
+  });
+})();
+</script>
+</body>
+</html>

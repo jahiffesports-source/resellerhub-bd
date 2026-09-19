@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#f8fafc; color:#1e293b; padding-bottom:70px; overflow-x:hidden; }
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:240px; background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%); color:#cbd5e1; z-index:200; overflow-y:auto; transition:transform 0.3s; }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid #334155; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:38px; height:38px; background:linear-gradient(135deg,#2563eb,#1e40af); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; }
+        .sidebar-logo h3 { color:white; font-size:1rem; }
+        .sidebar-logo small { color:#94a3b8; font-size:0.7rem; display:block; }
+        .sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; }
+        .sidebar-menu { list-style:none; padding:12px 0; }
+        .sidebar-menu li { margin:2px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:11px 20px; color:#cbd5e1; text-decoration:none; font-size:0.9rem; }
+        .sidebar-menu a:hover { background:rgba(255,255,255,0.05); color:white; }
+        .sidebar-menu a.active { background:#2563eb; color:white; }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 20px 5px; color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+        .side-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:150; }
+        .main { margin-left:240px; min-height:100vh; }
+        .topbar { background:white; padding:12px 20px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:sticky; top:0; z-index:100; }
+        .topbar-left { display:flex; align-items:center; gap:12px; }
+        .hamburger { display:none; background:none; border:none; font-size:1.3rem; color:#1e293b; cursor:pointer; }
+        .topbar h2 { font-size:1.15rem; font-weight:700; }
+        .topbar-right { display:flex; align-items:center; gap:8px; }
+        .topbar-balance { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:white; padding:7px 14px; border-radius:20px; font-weight:700; font-size:0.85rem; }
+        .topbar-user { display:flex; align-items:center; gap:7px; padding:6px 13px; background:#f1f5f9; border-radius:20px; font-size:0.85rem; font-weight:600; }
+        .btn-logout { background:#ef4444; color:white; border:none; padding:7px 12px; border-radius:8px; cursor:pointer; font-size:0.85rem; }
+        .content { padding:20px; max-width:100%; }
+
+        .search-hero { background:white; border-radius:14px; padding:16px 20px; box-shadow:0 1px 3px rgba(0,0,0,0.05); display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:18px; }
+        .search-hero input { flex:1; min-width:200px; padding:12px 18px; border:2px solid #e2e8f0; border-radius:30px; font-size:0.95rem; }
+        .search-hero input:focus { outline:none; border-color:#2563eb; }
+        .btn { padding:10px 20px; border:none; border-radius:10px; font-weight:700; font-size:0.9rem; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:7px; text-decoration:none; }
+        .btn-green { background:linear-gradient(135deg,#10b981,#047857); color:white; }
+        .btn-primary { background:linear-gradient(135deg,#2563eb,#1e40af); color:white; }
+
+        .cat-pills { display:flex; gap:10px; overflow-x:auto; padding:4px 2px 12px; margin-bottom:14px; }
+        .pill { padding:9px 20px; background:white; border:1.5px solid #e2e8f0; border-radius:30px; font-size:0.86rem; font-weight:600; color:#475569; cursor:pointer; white-space:nowrap; }
+        .pill.active { background:#2563eb; border-color:#2563eb; color:white; }
+        .pop-section { background:white; border-radius:14px; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:20px; }
+        .pop-title { font-size:1.05rem; font-weight:700; margin-bottom:16px; }
+        .pop-grid { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; }
+        .pop-item { min-width:100px; text-align:center; cursor:pointer; padding:8px 6px; border-radius:12px; }
+        .pop-item:hover { background:#f0f9ff; }
+        .circle { width:72px; height:72px; background:#f8fafc; border:2px solid #f1f5f9; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 8px; font-size:1.6rem; overflow:hidden; }
+        .circle img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+        .pop-item p { font-size:0.76rem; font-weight:600; color:#475569; }
+
+        .section-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
+        .products-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:14px; }
+        .product-card { background:white; border-radius:14px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.06); transition:all 0.25s; cursor:pointer; }
+        .product-card:hover { transform:translateY(-4px); box-shadow:0 14px 30px rgba(0,0,0,0.12); }
+        .product-img { height:190px; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#f1f5f9; }
+        /* Full image visible - never cropped, aspect ratio preserved (item 3) */
+        .product-img img { width:100%; height:100%; object-fit:contain; background:#fff; transition:transform 0.3s; }
+        .rank-badge { position:absolute; left:8px; top:8px; background:rgba(15,23,42,.82); color:#fff; font-size:.66rem; font-weight:800; padding:3px 8px; border-radius:20px; z-index:2; }
+        .product-card:hover .product-img img { transform:scale(1.05); }
+        .pr-line { display:flex; justify-content:space-between; font-size:.78rem; color:#64748b; margin:5px 0; }
+        .pr-line b { color:#1e293b; font-weight:700; }
+        .pc-foot { display:flex; border-top:1px solid #f1f5f9; }
+        .pf-btn { flex:1; padding:9px 0; border:none; background:#fff; cursor:pointer; font-size:.85rem; color:#16a34a; }
+        .pf-btn.cp-c { color:#2563eb; border-left:1px solid #f1f5f9; }
+        .pf-btn:hover { background:#f8fafc; }
+        /* Top discovery filters (Top Sale / Ready to Campaign / New Arrival / Out of Stock) */
+        .tf-bar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+        .tf-btn { padding:10px 16px; border:1.5px solid #e2e8f0; background:#fff; color:#475569; border-radius:10px; font-size:.84rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:7px; transition:all .22s; }
+        .tf-btn:hover { border-color:#2563eb; color:#2563eb; transform:translateY(-2px); }
+        .tf-btn.on { background:linear-gradient(135deg,#2563eb,#1d4ed8); color:#fff; border-color:transparent; box-shadow:0 6px 14px rgba(37,99,235,.28); }
+        @media (max-width:640px) { .tf-btn { padding:9px 11px; font-size:.72rem; flex:1 1 44%; justify-content:center; } }
+
+        .ss-toolbar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
+        .ss-search { flex:2; min-width:220px; padding:11px 16px; border:1px solid #e2e8f0; border-radius:10px; font-size:.9rem; }
+        .ss-search:focus { outline:none; border-color:#2563eb; }
+        .ss-select { flex:1; min-width:150px; padding:10px 12px; border:1px solid #e2e8f0; border-radius:10px; font-size:.85rem; background:#fff; color:#334155; cursor:pointer; }
+        .pgb { min-width:34px; padding:7px 11px; border:1px solid #e2e8f0; background:#fff; border-radius:8px; font-weight:700; font-size:.85rem; cursor:pointer; color:#334155; }
+        .pgb.on { background:#2563eb; border-color:#2563eb; color:#fff; }
+        .icon-fallback { font-size:3.2rem; color:#cbd5e1; }
+        .stock-badge { position:absolute; top:10px; left:10px; background:rgba(30,41,59,0.75); color:white; font-size:0.66rem; padding:3px 10px; border-radius:20px; }
+        .stock-badge.out { background:rgba(220,38,38,0.85); }
+        .img-count { position:absolute; top:10px; right:10px; background:rgba(30,41,59,0.75); color:white; font-size:0.66rem; padding:3px 8px; border-radius:20px; }
+        .product-info { padding:14px; }
+        .product-info .cat { font-size:0.66rem; color:#2563eb; font-weight:700; text-transform:uppercase; margin-bottom:4px; }
+        /* Title shows exactly as much as the admin panel's card title shows:
+           ONE line, then ellipsis. The old `min-height:36px` reserved two lines,
+           so a long name wrapped and the cards in a row no longer aligned. The
+           admin rule is `.pinfo h4 { white-space:nowrap; overflow:hidden;
+           text-overflow:ellipsis }` — same font-size (.92rem) as here, so the
+           two panels now clip at the same point. */
+        .product-info h4 { font-size:0.92rem; margin-bottom:8px; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .price-row { display:flex; justify-content:space-between; align-items:center; }
+        .price { font-size:1.2rem; font-weight:800; color:#2563eb; }
+        .profit-tag { background:#d1fae5; color:#047857; padding:4px 10px; border-radius:20px; font-size:0.7rem; font-weight:700; }
+        .empty { text-align:center; padding:50px 16px; color:#64748b; }
+        .empty i { font-size:2.8rem; margin-bottom:10px; opacity:0.4; }
+
+        /* ===== PRODUCT PREVIEW (SELFSHOP STYLE) ===== */
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; align-items:flex-start; justify-content:center; z-index:2000; padding:20px; overflow-y:auto; }
+        .modal-overlay.show { display:flex; }
+        .modal { background:white; border-radius:16px; width:100%; max-width:1000px; position:relative; margin:20px auto; }
+        .modal-close { position:absolute; top:14px; right:16px; background:white; border:none; width:38px; height:38px; border-radius:50%; cursor:pointer; color:#1e293b; font-size:1.1rem; box-shadow:0 2px 10px rgba(0,0,0,0.15); z-index:5; }
+        .pd-layout { display:grid; grid-template-columns:1fr 1.1fr; gap:0; }
+
+        /* Gallery */
+        .pd-gallery { padding:24px; position:relative; }
+        .pd-main-img { position:relative; background:#f8fafc; border-radius:14px; overflow:hidden; display:flex; align-items:center; justify-content:center; min-height:380px; }
+        .pd-main-img img { max-width:100%; max-height:420px; object-fit:contain; }
+        .pd-main-img .icon-fallback { font-size:6rem; color:#cbd5e1; }
+        .g-arrow { position:absolute; top:50%; transform:translateY(-50%); width:36px; height:36px; border-radius:50%; background:white; border:none; box-shadow:0 2px 8px rgba(0,0,0,0.15); cursor:pointer; color:#1e293b; font-size:0.85rem; }
+        .g-arrow.left { left:10px; }
+        .g-arrow.right { right:10px; }
+        .g-arrow:hover { background:#f1f5f9; }
+        .pd-thumbs { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+        .pd-thumb { width:64px; height:64px; border-radius:10px; overflow:hidden; cursor:pointer; border:2px solid #e2e8f0; background:#f8fafc; display:flex; align-items:center; justify-content:center; }
+        .pd-thumb.active { border-color:#2563eb; }
+        .pd-thumb img { width:100%; height:100%; object-fit:cover; }
+        .pd-thumb .icon-fallback { font-size:1.4rem; color:#cbd5e1; }
+        .dl-btn { display:flex; align-items:center; gap:6px; margin:14px auto 0; background:#a3e635; color:#1a2e05; border:none; padding:9px 22px; border-radius:20px; font-weight:700; font-size:0.82rem; cursor:pointer; }
+        .dl-btn:hover { background:#bef264; }
+
+        /* Info side */
+        .pd-info { padding:24px 24px 24px 10px; }
+        .pd-title { font-size:1.35rem; font-weight:800; line-height:1.3; margin-bottom:12px; }
+        .badge-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+        .pbadge { display:inline-flex; align-items:center; gap:5px; font-size:0.72rem; font-weight:700; padding:4px 12px; border-radius:20px; }
+        .pbadge.sold { background:#fee2e2; color:#dc2626; }
+        .pbadge.drop { background:#dbeafe; color:#2563eb; }
+        .pd-meta { font-size:0.86rem; color:#475569; line-height:2; }
+        .pd-meta strong { color:#1e293b; }
+        .price-hint { background:#fdf2f8; color:#db2777; font-size:0.75rem; font-weight:700; padding:6px 12px; border-radius:20px; display:inline-block; margin:8px 0 12px; }
+
+        .sel-label { font-size:0.82rem; font-weight:700; margin:14px 0 8px; }
+        .color-chips { display:flex; gap:8px; flex-wrap:wrap; }
+        .cchip { padding:7px 16px; border:2px solid #e2e8f0; border-radius:8px; font-size:0.82rem; font-weight:600; cursor:pointer; background:white; }
+        .cchip.active { border-color:#1e293b; background:#1e293b; color:white; }
+
+        .size-table { width:100%; border-collapse:collapse; margin-top:6px; font-size:0.83rem; }
+        .size-table th { text-align:left; padding:8px 10px; background:#f8fafc; font-weight:700; font-size:0.72rem; color:#64748b; text-transform:uppercase; }
+        .size-table td { padding:8px 10px; border-bottom:1px solid #f1f5f9; }
+        .size-table .locked { color:#94a3b8; font-size:0.72rem; }
+        .qty-ctrl { display:flex; align-items:center; gap:6px; }
+        .qty-ctrl button { width:26px; height:26px; border:1px solid #e2e8f0; background:white; border-radius:6px; cursor:pointer; font-weight:700; }
+        .qty-ctrl input { width:44px; height:28px; text-align:center; border:1px solid #e2e8f0; border-radius:6px; font-weight:700; }
+        .size-total td { background:#fdf2f8; font-weight:800; color:#db2777; }
+
+        .pd-order-btn { width:100%; margin-top:18px; padding:15px; background:linear-gradient(135deg,#ec4899,#db2777); color:white; border:none; border-radius:12px; font-size:1rem; font-weight:800; cursor:pointer; }
+        .pd-order-btn:hover { opacity:0.92; }
+        .pd-order-btn:disabled { background:#94a3b8; cursor:not-allowed; }
+
+        .pd-desc-section { border-top:1px solid #e2e8f0; margin-top:8px; }
+        .pd-desc-tabs { display:flex; gap:20px; padding:14px 24px 0; }
+        .pd-desc-tabs span { font-size:0.9rem; font-weight:700; color:#94a3b8; padding-bottom:10px; cursor:pointer; border-bottom:3px solid transparent; }
+        .pd-desc-tabs span.active { color:#ec4899; border-bottom-color:#ec4899; }
+        .pd-desc-body { padding:16px 24px 24px; font-size:0.9rem; color:#475569; line-height:1.7; white-space:pre-line; }
+
+        .bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; background:white; box-shadow:0 -3px 15px rgba(0,0,0,0.08); z-index:300; padding:6px 4px calc(6px + env(safe-area-inset-bottom)); }
+        .bottom-nav a { display:flex; flex-direction:column; align-items:center; gap:2px; text-decoration:none; color:#94a3b8; font-size:0.65rem; font-weight:600; padding:5px 8px; flex:1; }
+        .bottom-nav a i { font-size:1.15rem; }
+        .bottom-nav a.active { color:#2563eb; background:#eff6ff; border-radius:10px; }
+
+        @media (max-width:1500px) { .products-grid { grid-template-columns:repeat(5,1fr); } }
+        @media (max-width:1100px) { .products-grid { grid-template-columns:repeat(4,1fr); } }
+        @media (max-width:900px) { .products-grid { grid-template-columns:repeat(3,1fr); } }
+        @media (max-width:640px) { .products-grid { grid-template-columns:repeat(2,1fr)!important; gap:10px!important; } .content { padding:12px; } }
+        @media (max-width:900px) { .pd-layout { grid-template-columns:1fr; } .pd-info { padding:0 24px 24px; } }
+        @media (max-width:768px) {
+            body { padding-bottom:76px; }
+            .sidebar { transform:translateX(-100%); width:260px; }
+            .sidebar.open { transform:translateX(0); }
+            .side-overlay.show { display:block; }
+            .sidebar-close-m { display:block; }
+            .main { margin-left:0; }
+            .hamburger { display:block; }
+            .products-grid { grid-template-columns:repeat(3,1fr); gap:10px; }
+            .content { padding:14px; }
+            .bottom-nav { display:flex; }
+        }
+    </style>
+<link rel="stylesheet" href="rstyle.css">
+<style id="lx-theme">
+/* ============ ResellerHub Premium Theme (visual-only overrides) ============ */
+:root { --lx-pri:#4f46e5; --lx-prid:#4338ca; --lx-vio:#7c3aed; --lx-grn:#10b981; }
+@keyframes lxPgUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+@keyframes lxPop { from{opacity:0;transform:scale(.94)} to{opacity:1;transform:none} }
+@keyframes lxRow { from{opacity:0;transform:translateX(-14px)} to{opacity:1;transform:none} }
+
+body { background:#eef1f9 !important; }
+
+/* ---- Sidebar + Topbar (synced with dashboard v3) ---- */
+/* ===== SIDEBAR ===== */
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:248px !important; background:linear-gradient(180deg,#0b1029 0%,#151a3a 100%); color:#c7d2fe; z-index:200; overflow-y:auto; transition:transform 0.3s; box-shadow:4px 0 24px rgba(11,16,41,.35); }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; justify-content:space-between; align-items:center; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:40px; height:40px; background:linear-gradient(135deg,var(--pri),var(--vio)); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .sidebar-logo h3 { color:white; font-size:1rem; font-weight:900; }
+        .sidebar-logo small { color:#818cf8; font-size:0.66rem; display:block; font-weight:700; letter-spacing:1px; }
+        .sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; }
+        .sidebar-menu { list-style:none; padding:12px 10px; }
+        .sidebar-menu li { margin:3px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:11px 15px; color:#c7d2fe; text-decoration:none; font-size:0.88rem; font-weight:600; border-radius:11px; transition:all .22s; }
+        .sidebar-menu a:hover { background:rgba(129,140,248,.14); color:white; transform:translateX(4px); }
+        .sidebar-menu a.active { background:linear-gradient(135deg,var(--pri),var(--vio)); color:white; box-shadow:0 8px 20px rgba(79,70,229,.4); }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 15px 5px; color:#6366f1; font-size:0.66rem; text-transform:uppercase; letter-spacing:1.4px; font-weight:800; }
+        .menu-badge { background:var(--gold); color:#1e293b; font-size:0.68rem; padding:1px 8px; border-radius:10px; font-weight:800; margin-left:auto; }
+        .menu-badge-n { color:var(--gold); font-weight:900; }
+
+        .side-overlay { display:none; position:fixed; inset:0; background:rgba(11,16,41,.55); z-index:150; backdrop-filter:blur(2px); }
+
+        /* ===== MAIN ===== */
+        .main { margin-left:248px !important; min-height:100vh; }
+        @media(max-width:768px){
+            .main{margin-left:0 !important}
+            .sidebar{transform:translateX(-100%) !important;transition:transform .3s ease}
+            .sidebar.open{transform:translateX(0) !important;box-shadow:20px 0 60px rgba(11,16,41,.4)}
+            .sidebar-close-m{display:block !important}
+            .side-overlay.show{display:block !important}
+        }
+        .topbar { background:rgba(255,255,255,.88); backdrop-filter:blur(12px); padding:12px 22px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 14px rgba(15,23,42,.06); position:sticky; top:0; z-index:100; }
+            /* 2026-09-16 — MOBILE FIX (this request). The topbar measured about 440px
+               across on a 390px phone, so the logout button was pushed past the right
+               edge and looked cut off. These rules tighten the SAME header so it fits a
+               narrow screen. Nothing is hidden and nothing outside this media query is
+               touched, so the desktop layout is unchanged. */
+            .topbar { padding:10px 12px; }
+            .topbar-left { gap:8px; }
+            .topbar h2 { font-size:.98rem; }
+            .topbar-right { gap:6px; }
+            .topbar-balance { padding:6px 10px; font-size:.78rem; }
+            .topbar-user { padding:5px 10px; font-size:.78rem; }
+            .topbar-user span { max-width:52px; }
+
+        .topbar-left { display:flex; align-items:center; gap:12px; }
+        .hamburger { display:none; background:none; border:none; font-size:1.3rem; color:#1e293b; cursor:pointer; padding:4px; }
+        .topbar h2 { font-size:1.12rem; font-weight:800; }
+        .topbar-right { display:flex; align-items:center; gap:8px; }
+        .topbar-balance { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#7c2d12; padding:7px 15px; border-radius:22px; font-weight:800; font-size:0.84rem; white-space:nowrap; box-shadow:0 4px 12px rgba(245,158,11,.35); }
+        .topbar-user { display:flex; align-items:center; gap:7px; padding:6px 14px; background:#eef2ff; color:var(--pri); border-radius:22px; font-size:0.84rem; font-weight:700; }
+        .btn-logout { background:#fee2e2; color:#dc2626; border:none; padding:8px 12px; border-radius:10px; cursor:pointer; font-size:0.85rem; transition:all .25s; }
+        .btn-logout:hover { background:#dc2626; color:#fff; transform:translateY(-1px); }
+
+
+        /* ---- Stats / status cards ---- */
+.stat-card { border-radius:18px !important; border:1px solid #eef2f7 !important; box-shadow:0 3px 14px rgba(15,23,42,.05) !important; transition:all .28s !important; animation:lxPgUp .5s ease both; }
+.stat-card:hover { transform:translateY(-4px) !important; box-shadow:0 16px 32px rgba(15,23,42,.11) !important; }
+.status-cards .stat-card:nth-child(1), .stats-row .stat-card:nth-child(1) { animation-delay:.08s; }
+.status-cards .stat-card:nth-child(2), .stats-row .stat-card:nth-child(2) { animation-delay:.16s; }
+.status-cards .stat-card:nth-child(3), .stats-row .stat-card:nth-child(3) { animation-delay:.24s; }
+.status-cards .stat-card:nth-child(4), .stats-row .stat-card:nth-child(4) { animation-delay:.32s; }
+.stat-icon.green { background:linear-gradient(135deg,#d1fae5,#a7f3d0) !important; color:#059669 !important; }
+.stat-icon.blue { background:linear-gradient(135deg,#e0e7ff,#c7d2fe) !important; color:#4f46e5 !important; }
+.stat-icon.orange { background:linear-gradient(135deg,#fef3c7,#fde68a) !important; color:#d97706 !important; }
+.stat-icon.purple { background:linear-gradient(135deg,#ede9fe,#ddd6fe) !important; color:#7c3aed !important; }
+
+/* ---- Inputs ---- */
+input,select,textarea { border-radius:10px !important; transition:border-color .2s, box-shadow .2s !important; }
+input:focus,select:focus,textarea:focus { border-color:#4f46e5 !important; box-shadow:0 0 0 3px rgba(79,70,229,.12) !important; outline:none !important; }
+
+/* ---- Modals ---- */
+.modal-overlay.show .modal { animation:lxPop .32s cubic-bezier(.2,.9,.3,1.15) both; }
+
+/* ---- Content entrance ---- */
+.content > * { animation:lxPgUp .5s ease both; }
+.content > *:nth-child(2) { animation-delay:.08s; }
+.content > *:nth-child(3) { animation-delay:.16s; }
+.content > *:nth-child(4) { animation-delay:.24s; }
+.content > *:nth-child(5) { animation-delay:.32s; }
+
+/* ---- Floating bottom nav (products page) ---- */
+.bottom-nav { background:rgba(255,255,255,.92) !important; backdrop-filter:blur(14px); border:1px solid #eef2f7 !important; border-radius:20px !important; bottom:10px !important; left:12px !important; right:12px !important; box-shadow:0 10px 30px rgba(15,23,42,.16) !important; }
+.bottom-nav a.active { color:#4f46e5 !important; background:#eef2ff !important; }
+
+/* ---- Page-specific polish ---- */
+.products-grid { animation:lxPgUp .5s .2s ease both; }
+.section-head h2 { font-weight:900 !important; }
+.courier-card, .contact-card { border-radius:18px !important; transition:all .28s !important; }
+.courier-card:hover, .contact-card:hover { transform:translateY(-4px); box-shadow:0 16px 34px rgba(15,23,42,.12) !important; }
+.profile-header { border-radius:20px !important; overflow:hidden; }
+.panel { border-radius:20px !important; border:1px solid #eef2f7 !important; box-shadow:0 4px 16px rgba(15,23,42,.05) !important; }
+.balcard { border-radius:20px !important; }
+.fchip { transition:all .2s !important; }
+.fchip:hover { transform:translateY(-2px); }
+.tx { transition:background .2s !important; }
+.tx:hover { background:#f8faff !important; }
+.welcome { border-radius:22px !important; }
+</style>
+
+<style>.bn-menu{background:linear-gradient(135deg,#4f46e5,#7c3aed) !important;color:#fff !important;border-radius:14px !important;box-shadow:0 6px 16px rgba(79,70,229,.4)}.bn-menu i,.bn-menu span{color:#fff !important}@media(max-width:768px){body{padding-bottom:86px !important}.bottom-nav{display:flex !important}.bn-menu{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.62rem;font-weight:700;padding:6px 6px;flex:1;border:none;cursor:pointer}.bn-menu i{font-size:1.12rem}}</style>
+<style id="lx-nav-force">
+@media(max-width:768px){
+    .bottom-nav{display:flex !important;position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;opacity:1 !important;visibility:visible !important;transform:none !important}
+    body{padding-bottom:86px !important}
+}
+</style>
+
+<style id="lx-bnav">
+/* ===== Complete bottom-nav styling ===== */
+.bottom-nav{position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;display:flex !important;align-items:stretch;background:rgba(255,255,255,.97) !important;backdrop-filter:blur(14px);border:1px solid #e8ecf4 !important;border-radius:18px !important;box-shadow:0 -4px 24px rgba(15,23,42,.14) !important;padding:7px 6px calc(7px + env(safe-area-inset-bottom)) !important}
+.bottom-nav a,.bottom-nav button{flex:1 !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;gap:3px !important;padding:7px 2px !important;border:none !important;background:none !important;color:#7b879c !important;font-size:.62rem !important;font-weight:700 !important;text-decoration:none !important;cursor:pointer !important;border-radius:12px !important;font-family:inherit !important;line-height:1.2 !important}
+.bottom-nav a i,.bottom-nav button i{font-size:1.18rem !important;line-height:1 !important}
+.bottom-nav a span,.bottom-nav button span{display:block !important}
+.bottom-nav a:hover,.bottom-nav button:hover{color:#4f46e5 !important;background:#eef2ff !important;transform:translateY(-2px)}
+.bottom-nav a.active{color:#4f46e5 !important;background:#eef2ff !important}
+.bottom-nav .bn-menu{color:#4f46e5 !important;background:#eef2ff !important;box-shadow:none !important;border-radius:12px !important}
+.bottom-nav .bn-menu:hover{background:#e0e7ff !important}
+.bottom-nav .bn-menu i,.bottom-nav .bn-menu span{color:#4f46e5 !important}
+body{padding-bottom:86px !important}
+@media(min-width:769px){
+    .bottom-nav{display:none !important}
+    body{padding-bottom:0 !important}
+}
+</style>
+
+<style>
+@media(max-width:768px){
+    .sidebar{transform:translateX(-100%) !important;transition:transform .32s cubic-bezier(.2,.8,.3,1) !important;display:block !important}
+    .sidebar.open{transform:translateX(0) !important;box-shadow:24px 0 60px rgba(11,16,41,.45) !important}
+}
+</style>
+
+<style id="lx-logout-fix">
+/* Logout fix: the open sidebar must paint ABOVE the fixed mobile bottom-nav,
+   otherwise the last menu item (Logout) is covered and un-tappable. */
+.sidebar{ z-index:900 !important; }
+.side-overlay{ z-index:880 !important; }
+.sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+@supports selector(:has(*)){
+  body:has(.sidebar.open) .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+}
+@media(min-width:769px){ .sidebar-menu{ padding-bottom:12px !important; } }
+</style>
+
+<style id="lx-sidebar-fix">
+/* ===== Reseller sidebar — canonical & stable (do not mutate at runtime) ===== */
+/* 1) Labels and section headings are ALWAYS visible. The old template hid
+      .sidebar-menu a span and .sidebar-divider under 768px, which made menu
+      text disappear and the "Account" heading vanish on some pages. */
+.sidebar .sidebar-menu a span{ display:inline !important; }
+.sidebar .sidebar-menu .sidebar-divider,
+.sidebar .sidebar-divider{ display:block !important; }
+.sidebar .sidebar-logo h3{ display:block !important; }
+.sidebar .sidebar-logo small{ display:block !important; }
+
+/* 2) Fixed geometry — the sidebar is never collapsed to a 70px icon rail. */
+.sidebar{ width:248px !important; z-index:900 !important; overflow-y:auto !important; }
+.side-overlay{ z-index:880 !important; }
+@media(min-width:769px){
+    .main{ margin-left:248px !important; }
+    .sidebar{ transform:none !important; }
+}
+@media(max-width:768px){
+    .main{ margin-left:0 !important; }
+    .sidebar{ transform:translateX(-100%) !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; display:block !important; }
+    .sidebar.open{ transform:translateX(0) !important; box-shadow:24px 0 60px rgba(11,16,41,.45) !important; }
+}
+
+/* 3) Row geometry is locked: the "All Orders" counter is absolutely positioned
+      so a changing number can never push the rows below it up or down. */
+.sidebar .sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.sidebar .sidebar-menu li{ position:relative; display:block; margin:3px 0; }
+.sidebar .sidebar-menu a{ display:flex !important; align-items:center; gap:12px; padding:11px 15px; }
+.sidebar .menu-badge{ position:absolute; right:12px; top:50%; transform:translateY(-50%); margin-left:0 !important; }
+
+/* 4) Mobile: hide the bottom nav while the drawer is open so the last item
+      (Logout) is never covered. */
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+
+/* 5) Close button inside the drawer on mobile. */
+.sidebar .sidebar-close-m{ display:none; }
+@media(max-width:768px){ .sidebar .sidebar-close-m{ display:block !important; } }
+</style>
+
+<style id="reseller-hamburger-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   Every reseller page hides the hamburger with ".hamburger{display:none}", but most
+   pages never turn it back ON at mobile width — only products.html did. So on a phone
+   there was no way to open the sidebar on Products, Orders, Wallet, Withdrawals,
+   Courier, Messages, Support, Profile, Referral or Website Integration.
+   This shows the SAME existing button (onclick="menuToggle()") at mobile width only.
+   It is an ADDED block and lives entirely inside a max-width query, so the DESKTOP
+   LAYOUT IS UNCHANGED. */
+@media (max-width:768px){
+  .hamburger { display:block !important; }
+}
+</style>
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon"><i class="fas fa-store"></i></div>
+            <div><h3>ResellerHub</h3><small>Reseller Panel</small></div>
+        </div>
+        
+        <button class="sidebar-close-m" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+        <ul class="sidebar-menu">
+        <li class="sidebar-divider">Main</li>
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+        <li><a href="products.html" class="active"><i class="fas fa-box"></i> <span>Products</span></a></li>
+        <li><a href="my-shop.html"><i class="fas fa-store"></i> <span>My Shop</span></a></li>
+        <li><a href="transactions.html"><i class="fas fa-right-left"></i> <span>Transactions</span></a></li>
+        <li class="sidebar-divider">Orders</li>
+        <li><a href="my-orders.html"><i class="fas fa-list"></i> <span>All Orders<span class="menu-badge-n" id="ordersBadgeLabel"></span></span></a></li>
+        <li><a href="order.html"><i class="fas fa-cart-plus"></i> <span>Add New Order</span></a></li>
+        <li><a href="offers.html"><i class="fas fa-gift"></i> <span>Offers</span></a></li>
+        <li><a href="shop-categories.html"><i class="fas fa-sitemap"></i> <span>Shop Categories</span></a></li>
+        <li class="sidebar-divider">My Shop</li>
+        <li><a href="my-shop-settings.html"><i class="fas fa-sliders"></i> <span>Shop Settings</span></a></li>
+        <li><a href="my-products.html"><i class="fas fa-box-open"></i> <span>My Products</span></a></li>
+        <li><a href="my-shop-orders.html"><i class="fas fa-bag-shopping"></i> <span>My Shop Orders</span></a></li>
+        <li><a href="customer-messages.html"><i class="fas fa-comment-dots"></i> <span>Customer Messages<span class="menu-badge-n" id="cmsgBadgeLabel"></span></span></a></li>
+        <li class="sidebar-divider">Account</li>
+        <li><a href="wallet.html"><i class="fas fa-wallet"></i> <span>Wallet</span></a></li>
+        <li><a href="withdrawals.html"><i class="fas fa-money-bill-wave"></i> <span>Withdrawals</span></a></li>
+        <li><a href="courier.html"><i class="fas fa-truck"></i> <span>Courier</span></a></li>
+        <li><a href="messages.html"><i class="fas fa-comments"></i> <span>Messages<span class="menu-badge-n" id="msgBadgeLabel"></span></span></a></li>
+        <li><a href="support.html"><i class="fas fa-headset"></i> <span>Support</span></a></li>
+        <li><a href="profile.html"><i class="fas fa-user-cog"></i> <span>Profile</span></a></li>
+        <li><a href="referral.html"><i class="fas fa-user-plus"></i> <span>Referral</span></a></li>
+        <li><a href="website-integration.html"><i class="fas fa-plug"></i> <span>Website Integration</span></a></li>
+        <li><a href="../index.html"><i class="fas fa-globe"></i> <span>Visit Site</span></a></li>
+        <li><a href="javascript:void(0)" onclick="resellerLogout()" style="color:#dc2626"><i class="fas fa-right-from-bracket"></i> <span>Logout</span></a></li>
+    </ul>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+        <div class="topbar-left">
+            <button class="hamburger" onclick="toggleSidebar(true)"><i class="fas fa-bars"></i></button>
+            <h2><i class="fas fa-box" style="color:#2563eb;margin-right:6px;"></i> All Products</h2>
+        </div>
+        <div class="topbar-right">
+            <div class="topbar-balance"><i class="fas fa-coins"></i> <span id="topBalance">0</span></div>
+            <div class="topbar-user"><i class="fas fa-user" style="color:#2563eb;"></i> <span id="userName">User</span></div>
+            <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content">
+        <!-- Top product discovery filters (items 12-16) -->
+        <div class="tf-bar" id="tfBar">
+            <button class="tf-btn on" data-tf="all" onclick="setTopFilter('all',this)"><i class="fas fa-border-all"></i> All Products</button>
+            <button class="tf-btn" data-tf="topsale" onclick="setTopFilter('topsale',this)"><i class="fas fa-fire"></i> Top Sale Product</button>
+            <button class="tf-btn" data-tf="campaign" onclick="setTopFilter('campaign',this)"><i class="fas fa-bullhorn"></i> Ready to Campaign</button>
+            <button class="tf-btn" data-tf="new" onclick="setTopFilter('new',this)"><i class="fas fa-sparkles"></i> New Arrival Product</button>
+            <button class="tf-btn" data-tf="out" onclick="setTopFilter('out',this)"><i class="fas fa-box-open"></i> Out of Stock</button>
+        </div>
+        <div class="ss-toolbar">
+            <input type="text" id="productSearch" class="ss-search" placeholder="search with product code || product name" oninput="renderProducts()">
+            <select id="perPageSel" class="ss-select" onchange="window._pg=1;renderProducts()" style="max-width:90px;" title="Products per page"><option>6</option><option>10</option><option selected>21</option><option>30</option><option>50</option><option>100</option></select>
+            <select id="catSel" class="ss-select" onchange="onCatSel()"><option value="">select category</option></select>
+            <select id="subSel" class="ss-select" onchange="onSubSel()"><option value="">select sub category</option></select>
+            <select id="subSubSel" class="ss-select" onchange="window._pg=1;renderProducts()"><option value="">select sub sub category</option></select>
+        </div>
+        <div class="section-head">
+            <h3 id="gridTitle" style="font-size:1.1rem;">All Products</h3>
+            <span id="gridCount" style="font-size:0.85rem;color:#64748b;"></span>
+        </div>
+        <div class="products-grid" id="productsGrid"></div>
+        <div id="pageBar" style="display:flex;justify-content:center;gap:6px;margin:22px 0;flex-wrap:wrap;"></div>
+    </div>
+</main>
+
+<!-- PRODUCT PREVIEW MODAL -->
+<div class="modal-overlay" id="productModal">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal('productModal')"><i class="fas fa-times"></i></button>
+        <div id="productDetailBody"></div>
+    </div>
+</div>
+
+<nav class="bottom-nav">
+    <a href="dashboard.html"><i class="fas fa-home"></i>Home</a>
+    <a href="products.html" class="active"><i class="fas fa-box"></i>Products</a>
+    <a href="order.html"><i class="fas fa-cart-plus"></i>Order</a>
+    <button class="bn-menu" onclick="menuToggle()"><i class="fas fa-bars"></i><span>Menu</span></button>
+    <a href="profile.html"><i class="fas fa-user"></i>Profile</a>
+</nav>
+
+<script src="../app.js"></script><script>(function(){function paint(){try{var b=document.getElementById("ordersBadge");var uid=sessionStorage.getItem("user_id");if(!uid)return;if(sessionStorage.getItem("user_type")!=="reseller")return;var n=(typeof resellerNewOrderCount==="function")?resellerNewOrderCount(uid):0;if(b){b.textContent=n;b.style.display=n>0?"inline-block":"none";}var lb=document.getElementById("ordersBadgeLabel");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+(function() {
+    var userId = sessionStorage.getItem('user_id');
+    if (!userId || sessionStorage.getItem('user_type') !== 'reseller') { window.location.replace('login.html'); return; }
+    var user = null;
+    function loadUser() {
+        var resellers = getData(DB_KEYS.RESELLERS);
+        for (var i = 0; i < resellers.length; i++) { if (resellers[i].id === parseInt(userId)) { user = resellers[i]; break; } }
+        return !!user;
+    }
+    if (!loadUser()) { sessionStorage.clear(); window.location.replace('login.html'); return; }
+
+    document.getElementById('userName').textContent = user.name;
+    document.getElementById('topBalance').textContent = formatCurrency(user.balance);
+
+    var activeCat = '';
+    var ICON_COLORS = ['#2563eb','#ec4899','#8b5cf6','#f59e0b','#06b6d4','#ef4444','#10b981','#f43f5e','#d946ef','#14b8a6'];
+    var gallery = { images: [], idx: 0 };
+    var selQty = {}; // size -> qty
+    var selColor = '';
+
+    function loadCategoryUI() {
+        var cats = getData(DB_KEYS.CATEGORIES);
+        var opts = '<option value="">select category</option>';
+        for (var i = 0; i < cats.length; i++) opts += '<option value="' + cats[i].name.replace(/"/g, '&quot;') + '">' + cats[i].name + '</option>';
+        document.getElementById('catSel').innerHTML = opts;
+        onCatSel();
+    }
+    /* ------------------------------------------------------------------------
+       2026-09-19 — SUB / SUB-SUB DROPDOWNS (this request)
+       ------------------------------------------------------------------------
+       TWO defects, both measured before this edit:
+
+       1) Every sub option rendered as "[object Object]". A sub is stored as an
+          OBJECT — { name, subs:[], subSubs:[] } — but the old line did
+          String(subs[j]), so the label AND the value became the literal string
+          "[object Object]" (9 identical rows for Women's Fashion).
+
+       2) The sub-sub dropdown was ALWAYS empty. It was derived from the product
+          list (`prods[p].subSection`), so a sub-sub only appeared if some product
+          already used it — a newly created sub-sub could never be picked. Worse,
+          `p.subSection` holds the SUB name, not the sub-sub.
+
+       Both lists now come from the ADMIN's category tree through the canonical
+       helpers, exactly as admin/products.html does. getSubList()/getSubSubList()
+       return plain NAME STRINGS and read the name out of either stored shape
+       (object or legacy string).
+
+       ensureCategoryTree() runs first on purpose: getSubSubList() reads
+       subs[].subs (the older editor's spelling) while the newer tree layer writes
+       subs[].subSubs — the normaliser mirrors the two so neither comes back empty.
+       It is idempotent and never deletes a name.
+       ------------------------------------------------------------------------ */
+    function catNamesToOptions(list, placeholder) {
+        var opts = '<option value="">' + placeholder + '</option>';
+        for (var j = 0; j < list.length; j++) {
+            var n = String(list[j] === undefined || list[j] === null ? '' : list[j]).trim();
+            if (!n) continue;
+            opts += '<option value="' + n.replace(/"/g, '&quot;') + '">' + n + '</option>';
+        }
+        return opts;
+    }
+    function onCatSel() {
+        var name = document.getElementById('catSel').value;
+        if (typeof ensureCategoryTree === 'function') { try { ensureCategoryTree(); } catch (e) {} }
+        var subs = (typeof getSubList === 'function' && name) ? getSubList(name) : [];
+        document.getElementById('subSel').innerHTML = catNamesToOptions(subs, 'select sub category');
+        document.getElementById('subSubSel').innerHTML = '<option value="">select sub sub category</option>';
+        window._pg = 1;
+        renderProducts();
+    }
+    function onSubSel() {
+        var name = document.getElementById('catSel').value;
+        var sub = document.getElementById('subSel').value;
+        if (typeof ensureCategoryTree === 'function') { try { ensureCategoryTree(); } catch (e) {} }
+        var list = (typeof getSubSubList === 'function' && name && sub) ? getSubSubList(name, sub) : [];
+        document.getElementById('subSubSel').innerHTML = catNamesToOptions(list, 'select sub sub category');
+        window._pg = 1;
+        renderProducts();
+    }
+    window.onCatSel = onCatSel;
+    window.onSubSel = onSubSel;
+
+    // ===== SUPPLIER SHOPS =====
+    var activeSup = 0;
+    function renderSuppliers() {
+        var sups = getData(DB_KEYS.SUPPLIERS).filter(function(s) { return s.status === 'approved'; });
+        var products = catalogProducts();
+        var html = '';
+        for (var i = 0; i < sups.length; i++) {
+            var s = sups[i];
+            var count = 0;
+            for (var p = 0; p < products.length; p++) { if (products[p].supplierId === s.id) count++; }
+            if (!count) continue;
+            var inner = s.shopLogo ? '<img src="' + s.shopLogo + '">' : '<i class="fas fa-store" style="color:#d97706;"></i>';
+            html += '<div class="pop-item' + (activeSup === s.id ? ' active-circle' : '') + '" onclick="setSup(' + s.id + ')">' +
+                '<div class="circle">' + inner + '</div>' +
+                '<p>' + s.shopName + '</p>' +
+                '<small style="color:#f59e0b;font-weight:700;font-size:0.7rem;">' + (s.rating ? s.rating.toFixed(1) + ' ★' : 'New') + ' • ' + count + ' products</small></div>';
+        }
+        document.getElementById('supGrid').innerHTML = html || '<small style="color:#94a3b8;padding:6px;">No supplier shops yet. Suppliers will appear here once they upload products.</small>';
+    }
+    function setSup(id) { window.location.href = 'shop.html?sid=' + id; }
+    window.setSup = setSup;
+
+    function getImages(p) {
+        var imgs = [];
+        if (p.images && p.images.length) { for (var i = 0; i < p.images.length; i++) imgs.push(p.images[i]); }
+        if (!imgs.length && p.image) imgs.push(p.image);
+        return imgs;
+    }
+
+    function renderProducts() {
+        /* (#1) admin + supplier + THIS reseller's own.
+           The "Out of Stock" section must ALSO show this reseller's own uploaded
+           products — the normal browsing list hides out-of-stock own products, so
+           the "out" filter reads from a list that keeps them (still never another
+           reseller's product). */
+        var tfNow = window._tf || 'all';
+        var products = (tfNow === 'out') ? resellerOutOfStockProducts(user.id) : resellerCatalogProducts(user.id);
+        var search = (document.getElementById('productSearch').value || '').toLowerCase();
+        var activeCat = document.getElementById('catSel').value;
+        var subV = document.getElementById('subSel').value;
+        var subSubV = document.getElementById('subSubSel').value;
+        var filtered = [];
+        for (var i = 0; i < products.length; i++) {
+            var p = products[i];
+            if (p.supplierId && p.approved === false) continue;
+            if (p.is_active === false) continue;
+            var match = true;
+            if (search && p.name.toLowerCase().indexOf(search) === -1 && (p.sku || '').toLowerCase().indexOf(search) === -1) match = false;
+            if (activeCat && p.category !== activeCat) match = false;
+            if (subV && (p.section || p.subSection || '') !== subV) match = false;
+            /* 2026-09-19 — the sub-sub level lives in p.subSub (p.subSubCategory /
+               p.sub_sub are the older spellings). This compared p.subSection, which
+               holds the SUB name, so the moment the sub-sub dropdown above could
+               actually be used it would have filtered EVERY product out. Same read
+               order as app.js's own sub-sub helper. */
+            if (subSubV && (p.subSub || p.sub_sub || p.subSubCategory || '') !== subSubV) match = false;
+            if (match) filtered.push(p);
+        }
+        /* ---- Top discovery filter (items 13-16) -----------------------------
+           topsale  : max 50, ranked by successful sales (cancelled excluded)
+           campaign : max 100, 30 per page  => 3 pages
+           new      : max 30, newest first by creation timestamp
+           out      : stock = 0
+        --------------------------------------------------------------------- */
+        var tf = window._tf || 'all';
+        var soldMap = {};
+        if (tf === 'topsale') {
+            soldMap = (typeof salesCountByProduct === 'function') ? salesCountByProduct() : {};
+            filtered.sort(function (a, b) { return (soldMap[String(b.id)] || 0) - (soldMap[String(a.id)] || 0); });
+            filtered = filtered.slice(0, 50);
+        } else if (tf === 'campaign') {
+            var cp = [];
+            for (var ci = 0; ci < filtered.length; ci++) { if (isReadyToCampaign(filtered[ci])) cp.push(filtered[ci]); }
+            filtered = cp.slice(0, 100);
+        } else if (tf === 'new') {
+            filtered.sort(function (a, b) { return productCreatedTime(b) - productCreatedTime(a); });
+            filtered = filtered.slice(0, 30);
+        } else if (tf === 'out') {
+            var op = [];
+            for (var oi = 0; oi < filtered.length; oi++) { if (isOutOfStock(filtered[oi])) op.push(filtered[oi]); }
+            filtered = op;
+        } else {
+            filtered.reverse();
+        }
+        var per = (tf === 'campaign') ? 30 : (parseInt(document.getElementById('perPageSel').value) || 21);
+        var pages = Math.max(1, Math.ceil(filtered.length / per));
+        if (!window._pg || window._pg > pages) window._pg = 1;
+        var pageItems = filtered.slice((window._pg - 1) * per, window._pg * per);
+        var tfLabel = ({ all: 'All Products', topsale: 'Top Sale Product', campaign: 'Ready to Campaign', new: 'New Arrival Product', out: 'Out of Stock' })[tf] || 'All Products';
+        document.getElementById('gridTitle').textContent = (tf === 'all') ? (activeCat || 'All Products') : tfLabel;
+        document.getElementById('gridCount').textContent = filtered.length + ' products';
+        if (!filtered.length) {
+            document.getElementById('productsGrid').innerHTML = '<div class="empty" style="grid-column:1/-1;"><i class="fas fa-box-open"></i><br>No products found. Admin will add products soon!</div>';
+            return;
+        }
+        var html = '';
+        for (var j = 0; j < pageItems.length; j++) {
+            var p = pageItems[j];
+            var imgs = getImages(p);
+            var img = imgs.length ? '<img src="' + imgs[0] + '" alt="' + p.name + '">' : '<i class="fas ' + (p.icon || 'fa-box') + ' icon-fallback"></i>';
+            var ic = imgs.length > 1 ? '<span class="img-count"><i class="fas fa-images"></i> ' + imgs.length + '</span>' : '';
+            var rc = p.customer_price || Math.round(p.price * 1.8);
+            var rank = (tf === 'topsale') ? '<span class="rank-badge">#' + ((window._pg - 1) * per + j + 1) + ' &middot; ' + (soldMap[String(p.id)] || 0) + ' sold</span>' : '';
+            /* (#1) make the Out of Stock state visible on the card itself */
+            var oosBadge = isOutOfStock(p) ? '<span class="stock-badge out"><i class="fas fa-box-open"></i> Out of Stock</span>' : '';
+            html += '<div class="product-card" onclick="location.href=\'my-shop-product.html?id=' + p.id + '&rid=' + user.id + '\'">' +
+                '<div class="product-img">' + img + ic + rank + oosBadge + '</div>' +
+                '<div class="product-info"><h4>' + p.name + '</h4>' +
+                '<div class="pr-line"><span>Price</span><b>' + formatCurrency(p.price) + ' TK</b></div>' +
+                '<div class="pr-line"><span>Customer / Retail</span><b>' + formatCurrency(rc) + ' TK</b></div></div>' +
+                '<div class="pc-foot"><button class="pf-btn" title="Download Image" onclick="event.stopPropagation();cardDl(\'' + p.id + '\')"><i class="fas fa-download"></i></button>' +
+                '<button class="pf-btn cp-c" title="Copy Details" onclick="event.stopPropagation();cardCp(\'' + p.id + '\')"><i class="fas fa-copy"></i></button></div></div>';
+        }
+        document.getElementById('productsGrid').innerHTML = html;
+        var bar = '<div style="display:flex;justify-content:center;align-items:center;gap:8px;margin:28px 0 12px;flex-wrap:wrap;">';
+        if (pages > 1) {
+            var p = window._pg;
+            var mk = function(pg, lbl, dis, act) {
+                return '<button onclick="goPg(' + pg + ')" ' + (dis ? 'disabled' : '') + ' style="min-width:38px;height:38px;padding:0 12px;border:none;border-radius:10px;cursor:pointer;font-weight:800;font-size:.85rem;' + (act ? 'background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;box-shadow:0 6px 14px rgba(37,99,235,.3);' : 'background:#fff;color:#475569;border:1.5px solid #e2e8f0;') + (dis ? ';opacity:.45;cursor:not-allowed;' : '') + '">' + lbl + '</button>';
+            };
+            bar += mk(p - 1, '&laquo; Prev', p <= 1);
+            var start = Math.max(1, p - 2), end = Math.min(pages, p + 2);
+            if (p <= 3) end = Math.min(pages, 5);
+            if (p >= pages - 2) start = Math.max(1, pages - 4);
+            if (start > 1) { bar += mk(1, '1'); if (start > 2) bar += '<span style="color:#94a3b8;font-weight:800;padding:0 4px;">...</span>'; }
+            for (var pg = start; pg <= end; pg++) bar += mk(pg, String(pg), false, pg === p);
+            if (end < pages) { if (end < pages - 1) bar += '<span style="color:#94a3b8;font-weight:800;padding:0 4px;">...</span>'; bar += mk(pages, String(pages)); }
+            bar += mk(p + 1, 'Next &raquo;', p >= pages);
+            bar += '<span style="margin-left:10px;font-size:.74rem;color:#64748b;font-weight:700;">Page ' + p + ' of ' + pages + '</span>';
+        }
+        bar += '</div>';
+        document.getElementById('pageBar').innerHTML = bar;
+    }
+    window.goPg = function(n) { window._pg = n; renderProducts(); window.scrollTo(0, 0); };
+    /* Top discovery filter switch (items 12-16) - updates without page reload */
+    window.setTopFilter = function(tf, btn) {
+        window._tf = tf;
+        window._pg = 1;
+        try {
+            var bs = document.querySelectorAll('#tfBar .tf-btn');
+            for (var i = 0; i < bs.length; i++) bs[i].classList.remove('on');
+            if (btn) btn.classList.add('on');
+        } catch (e) {}
+        renderProducts();
+    };
+    window.cardDl = function(id) {
+        var ps = getData(DB_KEYS.PRODUCTS); var q = null;
+        /* String compare — the handler always passes a quoted (string) id, but
+           admin-uploaded products have NUMERIC ids (Date.now()). Strict === then
+           never matches and every admin-uploaded product showed "Product not found". */
+        for (var i = 0; i < ps.length; i++) { if (String(ps[i].id) === String(id)) { q = ps[i]; break; } }
+        if (!q) { showToast('Product not found', 'error'); return; }
+        var imgs = [];
+        if (q.images && q.images.length) { for (var k = 0; k < q.images.length; k++) imgs.push(q.images[k]); }
+        if (q.image && imgs.indexOf(q.image) === -1) imgs.unshift(q.image);
+        if (!imgs.length) { showToast('No image to download', 'error'); return; }
+        showToast('Downloading ' + imgs.length + ' images...', 'success');
+        for (var j = 0; j < imgs.length; j++) (function(idx) {
+            setTimeout(function() {
+                var a = document.createElement('a'); a.href = imgs[idx]; a.download = 'product-' + id + '-' + (idx + 1) + '.png';
+                document.body.appendChild(a); a.click(); a.remove();
+            }, idx * 350);
+        })(j);
+    };
+    window.cardCp = function(id) {
+        var ps = getData(DB_KEYS.PRODUCTS); var q = null;
+        /* String compare — same reason as cardDl above. */
+        for (var i = 0; i < ps.length; i++) { if (String(ps[i].id) === String(id)) { q = ps[i]; break; } }
+        if (!q) return;
+        var rc = q.customer_price || Math.round(q.price * 1.8);
+        var t = q.name + '\n\n' + (q.description || '') + '\n\nOrder: resellerhubbd.com | 01997904792';
+        if (navigator.clipboard) { navigator.clipboard.writeText(t).then(function() { showToast('Details copied!', 'success'); }); }
+        else { var ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); showToast('Details copied!', 'success'); }
+    };
+
+    // ===== SELFSHOP-STYLE PREVIEW =====
+    function showProductDetail(productId) {
+        var products = getData(DB_KEYS.PRODUCTS);
+        var p = null;
+        /* String compare — handler is always called with a quoted id, but numeric-id
+           products from the admin panel would never match under strict ===. */
+        for (var i = 0; i < products.length; i++) { if (String(products[i].id) === String(productId)) { p = products[i]; break; } }
+        if (!p) return;
+
+        gallery.images = getImages(p);
+        gallery.idx = 0;
+        selQty = {};
+        selColor = (p.colors && p.colors.length) ? p.colors[0] : '';
+        var sizes = (p.sizes && p.sizes.length) ? p.sizes : ['Free Size'];
+
+        var mainImg = gallery.images.length ? '<img id="mainImg" src="' + gallery.images[0] + '" alt="' + p.name + '">' : '<i class="fas ' + (p.icon || 'fa-box') + ' icon-fallback"></i>';
+        var arrows = gallery.images.length > 1 ? '<button class="g-arrow left" onclick="galMove(-1)"><i class="fas fa-chevron-left"></i></button><button class="g-arrow right" onclick="galMove(1)"><i class="fas fa-chevron-right"></i></button>' : '';
+        var thumbs = '';
+        if (gallery.images.length > 1) {
+            thumbs = '<div class="pd-thumbs" id="pdThumbs">';
+            for (var t = 0; t < gallery.images.length; t++) thumbs += '<div class="pd-thumb' + (t === 0 ? ' active' : '') + '" onclick="galSet(' + t + ')"><img src="' + gallery.images[t] + '"></div>';
+            thumbs += '</div>';
+        }
+        var dl = gallery.images.length ? '<button class="dl-btn" onclick="downloadImage()"><i class="fas fa-download"></i> Download Image</button>' : '';
+
+        // Size table rows
+        var rows = '';
+        for (var s = 0; s < sizes.length; s++) {
+            var sz = sizes[s];
+            rows += '<tr><td><strong>' + sz + '</strong></td>' +
+                '<td><span class="locked"><i class="fas fa-lock"></i> Locked</span></td>' +
+                '<td>' + (p.stock || 0) + '</td>' +
+                '<td><div class="qty-ctrl"><button type="button" onclick="chgQty(\'' + sz + '\',-1)">−</button><input id="qty_' + sz.replace(/\s/g, '_') + '" value="0" readonly><button type="button" onclick="chgQty(\'' + sz + '\',1)">+</button></div></td></tr>';
+        }
+        rows += '<tr class="size-total"><td>Total</td><td></td><td></td><td style="text-align:right;"><span id="totalPcs">0</span> pcs</td></tr>';
+
+        // Color chips
+        var colorHtml = '';
+        if (p.colors && p.colors.length) {
+            colorHtml = '<div class="sel-label">Color: <span id="selColorLbl" style="color:#db2777;">' + selColor + '</span></div><div class="color-chips">';
+            for (var c = 0; c < p.colors.length; c++) colorHtml += '<div class="cchip' + (p.colors[c] === selColor ? ' active' : '') + '" onclick="pickColor(\'' + p.colors[c].replace(/'/g, "\\'") + '\')">' + p.colors[c] + '</div>';
+            colorHtml += '</div>';
+        }
+
+        var stockTxt = p.stock ? p.stock : 0;
+        var html = '<div class="pd-layout">' +
+            '<div class="pd-gallery">' +
+            '<div class="pd-main-img">' + mainImg + arrows + '</div>' + thumbs + dl +
+            '</div>' +
+            '<div class="pd-info">' +
+            '<h1 class="pd-title">' + p.name + '</h1>' +
+            '<div class="badge-row"><span class="pbadge sold"><i class="fas fa-store"></i> Sold by ' + (p.supplierName || 'ResellerHub BD') + '</span><span class="pbadge drop"><i class="fas fa-bolt"></i> Dropshipping</span></div>' +
+            '<div class="pd-meta">' +
+            '<div><strong>Category:</strong> ' + p.category + (p.section ? ' — ' + p.section : '') + '</div>' +
+            '<div><strong>Quantity:</strong> ' + stockTxt + '</div>' +
+            '<div><strong>SKU:</strong> ' + (p.sku || 'N/A') + '</div>' +
+            '</div>' +
+            '<div style="margin-top:10px;"><strong style="font-size:0.95rem;">Wholesale Price:</strong> <strong style="color:#ec4899;font-size:1.2rem;">' + formatCurrency(p.price) + '</strong></div>' +
+            '<span class="price-hint" style="background:#d1fae5;color:#047857;"><i class="fas fa-badge-check"></i> Verified Reseller Wholesale Rate</span>' +
+            colorHtml +
+            '<div class="sel-label">Select Quantity by Size</div>' +
+            '<table class="size-table"><thead><tr><th>Size</th><th>Price</th><th>Stock</th><th>Quantity</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+            /* (#3) id QUOTED — own-product ids are strings ("ROP…"); an unquoted
+               id rendered orderFromPreview(ROP…) -> ReferenceError, so the button
+               silently did nothing for the reseller's own uploaded products. */
+            '<button class="pd-order-btn" style="background:linear-gradient(135deg,#2563eb,#1e40af);" onclick="orderFromPreview(\'' + esc(p.id) + '\')"><i class="fas fa-cart-plus"></i> Order This Product</button>' +
+            '</div></div>' +
+            '<div class="pd-desc-section"><div class="pd-desc-tabs"><span class="active">Description</span><span>Reviews</span></div>' +
+            '<div class="pd-desc-body">' + (p.description || 'No description available.') +
+            (p.weight ? '\n\n<strong>Weight:</strong> ' + p.weight : '') +
+            (p.deliveryDays ? '\n<strong>Delivery Time:</strong> ' + p.deliveryDays + ' days' : '') +
+            '</div></div>';
+
+        document.getElementById('productDetailBody').innerHTML = html;
+        document.getElementById('productModal').classList.add('show');
+        window._previewProduct = p;
+        window._previewSizes = sizes;
+    }
+
+    function galMove(dir) {
+        if (!gallery.images.length) return;
+        gallery.idx = (gallery.idx + dir + gallery.images.length) % gallery.images.length;
+        galSet(gallery.idx);
+    }
+    function galSet(idx) {
+        gallery.idx = idx;
+        var img = document.getElementById('mainImg');
+        if (img) img.src = gallery.images[idx];
+        var thumbs = document.querySelectorAll('.pd-thumb');
+        for (var i = 0; i < thumbs.length; i++) thumbs[i].classList.toggle('active', i === idx);
+    }
+    function downloadImage() {
+        if (!gallery.images.length) return;
+        var a = document.createElement('a');
+        a.href = gallery.images[gallery.idx];
+        a.download = 'product-image-' + (gallery.idx + 1) + '.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast('Image downloading...', 'info');
+    }
+    function chgQty(size, delta) {
+        var id = 'qty_' + size.replace(/\s/g, '_');
+        var input = document.getElementById(id);
+        var v = (parseInt(input.value) || 0) + delta;
+        if (v < 0) v = 0;
+        input.value = v;
+        selQty[size] = v;
+        updateTotalPcs();
+    }
+    function updateTotalPcs() {
+        var total = 0;
+        for (var k in selQty) total += selQty[k];
+        var el = document.getElementById('totalPcs');
+        if (el) el.textContent = total;
+    }
+    function pickColor(color) {
+        selColor = color;
+        var lbl = document.getElementById('selColorLbl');
+        if (lbl) lbl.textContent = color;
+        var chips = document.querySelectorAll('.cchip');
+        for (var i = 0; i < chips.length; i++) chips[i].classList.toggle('active', chips[i].textContent === color);
+    }
+    function orderFromPreview(productId) {
+        var p = window._previewProduct;
+        if (!p) return;
+        var sizeQty = [];
+        var sizes = window._previewSizes || [];
+        var any = false;
+        for (var i = 0; i < sizes.length; i++) {
+            var q = selQty[sizes[i]] || 0;
+            if (q > 0) { sizeQty.push({ size: sizes[i], qty: q }); any = true; }
+        }
+        if (!any) { showToast('Select quantity first! Click + to add pieces.', 'error'); return; }
+        sessionStorage.setItem('rh_preview_order', JSON.stringify({ productId: productId, sizeQty: sizeQty, color: selColor }));
+        window.location.href = 'order.html?product=' + productId;
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+    window.toggleSidebar = function(open) {
+        document.getElementById('sidebar').classList.toggle('open', open);
+        document.getElementById('sideOverlay').classList.toggle('show', open);
+    };
+
+    setOnline(user.id, true);
+    setInterval(function() { setOnline(user.id, true); }, 60000);
+
+    window.showProductDetail = showProductDetail;
+    window.galMove = galMove;
+    window.galSet = galSet;
+    window.downloadImage = downloadImage;
+    window.chgQty = chgQty;
+    window.pickColor = pickColor;
+    window.orderFromPreview = orderFromPreview;
+    window.closeModal = closeModal;
+    window.renderProducts = renderProducts;
+    window.doLogout = doLogout;
+
+    loadCategoryUI();
+    renderProducts();
+    renderProducts();
+    function renderHot() {
+        var products = getData(DB_KEYS.PRODUCTS).slice().reverse().slice(0, 5);
+        var html = '';
+        for (var i = 0; i < products.length; i++) {
+            var p = products[i];
+            var imgs = p.images && p.images.length ? p.images : (p.image ? [p.image] : []);
+            var img = imgs.length ? '<img src="' + imgs[0] + '" alt="' + p.name + '">' : '<i class="fas ' + (p.icon || 'fa-box') + ' icon-fallback"></i>';
+            html += '<div class="product-card" onclick="location.href=\'product.html?id=' + p.id + '\'"><div class="product-img" style="height:140px">' + img + '</div><div class="product-info" style="padding:10px"><h4 style="min-height:auto;font-size:.82rem">' + p.name + '</h4><div class="price" style="font-size:1rem">' + formatCurrency(p.price) + '</div></div></div>';
+        }
+        document.getElementById('hotGrid').innerHTML = html || '<small style="color:#9f1239;padding:6px;">Products will appear here</small>';
+    }
+})();
+</script>
+
+<script>
+window.menuToggle = function() {
+    var sb = document.querySelector('.sidebar');
+    if (!sb) return;
+    var open = !sb.classList.contains('open');
+    if (window.toggleSidebar) window.toggleSidebar(open);
+    else { sb.classList.toggle('open', open); var ov = document.getElementById('sideOverlay'); if (ov) ov.classList.toggle('show', open); }
+};
+</script>
+
+
+<script>
+/* Robust menu toggle */
+if (!window.menuToggle) {
+    window.menuToggle = function() {
+        var sb = document.querySelector('.sidebar');
+        if (!sb) return;
+        var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+        var open = !sb.classList.contains('open');
+        sb.classList.toggle('open', open);
+        if (ov) ov.classList.toggle('show', open);
+        document.body.classList.toggle('sb-open', open);
+    };
+}
+</script>
+
+
+<script>
+/* Logout fix: keep the mobile bottom-nav in sync with the drawer state. */
+(function () {
+    function sync(open) {
+        try {
+            var sb = document.querySelector('.sidebar');
+            var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+            if (sb) sb.classList.toggle('open', !!open);
+            if (ov) ov.classList.toggle('show', !!open);
+            document.body.classList.toggle('sb-open', !!open);
+        } catch (e) {}
+    }
+    var orig = window.toggleSidebar;
+    window.toggleSidebar = function (open) {
+        try { if (typeof orig === 'function') orig(open); } catch (e) {}
+        sync(open);
+    };
+    window.menuToggle = function () {
+        var sb = document.querySelector('.sidebar');
+        var open = !(sb && sb.classList.contains('open'));
+        window.toggleSidebar(open);
+    };
+})();
+</script>
+</body>
+</html>

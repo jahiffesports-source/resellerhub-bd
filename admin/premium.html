@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Admin - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#f1f5f9; color:#1e293b; }
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:240px; background:#1e293b; color:#cbd5e1; z-index:100; overflow-y:auto; }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid #334155; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:38px; height:38px; background:linear-gradient(135deg,#dc2626,#b91c1c); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; }
+        .sidebar-logo h3 { color:white; font-size:1rem; }
+        .sidebar-logo small { color:#94a3b8; font-size:0.7rem; display:block; }
+        .sidebar-menu { list-style:none; padding:12px 0; }
+        .sidebar-menu li { margin:2px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:10px 20px; color:#cbd5e1; text-decoration:none; font-size:0.88rem; }
+        .sidebar-menu a:hover { background:rgba(255,255,255,0.05); color:white; }
+        .sidebar-menu a.active { background:#dc2626; color:white; }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 20px 5px; color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+        .menu-badge { background:#fbbf24; color:#1e293b; font-size:0.65rem; padding:1px 6px; border-radius:10px; font-weight:700; margin-left:auto; }
+        .main { margin-left:240px; min-height:100vh; }
+        .topbar { background:white; padding:14px 25px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:sticky; top:0; z-index:50; }
+        .topbar h2 { font-size:1.2rem; font-weight:600; }
+        .topbar h2 i { color:#dc2626; margin-right:8px; }
+        .topbar-right { display:flex; align-items:center; gap:12px; }
+        .user-pill { display:flex; align-items:center; gap:8px; padding:6px 14px; background:#fee2e2; border-radius:30px; font-size:0.85rem; color:#991b1b; font-weight:600; }
+        .btn-logout { background:#dc2626; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:500; }
+        .content { padding:25px; }
+        .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px; }
+        .stat-card { background:white; border-radius:12px; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:relative; overflow:hidden; cursor:pointer; }
+        .stat-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; }
+        .stat-card.blue::before { background:#2563eb; }
+        .stat-card.green::before { background:#10b981; }
+        .stat-card.orange::before { background:#f59e0b; }
+        .stat-card.red::before { background:#dc2626; }
+        .stat-card.purple::before { background:#8b5cf6; }
+        .stat-card .icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin-bottom:12px; }
+        .stat-card.blue .icon { background:#dbeafe; color:#2563eb; }
+        .stat-card.green .icon { background:#d1fae5; color:#10b981; }
+        .stat-card.orange .icon { background:#fef3c7; color:#f59e0b; }
+        .stat-card.red .icon { background:#fee2e2; color:#dc2626; }
+        .stat-card.purple .icon { background:#ede9fe; color:#8b5cf6; }
+        .stat-card .label { color:#64748b; font-size:0.8rem; margin-bottom:4px; }
+        .stat-card .value { font-size:1.6rem; font-weight:800; }
+        .card { background:white; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:20px; }
+        .card-header { padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; }
+        .card-header h4 { font-size:0.95rem; font-weight:600; }
+        .card-header h4 i { color:#dc2626; margin-right:6px; }
+        .view-all { font-size:0.82rem; color:#dc2626; font-weight:600; text-decoration:none; }
+        .data-table { width:100%; border-collapse:collapse; }
+        .data-table th { text-align:left; padding:11px 20px; background:#f8fafc; font-weight:600; font-size:0.72rem; color:#64748b; text-transform:uppercase; }
+        .data-table td { padding:12px 20px; border-bottom:1px solid #f1f5f9; font-size:0.85rem; }
+        .data-table tr:hover { background:#f8fafc; }
+        .badge { padding:3px 9px; border-radius:20px; font-size:0.7rem; font-weight:600; }
+        .badge-success { background:#d1fae5; color:#065f46; }
+        .badge-warning { background:#fef3c7; color:#92400e; }
+        .badge-danger { background:#fee2e2; color:#991b1b; }
+        .badge-info { background:#dbeafe; color:#1e40af; }
+        .btn { padding:6px 11px; border:none; border-radius:7px; font-size:0.78rem; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+        .btn-primary { background:#2563eb; color:white; }
+        .btn-success { background:#10b981; color:white; }
+        .empty { text-align:center; padding:40px 20px; color:#64748b; }
+        .empty i { font-size:2.5rem; margin-bottom:10px; opacity:0.4; }
+        .activity-item { padding:10px 20px; border-bottom:1px solid #f1f5f9; display:flex; gap:10px; font-size:0.86rem; align-items:flex-start; }
+        .activity-item:last-child { border-bottom:none; }
+        @media (max-width:1024px) { .stats-row { grid-template-columns:repeat(2,1fr); } }
+        @media (max-width:768px) { .sidebar { width:240px; } .sidebar-logo h3, .sidebar-logo small, .sidebar-menu a span, .sidebar-divider, .menu-badge { display:initial; } .main { margin-left:240px; } .stats-row { grid-template-columns:1fr; } }
+    </style>
+
+
+
+
+<style id="lx-sb-final">
+/* ===== ADMIN SIDEBAR v4 — fresh premium design (authoritative) ===== */
+body .lx-sidebar { position:fixed !important; left:0 !important; top:0 !important; bottom:0 !important; width:264px !important; background:linear-gradient(180deg,#0d1226 0%,#171233 100%) !important; border-right:1px solid rgba(129,140,248,.14) !important; z-index:600 !important; overflow-y:auto !important; overflow-x:hidden !important; display:flex !important; flex-direction:column !important; transform:none !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; font-family:'Inter','Hind Siliguri',sans-serif !important; }
+body .lx-sidebar::before { content:'' !important; position:absolute !important; top:-80px !important; right:-60px !important; width:260px !important; height:260px !important; background:radial-gradient(circle,rgba(99,102,241,.18),transparent 70%) !important; pointer-events:none !important; }
+body .lx-brand { display:flex !important; align-items:center !important; gap:12px !important; padding:20px 18px !important; border-bottom:1px solid rgba(129,140,248,.14) !important; position:relative !important; }
+body .lx-brand-ic { width:42px !important; height:42px !important; border-radius:13px !important; background:linear-gradient(135deg,#6366f1,#a855f7) !important; display:flex !important; align-items:center !important; justify-content:center !important; color:#fff !important; font-size:1.05rem !important; box-shadow:0 8px 20px rgba(99,102,241,.4) !important; flex-shrink:0 !important; }
+body .lx-brand-tx b { color:#fff !important; font-size:1.02rem !important; font-weight:900 !important; display:block !important; line-height:1.2 !important; }
+body .lx-brand-tx small { color:#818cf8 !important; font-size:.6rem !important; font-weight:800 !important; letter-spacing:2px !important; }
+body .lx-close { margin-left:auto !important; background:rgba(255,255,255,.06) !important; border:none !important; color:#94a3b8 !important; width:30px !important; height:30px !important; border-radius:9px !important; cursor:pointer !important; font-size:1rem !important; display:none !important; align-items:center !important; justify-content:center !important; }
+body .lx-close:hover { background:#fee2e2 !important; color:#dc2626 !important; }
+body .lx-menu { padding:14px 12px !important; flex:1 !important; }
+body .sec-label { font-size:.6rem !important; font-weight:900 !important; letter-spacing:2.2px !important; color:#6b7280 !important; text-transform:uppercase !important; padding:14px 12px 6px !important; display:flex !important; align-items:center !important; gap:8px !important; }
+body .sec-label::before { content:'' !important; width:14px !important; height:2px !important; background:linear-gradient(90deg,#6366f1,#a855f7) !important; border-radius:2px !important; }
+body .sb-item { position:relative !important; display:flex !important; align-items:center !important; gap:11px !important; padding:9px 12px !important; margin:3px 0 !important; border-radius:12px !important; color:#b6c2e2 !important; text-decoration:none !important; font-size:.86rem !important; font-weight:600 !important; transition:all .2s !important; border:1px solid transparent !important; background:transparent !important; opacity:1 !important; visibility:visible !important; pointer-events:auto !important; box-shadow:none !important; transform:none !important; }
+body .sb-item .sb-ico { width:30px !important; height:30px !important; border-radius:9px !important; background:rgba(255,255,255,.05) !important; display:flex !important; align-items:center !important; justify-content:center !important; font-size:.82rem !important; flex-shrink:0 !important; transition:all .2s !important; }
+body .sb-item .sb-txt { flex:1 !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; display:block !important; }
+body .sb-item:hover { background:rgba(99,102,241,.13) !important; color:#fff !important; }
+body .sb-item:hover .sb-ico { background:rgba(99,102,241,.3) !important; }
+body .sb-item.on { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; border-color:rgba(129,140,248,.35) !important; }
+body .sb-item.on::before { content:'' !important; position:absolute !important; left:-12px !important; top:50% !important; transform:translateY(-50%) !important; width:3.5px !important; height:60% !important; background:linear-gradient(180deg,#818cf8,#c084fc) !important; border-radius:3px !important; }
+body .sb-item.on .sb-ico { background:linear-gradient(135deg,#6366f1,#a855f7) !important; color:#fff !important; }
+/* page-এর নিচের inline-highlight script সবসময় হারাবে */
+body .sb-item[style] { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; }
+body .sb-badge { background:#fbbf24 !important; color:#1e293b !important; font-size:.62rem !important; padding:1px 8px !important; border-radius:10px !important; font-weight:800 !important; margin-left:auto !important; }
+body .main { margin-left:264px !important; min-height:100vh !important; }
+body .side-overlay { display:none !important; position:fixed !important; inset:0 !important; background:rgba(7,10,26,.6) !important; z-index:590 !important; backdrop-filter:blur(2px) !important; }
+body .side-overlay.show { display:block !important; pointer-events:auto !important; }
+body .hamburger { display:none !important; }
+/* ===== মোবাইল/ট্যাবলেট: slide drawer ===== */
+@media (max-width:1024px) {
+    body .main { margin-left:0 !important; }
+    body .lx-sidebar { transform:translateX(-100%) !important; box-shadow:none !important; }
+    body .lx-sidebar.open { transform:none !important; box-shadow:30px 0 70px rgba(7,10,26,.6) !important; }
+    body .lx-close { display:flex !important; }
+    body .hamburger { display:inline-flex !important; }
+    body { overflow-x:hidden !important; }
+}
+</style>
+
+
+
+
+
+<style id="lx-ovf-fix">
+@media(max-width:768px){ body{overflow-x:hidden !important} }
+</style>
+<style id="lx-orders-badge-n">.orders-badge-n{color:#fbbf24;font-weight:900;font-size:.72rem}.orders-badge-n:empty{display:none}</style>
+<style id="admin-mobile-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   The admin topbar measured about 474px across on a 390px phone (25px padding, an
+   h2 at 1.2rem, 12px gaps, a wide user pill), so the logout button was pushed past
+   the right edge. Several admin tables are also built by JS with NO .table-scroll
+   wrapper, so they widened the whole page instead of scrolling.
+   EVERY rule below sits inside a max-width query, so the DESKTOP LAYOUT IS
+   UNCHANGED. This is an ADDED block — no existing rule is modified or removed. */
+@media (max-width:768px){
+  .topbar { padding:10px 12px; gap:8px; }
+  .topbar h2 { font-size:.92rem; }
+  .topbar h2 i { margin-right:4px; }
+  .topbar-right { gap:6px; }
+  .user-pill { padding:5px 9px; font-size:.72rem; }
+  .btn-logout { padding:7px 10px; }
+  /* a table without a scroll wrapper would otherwise push the page wide */
+  .data-table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%; }
+}
+</style>
+<style id="panel-fullwidth-fix">
+/* 2026-09-16 — FULL-WIDTH FIX for the admin and supplier panels (this request).
+   The whole page sat in a narrow column with empty space on the right, because the
+   base rule reserves the sidebar with `margin-left`, and a block element with
+   margin-left and width:auto is only (100% - that) wide. A LATER rule in the same
+   file re-asserted the margin with !important, so the earlier mobile override lost.
+   This block is the LAST thing in the document, so it wins, and it resets width as
+   well as margin. Desktop is untouched — everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+<style>
+    .pm-wrap{padding:24px;max-width:1240px;margin:0 auto}
+    .pm-hero{position:relative;overflow:hidden;border-radius:22px;padding:24px 26px;margin-bottom:18px;
+      background:linear-gradient(135deg,#141a38 0%,#0b1029 55%,#2a1550 100%);
+      border:1px solid rgba(129,140,248,.3);box-shadow:0 24px 60px rgba(15,23,42,.45)}
+    .pm-hero::before{content:'';position:absolute;top:-140px;right:-90px;width:380px;height:380px;
+      background:radial-gradient(circle,rgba(168,85,247,.32),transparent 68%);pointer-events:none;
+      animation:pmGlow 6s ease-in-out infinite}
+    @keyframes pmGlow{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.14)}}
+    .pm-hero>*{position:relative;z-index:2}
+    .pm-hero-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+    .pm-hero-ic{width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;
+      font-size:1.45rem;color:#fff;background:linear-gradient(135deg,#f59e0b,#f43f5e 55%,#a855f7);
+      box-shadow:0 14px 32px rgba(244,63,94,.45);animation:pmFloat 3.6s ease-in-out infinite}
+    @keyframes pmFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+    .pm-hero h1{color:#fff;font-size:1.32rem;font-weight:900;margin:0}
+    .pm-hero p{color:#a5b4fc;font-size:.8rem;margin:3px 0 0;line-height:1.6}
+    .pm-state{margin-left:auto;display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:14px;
+      font-weight:900;font-size:.82rem;letter-spacing:.3px}
+    .pm-state .dot{width:9px;height:9px;border-radius:50%;background:#22c55e;animation:pmPing 1.8s ease-out infinite}
+    @keyframes pmPing{0%{box-shadow:0 0 0 0 rgba(34,197,94,.7)}70%{box-shadow:0 0 0 11px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+    .pm-state.on{background:rgba(34,197,94,.16);color:#4ade80;border:1px solid rgba(34,197,94,.4)}
+    .pm-state.off{background:rgba(148,163,184,.14);color:#cbd5e1;border:1px solid rgba(148,163,184,.32)}
+    .pm-state.off .dot{background:#94a3b8;animation:none;box-shadow:none}
+    .pm-hero-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:18px}
+    .pm-fact{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.1);border-radius:15px;padding:12px 14px}
+    .pm-fact b{display:block;color:#fff;font-size:1.26rem;font-weight:900;line-height:1.2}
+    .pm-fact span{display:block;color:#8b9bd6;font-size:.7rem;font-weight:700;margin-top:3px}
+    .pm-fact small{display:block;color:#c7d2fe;font-size:.68rem;margin-top:4px}
+    .pm-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px;margin-bottom:18px}
+    .pm-stat{position:relative;overflow:hidden;background:#fff;border:1px solid #e2e8f0;border-radius:17px;
+      padding:15px 16px;box-shadow:0 3px 14px rgba(15,23,42,.06);transition:transform .22s,box-shadow .22s}
+    .pm-stat:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(15,23,42,.12)}
+    .pm-stat .bar{position:absolute;left:0;top:0;bottom:0;width:4px}
+    .pm-stat.p .bar{background:linear-gradient(180deg,#22c55e,#16a34a)}
+    .pm-stat.t .bar{background:linear-gradient(180deg,#38bdf8,#0284c7)}
+    .pm-stat.c .bar{background:linear-gradient(180deg,#a78bfa,#7c3aed)}
+    .pm-stat.l .bar{background:linear-gradient(180deg,#fbbf24,#f59e0b)}
+    .pm-stat b{display:block;font-size:1.75rem;font-weight:900;line-height:1.1}
+    .pm-stat.p b{color:#16a34a}.pm-stat.t b{color:#0284c7}.pm-stat.c b{color:#7c3aed}.pm-stat.l b{color:#b45309}
+    .pm-stat span{display:block;color:#64748b;font-size:.72rem;font-weight:800;margin-top:2px}
+    .pm-card{background:#fff;border:1px solid #e2e8f0;border-radius:19px;padding:20px;margin-bottom:16px;
+      box-shadow:0 3px 14px rgba(15,23,42,.06)}
+    .pm-card h3{margin:0 0 4px;font-size:1rem;font-weight:900;color:#0f172a;display:flex;align-items:center;gap:10px}
+    .pm-card h3 .ic{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+      color:#fff;font-size:.82rem;background:linear-gradient(135deg,#6366f1,#a855f7);flex-shrink:0}
+    .pm-card h3 .ic.g{background:linear-gradient(135deg,#22c55e,#16a34a)}
+    .pm-card h3 .ic.a{background:linear-gradient(135deg,#f59e0b,#f43f5e)}
+    .pm-card .sub{color:#64748b;font-size:.79rem;margin:0 0 15px;line-height:1.65}
+    .pm-row{display:flex;gap:11px;align-items:flex-end;flex-wrap:wrap;margin-bottom:13px}
+    .pm-fld{flex:1;min-width:155px}
+    .pm-fld label{display:block;font-size:.72rem;font-weight:800;color:#475569;margin-bottom:5px}
+    .pm-fld input,.pm-fld select{width:100%;padding:10px 13px;border:2px solid #e2e8f0;border-radius:12px;
+      font-size:.85rem;font-family:inherit;box-sizing:border-box;background:#fff;transition:border-color .2s,box-shadow .2s}
+    .pm-fld input:focus,.pm-fld select:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 4px rgba(99,102,241,.12)}
+    .pm-btn{border:none;cursor:pointer;border-radius:12px;padding:11px 19px;font-size:.84rem;font-weight:800;
+      font-family:inherit;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;transition:all .2s;white-space:nowrap}
+    .pm-btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(99,102,241,.38)}
+    .pm-btn:active{transform:translateY(0)}
+    .pm-btn.g{background:linear-gradient(135deg,#22c55e,#16a34a)}
+    .pm-btn.g:hover{box-shadow:0 10px 24px rgba(34,197,94,.38)}
+    .pm-btn.a{background:linear-gradient(135deg,#f59e0b,#f43f5e)}
+    .pm-btn.a:hover{box-shadow:0 10px 24px rgba(244,63,94,.38)}
+    .pm-btn.o{background:#fff;color:#475569;border:2px solid #e2e8f0}
+    .pm-btn.o:hover{border-color:#94a3b8;box-shadow:none;transform:translateY(-1px)}
+    .pm-btn.s{padding:7px 12px;font-size:.73rem;border-radius:10px}
+    .pm-btn:disabled{opacity:.55;cursor:default;transform:none;box-shadow:none}
+    .pm-switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+    .pm-switch input{display:none}
+    .pm-switch .tr{width:50px;height:28px;border-radius:15px;background:#cbd5e1;position:relative;transition:background .24s;flex-shrink:0}
+    .pm-switch .tr::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;
+      background:#fff;transition:transform .24s cubic-bezier(.2,.9,.3,1.3);box-shadow:0 2px 6px rgba(0,0,0,.22)}
+    .pm-switch input:checked + .tr{background:linear-gradient(135deg,#22c55e,#16a34a)}
+    .pm-switch input:checked + .tr::after{transform:translateX(22px)}
+    .pm-switch b{font-size:.85rem;color:#334155}
+    .pm-pick{border:2px solid #e2e8f0;border-radius:14px;max-height:220px;overflow-y:auto;margin-top:7px}
+    .pm-pick:empty{display:none}
+    .pm-opt{display:flex;align-items:center;gap:11px;padding:10px 13px;cursor:pointer;border-bottom:1px solid #f1f5f9;
+      transition:background .16s}
+    .pm-opt:last-child{border-bottom:none}
+    .pm-opt:hover{background:#f8fafc}
+    .pm-opt .av{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;
+      display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900;flex-shrink:0}
+    .pm-opt b{font-size:.81rem;color:#0f172a;display:block}
+    .pm-opt small{display:block;color:#64748b;font-size:.69rem}
+    .pm-opt .tag{margin-left:auto;font-size:.65rem;font-weight:800;padding:3px 9px;border-radius:9px;white-space:nowrap}
+    .tag.premium{background:#dcfce7;color:#166534}.tag.trial{background:#e0f2fe;color:#075985}
+    .tag.claimable{background:#ede9fe;color:#5b21b6}.tag.locked{background:#fef3c7;color:#92400e}
+    .pm-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
+    .pm-chip{display:inline-flex;align-items:center;gap:8px;background:#f8fafc;border:1px solid #e2e8f0;
+      border-radius:12px;padding:6px 8px 6px 12px;font-size:.77rem;font-weight:700;color:#334155}
+    .pm-chip button{border:none;background:#fee2e2;color:#dc2626;width:21px;height:21px;border-radius:7px;
+      cursor:pointer;font-size:.7rem;display:flex;align-items:center;justify-content:center;line-height:1;transition:all .18s}
+    .pm-chip button:hover{background:#dc2626;color:#fff}
+    .pm-scroll{overflow-x:auto;border-radius:14px;border:1px solid #eef2f7}
+    .pm-tbl{width:100%;border-collapse:collapse;font-size:.81rem}
+    .pm-tbl th{text-align:left;padding:11px 12px;background:#f8fafc;border-bottom:2px solid #e2e8f0;
+      color:#475569;font-size:.69rem;font-weight:900;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+    .pm-tbl td{padding:10px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+    .pm-tbl tr:last-child td{border-bottom:none}
+    .pm-tbl tr:hover td{background:#f8fafc}
+    .pm-tbl .who{font-weight:800;color:#0f172a}
+    .pm-tbl .who small{display:block;color:#64748b;font-weight:600;font-size:.69rem}
+    .pm-empty{padding:28px;text-align:center;color:#94a3b8;font-size:.83rem}
+    .pm-msg{margin-top:12px;padding:11px 14px;border-radius:12px;font-size:.79rem;font-weight:700;display:none}
+    .pm-msg.ok{display:block;background:#dcfce7;color:#166534;border:1px solid #bbf7d0;animation:pmIn .3s ease both}
+    .pm-msg.err{display:block;background:#fee2e2;color:#991b1b;border:1px solid #fecaca;animation:pmIn .3s ease both}
+    @keyframes pmIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+    .pm-div{height:1px;background:#eef2f7;margin:16px 0}
+    @media (max-width:768px){
+      .pm-wrap{padding:14px}
+      .pm-hero{padding:18px}
+      .pm-hero h1{font-size:1.12rem}
+      .pm-state{margin-left:0}
+      .pm-row{flex-direction:column;align-items:stretch}
+      .pm-fld{min-width:0}
+      .pm-btn{width:100%}
+      .pm-tbl{font-size:.75rem}
+    }
+</style>
+</head>
+<body>
+<aside class="lx-sidebar sidebar" id="sidebar">
+    <div class="lx-brand">
+        <span class="lx-brand-ic"><i class="fas fa-user-shield"></i></span>
+        <div class="lx-brand-tx"><b>AdminHub</b><small>CONTROL PANEL</small></div>
+        <button class="lx-close" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+    <nav class="lx-menu">
+        <div class="sec-label">Main</div>
+        <a href="dashboard.html" class="sb-item"><span class="sb-ico"><i class="fas fa-chart-line"></i></span><span class="sb-txt">Dashboard</span></a>
+        <a href="orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-shopping-cart"></i></span><span class="sb-txt">All Orders<span class="orders-badge-n" id="ordersBadgeN"></span></span><span id="ordersBadge" style="display:none;margin-left:auto;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:.62rem;font-weight:800"></span></a>
+        <a href="multi-supplier-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-people-arrows"></i></span><span class="sb-txt">Multi-Supplier Orders<span class="orders-badge-n" id="msCount"></span></span></a>
+        <a href="products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box"></i></span><span class="sb-txt">Products</span></a>
+        <div class="sec-label">Users</div>
+        <a href="resellers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-users"></i></span><span class="sb-txt">Resellers</span></a>
+        <a href="suppliers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-warehouse"></i></span><span class="sb-txt">Suppliers</span></a>
+        <a href="supplier-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-boxes-stacked"></i></span><span class="sb-txt">Supplier Products</span></a>
+        <a href="add-reseller.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Add Reseller</span></a>
+        <a href="add-supplier.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck"></i></span><span class="sb-txt">Add Supplier</span></a>
+        <a href="approvals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-check"></i></span><span class="sb-txt">Approvals</span><span id="approvalsBadge" style="display:none;margin-left:auto;background:#f59e0b;color:#fff;border-radius:10px;padding:1px 7px;font-size:.62rem;font-weight:800"></span></a>
+        <a href="withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-money-bill-wave"></i></span><span class="sb-txt">Withdrawals</span><span id="withdrawalsBadge" style="display:none;margin-left:auto;background:#8b5cf6;color:#fff;border-radius:10px;padding:1px 7px;font-size:.62rem;font-weight:800"></span></a>
+        <a href="supplier-withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-hand-holding-dollar"></i></span><span class="sb-txt">Supplier Withdraw</span></a>
+        <a href="transactions.html" class="sb-item"><span class="sb-ico"><i class="fas fa-receipt"></i></span><span class="sb-txt">Transaction History</span></a>
+        <a href="moderators.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-shield"></i></span><span class="sb-txt">Moderators</span></a>
+        <div class="sec-label">Referral</div>
+        <a href="referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Reseller Referral</span></a>
+        <a href="supplier-referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck-arrow-right"></i></span><span class="sb-txt">Supplier Referral</span></a>
+                <a href="myshop-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-bag-shopping"></i></span><span class="sb-txt">My Shop Orders</span></a>
+        <a href="myshop-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box-open"></i></span><span class="sb-txt">My Shop Products</span></a>
+        <div class="sec-label">Offers &amp; Banners</div>
+        <a href="add-offer.html" class="sb-item"><span class="sb-ico"><i class="fas fa-plus-circle"></i></span><span class="sb-txt">Add Offers</span></a>
+        <a href="manage-offers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-gift"></i></span><span class="sb-txt">Manage Offers</span></a>
+        <a href="add-banner.html" class="sb-item"><span class="sb-ico"><i class="fas fa-image"></i></span><span class="sb-txt">Add Banners</span></a>
+        <a href="manage-banners.html" class="sb-item"><span class="sb-ico"><i class="fas fa-images"></i></span><span class="sb-txt">Manage Banners</span></a>
+        <div class="sec-label">System</div>
+        <a href="messages.html" class="sb-item"><span class="sb-ico"><i class="fas fa-comments"></i></span><span class="sb-txt">Messages<span class="orders-badge-n" id="msgBadgeN"></span></span></a>
+        <a href="settings.html" class="sb-item"><span class="sb-ico"><i class="fas fa-cog"></i></span><span class="sb-txt">Settings</span></a>
+        <a href="../index.html" class="sb-item"><span class="sb-ico"><i class="fas fa-globe"></i></span><span class="sb-txt">Visit Site</span></a>
+    <div class="sec-label">Premium</div>
+<a href="premium.html" class="sb-item" id="pmNavItem"><span class="sb-ico"><i class="fas fa-crown"></i></span><span class="sb-txt">Premium Plan</span></a>
+</nav>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+  <div class="topbar">
+    <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <h2><i class="fas fa-crown"></i> Premium Plan</h2>
+    <div class="topbar-right"></div>
+  </div>
+
+  <div class="pm-wrap">
+
+    <div class="pm-hero">
+      <div class="pm-hero-top">
+        <div class="pm-hero-ic"><i class="fas fa-crown"></i></div>
+        <div>
+          <h1>প্রিমিয়াম প্ল্যান ও ফ্রি ট্রায়াল</h1>
+          <p>রিসেলারদের My Shop ম্যানেজমেন্ট — Shop Settings, My Products, My Shop Orders, Customer Messages — লক/আনলক করুন।</p>
+        </div>
+        <span class="pm-state off" id="pmStatePill"><span class="dot"></span><span id="pmStateTxt">বন্ধ</span></span>
+      </div>
+      <div class="pm-hero-facts" id="pmFacts"></div>
+    </div>
+
+    <div class="pm-stats" id="pmStats"></div>
+
+    <div class="pm-card">
+      <h3><span class="ic g"><i class="fas fa-gift"></i></span> নতুন রেজিস্ট্রেশনের জন্য ফ্রি ট্রায়াল অফার</h3>
+      <p class="sub">নতুন যারা রেজিস্টার করবে তারা <b>ক্লেইম করলে</b> এই দিনগুলো পাবে। ক্লেইম না করলে দিন নষ্ট হবে না — ঘড়ি ক্লেইমের দিন থেকে শুরু হয়। প্রতিটি রিসেলার নিজে থেকে <b>একবারই</b> নিতে পারবে।</p>
+
+      <div class="pm-row">
+        <div class="pm-fld" style="flex:0 0 auto">
+          <label>অফার</label>
+          <label class="pm-switch"><input type="checkbox" id="pmTrialOn"><span class="tr"></span><b id="pmTrialOnTxt">বন্ধ</b></label>
+        </div>
+        <div class="pm-fld" style="max-width:190px">
+          <label>প্রতিজন কত দিন পাবে</label>
+          <input type="number" id="pmTrialDays" min="1" max="365" value="7">
+        </div>
+        <div class="pm-fld" style="max-width:230px">
+          <label>অফারটি কতদিন চলবে</label>
+          <select id="pmOfferPreset" onchange="pmOfferPreset()">
+            <option value="0">অনির্দিষ্ট (সবসময় চালু)</option>
+            <option value="7">৭ দিন</option>
+            <option value="15">১৫ দিন</option>
+            <option value="20">২০ দিন</option>
+            <option value="30">৩০ দিন</option>
+            <option value="custom">কাস্টম (নিজে লিখুন)</option>
+          </select>
+        </div>
+        <div class="pm-fld" id="pmOfferCustomWrap" style="max-width:150px;display:none">
+          <label>কত দিন</label>
+          <input type="number" id="pmOfferDays" min="1" max="3650" value="20">
+        </div>
+        <button class="pm-btn g" onclick="pmSaveTrial()"><i class="fas fa-check"></i> সেভ করুন</button>
+      </div>
+      <div class="pm-row" style="margin-bottom:0">
+        <button class="pm-btn o" onclick="pmStopOffer()"><i class="fas fa-power-off"></i> অফার বন্ধ করুন</button>
+        <span style="color:#64748b;font-size:.76rem;align-self:center" id="pmOfferHint"></span>
+      </div>
+
+      <div class="pm-div"></div>
+
+      <div class="pm-row" style="margin-bottom:0">
+        <div class="pm-fld">
+          <label>নিজে বেছে কাউকে ট্রায়াল দিন (রেজিস্ট্রেশন লাগবে না)</label>
+          <input type="text" id="pmPickTrial" placeholder="নাম বা ফোন দিয়ে খুঁজুন..." oninput="pmSearch('pmPickTrial','pmPickTrialList','trial')">
+          <div class="pm-pick" id="pmPickTrialList"></div>
+        </div>
+        <div class="pm-fld" style="max-width:150px">
+          <label>দিন</label>
+          <input type="number" id="pmPickTrialDays" min="1" max="365" value="7">
+        </div>
+        <button class="pm-btn g" onclick="pmGiveTrial()"><i class="fas fa-gift"></i> ট্রায়াল দিন</button>
+      </div>
+
+      <div style="margin-top:15px">
+        <label style="font-size:.72rem;font-weight:800;color:#475569;display:block;margin-bottom:2px">ট্রায়াল থেকে বাদ (এরা কখনোই অটো-ট্রায়াল পাবে না)</label>
+        <input type="text" id="pmPickEx" placeholder="বাদ দিতে নাম বা ফোন লিখুন..." oninput="pmSearch('pmPickEx','pmPickExList','ex')">
+        <div class="pm-pick" id="pmPickExList"></div>
+        <div class="pm-chips" id="pmExChips"></div>
+      </div>
+
+      <div class="pm-msg" id="pmMsgTrial"></div>
+    </div>
+
+    <div class="pm-card">
+      <h3><span class="ic"><i class="fas fa-crown"></i></span> প্রিমিয়াম অ্যাক্সেস (WhatsApp-এ কিনলে)</h3>
+      <p class="sub">রিসেলার বেছে নিন, মেয়াদ দিন। <b>মেয়াদ যোগ হয়</b> — যার ২০ দিন বাকি আছে, সে আরও ৩০ দিন কিনলে মোট ৫০ দিন পাবে।</p>
+
+      <div class="pm-row">
+        <div class="pm-fld">
+          <label>রিসেলার খুঁজুন</label>
+          <input type="text" id="pmPickPrem" placeholder="নাম বা ফোন দিয়ে খুঁজুন..." oninput="pmSearch('pmPickPrem','pmPickPremList','premium')">
+          <div class="pm-pick" id="pmPickPremList"></div>
+        </div>
+        <div class="pm-fld" style="max-width:200px">
+          <label>মেয়াদ</label>
+          <select id="pmPremPreset" onchange="pmPreset()">
+            <option value="7">১ সপ্তাহ</option>
+            <option value="30" selected>১ মাস</option>
+            <option value="365">১ বছর</option>
+            <option value="custom">কাস্টম (নিজে লিখুন)</option>
+          </select>
+        </div>
+        <div class="pm-fld" id="pmCustomWrap" style="max-width:150px;display:none">
+          <label>দিন</label>
+          <input type="number" id="pmPremDays" min="1" max="3650" value="30">
+        </div>
+        <button class="pm-btn a" onclick="pmGivePremium()"><i class="fas fa-crown"></i> প্রিমিয়াম দিন</button>
+      </div>
+      <div class="pm-msg" id="pmMsgPrem"></div>
+    </div>
+
+    <div class="pm-card">
+      <h3><span class="ic a"><i class="fas fa-list"></i></span> কে কী অবস্থায় আছে</h3>
+      <p class="sub">প্রতিটি রিসেলারের বর্তমান অবস্থা ও মেয়াদ। <b>ট্রায়াল রিসেট</b> মানে পুরোনো ট্রায়াল মুছে নতুন করে দেওয়া যাবে।</p>
+      <div class="pm-row">
+        <div class="pm-fld">
+          <input type="text" id="pmFilter" placeholder="নাম / ফোন / শপ দিয়ে ফিল্টার করুন..." oninput="pmRender()">
+        </div>
+      </div>
+      <div class="pm-scroll"><table class="pm-tbl" id="pmTable"></table></div>
+    </div>
+  </div>
+</main>
+
+<script src="../app.js"></script>
+<script>
+var pmPicked = { trial: null, premium: null };
+
+function pmSay(id, ok, text) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'pm-msg';
+  el.textContent = text || '';
+  setTimeout(function () { el.className = 'pm-msg ' + (ok ? 'ok' : 'err'); }, 10);
+  setTimeout(function () { el.className = 'pm-msg'; }, 4500);
+}
+function pmRows() {
+  var q = document.getElementById('pmFilter');
+  return premiumFindResellers(q ? q.value : '');
+}
+function pmBn(n) {
+  var en = '0123456789', bn = '০১২৩৪৫৬৭৮৯', s = String(n == null ? '' : n), o = '';
+  for (var i = 0; i < s.length; i++) { var p = en.indexOf(s.charAt(i)); o += (p === -1 ? s.charAt(i) : bn.charAt(p)); }
+  return o;
+}
+function pmEsc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function pmTag(r) {
+  if (r.level === 'premium') return '<span class="tag premium">প্রিমিয়াম · ' + pmBn(r.daysLeft) + ' দিন বাকি</span>';
+  if (r.level === 'trial') return '<span class="tag trial">ট্রায়াল · ' + pmBn(r.daysLeft) + ' দিন বাকি</span>';
+  if (r.level === 'claimable') return '<span class="tag claimable">ক্লেইমযোগ্য</span>';
+  return '<span class="tag locked">লক</span>';
+}
+
+window.pmRender = function () {
+  try {
+    var rows = pmRows();
+    var h = '<tr><th>রিসেলার</th><th>অবস্থা</th><th>মেয়াদ শেষ</th><th style="text-align:right">অ্যাকশন</th></tr>';
+    if (!rows.length) {
+      h += '<tr><td colspan="4"><div class="pm-empty">কেউ পাওয়া যায়নি।</div></td></tr>';
+    } else {
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i];
+        var when = r.endsAt ? new Date(r.endsAt).toLocaleDateString('bn-BD') : '—';
+        h += '<tr>' +
+          '<td><div class="who">' + pmEsc(r.shop || r.name) +
+          '<small>' + pmEsc(r.name) + (r.phone ? ' · ' + pmEsc(r.phone) : '') + ' · ' + pmEsc(r.id) + '</small></div></td>' +
+          '<td>' + pmTag(r) + (r.excluded ? ' <span class="tag locked">বাদ</span>' : '') +
+          (r.claimed ? ' <small style="color:#94a3b8">(ট্রায়াল নেওয়া)</small>' : '') + '</td>' +
+          '<td>' + pmEsc(when) + '</td>' +
+          '<td style="text-align:right;white-space:nowrap">' +
+          '<button class="pm-btn a s" onclick="pmQuick(' + r.id + ',30)">+30 দিন</button> ' +
+          '<button class="pm-btn g s" onclick="pmQuickTrial(' + r.id + ',7)">ট্রায়াল ৭</button> ' +
+          '<button class="pm-btn o s" onclick="pmResetTrial(' + r.id + ')">ট্রায়াল রিসেট</button> ' +
+          '<button class="pm-btn o s" onclick="pmToggleEx(' + r.id + ',' + (r.excluded ? 'false' : 'true') + ')">' +
+          (r.excluded ? 'বাদ তুলুন' : 'বাদ দিন') + '</button> ' +
+          '<button class="pm-btn o s" onclick="pmKill(' + r.id + ')">বন্ধ</button>' +
+          '</td></tr>';
+      }
+    }
+    var t = document.getElementById('pmTable');
+    if (t) t.innerHTML = h;
+    pmStats();
+    pmHero();
+    pmChips();
+  } catch (e) { }
+};
+
+function pmStats() {
+  try {
+    var all = premiumAll(), p = 0, t = 0, l = 0, c = 0;
+    for (var i = 0; i < all.length; i++) {
+      var lv = all[i].level;
+      if (lv === 'premium') p++; else if (lv === 'trial') t++;
+      else if (lv === 'claimable') c++; else l++;
+    }
+    var box = document.getElementById('pmStats');
+    if (!box) return;
+    box.innerHTML =
+      '<div class="pm-stat p"><span class="bar"></span><b>' + pmBn(p) + '</b><span>প্রিমিয়াম চালু</span></div>' +
+      '<div class="pm-stat t"><span class="bar"></span><b>' + pmBn(t) + '</b><span>ট্রায়াল চলছে</span></div>' +
+      '<div class="pm-stat c"><span class="bar"></span><b>' + pmBn(c) + '</b><span>ক্লেইমযোগ্য</span></div>' +
+      '<div class="pm-stat l"><span class="bar"></span><b>' + pmBn(l) + '</b><span>লক</span></div>';
+  } catch (e) { }
+}
+
+/* The hero answers "is the offer actually running, and for how much longer?" */
+function pmHero() {
+  try {
+    var s = premiumStore();
+    var left = premiumOfferDaysLeft();
+    var running = !!s.trial.enabled && left !== 0;
+    var pill = document.getElementById('pmStatePill');
+    if (pill) pill.className = 'pm-state ' + (running ? 'on' : 'off');
+    var txt = document.getElementById('pmStateTxt');
+    if (txt) txt.textContent = running ? 'অফার চালু' : 'অফার বন্ধ';
+
+    var offerLine;
+    if (!s.trial.enabled) offerLine = 'চালু করলে নতুন রেজিস্ট্রেশন পাবে';
+    else if (left === -1) offerLine = 'কোনো শেষ তারিখ নেই';
+    else if (left > 0) offerLine = 'আর ' + pmBn(left) + ' দিন চলবে';
+    else offerLine = 'মেয়াদ শেষ — নতুন কেউ পাবে না';
+
+    var until = s.trial.offerUntil ? new Date(s.trial.offerUntil).toLocaleDateString('bn-BD') : '—';
+    var box = document.getElementById('pmFacts');
+    if (box) {
+      box.innerHTML =
+        '<div class="pm-fact"><b>' + pmBn(s.trial.days) + ' দিন</b><span>প্রতি নতুন রেজিস্ট্রেশন</span>' +
+        '<small>ক্লেইম করলে শুরু</small></div>' +
+        '<div class="pm-fact"><b>' + (left === -1 ? '∞' : pmBn(Math.max(left, 0))) + '</b><span>অফার বাকি (দিন)</span>' +
+        '<small>' + offerLine + '</small></div>' +
+        '<div class="pm-fact"><b>' + pmEsc(until) + '</b><span>অফার শেষ হবে</span>' +
+        '<small>' + (s.trial.offerUntil ? '' : 'অনির্দিষ্ট') + '</small></div>' +
+        '<div class="pm-fact"><b>৳' + pmBn(String(PREMIUM_PRICE).replace(/\B(?=(\d{3})+(?!\d))/g, ',')) + '</b><span>প্রিমিয়াম মূল্য</span>' +
+        '<small>একবারেই সব ফিচার</small></div>';
+    }
+    var hint = document.getElementById('pmOfferHint');
+    if (hint) hint.textContent = offerLine;
+  } catch (e) { }
+}
+
+function pmChips() {
+  try {
+    var s = premiumStore(), all = premiumAll(), h = '';
+    for (var k in s.excluded) {
+      if (!Object.prototype.hasOwnProperty.call(s.excluded, k)) continue;
+      var nm = '#' + k;
+      for (var i = 0; i < all.length; i++) if (String(all[i].id) === k) nm = all[i].shop || all[i].name;
+      h += '<span class="pm-chip">' + pmEsc(nm) +
+        '<button type="button" onclick="pmToggleEx(' + pmEsc(k) + ',false)" title="সরান"><i class="fas fa-xmark"></i></button></span>';
+    }
+    var box = document.getElementById('pmExChips');
+    if (box) box.innerHTML = h || '<span style="color:#94a3b8;font-size:.77rem">কাউকে বাদ দেওয়া হয়নি।</span>';
+  } catch (e) { }
+}
+
+window.pmSearch = function (inputId, listId, kind) {
+  try {
+    var inp = document.getElementById(inputId);
+    var box = document.getElementById(listId);
+    if (!inp || !box) return;
+    var q = String(inp.value || '').trim();
+    if (!q) { box.innerHTML = ''; return; }
+    var rows = premiumFindResellers(q).slice(0, 40);
+    var h = '';
+    if (!rows.length) h = '<div style="padding:12px;color:#94a3b8;font-size:.78rem;text-align:center">কেউ পাওয়া যায়নি।</div>';
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      h += '<div class="pm-opt" data-pmid="' + pmEsc(r.id) + '" data-pmkind="' + pmEsc(kind) + '">' +
+        '<span class="av">' + pmEsc(String(r.shop || r.name).charAt(0).toUpperCase()) + '</span>' +
+        '<span><b>' + pmEsc(r.shop || r.name) + '</b><small>' + pmEsc(r.name) + (r.phone ? ' · ' + pmEsc(r.phone) : '') + ' · #' + pmEsc(r.id) + '</small></span>' +
+        pmTag(r) + '</div>';
+    }
+    box.innerHTML = h;
+    var opts = box.querySelectorAll('.pm-opt');
+    for (var j = 0; j < opts.length; j++) {
+      opts[j].addEventListener('click', function () {
+        pmPick(parseInt(this.getAttribute('data-pmid'), 10), this.getAttribute('data-pmkind'));
+      });
+    }
+  } catch (e) { }
+};
+window.pmPick = function (id, kind) {
+  if (!id) return;
+  pmPicked[kind] = id;
+  var ids = { trial: ['pmPickTrial', 'pmPickTrialList'], premium: ['pmPickPrem', 'pmPickPremList'], ex: ['pmPickEx', 'pmPickExList'] };
+  var m = ids[kind], label = '';
+  try {
+    var all = premiumAll();
+    for (var i = 0; i < all.length; i++) if (String(all[i].id) === String(id)) label = all[i].shop || all[i].name;
+  } catch (e) { }
+  if (m) {
+    var inp = document.getElementById(m[0]);
+    if (inp) inp.value = label;
+    var box = document.getElementById(m[1]);
+    if (box) box.innerHTML = '';
+  }
+  if (kind === 'ex') pmToggleEx(id, true);
+};
+
+window.pmOfferPreset = function () {
+  try {
+    var v = document.getElementById('pmOfferPreset').value;
+    var w = document.getElementById('pmOfferCustomWrap');
+    if (w) w.style.display = (v === 'custom') ? '' : 'none';
+  } catch (e) { }
+};
+function pmOfferDaysValue() {
+  var v = document.getElementById('pmOfferPreset').value;
+  if (v === 'custom') return parseInt(document.getElementById('pmOfferDays').value, 10) || 0;
+  return parseInt(v, 10) || 0;
+}
+window.pmSaveTrial = function () {
+  try {
+    var on = document.getElementById('pmTrialOn').checked;
+    var days = parseInt(document.getElementById('pmTrialDays').value, 10);
+    if (!(days > 0)) return pmSay('pmMsgTrial', false, 'দিন অবশ্যই ১ বা তার বেশি হতে হবে।');
+    var od = pmOfferDaysValue();
+    if (premiumSetTrial(on, days, od) === false) return pmSay('pmMsgTrial', false, 'সেভ করা যায়নি — স্টোরেজ ভরে গেছে।');
+    pmSay('pmMsgTrial', true, on
+      ? ('অফার চালু — নতুন রেজিস্ট্রেশন ' + pmBn(days) + ' দিন পাবে' + (od > 0 ? (', অফার ' + pmBn(od) + ' দিন চলবে') : ', কোনো শেষ তারিখ নেই') + '।')
+      : 'অফার বন্ধ করা হয়েছে — নতুন কেউ আর ট্রায়াল পাবে না।');
+    pmRender();
+  } catch (e) { }
+};
+window.pmStopOffer = function () {
+  try {
+    if (premiumSetTrial(false, parseInt(document.getElementById('pmTrialDays').value, 10) || 7, 0) === false)
+      return pmSay('pmMsgTrial', false, 'বন্ধ করা যায়নি।');
+    document.getElementById('pmTrialOn').checked = false;
+    var t = document.getElementById('pmTrialOnTxt'); if (t) t.textContent = 'বন্ধ';
+    pmSay('pmMsgTrial', true, 'অফার বন্ধ — এখন থেকে নতুন কোনো রেজিস্ট্রেশন ট্রায়াল পাবে না।');
+    pmRender();
+  } catch (e) { }
+};
+window.pmGiveTrial = function () {
+  try {
+    var id = pmPicked.trial;
+    if (!id) return pmSay('pmMsgTrial', false, 'আগে একজন রিসেলার বেছে নিন।');
+    var days = parseInt(document.getElementById('pmPickTrialDays').value, 10);
+    if (!(days > 0)) return pmSay('pmMsgTrial', false, 'দিন সঠিক দিন।');
+    if (premiumGrantTrial(id, days) === false) return pmSay('pmMsgTrial', false, 'দেওয়া যায়নি — সেভ ব্যর্থ।');
+    pmSay('pmMsgTrial', true, 'ট্রায়াল দেওয়া হয়েছে — সে ক্লেইম করলে ' + pmBn(days) + ' দিন শুরু হবে।');
+    pmPicked.trial = null;
+    var i = document.getElementById('pmPickTrial'); if (i) i.value = '';
+    pmRender();
+  } catch (e) { }
+};
+window.pmPreset = function () {
+  try {
+    var v = document.getElementById('pmPremPreset').value;
+    var w = document.getElementById('pmCustomWrap');
+    if (w) w.style.display = (v === 'custom') ? '' : 'none';
+    if (v !== 'custom') { var d = document.getElementById('pmPremDays'); if (d) d.value = v; }
+  } catch (e) { }
+};
+window.pmGivePremium = function () {
+  try {
+    var id = pmPicked.premium;
+    if (!id) return pmSay('pmMsgPrem', false, 'আগে একজন রিসেলার বেছে নিন।');
+    var days = parseInt(document.getElementById('pmPremDays').value, 10);
+    if (!(days > 0)) return pmSay('pmMsgPrem', false, 'দিন সঠিক দিন।');
+    if (premiumGrant(id, days) === false) return pmSay('pmMsgPrem', false, 'সেভ করা যায়নি।');
+    pmSay('pmMsgPrem', true, 'প্রিমিয়াম দেওয়া হয়েছে — এখন মোট ' + pmBn(premiumState(id).daysLeft) + ' দিন বাকি।');
+    pmPicked.premium = null;
+    var i = document.getElementById('pmPickPrem'); if (i) i.value = '';
+    pmRender();
+  } catch (e) { }
+};
+window.pmQuick = function (id, days) {
+  if (premiumGrant(id, days)) pmSay('pmMsgPrem', true, '#' + id + ' — ' + pmBn(days) + ' দিন যোগ করা হয়েছে।');
+  else pmSay('pmMsgPrem', false, 'যোগ করা যায়নি।');
+  pmRender();
+};
+window.pmQuickTrial = function (id, days) {
+  if (premiumGrantTrial(id, days)) pmSay('pmMsgTrial', true, '#' + id + ' — ' + pmBn(days) + ' দিনের ট্রায়াল দেওয়া হয়েছে (ক্লেইম করলে শুরু হবে)।');
+  else pmSay('pmMsgTrial', false, 'দেওয়া যায়নি।');
+  pmRender();
+};
+window.pmResetTrial = function (id) {
+  if (!confirm('এই রিসেলারের ট্রায়াল রিসেট করবেন? পুরোনো ট্রায়াল মুছে যাবে, নতুন করে দেওয়া যাবে।')) return;
+  if (premiumResetTrial(id)) pmSay('pmMsgTrial', true, '#' + id + ' — ট্রায়াল রিসেট হয়েছে, এখন নতুন করে দেওয়া যাবে।');
+  else pmSay('pmMsgTrial', false, 'রিসেট করা যায়নি।');
+  pmRender();
+};
+window.pmToggleEx = function (id, on) {
+  premiumSetExcluded(id, !!on);
+  pmRender();
+};
+window.pmKill = function (id) {
+  if (!confirm('এই রিসেলারের প্রিমিয়াম/ট্রায়াল বন্ধ করে দেবেন?')) return;
+  premiumRevoke(id);
+  pmRender();
+};
+
+(function pmInit() {
+  try {
+    var s = premiumStore();
+    var on = document.getElementById('pmTrialOn');
+    if (on) {
+      on.checked = !!s.trial.enabled;
+      on.addEventListener('change', function () {
+        var t = document.getElementById('pmTrialOnTxt');
+        if (t) t.textContent = on.checked ? 'চালু' : 'বন্ধ';
+      });
+    }
+    var txt = document.getElementById('pmTrialOnTxt');
+    if (txt) txt.textContent = s.trial.enabled ? 'চালু' : 'বন্ধ';
+    var d = document.getElementById('pmTrialDays');
+    if (d) d.value = s.trial.days;
+    var od = Number(s.trial.offerDays) || 0;
+    var sel = document.getElementById('pmOfferPreset');
+    if (sel) {
+      if (od === 0) sel.value = '0';
+      else if ([7, 15, 20, 30].indexOf(od) !== -1) sel.value = String(od);
+      else {
+        sel.value = 'custom';
+        var w = document.getElementById('pmOfferCustomWrap'); if (w) w.style.display = '';
+        var c = document.getElementById('pmOfferDays'); if (c) c.value = od;
+      }
+    }
+    var nav = document.getElementById('pmNavItem');
+    if (nav) {
+      var lit = document.querySelectorAll('.sb-item.on');
+      for (var i = 0; i < lit.length; i++) lit[i].classList.remove('on');
+      nav.classList.add('on');
+    }
+    pmRender();
+  } catch (e) { }
+})();
+</script>
+</body>
+</html>

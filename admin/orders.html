@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders - Admin - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#f1f5f9; color:#1e293b; }
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:240px; background:#1e293b; color:#cbd5e1; z-index:100; overflow-y:auto; }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid #334155; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:38px; height:38px; background:linear-gradient(135deg,#dc2626,#b91c1c); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; }
+        .sidebar-logo h3 { color:white; font-size:1rem; }
+        .sidebar-logo small { color:#94a3b8; font-size:0.7rem; display:block; }
+        .sidebar-menu { list-style:none; padding:12px 0; }
+        .sidebar-menu li { margin:2px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:10px 20px; color:#cbd5e1; text-decoration:none; font-size:0.88rem; }
+        .sidebar-menu a:hover { background:rgba(255,255,255,0.05); color:white; }
+        .sidebar-menu a.active { background:#dc2626; color:white; }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 20px 5px; color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+        .main { margin-left:240px; min-height:100vh; }
+        .topbar { background:white; padding:14px 25px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:sticky; top:0; z-index:50; }
+        .topbar h2 { font-size:1.2rem; font-weight:600; }
+        .topbar h2 i { color:#dc2626; margin-right:8px; }
+        .topbar-right { display:flex; align-items:center; gap:12px; }
+        .user-pill { display:flex; align-items:center; gap:8px; padding:6px 14px; background:#fee2e2; border-radius:30px; font-size:0.85rem; color:#991b1b; font-weight:600; }
+        .btn-logout { background:#dc2626; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:500; }
+        .content { padding:25px; }
+        .card { background:white; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:20px; }
+        .card-header { padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+        .card-header h4 { font-size:0.95rem; font-weight:600; }
+        .card-header h4 i { color:#dc2626; margin-right:6px; }
+        .card-header select, .card-header input { padding:7px 12px; border:1px solid #e2e8f0; border-radius:6px; font-size:0.85rem; }
+        .data-table { width:100%; border-collapse:collapse; }
+        .data-table th { text-align:left; padding:11px 16px; background:#f8fafc; font-weight:600; font-size:0.7rem; color:#64748b; text-transform:uppercase; }
+        .data-table td { padding:12px 16px; border-bottom:1px solid #f1f5f9; font-size:0.83rem; }
+        .data-table tr:hover { background:#f8fafc; }
+        .badge { padding:3px 9px; border-radius:20px; font-size:0.7rem; font-weight:600; }
+        .badge-success { background:#d1fae5; color:#065f46; }
+        .badge-warning { background:#fef3c7; color:#92400e; }
+        .badge-info { background:#dbeafe; color:#1e40af; }
+        .badge-danger { background:#fee2e2; color:#991b1b; }
+        .btn { padding:7px 12px; border:none; border-radius:7px; font-size:0.82rem; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:5px; }
+        .btn-primary { background:#2563eb; color:white; }
+        .btn-warning { background:#f59e0b; color:white; }
+        .btn-sm { padding:4px 9px; font-size:0.75rem; }
+        .empty { text-align:center; padding:50px 20px; color:#64748b; }
+        .empty i { font-size:3rem; margin-bottom:12px; opacity:0.4; }
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+        .modal-overlay.show { display:flex; }
+        .modal { background:white; border-radius:14px; width:100%; max-width:700px; max-height:92vh; overflow-y:auto; }
+        .modal-header { padding:16px 22px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:white; }
+        .modal-close { background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b; line-height:1; }
+        .modal-body { padding:20px; }
+        .modal-footer { padding:14px 22px; border-top:1px solid #e2e8f0; display:flex; gap:10px; justify-content:flex-end; }
+        .form-group { margin-bottom:14px; }
+        .form-group label { display:block; font-weight:600; margin-bottom:5px; font-size:0.85rem; }
+        .form-group input, .form-group select, .form-group textarea { width:100%; padding:10px 14px; border:2px solid #e2e8f0; border-radius:8px; font-size:0.9rem; font-family:inherit; }
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .detail-row { display:flex; padding:8px 0; border-bottom:1px solid #f1f5f9; }
+        .detail-row strong { min-width:120px; color:#64748b; font-size:0.83rem; }
+        .detail-row span { font-size:0.88rem; }
+        @media (max-width:768px) { .sidebar { width:240px; } .sidebar-logo h3, .sidebar-logo small, .sidebar-menu a span, .sidebar-divider { display:initial; } .main { margin-left:70px; } .form-row { grid-template-columns:1fr; } }
+    </style>
+
+
+
+
+<style id="lx-sb-final">
+/* ===== ADMIN SIDEBAR v4 — fresh premium design (authoritative) ===== */
+body .lx-sidebar { position:fixed !important; left:0 !important; top:0 !important; bottom:0 !important; width:264px !important; background:linear-gradient(180deg,#0d1226 0%,#171233 100%) !important; border-right:1px solid rgba(129,140,248,.14) !important; z-index:600 !important; overflow-y:auto !important; overflow-x:hidden !important; display:flex !important; flex-direction:column !important; transform:none !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; font-family:'Inter','Hind Siliguri',sans-serif !important; }
+body .lx-sidebar::before { content:'' !important; position:absolute !important; top:-80px !important; right:-60px !important; width:260px !important; height:260px !important; background:radial-gradient(circle,rgba(99,102,241,.18),transparent 70%) !important; pointer-events:none !important; }
+body .lx-brand { display:flex !important; align-items:center !important; gap:12px !important; padding:20px 18px !important; border-bottom:1px solid rgba(129,140,248,.14) !important; position:relative !important; }
+body .lx-brand-ic { width:42px !important; height:42px !important; border-radius:13px !important; background:linear-gradient(135deg,#6366f1,#a855f7) !important; display:flex !important; align-items:center !important; justify-content:center !important; color:#fff !important; font-size:1.05rem !important; box-shadow:0 8px 20px rgba(99,102,241,.4) !important; flex-shrink:0 !important; }
+body .lx-brand-tx b { color:#fff !important; font-size:1.02rem !important; font-weight:900 !important; display:block !important; line-height:1.2 !important; }
+body .lx-brand-tx small { color:#818cf8 !important; font-size:.6rem !important; font-weight:800 !important; letter-spacing:2px !important; }
+body .lx-close { margin-left:auto !important; background:rgba(255,255,255,.06) !important; border:none !important; color:#94a3b8 !important; width:30px !important; height:30px !important; border-radius:9px !important; cursor:pointer !important; font-size:1rem !important; display:none !important; align-items:center !important; justify-content:center !important; }
+body .lx-close:hover { background:#fee2e2 !important; color:#dc2626 !important; }
+body .lx-menu { padding:14px 12px !important; flex:1 !important; }
+body .sec-label { font-size:.6rem !important; font-weight:900 !important; letter-spacing:2.2px !important; color:#6b7280 !important; text-transform:uppercase !important; padding:14px 12px 6px !important; display:flex !important; align-items:center !important; gap:8px !important; }
+body .sec-label::before { content:'' !important; width:14px !important; height:2px !important; background:linear-gradient(90deg,#6366f1,#a855f7) !important; border-radius:2px !important; }
+body .sb-item { position:relative !important; display:flex !important; align-items:center !important; gap:11px !important; padding:9px 12px !important; margin:3px 0 !important; border-radius:12px !important; color:#b6c2e2 !important; text-decoration:none !important; font-size:.86rem !important; font-weight:600 !important; transition:all .2s !important; border:1px solid transparent !important; background:transparent !important; opacity:1 !important; visibility:visible !important; pointer-events:auto !important; box-shadow:none !important; transform:none !important; }
+body .sb-item .sb-ico { width:30px !important; height:30px !important; border-radius:9px !important; background:rgba(255,255,255,.05) !important; display:flex !important; align-items:center !important; justify-content:center !important; font-size:.82rem !important; flex-shrink:0 !important; transition:all .2s !important; }
+body .sb-item .sb-txt { flex:1 !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; display:block !important; }
+body .sb-item:hover { background:rgba(99,102,241,.13) !important; color:#fff !important; }
+body .sb-item:hover .sb-ico { background:rgba(99,102,241,.3) !important; }
+body .sb-item.on { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; border-color:rgba(129,140,248,.35) !important; }
+body .sb-item.on::before { content:'' !important; position:absolute !important; left:-12px !important; top:50% !important; transform:translateY(-50%) !important; width:3.5px !important; height:60% !important; background:linear-gradient(180deg,#818cf8,#c084fc) !important; border-radius:3px !important; }
+body .sb-item.on .sb-ico { background:linear-gradient(135deg,#6366f1,#a855f7) !important; color:#fff !important; }
+/* page-এর নিচের inline-highlight script সবসময় হারাবে */
+body .sb-item[style] { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; }
+body .sb-badge { background:#fbbf24 !important; color:#1e293b !important; font-size:.62rem !important; padding:1px 8px !important; border-radius:10px !important; font-weight:800 !important; margin-left:auto !important; }
+body .main { margin-left:264px !important; min-height:100vh !important; }
+body .side-overlay { display:none !important; position:fixed !important; inset:0 !important; background:rgba(7,10,26,.6) !important; z-index:590 !important; backdrop-filter:blur(2px) !important; }
+body .side-overlay.show { display:block !important; pointer-events:auto !important; }
+body .hamburger { display:none !important; }
+/* ===== মোবাইল/ট্যাবলেট: slide drawer ===== */
+@media (max-width:1024px) {
+    body .main { margin-left:0 !important; }
+    body .lx-sidebar { transform:translateX(-100%) !important; box-shadow:none !important; }
+    body .lx-sidebar.open { transform:none !important; box-shadow:30px 0 70px rgba(7,10,26,.6) !important; }
+    body .lx-close { display:flex !important; }
+    body .hamburger { display:inline-flex !important; }
+    body { overflow-x:hidden !important; }
+}
+</style>
+
+
+
+
+
+<style id="lx-ovf-fix">
+@media(max-width:768px){ body{overflow-x:hidden !important} }
+</style>
+<style id="lx-orders-badge-n">.orders-badge-n{color:#fbbf24;font-weight:900;font-size:.72rem}.orders-badge-n:empty{display:none}</style>
+<style id="admin-mobile-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   The admin topbar measured about 474px across on a 390px phone (25px padding, an
+   h2 at 1.2rem, 12px gaps, a wide user pill), so the logout button was pushed past
+   the right edge. Several admin tables are also built by JS with NO .table-scroll
+   wrapper, so they widened the whole page instead of scrolling.
+   EVERY rule below sits inside a max-width query, so the DESKTOP LAYOUT IS
+   UNCHANGED. This is an ADDED block — no existing rule is modified or removed. */
+@media (max-width:768px){
+  .topbar { padding:10px 12px; gap:8px; }
+  .topbar h2 { font-size:.92rem; }
+  .topbar h2 i { margin-right:4px; }
+  .topbar-right { gap:6px; }
+  .user-pill { padding:5px 9px; font-size:.72rem; }
+  .btn-logout { padding:7px 10px; }
+  /* a table without a scroll wrapper would otherwise push the page wide */
+  .data-table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%; }
+}
+</style>
+<style id="panel-fullwidth-fix">
+/* 2026-09-16 — FULL-WIDTH FIX for the admin and supplier panels (this request).
+   The whole page sat in a narrow column with empty space on the right, because the
+   base rule reserves the sidebar with `margin-left`, and a block element with
+   margin-left and width:auto is only (100% - that) wide. A LATER rule in the same
+   file re-asserted the margin with !important, so the earlier mobile override lost.
+   This block is the LAST thing in the document, so it wins, and it resets width as
+   well as margin. Desktop is untouched — everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<aside class="lx-sidebar sidebar" id="sidebar">
+    <div class="lx-brand">
+        <span class="lx-brand-ic"><i class="fas fa-user-shield"></i></span>
+        <div class="lx-brand-tx"><b>AdminHub</b><small>CONTROL PANEL</small></div>
+        <button class="lx-close" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+    <nav class="lx-menu">
+        <div class="sec-label">Main</div>
+        <a href="dashboard.html" class="sb-item"><span class="sb-ico"><i class="fas fa-chart-line"></i></span><span class="sb-txt">Dashboard</span></a>
+        <a href="orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-shopping-cart"></i></span><span class="sb-txt">All Orders<span class="orders-badge-n" id="ordersBadgeN"></span></span><span class="orders-badge" style="display:none;margin-left:auto;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:.62rem;font-weight:800"></span></a>
+        <a href="multi-supplier-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-people-arrows"></i></span><span class="sb-txt">Multi-Supplier Orders<span class="orders-badge-n" id="msCount"></span></span></a>
+        <a href="products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box"></i></span><span class="sb-txt">Products</span></a>
+        <div class="sec-label">Users</div>
+        <a href="resellers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-users"></i></span><span class="sb-txt">Resellers</span></a>
+        <a href="suppliers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-warehouse"></i></span><span class="sb-txt">Suppliers</span></a>
+        <a href="supplier-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-boxes-stacked"></i></span><span class="sb-txt">Supplier Products</span></a>
+        <a href="add-reseller.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Add Reseller</span></a>
+        <a href="add-supplier.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck"></i></span><span class="sb-txt">Add Supplier</span></a>
+        <a href="approvals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-check"></i></span><span class="sb-txt">Approvals</span></a>
+        <a href="withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-money-bill-wave"></i></span><span class="sb-txt">Withdrawals</span></a>
+        <a href="supplier-withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-hand-holding-dollar"></i></span><span class="sb-txt">Supplier Withdraw</span></a>
+        <a href="transactions.html" class="sb-item"><span class="sb-ico"><i class="fas fa-receipt"></i></span><span class="sb-txt">Transaction History</span></a>
+        <a href="moderators.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-shield"></i></span><span class="sb-txt">Moderators</span></a>
+        <div class="sec-label">Referral</div>
+        <a href="referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Reseller Referral</span></a>
+        <a href="supplier-referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck-arrow-right"></i></span><span class="sb-txt">Supplier Referral</span></a>
+                <a href="myshop-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-bag-shopping"></i></span><span class="sb-txt">My Shop Orders</span></a>
+        <a href="myshop-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box-open"></i></span><span class="sb-txt">My Shop Products</span></a>
+        <div class="sec-label">Offers &amp; Banners</div>
+        <a href="add-offer.html" class="sb-item"><span class="sb-ico"><i class="fas fa-plus-circle"></i></span><span class="sb-txt">Add Offers</span></a>
+        <a href="manage-offers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-gift"></i></span><span class="sb-txt">Manage Offers</span></a>
+        <a href="add-banner.html" class="sb-item"><span class="sb-ico"><i class="fas fa-image"></i></span><span class="sb-txt">Add Banners</span></a>
+        <a href="manage-banners.html" class="sb-item"><span class="sb-ico"><i class="fas fa-images"></i></span><span class="sb-txt">Manage Banners</span></a>
+        <div class="sec-label">System</div>
+        <a href="messages.html" class="sb-item"><span class="sb-ico"><i class="fas fa-comments"></i></span><span class="sb-txt">Messages<span class="orders-badge-n" id="msgBadgeN"></span></span></a>
+        <a href="settings.html" class="sb-item"><span class="sb-ico"><i class="fas fa-cog"></i></span><span class="sb-txt">Settings</span></a>
+        <a href="../index.html" class="sb-item"><span class="sb-ico"><i class="fas fa-globe"></i></span><span class="sb-txt">Visit Site</span></a>
+    </nav>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+            <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h2><i class="fas fa-shopping-cart"></i> Orders Management</h2>
+        <div class="topbar-right">
+            <div class="user-pill"><i class="fas fa-user-shield"></i> Admin</div>
+            <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><h4><i class="fas fa-chart-bar"></i> Product-wise Order Summary</h4><small style="color:#64748b;font-weight:600;">Pending to ship only — shipping/delivered orders move out</small></div>
+            <div class="table-scroll">
+            <table class="data-table"><thead><tr><th>Image</th><th>Product (Size / Color অনুযায়ী)</th><th>Total Qty</th><th>Resellers</th><th>Revenue</th></tr></thead><tbody id="prodSumBody"></tbody></table>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-shopping-cart"></i> All Orders (<span id="ordCount">0</span>)</h4>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <select id="statusFilter" onchange="loadOrders()">
+                        <option value="">All Status</option>
+                        <option value="new">New</option>
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                            <option value="packaging">Packaging</option>
+                            <option value="handed_to_courier">Handed to Courier</option>
+                            <option value="shipping">Shipping</option>
+                            <option value="in_transit">In Transit</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="failed_delivery">Failed Delivery</option>
+                        <option value="wfr">WFR</option>
+                        <option value="returned">Returned</option>
+                        <option value="cancel">Cancel</option>
+                        <option value="failed_delivery_product_coming">Failed Delivery Product Coming</option>
+                        <option value="failed_delivery_product_delivered">Failed Delivery Product Delivered to Supplier</option>
+                        <option value="return_product_coming">Return Product is Coming</option>
+                        <option value="return_product_delivered">Return Product Delivered to Supplier</option>
+                        <option value="processing">Processing (old)</option>
+                        <option value="shipped">Shipped (old)</option>
+                        <!-- 2026-09-15 — grouped views. "Returned" collects every
+                             failed-delivery / return status (incl. the four
+                             supplier-location ones); "Delivered" is the delivered
+                             set. Handled in loadOrders() as pseudo-statuses. -->
+                        <option value="__returned">Returned (Failed / Return)</option>
+                        <option value="__delivered">Delivered</option>
+                    </select>
+                    <input type="text" id="searchBox" placeholder="Search order / customer..." oninput="loadOrders()">
+                </div>
+            </div>
+            <!-- 2026-09-15 — Returned / Delivered totals, valued at the ADMIN
+                 BUY-IN PRICE (what the supplier actually gets), so the admin and
+                 the supplier read the same numbers. -->
+            <div id="retSumBar" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+                <div style="flex:1;min-width:210px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px 14px">
+                    <div style="font-size:.66rem;font-weight:900;color:#991b1b;letter-spacing:.8px">RETURNED / FAILED DELIVERY</div>
+                    <div style="font-size:1.05rem;font-weight:900;color:#b91c1c"><span id="retCnt">0</span> pcs</div>
+                    <div style="font-size:.76rem;font-weight:800;color:#7f1d1d">Buy price: <span id="retVal">৳0</span></div>
+                </div>
+                <div style="flex:1;min-width:210px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:10px 14px">
+                    <div style="font-size:.66rem;font-weight:900;color:#065f46;letter-spacing:.8px">DELIVERED</div>
+                    <div style="font-size:1.05rem;font-weight:900;color:#047857"><span id="delCnt">0</span> pcs</div>
+                    <div style="font-size:.76rem;font-weight:800;color:#064e3b">Buy price: <span id="delVal">৳0</span></div>
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;">
+                <button class="btn btn-sm" style="background:#e2e8f0;color:#1e293b" onclick="selToggleAll(true)"><i class="fas fa-check-double"></i> Select All</button>
+                <button class="btn btn-sm" style="background:#f1f5f9;color:#475569" onclick="selToggleAll(false)"><i class="fas fa-xmark"></i> Unselect All</button>
+                <button class="btn btn-sm btn-primary" id="sfBookBtn" onclick="sfBookBulk()"><i class="fas fa-truck-fast"></i> Book Selected → Steadfast</button>
+                <button class="btn btn-sm btn-danger" onclick="sfBulkFraud()"><i class="fas fa-shield"></i> Fraud Check Selected</button>
+                <button class="btn btn-sm" style="background:#0d9488;color:#fff" onclick="openAdminPrintBulk()"><i class="fas fa-print"></i> Print Selected</button>
+                <button class="btn btn-sm" style="background:#dc2626;color:#fff" id="delSelBtn" onclick="selDeleteSelected()" disabled><i class="fas fa-trash-can"></i> Delete Selected</button>
+                <span id="sfSelCount" style="font-size:.8rem;color:#64748b;font-weight:700"></span>
+                <small style="font-size:.72rem;color:#94a3b8;margin-left:auto">Steadfast keys: <a href="settings.html" style="color:#2563eb;font-weight:700">Settings → Steadfast Courier</a></small>
+            </div>
+            <div id="ordersTable"></div>
+        </div>
+    </div>
+</main>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="modal-overlay" id="orderModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Order Details</h3>
+            <button class="modal-close" type="button" onclick="closeModal('orderModal')">&times;</button>
+        </div>
+        <div class="modal-body" id="orderBody"></div>
+    </div>
+</div>
+
+<!-- UPDATE TRACKING MODAL -->
+<div class="modal-overlay" id="trackModal">
+    <div class="modal" style="max-width:550px;">
+        <div class="modal-header">
+            <h3>Update Order Status & Tracking</h3>
+            <button class="modal-close" type="button" onclick="closeModal('trackModal')">&times;</button>
+        </div>
+        <form onsubmit="return saveTracking(event)">
+            <div class="modal-body">
+                <input type="hidden" id="tkOrderId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Status <span style="color:#ef4444;">*</span></label>
+                        <select id="tkStatus" required>
+                            <option value="new">New</option>
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="packaging">Packaging</option>
+                            <option value="handed_to_courier">Handed to Courier</option>
+                            <option value="shipping">Shipping</option>
+                            <option value="in_transit">In Transit</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="failed_delivery">Failed Delivery</option>
+                            <option value="wfr">WFR (Waiting for Return)</option>
+                            <option value="returned">Returned</option>
+                            <option value="cancel">Cancel</option>
+                            <optgroup label="Supplier view (product location)">
+                                <option value="failed_delivery_product_coming">Failed Delivery Product Coming</option>
+                                <option value="failed_delivery_product_delivered">Failed Delivery Product Delivered to Supplier</option>
+                                <option value="return_product_coming">Return Product is Coming</option>
+                                <option value="return_product_delivered">Return Product Delivered to Supplier</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Courier</label>
+                        <select id="tkCourier">
+                            <option value="">Select</option>
+                            <option>Steadfast</option>
+                            <option>Pathao</option>
+                            <option>Paperfly</option>
+                            <option>RedX</option>
+                            <option>Sundarban</option>
+                            <option>SA Poribohon</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tracking ID</label>
+                        <input type="text" id="tkTrackingId" placeholder="e.g. STD-12345">
+                    </div>
+                    <div class="form-group">
+                        <label>Tracking URL</label>
+                        <input type="url" id="tkUrl" placeholder="https://... (optional)">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Admin Note (Reseller will see this)</label>
+                    <textarea id="tkNote" rows="2" placeholder="e.g. Product packed, shipping tomorrow"></textarea>
+                </div>
+                <div style="background:#fef3c7;padding:12px;border-radius:8px;font-size:0.85rem;color:#92400e;">
+                    <i class="fas fa-circle-info"></i> Status "Delivered" করলে reseller-এর wallet-এ profit automatic যোগ হবে।
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" style="background:#e2e8f0;color:#1e293b;" onclick="closeModal('trackModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update Order</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal-overlay" id="editOModal">
+    <div class="modal" style="max-width:600px;">
+        <div class="modal-header"><h3>Edit Order</h3><button class="modal-close" type="button" onclick="closeModal('editOModal')">&times;</button></div>
+        <div class="modal-body" id="editOBody"></div>
+    </div>
+</div>
+<script src="../app.js"></script>
+<script>
+(function() {
+    var userId = sessionStorage.getItem('user_id');
+    var userType = sessionStorage.getItem('user_type');
+    if (!userId || (userType !== 'admin' && userType !== 'moderator')) { sessionStorage.clear(); window.location.replace('login.html'); return; } setInterval(function(){ var t=sessionStorage.getItem('user_type'); if(t && (t!=='admin' && t!=='moderator')){ sessionStorage.clear(); window.location.replace('login.html'); } },3000);
+
+    /* ==========================================================================
+       SELECTION REGISTRY (single source of truth for the tick boxes)
+       --------------------------------------------------------------------------
+       Why: loadOrders() rebuilds #ordersTable with innerHTML, and the page also
+       re-runs loadOrders() every 8 seconds. Both destroy every <input> node, so
+       any tick that lived only in the DOM was silently thrown away mid-scroll.
+       The tick state therefore lives here, and every render re-applies it.
+       ========================================================================== */
+    var selIds = {};                     /* orderId -> true */
+    function selHas(id) { return selIds[String(id)] === true; }
+    function selToggle(id, on) {
+        id = String(id);
+        if (on) selIds[id] = true; else delete selIds[id];
+        selSync();
+    }
+    function selToggleAll(on) {
+        var boxes = document.querySelectorAll('.sfSel');
+        for (var i = 0; i < boxes.length; i++) {
+            var id = String(boxes[i].value);
+            if (on) selIds[id] = true; else delete selIds[id];
+        }
+        /* apply to the DOM we already have, rather than re-rendering */
+        for (var j = 0; j < boxes.length; j++) boxes[j].checked = !!on;
+        selSync();
+    }
+    /* drop selected ids that are no longer in the visible list */
+    function selPrune(list) {
+        var keep = {};
+        for (var i = 0; i < list.length; i++) keep[String(list[i].id)] = true;
+        for (var id in selIds) { if (Object.prototype.hasOwnProperty.call(selIds, id) && !keep[id]) delete selIds[id]; }
+    }
+    function selList() {
+        var out = [];
+        for (var id in selIds) { if (Object.prototype.hasOwnProperty.call(selIds, id) && selIds[id]) out.push(id); }
+        return out;
+    }
+    /* refresh the counter, the button states and the header "select all" box */
+    function selSync() {
+        var n = selList().length;
+        var el = document.getElementById('sfSelCount');
+        if (el) el.textContent = n ? (n + ' selected') : '';
+        var del = document.getElementById('delSelBtn');
+        if (del) del.disabled = (n === 0);
+        var head = document.getElementById('selAllBox');
+        if (head) {
+            var boxes = document.querySelectorAll('.sfSel');
+            head.checked = (boxes.length > 0 && n >= boxes.length);
+            head.indeterminate = (n > 0 && n < boxes.length);
+        }
+    }
+    /* the inline onclick handlers live outside this IIFE, so publish them */
+    window.selToggle = selToggle;
+    window.selToggleAll = selToggleAll;
+    window.selSync = selSync;
+    window.selList = selList;
+    window.selHas = selHas;
+
+    function statusBadge(s) {
+        var map = {
+            'new':'<span class="badge" style="background:#e0f2fe;color:#0369a1;">New</span>',
+            'pending':'<span class="badge badge-warning">Pending</span>',
+            'confirmed':'<span class="badge badge-info">Confirmed</span>',
+            'packaging':'<span class="badge" style="background:#ede9fe;color:#6d28d9;">Packaging</span>',
+            'handed_to_courier':'<span class="badge" style="background:#cffafe;color:#0e7490;">Handed to Courier</span>',
+            'shipping':'<span class="badge" style="background:#e0e7ff;color:#4338ca;">Shipping</span>',
+            'shipped':'<span class="badge badge-info">Shipped</span>',
+            'in_transit':'<span class="badge" style="background:#e0e7ff;color:#4338ca;">In Transit</span>',
+            'processing':'<span class="badge" style="background:#e0f2fe;color:#0369a1;">New</span>',
+            'delivered':'<span class="badge badge-success">Delivered</span>',
+            'wfr':'<span class="badge badge-warning">WFR</span>',
+            'returned':'<span class="badge badge-danger">Returned</span>',
+            'cancel':'<span class="badge badge-danger">Cancel</span>',
+            'cancelled':'<span class="badge badge-danger">Cancel</span>'
+        };
+        return map[s] || ('<span class="badge badge-warning">' + s + '</span>');
+    }
+
+    function loadOrders() {
+        /* (#27) My Shop orders must NOT appear in the normal Admin Orders page —
+           they live in Admin → My Shop Orders. */
+        /* PART 12, 13, 38 — item-level: any order containing a reseller-owned
+           product line lives in Admin -> My Shop Orders, never here. */
+        var orders = adminNormalOrders();
+        var f = document.getElementById('statusFilter').value;
+        var search = (document.getElementById('searchBox').value || '').toLowerCase();
+        var list = [];
+        for (var i = 0; i < orders.length; i++) {
+            var o = orders[i];
+            var match = true;
+            if (f === '__returned') {
+                /* every failed-delivery / return status, including the four
+                   supplier-location statuses */
+                match = orderIsFailStatus(o.status) || isSupplierReturnStage(o.status);
+            } else if (f === '__delivered') {
+                match = String(o.status || '') === 'delivered';
+            } else if (f && o.status !== f) match = false;
+            if (search && o.id.toLowerCase().indexOf(search) === -1 && o.customer.toLowerCase().indexOf(search) === -1 && o.resellerName.toLowerCase().indexOf(search) === -1) match = false;
+            if (match) list.push(o);
+        }
+        /* BUG FIX — `list.reverse()` only flips the STORAGE order; it is not a
+           date sort, so an order whose array position does not match its date
+           was listed in the wrong place (reproduced: the NEWEST order appeared
+           LAST). Sort by date, newest first — the same 4 levels the other order
+           lists use: date -> createdAt -> trailing id digits -> original order. */
+        list.sort(function (a, b) {
+            var ta = a.date || a.createdAt || a.created_at || a.time || a.orderedAt;
+            var tb = b.date || b.createdAt || b.created_at || b.time || b.orderedAt;
+            ta = ta ? new Date(ta).getTime() : -Infinity; if (isNaN(ta)) ta = -Infinity;
+            tb = tb ? new Date(tb).getTime() : -Infinity; if (isNaN(tb)) tb = -Infinity;
+            if (ta !== tb) return tb - ta;
+            var ma = String(a.id || '').match(/(\d+)\s*$/), mb = String(b.id || '').match(/(\d+)\s*$/);
+            return (mb ? parseInt(mb[1], 10) : -1) - (ma ? parseInt(ma[1], 10) : -1);
+        });
+        document.getElementById('ordCount').textContent = list.length;
+        /* Returned / Delivered running totals at the ADMIN BUY-IN PRICE.
+           Counted over ALL normal orders (not the filtered view) so the figures
+           are the lifetime totals the user asked for. */
+        try {
+            var _all = adminNormalOrders();
+            var retC = 0, retV = 0, delC = 0, delV = 0;
+            for (var _q = 0; _q < _all.length; _q++) {
+                var _o = _all[_q];
+                var _isRet = orderIsFailStatus(_o.status) || isSupplierReturnStage(_o.status);
+                var _isDel = String(_o.status || '') === 'delivered';
+                if (!_isRet && !_isDel) continue;
+                var _lines = (_o.items && _o.items.length) ? _o.items : [_o];
+                for (var _w = 0; _w < _lines.length; _w++) {
+                    var _ln = _lines[_w] || {};
+                    var _qty = _ln.qty || 1;
+                    var _bp = 0;
+                    try { _bp = (typeof productBuyPriceOf === 'function') ? productBuyPriceOf(_ln.productId, _ln) : (_ln.cost || _ln.buy_price || 0); } catch (e) { _bp = 0; }
+                    if (_isRet) { retC += _qty; retV += _bp * _qty; } else { delC += _qty; delV += _bp * _qty; }
+                }
+            }
+            var _rc = document.getElementById('retCnt'); if (_rc) _rc.textContent = retC;
+            var _rv = document.getElementById('retVal'); if (_rv) _rv.textContent = formatCurrency(retV);
+            var _dc = document.getElementById('delCnt'); if (_dc) _dc.textContent = delC;
+            var _dv = document.getElementById('delVal'); if (_dv) _dv.textContent = formatCurrency(delV);
+        } catch (e) {}
+
+        /* Selection is kept OUTSIDE the DOM (see selIds) so that a re-render —
+           including the 8-second auto-refresh below — can never silently drop
+           what the admin already ticked. Drop ids that are no longer listed. */
+        selPrune(list);
+
+        if (!list.length) {
+            document.getElementById('ordersTable').innerHTML = '<div class="empty"><i class="fas fa-shopping-cart"></i><br>No orders found</div>';
+            /* The Product-wise Summary is independent of this list: a mixed order
+               keeps its admin/supplier lines in the summary even when the normal
+               All Orders list is empty. Render it before returning. */
+            renderProdSummary();
+            selSync();
+            return;
+        }
+
+        var html = '<table class="data-table"><thead><tr><th><input type="checkbox" id="selAllBox" title="Select / unselect all listed orders" onclick="selToggleAll(this.checked)"></th><th>Image</th><th>Order ID</th><th>Reseller</th><th>Product</th><th>Customer</th><th>Amount</th><th>Courier</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody>';
+        var rsMap = {};
+        var rsList = getData(DB_KEYS.RESELLERS);
+        for (var ri = 0; ri < rsList.length; ri++) rsMap[rsList[ri].id] = rsList[ri].businessName || rsList[ri].business || rsList[ri].shop_name || rsList[ri].shopName || rsList[ri].name;
+        for (var j = 0; j < list.length; j++) {
+            var o = list[j];
+            var prodImg = '';
+            try { var _pa = getData(DB_KEYS.PRODUCTS); for (var _pi = 0; _pi < _pa.length; _pi++) { if (_pa[_pi].id === o.productId) { prodImg = _pa[_pi].image || ''; break; } } } catch (e) {}
+            if (!prodImg && o.items) { for (var _qi = 0; _qi < o.items.length; _qi++) { if (o.items[_qi].image) { prodImg = o.items[_qi].image; break; } } }
+            var supN = o.supplierName || '';
+            if (!supN && o.items) { for (var _si = 0; _si < o.items.length; _si++) { if (o.items[_si].supplierName) { supN = o.items[_si].supplierName; break; } } }
+            var imgHtml = prodImg ? '<img src="' + prodImg + '" style="width:44px;height:44px;border-radius:6px;object-fit:cover;cursor:pointer" onclick="zoomImg(this.src)">' : '<div style="width:44px;height:44px;background:#f1f5f9;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:1.1rem"><i class="fas fa-box"></i></div>';
+            /* Mixed order (platformOrderView) -> show its PLATFORM items only.
+               The reseller-owned lines of the same order live in My Shop Orders
+               and must never be listed here (#5, #6, #7). */
+            var prodCell;
+            if (o._platform_view && o.items) {
+                var names = [], tot = 0, shown = 0;
+                for (var _mi = 0; _mi < o.items.length; _mi++) {
+                    var _m = o.items[_mi] || {};
+                    tot += Number(_m.qty) || 1;
+                    if (shown < 3) names.push(_m.name || 'Product');
+                    shown++;
+                }
+                prodCell = names.join(', ') + (shown > 3 ? ' +' + (shown - 3) + ' more' : '') +
+                    '<br><small style="color:#7c3aed;font-weight:700"><i class="fas fa-layer-group"></i> ' + tot + ' item(s) — platform side</small>';
+            } else {
+                prodCell = (o.productName || '') + (supN ? '<br><small style="color:#7c3aed;font-weight:700"><i class="fas fa-warehouse"></i> ' + supN + '</small>' : '');
+            }
+            html += '<tr>' +
+                '<td><input type="checkbox" class="sfSel" value="' + o.id + '"' + (selHas(o.id) ? ' checked' : '') + ' onclick="event.stopPropagation();selToggle(\'' + o.id + '\',this.checked)"></td>' +
+                '<td>' + imgHtml + '</td>' +
+                '<td><a href="#" onclick="viewOrder(\'' + o.id + '\');return false;" style="color:#dc2626;font-weight:600;">' + o.id + '</a>' + (o.mixed_source ? '<br><small style="color:#b45309;font-weight:800"><i class="fas fa-layer-group"></i> Mixed</small>' : '') + '</td>' +
+                '<td>' + (rsMap[o.resellerId] || o.resellerName) + '</td>' +
+                '<td style="max-width:150px;">' + prodCell + '</td>' +
+                '<td>' + o.customer + '<br><small style="color:#64748b;">' + o.phone + '</small></td>' +
+                '<td><strong>' + formatCurrency(o.amount) + '</strong></td>' +
+                '<td>' + (o.courier || '-') + '</td>' +
+                '<td>' + statusBadge(o.status) + '</td>' +
+                '<td>' + formatDate(o.date) + '</td>' +
+                '<td><button class="btn btn-sm" style="background:#7c3aed;color:#fff" title="Fraud Check" onclick="sfRowFraud(\'' + o.id + '\')"><i class="fas fa-shield"></i></button> <button class="btn btn-sm" style="background:#0d9488;color:#fff" title="Print" onclick="openAdminPrint(\'' + o.id + '\')"><i class="fas fa-print"></i></button> <button class="btn btn-sm btn-warning" onclick="openTrack(\'' + o.id + '\')"><i class="fas fa-truck"></i> Update</button></td>' +
+                '</tr>';
+        }
+        html += '</tbody></table>';
+        document.getElementById('ordersTable').innerHTML = html;
+        selSync();
+        renderProdSummary();
+    }
+
+    /* 2026-09-15 — the markup calls this from an inline handler (an on* attribute), and an
+       inline handler runs in GLOBAL scope. It was declared inside this page IIFE, so the
+       call threw "renderProfitAnalytics is not defined" and the control did nothing. Function declarations
+       hoist, so exposing it here is safe. */
+    window.renderProfitAnalytics = renderProfitAnalytics;
+    function renderProfitAnalytics() {
+        var orders = getData(DB_KEYS.ORDERS);
+        var products = getData(DB_KEYS.PRODUCTS);
+        var costMap = {};
+        for (var p = 0; p < products.length; p++) costMap[products[p].id] = products[p].buy_price || 0;
+        var now = new Date();
+        var period = window._pftPeriod || 'all';
+        var pd = (period === 'today') ? new Date(now.getFullYear(), now.getMonth(), now.getDate()) : null;
+        var wk = new Date(now.getTime() - 7 * 86400000);
+        var mo = new Date(now.getFullYear(), now.getMonth(), 1);
+        var yr = new Date(now.getFullYear(), 0, 1);
+        var adm = { w: 0, m: 0, y: 0, t: 0, d: 0 }, res = { w: 0, m: 0, y: 0, t: 0, d: 0 };
+        for (var i = 0; i < orders.length; i++) {
+            var o = orders[i];
+            if ((o.status || '') !== 'delivered') continue;
+            var d = new Date(o.deliveryDate || o.date || now.toISOString());
+            if (pd && d < pd) continue;
+            var ap = 0;
+            if (o.items && o.items.length) {
+                for (var j = 0; j < o.items.length; j++) { ap += ((o.items[j].price || 0) - (costMap[o.items[j].productId] || 0)) * (o.items[j].qty || 0); }
+            } else {
+                ap = ((o.productPrice || 0) - (costMap[o.productId] || 0)) * (o.qty || 1);
+            }
+            var rp = o.profit || 0;
+            adm.d += o.amount || 0; res.d += o.amount || 0;
+            if (d >= wk) { adm.w += ap; res.w += rp; }
+            if (d >= mo) { adm.m += ap; res.m += rp; }
+            if (d >= yr) { adm.y += ap; res.y += rp; }
+            adm.t += ap; res.t += rp;
+        }
+        function row(l, a, r, c) { return '<tr><td><b>' + l + '</b></td><td style="color:#2563eb;font-weight:700">' + formatCurrency(a) + '</td><td style="color:#10b981;font-weight:700">' + formatCurrency(r) + '</td><td style="color:#94a3b8;font-size:.78rem">' + formatCurrency(c) + '</td></tr>'; }
+        var periodLabel = (period === 'today') ? 'Today' : (period === 'wk' ? 'This Week' : (period === 'mo' ? 'This Month' : (period === 'yr' ? 'This Year' : 'All Time')));
+        document.getElementById('pftBody').innerHTML =
+            '<tr style="background:#f8fafc;"><th style="text-align:left;padding:9px 12px;">Period</th><th style="text-align:left;padding:9px 12px;">Admin Profit</th><th style="text-align:left;padding:9px 12px;">Reseller Profit</th><th style="text-align:left;padding:9px 12px;">Sales</th></tr>' +
+            '<tr><td><b>Today</b></td><td style="color:#2563eb;font-weight:700">' + formatCurrency(adm.d - adm.t) + ' <small>(loss)</small></td><td style="color:#10b981;font-weight:700">' + formatCurrency(res.d - res.t) + '</td><td>' + formatCurrency(adm.d) + '</td></tr>' +
+            row('This Week', adm.w, res.w, adm.w + res.w) + row('This Month', adm.m, res.m, adm.m + res.m) + row('This Year', adm.y, res.y, adm.y + res.y) + row('All Time', adm.t, res.t, adm.t + res.t);
+        var pp = document.getElementById('pftChips');
+        if (pp) {
+            var periods = [{k:'today',l:'Today'},{k:'wk',l:'This Week'},{k:'mo',l:'This Month'},{k:'yr',l:'This Year'},{k:'all',l:'All Time'}];
+            var hh = '';
+            for (var p2 = 0; p2 < periods.length; p2++) hh += '<div onclick="window._pftPeriod=\'' + periods[p2].k + '\';renderProfitAnalytics()" style="padding:7px 16px;border-radius:18px;font-size:.72rem;font-weight:800;cursor:pointer;' + (window._pftPeriod === periods[p2].k || (!window._pftPeriod && periods[p2].k === 'all') ? 'background:#1e293b;color:#fff;' : 'background:#fff;color:#475569;border:1.5px solid #e2e8f0;') + '">' + periods[p2].l + '</div>';
+            pp.innerHTML = hh;
+        }
+    }
+
+    function renderProdSummary() {
+        /* The aggregation itself now lives in the data layer
+           (productWiseOrderSummary), so the Admin All Orders page and the
+           Multi-Supplier pages cannot drift apart.
+           ROUTING (spec, 2026-09-14): a MULTI-SUPPLIER order belongs to the
+           Multi-Supplier summary ONLY. The shared helper excludes it here by
+           default, so this page never double-counts it.
+           Reseller-owned lines are still dropped INDIVIDUALLY: a mixed order is
+           NOT skipped wholesale — its admin/supplier lines keep counting (#1, #6). */
+        var rows = (typeof productWiseOrderSummary === 'function')
+            ? productWiseOrderSummary(getData(DB_KEYS.ORDERS))
+            : [];
+        var h = '';
+        for (var i = 0; i < rows.length; i++) {
+            var r = rows[i];
+            var im = r.img ? '<img src="' + r.img + '" style="width:44px;height:44px;border-radius:6px;object-fit:cover;cursor:pointer" onclick="zoomImg(this.src)">' : '<div style="width:44px;height:44px;background:#f1f5f9;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#cbd5e1"><i class="fas fa-box"></i></div>';
+            h += '<tr><td>' + im + '</td><td><b>' + r.name + '</b></td><td><b style="color:#dc2626">' + r.qty + ' pcs</b></td><td>' + Object.keys(r.resellers).length + ' reseller(s)</td><td style="color:#10b981;font-weight:600">' + formatCurrency(r.revenue) + '</td></tr>';
+        }
+        document.getElementById('prodSumBody').innerHTML = h || '<tr><td colspan="5" class="empty">No orders yet</td></tr>';
+    }
+
+    window.zoomImg = function(src) {
+        var m = document.createElement('div');
+        m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:9999;cursor:pointer';
+        m.innerHTML = '<img src="' + src + '" style="max-width:90vw;max-height:90vh;border-radius:10px">';
+        m.onclick = function() { document.body.removeChild(m); };
+        document.body.appendChild(m);
+    };
+
+    function viewOrder(orderId) {
+        var orders = getData(DB_KEYS.ORDERS);
+        var o = null;
+        for (var i = 0; i < orders.length; i++) { if (orders[i].id === orderId) { o = orders[i]; break; } }
+        if (!o) return;
+        var tracking = getData(DB_KEYS.TRACKING);
+        var tList = [];
+        for (var t = 0; t < tracking.length; t++) { if (tracking[t].orderId === orderId) tList.push(tracking[t]); }
+
+        var html = '<div class="detail-row"><strong>Order ID</strong><span style="color:#dc2626;font-weight:700;">' + o.id + '</span></div>' +
+            '<div class="detail-row"><strong>Status</strong><span>' + statusBadge(o.status) + '</span></div>' +
+            '<div class="detail-row"><strong>Reseller</strong><span>' + o.resellerName + '</span></div>' +
+            '<div class="detail-row"><strong>Product</strong><span>' + o.productName + ' × ' + (o.qty || 1) + '</span></div>' +
+            '<div class="detail-row"><strong>Size / Color</strong><span>' + (o.size || '-') + ' / ' + (o.color || '-') + '</span></div>' +
+            '<div class="detail-row"><strong>Amount</strong><span>' + formatCurrency(o.amount) + ' (Profit: ' + formatCurrency(o.profit) + ')</span></div>' +
+            '<div class="detail-row"><strong>Customer</strong><span>' + o.customer + '</span></div>' +
+            '<div class="detail-row"><strong>Phone</strong><span>' + o.phone + '</span></div>' +
+            '<div class="detail-row"><strong>Address</strong><span>' + o.address + '</span></div>' +
+            (o.courier ? '<div class="detail-row"><strong>Courier</strong><span>' + o.courier + ' (' + (o.trackingId || 'N/A') + ')</span></div>' : '') +
+            (o.trackingUrl ? '<div class="detail-row"><strong>Track URL</strong><span><a href="' + o.trackingUrl + '" target="_blank" style="color:#2563eb;">Track Order →</a></span></div>' : '') +
+            '</div>';
+
+        // Multi-product items list — platform (admin/supplier) items only.
+        // A mixed order's reseller-owned lines belong to My Shop Orders (#6, #7).
+        var shownItems = (typeof adminSummaryItems === 'function') ? adminSummaryItems(o) : o.items;
+        if (shownItems && shownItems.length) {
+            html += '<h4 style="margin:12px 0 8px;">Products in this Order</h4>';
+            if (o.mixed_source) html += '<div style="background:#fef3c7;border:1px solid #fde68a;color:#92400e;padding:8px 11px;border-radius:8px;margin-bottom:8px;font-size:.78rem;"><i class="fas fa-layer-group"></i> এই order-এ reseller-এর নিজের product-ও আছে — সেটি Admin → My Shop Orders-এ দেখানো হয়েছে। এখানে শুধু Admin/Supplier product দেখানো হলো।</div>';
+            for (var it = 0; it < shownItems.length; it++) {
+                var item = shownItems[it];
+                var img = item.image ? '<img src="' + item.image + '" style="width:44px;height:44px;border-radius:6px;object-fit:cover;">' : '<div style="width:44px;height:44px;background:#e2e8f0;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#94a3b8;"><i class="fas fa-box"></i></div>';
+                html += '<div style="display:flex;gap:10px;align-items:center;padding:8px;background:#f8fafc;border-radius:8px;margin-bottom:6px;">' + img +
+                    '<div style="flex:1;font-size:0.85rem;"><strong>' + item.name + '</strong><br><small style="color:#64748b;">Size: ' + (item.size || (item.sizeQty && item.sizeQty[0] && item.sizeQty[0].size) || 'Free Size') + ' | Color: ' + (item.color || '-') + ' | Qty: ' + item.qty + (item.supplierName ? ' | <span style="color:#7c3aed;font-weight:700">Supplier: ' + item.supplierName + '</span>' : '') + '</small></div>' +
+                    '<div style="text-align:right;font-size:0.85rem;"><strong>' + formatCurrency(item.resale * item.qty) + '</strong><br><small style="color:#64748b;">Wholesale: ' + formatCurrency(item.price * item.qty) + '</small></div></div>';
+            }
+        }
+
+        if (o.shippingCharge || o.advance) {
+            html += '<div style="background:#dbeafe;padding:12px;border-radius:8px;margin:10px 0;font-size:0.85rem;">' +
+                (o.shippingCharge ? '<strong>Shipping:</strong> ' + formatCurrency(o.shippingCharge) + ' (' + (typeof orderShippingLabel === 'function' ? orderShippingLabel(o) : (o.shippingMethod === 'outside' ? 'Outside Dhaka' : 'Inside Dhaka')) + ')<br>' : '') +
+                (o.advance ? '<strong>Advance Paid:</strong> ' + formatCurrency(o.advance) + '<br>' : '') +
+                (o.due !== undefined ? '<strong>Due:</strong> ' + formatCurrency(o.due) : '') +
+                '</div>';
+        }
+
+        html += (o.note ? '<div style="background:#d1fae5;padding:12px;border-radius:8px;margin-top:10px;font-size:0.85rem;"><strong style="color:#065f46;">Reseller Note:</strong> ' + o.note + '</div>' : '') +
+            (o.adminNote ? '<div style="background:#ede9fe;padding:12px;border-radius:8px;margin-top:10px;font-size:0.85rem;"><strong style="color:#6d28d9;">Admin Note:</strong> ' + o.adminNote + '</div>' : '');
+
+        if (tList.length) {
+            html += '<h5 style="margin:14px 0 8px;"><i class="fas fa-route" style="color:#2563eb;"></i> Tracking Timeline</h5>';
+            for (var k = 0; k < tList.length; k++) {
+                var tr = tList[k];
+                var color = tr.status === 'Delivered' ? '#10b981' : tr.status === 'Cancelled' ? '#ef4444' : '#f59e0b';
+                html += '<div style="padding:8px 12px;border-left:3px solid ' + color + ';background:#f8fafc;border-radius:6px;margin-bottom:5px;font-size:0.85rem;">' +
+                    '<strong>' + tr.status + '</strong> — ' + tr.location +
+                    '<br><small style="color:#64748b;">' + tr.date + (tr.note ? ' | ' + tr.note : '') + '</small></div>';
+            }
+        }
+        html += '<div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">' +
+            '<button onclick="sfOrderFraud(\'' + o.id + '\')" style="flex:1;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;padding:12px;border-radius:10px;font-weight:800;cursor:pointer;font-size:.85rem;"><i class="fas fa-shield"></i> 🛡 Fraud Check</button>' +
+            '<button onclick="sfBookList([\'' + o.id + '\'])" style="flex:1;background:linear-gradient(135deg,#ea580c,#c2410c);color:#fff;border:none;padding:12px;border-radius:10px;font-weight:800;cursor:pointer;font-size:.85rem;"><i class="fas fa-truck-fast"></i> Book to Steadfast</button></div>' +
+            '<div id="sfFraudOut"></div>';
+        html += '<button onclick="openOrderEdit(\'' + o.id + '\')" style="width:100%;margin-top:12px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;padding:12px;border-radius:10px;font-weight:800;cursor:pointer;"><i class="fas fa-pen"></i> Edit Order (A-to-Z)</button>';
+        document.getElementById('orderBody').innerHTML = html;
+        document.getElementById('orderModal').classList.add('show');
+    }
+
+    function openTrack(orderId) {
+        var orders = getData(DB_KEYS.ORDERS);
+        var o = null;
+        for (var i = 0; i < orders.length; i++) { if (orders[i].id === orderId) { o = orders[i]; break; } }
+        if (!o) return;
+        document.getElementById('tkOrderId').value = orderId;
+        document.getElementById('tkStatus').value = o.status || 'processing';
+        document.getElementById('tkCourier').value = o.courier || '';
+        document.getElementById('tkTrackingId').value = o.trackingId || '';
+        document.getElementById('tkUrl').value = o.trackingUrl || '';
+        document.getElementById('tkNote').value = o.adminNote || '';
+        document.getElementById('trackModal').classList.add('show');
+    }
+
+    function saveTracking(e) {
+        e.preventDefault();
+        var orderId = document.getElementById('tkOrderId').value;
+        var status = document.getElementById('tkStatus').value;
+        var courier = document.getElementById('tkCourier').value;
+        var trackId = document.getElementById('tkTrackingId').value.trim();
+        var trackUrl = document.getElementById('tkUrl').value.trim();
+        var note = document.getElementById('tkNote').value.trim();
+
+        var orders = getData(DB_KEYS.ORDERS);
+        var o = null;
+        for (var i = 0; i < orders.length; i++) { if (orders[i].id === orderId) { o = orders[i]; break; } }
+        if (!o) return false;
+
+        /* 2026-09-15 — the dropdown supplies this value, but nothing validated it,
+           so an empty value silently wiped the order's status to blank. Refuse
+           anything that is not a real status rather than corrupting the order.
+           This list is exactly the set the status dropdown offers. */
+        /* Exactly the values the #tkStatus dropdown below offers, plus the
+           `cancelled` alias the rest of the codebase also uses. */
+        var VALID_STATUSES = ['new', 'pending', 'confirmed', 'packaging', 'handed_to_courier',
+            'shipping', 'in_transit', 'delivered', 'failed_delivery', 'wfr', 'returned',
+            'cancel', 'cancelled', 'failed_delivery_product_coming',
+            'failed_delivery_product_delivered', 'return_product_coming',
+            'return_product_delivered'];
+        if (VALID_STATUSES.indexOf(String(status)) === -1) {
+            showToast('Invalid order status — nothing was changed.', 'error');
+            return false;
+        }
+
+        var was = o.status;
+        o.status = status;
+        o.courier = courier;
+        o.trackingId = trackId;
+        o.trackingUrl = trackUrl;
+        o.adminNote = note;
+        if (status === 'delivered' && !o.deliveryDate) o.deliveryDate = new Date().toISOString().split('T')[0];
+        setData(DB_KEYS.ORDERS, orders);
+
+        // Credit profit on delivery
+        if (status === 'delivered' && was !== 'delivered') {
+            if (!o.codCharge && o.amount) {
+                o.codCharge = Math.round(o.amount * 0.01);
+                o.packagingCharge = o.packagingCharge || 10;
+                o.profit = (o.profit || 0) - o.codCharge - o.packagingCharge;
+            }
+            /* a failed-delivery charge is returned if the order is later delivered */
+            if (o.failedDeducted && o.failedFee && orderTriggersResellerCharge(was)) {
+                try { refundFailedDelivery(o); } catch (e) {}
+            }
+            var resellers = getData(DB_KEYS.RESELLERS);
+            for (var j = 0; j < resellers.length; j++) {
+                if (resellers[j].id === o.resellerId) {
+                    resellers[j].balance = (resellers[j].balance || 0) + o.profit;
+                    resellers[j].totalEarning = (resellers[j].totalEarning || 0) + o.profit;
+                    addTransaction(o.resellerId, 'credit', o.profit, 'Order ' + o.id + ' delivered — profit added', 'order_profit');
+                    break;
+                }
+            }
+            setData(DB_KEYS.RESELLERS, resellers);
+            addNotification(o.resellerId, 'order_delivered', 'Order ' + orderId + ' delivered! ' + formatCurrency(o.profit) + ' profit added to your wallet.', true);
+        }
+        // Failed delivery / return: charge the reseller automatically.
+        // One shared rule (app.js) so this page and the multi-supplier page agree:
+        // Inside Dhaka 70+10=80, Outside Dhaka 120+10=130. My Shop orders exempt.
+        if (orderTriggersResellerCharge(status) && !orderTriggersResellerCharge(was)) {
+            try { chargeFailedDelivery(o); } catch (e) {}
+        }
+        // Supplier keeps the flat 10 Taka packaging fee ONLY once the failed or
+        // returned product is physically back with them.
+        try { creditSupplierPackaging(o); } catch (e) {}
+        if ((status === 'cancel' || status === 'cancelled' || status === 'returned') && was === 'delivered') {
+            var resellers2 = getData(DB_KEYS.RESELLERS);
+            for (var k = 0; k < resellers2.length; k++) {
+                if (resellers2[k].id === o.resellerId) {
+                    resellers2[k].balance = Math.max(0, (resellers2[k].balance || 0) - o.profit);
+                    resellers2[k].totalEarning = Math.max(0, (resellers2[k].totalEarning || 0) - o.profit);
+                    break;
+                }
+            }
+            setData(DB_KEYS.RESELLERS, resellers2);
+        }
+
+        /* 2026-09-15 — MONEY FIX. The three shared money functions above mark the
+           order so they can never run twice:
+               chargeFailedDelivery()    -> o.failedDeducted / o.failedFee
+               refundFailedDelivery()    -> clears o.failedDeducted
+               creditSupplierPackaging() -> o.supplierPackagingCredited
+           But they mark the copy in memory only, and this function saved the order
+           EARLIER (before the money block). So the mark was thrown away, the
+           "already done" guard was always false, and all three could run again on
+           the same order:
+             · the reseller was charged twice for one failed delivery (৳160 not ৳80)
+             · the refund could never fire (it needs the mark to be present)
+             · the supplier was paid the ৳10 packaging fee on every qualifying change
+           Saving the order once more, here, persists all three marks. This is the
+           only change needed — the multi-supplier page already saves after charging,
+           which is why it never had this problem. */
+        try { setData(DB_KEYS.ORDERS, orders); } catch (e) {}
+
+        // Add tracking entry
+        var statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+        addTracking(orderId, statusLabel, courier ? courier + ' Hub' : 'ResellerHub Warehouse', note);
+        addNotification(o.resellerId, 'order_update', 'Order ' + orderId + ' updated: ' + statusLabel + (note ? '. Note: ' + note : ''));
+
+        logActivity('order_updated', orderId + ' → ' + status);
+        /* Referral commission: create / reverse for this order (#28, #33) */
+        try { if (typeof syncReferralCommissions === 'function') syncReferralCommissions(); } catch (e) {}
+        try { if (typeof syncSupplierReferralCommissions === 'function') syncSupplierReferralCommissions(); } catch (e) {}
+        showToast('Order updated! Reseller notified.', 'success');
+        closeModal('trackModal');
+        loadOrders();
+        return false;
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+    window.openOrderEdit = function(orderId) {
+        var orders = getData(DB_KEYS.ORDERS);
+        var o = null;
+        for (var i = 0; i < orders.length; i++) { if (orders[i].id === orderId) { o = orders[i]; break; } }
+        if (!o) return;
+        window._oeId = orderId;
+        window._oeItems = o.items ? JSON.parse(JSON.stringify(o.items)) : [{ productId: o.productId, name: o.productName, image: '', qty: o.qty || 1, price: o.productPrice || 0, resale: o.productPrice ? Math.round(o.productPrice * 1.5) : 0, size: o.size || 'Free', color: o.color || '-' }];
+        var F = 'width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;box-sizing:border-box;font-family:inherit;';
+        var h = '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
+            '<div style="flex:1;min-width:140px;"><label style="font-size:.72rem;font-weight:800;">Customer Name</label><input id="oeName" value="' + (o.customer || '') + '" style="' + F + '"></div>' +
+            '<div style="flex:1;min-width:120px;"><label style="font-size:.72rem;font-weight:800;">Phone</label><input id="oePhone" value="' + (o.phone || '') + '" style="' + F + '"></div></div>' +
+            '<div style="margin-top:10px;"><label style="font-size:.72rem;font-weight:800;">Address</label><textarea id="oeAddr" rows="2" style="' + F + '">' + (o.address || '') + '</textarea></div>' +
+            '<div style="margin-top:10px;max-width:200px;"><label style="font-size:.72rem;font-weight:800;">Delivery Charge (৳)</label><input type="number" id="oeShip" value="' + (o.shippingCharge || 0) + '" style="' + F + '"></div>';
+        h += '<h4 style="margin:14px 0 8px;">Items (Qty / Resale ৳)</h4><div id="oeItems"></div>';
+        h += '<div style="margin-top:10px;"><label style="font-size:.72rem;font-weight:800;">Add Product to Order</label><div style="display:flex;gap:8px;"><select id="oeAddSel" style="' + F + 'flex:1;"></select><button onclick="oeAddItem()" style="background:#10b981;color:#fff;border:none;border-radius:8px;padding:0 16px;font-weight:800;cursor:pointer;">Add</button></div></div>';
+        h += '<div style="display:flex;gap:10px;margin-top:16px;"><button type="button" onclick="closeModal(\'editOModal\')" style="flex:1;background:#e2e8f0;color:#1e293b;border:none;padding:12px;border-radius:10px;font-weight:800;cursor:pointer;">Discard</button><button type="button" onclick="saveOrderEdit()" style="flex:1;background:#2563eb;color:#fff;border:none;padding:12px;border-radius:10px;font-weight:800;cursor:pointer;">Save Changes</button></div>';
+        document.getElementById('editOBody').innerHTML = h;
+        var ps = getData(DB_KEYS.PRODUCTS);
+        var sh = '<option value="">Select product...</option>';
+        for (var p2 = 0; p2 < ps.length; p2++) sh += '<option value="' + ps[p2].id + '">' + ps[p2].name + ' — ৳' + (ps[p2].customer_price || Math.round((ps[p2].price || 0) * 1.5)) + '</option>';
+        document.getElementById('oeAddSel').innerHTML = sh;
+        oeRenderItems();
+        document.getElementById('editOModal').classList.add('show');
+    };
+    window.oeRenderItems = function() {
+        var h = '';
+        for (var i = 0; i < window._oeItems.length; i++) {
+            var it = window._oeItems[i];
+            h += '<div style="display:flex;gap:8px;align-items:center;padding:8px;background:#f8fafc;border-radius:8px;margin-bottom:6px;">' +
+                (it.image ? '<img src="' + it.image + '" style="width:36px;height:36px;border-radius:6px;object-fit:cover;">' : '<div style="width:36px;height:36px;background:#e2e8f0;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#94a3b8;"><i class="fas fa-box" style="font-size:.7rem"></i></div>') +
+                '<div style="flex:1;font-size:.74rem;font-weight:700;">' + it.name + '<br><small style="color:#94a3b8;">Wholesale ৳' + it.price + '</small></div>' +
+                '<input type="number" min="1" value="' + it.qty + '" onchange="window._oeItems[' + i + '].qty=parseInt(this.value)||1" style="width:56px;padding:6px;border:1.5px solid #e2e8f0;border-radius:7px;text-align:center;">' +
+                '<input type="number" min="0" value="' + it.resale + '" onchange="window._oeItems[' + i + '].resale=parseInt(this.value)||0" style="width:78px;padding:6px;border:1.5px solid #e2e8f0;border-radius:7px;text-align:center;">' +
+                '<button onclick="window._oeItems.splice(' + i + ',1);oeRenderItems()" style="background:#fee2e2;color:#dc2626;border:none;border-radius:7px;padding:7px 9px;cursor:pointer;"><i class="fas fa-times"></i></button></div>';
+        }
+        document.getElementById('oeItems').innerHTML = h || '<small style="color:#94a3b8;">No items — add a product below</small>';
+    };
+    window.oeAddItem = function() {
+        var pid = document.getElementById('oeAddSel').value;
+        if (!pid) { showToast('Select a product!', 'error'); return; }
+        var ps = getData(DB_KEYS.PRODUCTS);
+        for (var i = 0; i < ps.length; i++) {
+            if (String(ps[i].id) === String(pid)) {
+                window._oeItems.push({ productId: ps[i].id, name: ps[i].name, image: ps[i].image || '', qty: 1, price: ps[i].price || 0, resale: ps[i].customer_price || Math.round((ps[i].price || 0) * 1.5), size: 'Free', color: '-' });
+                break;
+            }
+        }
+        oeRenderItems();
+    };
+    window.saveOrderEdit = function() {
+        var orders = getData(DB_KEYS.ORDERS);
+        var o = null;
+        for (var i = 0; i < orders.length; i++) { if (orders[i].id === window._oeId) { o = orders[i]; break; } }
+        if (!o) return;
+        if (!window._oeItems.length) { showToast('Order must have at least one item!', 'error'); return; }
+        o.customer = document.getElementById('oeName').value.trim() || o.customer;
+        o.phone = document.getElementById('oePhone').value.trim() || o.phone;
+        o.address = document.getElementById('oeAddr').value.trim() || o.address;
+        o.shippingCharge = parseInt(document.getElementById('oeShip').value) || 0;
+        o.items = window._oeItems;
+        o.productName = o.items[0].name + (o.items.length > 1 ? ' +' + (o.items.length - 1) + ' more' : '');
+        var sub = 0, profit = 0, qty = 0;
+        for (var j = 0; j < o.items.length; j++) { sub += o.items[j].resale * o.items[j].qty; profit += (o.items[j].resale - o.items[j].price) * o.items[j].qty; qty += o.items[j].qty; }
+        o.itemsSubtotal = sub; o.qty = qty;
+        o.amount = sub + o.shippingCharge;
+        o.profit = profit - Math.round(sub * 0.01) - 10;
+        o.codCharge = Math.round(sub * 0.01);
+        o.packagingCharge = 10;
+        o.due = o.amount - (o.advance || 0);
+        o.editedByAdmin = true;
+        setData(DB_KEYS.ORDERS, orders);
+        addTracking(o.id, 'Order Edited', 'Admin Panel', 'Admin edited customer details / items / prices');
+        addNotification(o.resellerId, 'order', 'Your order ' + o.id + ' was edited by admin — please review.', true);
+        logActivity('order_edited_admin', 'Admin edited order ' + o.id);
+        showToast('Order updated!', 'success');
+        closeModal('editOModal');
+        loadOrders();
+        viewOrder(o.id);
+    };
+    window.viewOrder = viewOrder;
+    // ===== STEADFAST COURIER (bulk book + fraud) =====
+    function sfGetK() {
+        var s = getOne(DB_KEYS.SETTINGS);
+        /* 2026-09-15 — SECURITY. The live key/secret used to be hardcoded here as
+           the fallback, which meant any visitor could read them out of this page's
+           source. They now come ONLY from the saved settings. Rotate the old pair
+           in your Steadfast dashboard. */
+        return { k: s.sf_api_key || '', sec: s.sf_secret_key || '', fraud: s.sf_fraud_url || 'https://check.steadfast.com.bd/api/v1/fraud', cod: s.sf_cod_source || 'amount', proxy: s.sf_proxy || '' };
+    }
+    function sfProxy() { var s = getOne(DB_KEYS.SETTINGS); return s.sf_proxy || ''; }
+    function sfCallFraud(phone, cb) {
+        var px = sfProxy();
+        var k = sfGetK();
+        if (px) {
+            /* 2026-09-16 — the proxy runs on the server and holds no credentials
+               of its own, so the admin's saved keys travel with the request.
+               Without this the Node/PHP proxy has nothing to authenticate with. */
+            fetch(px, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'fraud', phone: phone, apiKey: k.k, secretKey: k.sec }) })
+            .then(function(r) { return r.json(); }).then(function(j) { cb(null, j); }).catch(function(e) { cb(e); });
+            return;
+        }
+        fetch(k.fraud, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Api-Key': k.k, 'Secret-Key': k.sec }, body: JSON.stringify({ api_key: k.k, secret_key: k.sec, customer_phone_number: phone }) })
+        .then(function(r) { return r.json(); }).then(function(j) { cb(null, j); }).catch(function(e) { cb(e); });
+    }
+    function sfCallCreate(payload, cb) {
+        /* 2026-09-19 — the admin may now book to ANY courier (this request).
+           STEADFAST KEEPS THIS PROVEN PATH EXACTLY AS IT WAS (zero regression);
+           any other courier goes through the shared layer, which calls that
+           courier's own endpoint — or the proxy when one is configured. */
+        if (typeof rhAdminCourierActive === 'function' && rhAdminCourierActive() !== 'steadfast') {
+            rhAdminCourierBook(payload, cb);
+            return;
+        }
+        var px = sfProxy();
+        var k = sfGetK();
+        if (px) {
+            /* 2026-09-16 — same as sfCallFraud: the server-side proxy has no
+               credentials of its own, so the admin's saved keys go with the call. */
+            fetch(px, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create', order: payload, apiKey: k.k, secretKey: k.sec }) })
+            .then(function(r) { return r.json(); }).then(function(j) { cb(null, j); }).catch(function(e) { cb(e); });
+            return;
+        }
+        fetch('https://portal.steadfast.com.bd/api/v1/create_order', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Api-Key': k.k, 'Secret-Key': k.sec }, body: JSON.stringify(payload) })
+        .then(function(r) { return r.json(); }).then(function(j) { cb(null, j); }).catch(function(e) { cb(e); });
+    }
+    function sfFraudHtml(name, phone, d) {
+        var tot = d.total_delivered || d.total_delivery || 0;
+        var ok = d.successful_delivery || d.total_success || 0;
+        var cn = d.cancelled_delivery || d.total_cancel || 0;
+        var rate = tot ? Math.round(ok * 100 / tot) : 0;
+        var risk = cn > ok;
+        return '<div style="padding:12px 14px;border-bottom:1px solid #f1f5f9">' +
+            '<b>' + name + '</b> <small style="color:#64748b">(' + phone + ')</small>' +
+            '<div style="display:flex;gap:16px;flex-wrap:wrap;margin:8px 0;font-size:.85rem"><span>Total: <b>' + tot + '</b></span><span>Success: <b style="color:#16a34a">' + ok + '</b></span><span>Cancelled: <b style="color:#dc2626">' + cn + '</b></span><span>Success Rate: <b style="color:' + (rate >= 70 ? '#16a34a' : rate >= 50 ? '#f59e0b' : '#dc2626') + '">' + rate + '%</b></span><span style="font-weight:900;color:' + (risk ? '#dc2626' : '#16a34a') + '">' + (risk ? '🚨 HIGH RISK' : '✓ SAFE') + '</span></div>' +
+            '<div style="height:8px;background:#e2e8f0;border-radius:6px;overflow:hidden"><div style="height:100%;width:' + rate + '%;background:' + (rate >= 70 ? '#16a34a' : rate >= 50 ? '#f59e0b' : '#dc2626') + '"></div></div>' +
+            '</div>';
+    }
+    function sfOverlay(title, bodyHtml) {
+        var m = document.getElementById('sfOverlay');
+        if (!m) {
+            m = document.createElement('div');
+            m.id = 'sfOverlay';
+            m.className = 'modal-overlay show';
+            m.innerHTML = '<div class="modal" style="max-width:520px"><div class="modal-header"><h3 id="sfOvTitle"></h3><button class="modal-close" onclick="closeModal(\'sfOverlay\')">&times;</button></div><div class="modal-body" id="sfOvBody"></div></div>';
+            document.body.appendChild(m);
+        } else { m.classList.add('show'); }
+        document.getElementById('sfOvTitle').textContent = title;
+        document.getElementById('sfOvBody').innerHTML = bodyHtml;
+    }
+    window.sfRowFraud = function(orderId) {
+        var orders = getData(DB_KEYS.ORDERS);
+        var o = null;
+        for (var i = 0; i < orders.length; i++) { if (orders[i].id === orderId) { o = orders[i]; break; } }
+        if (!o) return;
+        sfOverlay('🛡 Fraud Check', '<div style="text-align:center;padding:20px"><i class="fas fa-spinner fa-spin" style="font-size:1.6rem;color:#7c3aed"></i><p style="margin-top:10px;color:#64748b">' + o.customer + ' (' + o.phone + ') চেক হচ্ছে...</p></div>');
+        sfCallFraud(o.phone, function(err, j) {
+            var box = document.getElementById('sfOvBody');
+            if (!box) return;
+            if (err) { box.innerHTML = '<div style="padding:20px;text-align:center;color:#dc2626"><b>Failed:</b> ' + (err.message || 'network/CORS') + '<br><small>Settings-এ Backend Proxy URL সেট করুন অথবা CORS extension দিন।</small></div>'; return; }
+            var list = sfFraudHtml(o.customer, o.phone, j.data || j);
+            box.innerHTML = '<div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden">' + list + '</div>';
+        });
+    };
+    window.sfSelCountUpd = function() {
+        var n = document.querySelectorAll('.sfSel:checked').length;
+        var el = document.getElementById('sfSelCount');
+        if (el) el.textContent = n ? (n + ' selected') : '';
+        var del = document.getElementById('delSelBtn');
+        if (del) del.disabled = (n === 0);
+    };
+
+    /* ==========================================================================
+       BULK DELETE — remove every selected order in one go.
+       Deletes from rh_orders only; nothing else on the order is touched.
+       ========================================================================== */
+    window.selDeleteSelected = function() {
+        /* MODERATOR (this request) — a moderator may NEVER delete an order.
+           Guarded here at the action layer, not just by hiding the button, so
+           the restriction holds even if the button is reached some other way. */
+        if (typeof blockIfModerator === 'function' && blockIfModerator('অর্ডার ডিলিট')) return;
+        var ids = selList();
+        if (!ids.length) { showToast('অন্তত একটা order সিলেক্ট করুন!', 'error'); return; }
+        var all = getData(DB_KEYS.ORDERS) || [];
+        var seen = {}, found = [];
+        for (var i = 0; i < all.length; i++) {
+            if (ids.indexOf(String(all[i].id)) !== -1) { found.push(all[i]); seen[String(all[i].id)] = true; }
+        }
+        if (!found.length) { showToast('সিলেক্ট করা order পাওয়া যায়নি!', 'error'); return; }
+        var msg = found.length + 'টা order একসাথে ডিলিট করবেন?\n\n' + found.slice(0, 8).map(function (o) { return '• ' + o.id + ' — ' + (o.customer || '') }).join('\n') +
+            (found.length > 8 ? '\n… আরও ' + (found.length - 8) + 'টা' : '') +
+            '\n\n⚠️ এই কাজটি ফেরানো যাবে না।';
+        if (!confirm(msg)) return;
+        window.__lastBulkDelete = found.slice();   /* undo handle for the session */
+        var out = [];
+        for (var j = 0; j < all.length; j++) { if (!seen[String(all[j].id)]) out.push(all[j]); }
+        setData(DB_KEYS.ORDERS, out);
+        for (var k = 0; k < found.length; k++) {
+            var o = found[k];
+            try { addNotification(o.resellerId, 'order', 'Order ' + o.id + ' admin কর্তৃক ডিলিট করা হয়েছে', false); } catch (e) {}
+        }
+        try { logActivity('admin_orders_deleted', found.length + ' order(s) deleted: ' + found.map(function (o) { return o.id }).join(', ')); } catch (e) {}
+        selIds = {};
+        showToast(found.length + 'টা order ডিলিট হয়েছে', 'success');
+        loadOrders();
+        /* item 13 — keep the "All Orders (N)" label in step after a bulk delete */
+        if (typeof adminNewOrderCount === 'function') {
+            try {
+                var b = adminNewOrderCount();
+                var els = document.querySelectorAll('.orders-badge');
+                for (var m = 0; m < els.length; m++) { els[m].textContent = b; els[m].style.display = b > 0 ? 'inline-block' : 'none'; }
+                var lb = document.getElementById('ordersBadgeN');
+                if (lb) lb.textContent = b > 0 ? (' (' + b + ')') : '';
+            } catch (e) {}
+        }
+    };
+
+    /* 2026-09-15 — the markup calls this from an inline handler (an on* attribute), and an
+       inline handler runs in GLOBAL scope. It was declared inside this page IIFE, so the
+       call threw "sfBookList is not defined" and the control did nothing. Function declarations
+       hoist, so exposing it here is safe. */
+    window.sfBookList = sfBookList;
+    function sfBookList(ids) {
+        var k = sfGetK();
+        if (!sfProxy() && (!k.k || !k.sec)) { showToast('আগে Settings → Steadfast Courier-এ API Key/Secret অথবা Proxy URL সেট করুন!', 'error'); return; }
+        var orders = getData(DB_KEYS.ORDERS);
+        var done = 0, fail = 0;
+        /* 2026-09-19 — label everything with the courier the admin actually chose */
+        var CN = (typeof rhAdminCourierName === 'function') ? rhAdminCourierName() : 'Steadfast';
+        function next(idx) {
+            if (idx >= ids.length) {
+                setData(DB_KEYS.ORDERS, orders);
+                showToast(CN + ' booking done! ✓ ' + done + (fail ? ' | ✗ ' + fail + ' failed' : ''), fail ? 'warning' : 'success');
+                if (done) logActivity('courier_bulk', done + ' orders booked to ' + CN);
+                loadOrders();
+                return;
+            }
+            var o = null;
+            for (var i = 0; i < orders.length; i++) { if (orders[i].id === ids[idx]) { o = orders[i]; break; } }
+            if (!o || o.sf_booked || o.status === 'delivered' || o.status === 'cancel' || o.status === 'cancelled') { next(idx + 1); return; }
+            var cod = k.cod === 'due' ? (o.due !== undefined ? o.due : o.amount) : (o.amount || 0);
+            sfCallCreate({ invoice: o.id, recipient_name: o.customer, recipient_phone: o.phone, recipient_address: o.address, cod_amount: cod, note: o.note || '' }, function(err, j) {
+                if (err) { fail++; o.sf_error = 'network/CORS error'; next(idx + 1); return; }
+                var tc = j.tracking_code || (j.consignment && j.consignment.tracking_code) || '';
+                if (tc) {
+                    o.courier = CN;
+                    o.trackingId = tc;
+                    o.sf_booked = true;
+                    addTracking(o.id, 'Handed to Courier', CN, 'Consignment ID: ' + (j.consignment_id || tc));
+                    addNotification(o.resellerId, 'order', 'Order ' + o.id + ' booked to ' + CN + ' — Tracking: ' + tc, true);
+                    done++;
+                } else { fail++; o.sf_error = j.message || 'booking failed'; }
+                next(idx + 1);
+            });
+        }
+        next(0);
+    }
+    window.sfBookBulk = function() {
+        var ids = selList();
+        if (!ids.length) { showToast('অন্তত একটা order সিলেক্ট করুন!', 'error'); return; }
+        if (!confirm(ids.length + 'টা order Steadfast-এ একসাথে book করবেন?')) return;
+        sfBookList(ids);
+    };
+    window.sfBookOne = function(id) { sfBookList([id]); };
+    function sfFraudHtml(phone, d) {
+        var tot = d.total_delivered || d.total_delivery || 0;
+        var ok = d.successful_delivery || d.total_success || 0;
+        var cn = d.cancelled_delivery || d.total_cancel || 0;
+        var risk = cn > ok;
+        return '<b>Fraud Check (' + phone + '):</b> Total: ' + tot + ' | Success: <b style="color:#16a34a">' + ok + '</b> | Cancelled: <b style="color:#dc2626">' + cn + '</b> | <b style="color:' + (risk ? '#dc2626' : '#16a34a') + '">' + (risk ? 'HIGH RISK ⚠️' : 'OK ✓') + '</b>';
+    }
+    window.sfOrderFraud = function(orderId) {
+        var orders = getData(DB_KEYS.ORDERS);
+        var o = null;
+        for (var i = 0; i < orders.length; i++) { if (orders[i].id === orderId) { o = orders[i]; break; } }
+        if (!o) return;
+        var out = document.getElementById('sfFraudOut');
+        if (out) out.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking ' + o.phone + '...';
+        sfCallFraud(o.phone, function(err, j) {
+            if (err) { if (out) out.innerHTML = '<span style="color:#dc2626">Fraud check failed — proxy/CORS সমস্যা।</span>'; return; }
+            if (out) out.innerHTML = '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-top:10px;font-size:.85rem;">' + sfFraudHtml(o.customer, o.phone, j.data || j) + '</div>';
+        });
+    };
+    window.sfBulkFraud = function() {
+        var ids = selList();
+        if (!ids.length) { showToast('অন্তত একটা order সিলেক্ট করুন!', 'error'); return; }
+        var orders = getData(DB_KEYS.ORDERS);
+        var rows = '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-top:12px;max-height:400px;overflow-y:auto"><b style="font-size:.9rem">🛡 Fraud Check Results</b><div id="sfbRes" style="margin-top:10px">';
+        var count = 0;
+        for (var i = 0; i < ids.length; i++) {
+            var o = null;
+            for (var j = 0; j < orders.length; j++) { if (orders[j].id === ids[i]) { o = orders[j]; break; } }
+            if (!o) continue;
+            rows += '<div style="padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:.82rem"><b>' + o.customer + '</b> (' + o.phone + ') — <span id="sfc_' + count + '"><i class="fas fa-spinner fa-spin"></i></span></div>';
+            (function(oid, idx, phone, cname) {
+                sfCallFraud(phone, function(err, j) {
+                    var el = document.getElementById('sfc_' + idx);
+                    if (!el) return;
+                    if (err) { el.innerHTML = '<span style="color:#dc2626">Failed</span>'; return; }
+                    el.innerHTML = sfFraudHtml(cname, phone, j.data || j);
+                });
+            })(o.id, count, o.phone, o.customer);
+            count++;
+        }
+        rows += '</div><div style="text-align:right;margin-top:10px"><button class="btn btn-sm" style="background:#e2e8f0" onclick="closeModal(\'fraudBulkModal\')">Close</button></div></div>';
+        var m = document.getElementById('fraudBulkModal');
+        if (!m) {
+            m = document.createElement('div');
+            m.id = 'fraudBulkModal';
+            m.className = 'modal-overlay show';
+            m.innerHTML = '<div class="modal" style="max-width:560px"><button class="modal-close" onclick="closeModal(\'fraudBulkModal\')">&times;</button><div class="modal-body" id="fraudBulkBody"></div></div>';
+            document.body.appendChild(m);
+        } else { m.classList.add('show'); }
+        document.getElementById('fraudBulkBody').innerHTML = rows;
+    };
+    window.openTrack = openTrack;
+    window.saveTracking = saveTracking;
+    window.closeModal = closeModal;
+    window.doLogout = doLogout;
+    window.loadOrders = loadOrders;
+
+    loadOrders();
+    /* 2026-09-19 — the bulk-book button names the courier the admin chose */
+    try {
+        var _bb = document.getElementById('sfBookBtn');
+        if (_bb && typeof rhAdminCourierName === 'function') {
+            _bb.innerHTML = '<i class="fas fa-truck-fast"></i> Book Selected → ' + rhAdminCourierName();
+        }
+    } catch (e0) {}
+    setInterval(function() { loadOrders(); }, 8000);
+})();
+</script>
+    <script src="assistant.js"></script><script>(function(){
+/* item 13 — the sidebar entry reads "All Orders (N)" where N = orders still at the
+   New stage, recomputed from live data on load, on every storage change and on a
+   light interval so a status change anywhere in the panel updates the label. */
+function paint(){try{var n=(typeof adminNewOrderCount==="function")?adminNewOrderCount():0;
+var els=document.querySelectorAll(".orders-badge");for(var i=0;i<els.length;i++){els[i].textContent=n;els[i].style.display=n>0?"inline-block":"none";}
+var lb=document.getElementById("ordersBadgeN");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}catch(e){}}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();
+window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});
+setInterval(paint,4000);
+})();</script>\r\n<script>document.addEventListener('DOMContentLoaded',function(){var p=location.pathname.split('/').pop();var sel=null;if(p==='add-reseller.html')sel='resellers.html';else if(p==='supplier-products.html')sel='suppliers.html';else sel=p;document.querySelectorAll('.smenu a,.sidebar a,.sidebar-menu a').forEach(function(a){if(a.getAttribute('href')===sel){a.classList.add('active');a.style.background='#10b981';a.style.color='#fff';a.style.fontWeight='800'}})});</script>
+
+<script>
+/* Admin sidebar toggle (additive) */
+if (!window.toggleSidebar) {
+    window.toggleSidebar = function(open) {
+        var sb = document.querySelector('.sidebar');
+        if (!sb) return;
+        if (open === undefined) open = !sb.classList.contains('open');
+        sb.classList.toggle('open', open);
+        var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+        if (ov) ov.classList.toggle('show', open);
+    };
+}
+</script>
+
+
+<script id="lx-auto-active">
+(function() {
+    var page = location.pathname.split('/').pop();
+    document.querySelectorAll('.sb-item').forEach(function(a) {
+        var href = (a.getAttribute('href') || '').split('?')[0];
+        if (href === page) a.classList.add('on');
+    });
+    /* ADMIN ONLY (this request) — a moderator must not see the Moderators page,
+       which is the one screen that could let them recruit another moderator.
+       The page itself also bounces a moderator; this hides the door as well. */
+    try {
+        if (sessionStorage.getItem('user_type') !== 'admin') {
+            document.querySelectorAll('.sb-item[href="moderators.html"]').forEach(function (a) { a.style.display = 'none'; });
+        }
+    } catch (e) {}
+})();
+</script>
+
+<script>
+/* ==========================================================================
+   ADMIN ORDER PRINT SYSTEM
+   Print preview -> format (A4 | A5 | 3x2 | 3x3) -> Print.
+   STRICTLY READ-ONLY: no Steadfast call, no status change, no new ID.
+   ========================================================================== */
+var apOrders = [];        /* orders currently loaded into the dialog */
+var apFormat = 'a4';      /* selected format */
+
+function apFindOrder(id) {
+    var orders = getData(DB_KEYS.ORDERS) || [];
+    for (var i = 0; i < orders.length; i++) { if (String(orders[i].id) === String(id)) return orders[i]; }
+    return null;
+}
+
+/* ---------- open the dialog ---------- */
+window.openAdminPrint = function (id) {
+    var o = apFindOrder(id);
+    if (!o) { showToast('Order not found!', 'error'); return; }
+    apOrders = [o];
+    apShow();
+};
+window.openAdminPrintBulk = function () {
+    var ids = (typeof selList === 'function') ? selList() : (function () {
+        var sel = document.querySelectorAll('.sfSel:checked'), a = [];
+        for (var i = 0; i < sel.length; i++) a.push(sel[i].value);
+        return a;
+    })();
+    if (!ids.length) { showToast('অন্তত একটা order সিলেক্ট করুন!', 'error'); return; }
+    var all = getData(DB_KEYS.ORDERS) || [], picked = [];
+    for (var k = 0; k < all.length; k++) { if (ids.indexOf(String(all[k].id)) !== -1) picked.push(all[k]); }
+    if (!picked.length) { showToast('Order পাওয়া যায়নি!', 'error'); return; }
+    apOrders = picked;
+    apShow();
+};
+function apShow() {
+    apFormat = 'a4';
+    apRenderPreview();
+    var m = document.getElementById('apModal');
+    if (m) { m.classList.add('show'); m.style.display = 'flex'; }
+}
+window.closeAdminPrint = function () {
+    var m = document.getElementById('apModal');
+    if (m) { m.classList.remove('show'); m.style.display = 'none'; }
+    apOrders = [];
+};
+window.apSetFormat = function (fmt) {
+    apFormat = fmt;
+    apRenderPreview();
+};
+
+/* ---------- preview (#18, #25) ---------- */
+function apRenderPreview() {
+    var head = document.getElementById('apHead');
+    var body = document.getElementById('apPreview');
+    var foot = document.getElementById('apFoot');
+    if (!body) return;
+
+    var fmts = ['a4', 'a5', 'label32', 'label33'];
+    var labels = { a4: 'A4', a5: 'A5', label32: '3 × 2 Label', label33: '3 × 3 Label' };
+    var sizes = { a4: '210 × 297 mm', a5: '148 × 210 mm', label32: '3in × 2in', label33: '3in × 3in' };
+    var bar = '';
+    for (var i = 0; i < fmts.length; i++) {
+        bar += '<button class="ap-fmt' + (apFormat === fmts[i] ? ' on' : '') + '" onclick="apSetFormat(\'' + fmts[i] + '\')">' +
+            labels[fmts[i]] + '<small>' + sizes[fmts[i]] + '</small></button>';
+    }
+
+    var d0 = adminOrderPrintData(apOrders[0] || {});
+    var warn = '';
+    if (!d0.parcelAvailable) {
+        warn = '<div class="ap-warn"><i class="fas fa-triangle-exclamation"></i> এই order এখনো Steadfast-এ create হয়নি — Parcel ID: <b>Not Available</b> দেখানো হচ্ছে (কোনো fake ID দেখানো হয় না)।</div>';
+    }
+
+    if (head) {
+        head.innerHTML =
+            '<div class="ap-hd"><h3><i class="fas fa-print"></i> Print Preview</h3>' +
+            '<button class="ap-x" onclick="closeAdminPrint()"><i class="fas fa-times"></i></button></div>' +
+            '<div class="ap-info"><b>' + apOrders.length + '</b> order' + (apOrders.length > 1 ? 's' : '') +
+            (apOrders.length === 1 ? ' — ' + apEsc(d0.orderId) : '') + '</div>' +
+            warn +
+            '<div class="ap-fmts">' + bar + '</div>';
+    }
+
+    /* preview mirrors the real print CSS inside a scaled sheet */
+    var dims = { a4: [794, 1123], a5: [559, 794], label32: [288, 192], label33: [288, 288] };
+    var dim = dims[apFormat] || dims.a4;
+    var scale = Math.min(1, 640 / dim[0]);
+    var html = adminOrderPrintHtml(apOrders, apFormat);
+    var inner = html.replace(/^[\s\S]*<body>/, '').replace(/<\/body>[\s\S]*$/, '');
+    var css = (html.match(/<style>([\s\S]*?)<\/style>/) || [, ''])[1];
+
+    body.innerHTML = '<style>' + css + '</style>' +
+        '<div class="ap-scale" style="width:' + Math.round(dim[0] * scale) + 'px;height:' + Math.round(dim[1] * scale) + 'px">' +
+        '<div style="width:' + dim[0] + 'px;transform:scale(' + scale + ');transform-origin:top left">' + inner + '</div></div>';
+
+    if (foot) {
+        foot.innerHTML = '<button class="ap-btn gh" onclick="closeAdminPrint()">Cancel</button>' +
+            '<button class="ap-btn pri" onclick="doAdminPrint()"><i class="fas fa-print"></i> Print ' +
+            labels[apFormat] + '</button>';
+    }
+}
+function apEsc(v) {
+    return String(v === undefined || v === null ? '' : v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/* ---------- actual print (#23 read-only) ---------- */
+window.doAdminPrint = function () {
+    if (!apOrders.length) return;
+    var html = adminOrderPrintHtml(apOrders, apFormat);
+    /* 2026-09-18 (this request) — the A4/A5 sheets use web fonts (Inter + a
+       script face). rhPrintFrame waits for them (max 1.2s) instead of guessing a
+       fixed delay, so the sheet never prints in a fallback font.
+       Printing still mutates NOTHING — no setData(), no API call. */
+    rhPrintFrame(html);
+    try { logActivity('admin_order_printed', 'Admin printed ' + apOrders.length + ' order(s) as ' + apFormat); } catch (e) {}
+    closeAdminPrint();
+};
+</script>
+
+<style id="lx-admin-print">
+#apModal{display:none;position:fixed;inset:0;background:rgba(15,23,42,.7);z-index:3000;align-items:center;justify-content:center;padding:16px}
+#apModal.show{display:flex}
+.ap-box{background:#fff;border-radius:18px;width:100%;max-width:720px;max-height:94vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(15,23,42,.4);overflow:hidden}
+.ap-hd{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid #eef2f7}
+.ap-hd h3{font-size:.95rem;font-weight:900;display:flex;align-items:center;gap:9px}
+.ap-hd h3 i{color:#0d9488}
+.ap-x{background:#f1f5f9;border:none;width:32px;height:32px;border-radius:9px;cursor:pointer;color:#475569;font-size:1rem}
+.ap-info{padding:10px 18px 0;font-size:.78rem;color:#475569;font-weight:700}
+.ap-warn{margin:10px 18px 0;background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:10px 13px;font-size:.75rem;font-weight:700;line-height:1.55}
+.ap-fmts{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;padding:14px 18px}
+.ap-fmt{background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:11px;padding:10px 6px;cursor:pointer;font-family:inherit;font-size:.76rem;font-weight:800;color:#334155;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .18s}
+.ap-fmt small{font-size:.6rem;color:#94a3b8;font-weight:700}
+.ap-fmt:hover{border-color:#5eead4;background:#f0fdfa}
+.ap-fmt.on{background:linear-gradient(135deg,#0d9488,#0f766e);border-color:transparent;color:#fff}
+.ap-fmt.on small{color:rgba(255,255,255,.8)}
+#apPreview{flex:1;overflow:auto;background:#eef1f9;padding:16px;display:flex;justify-content:center;align-items:flex-start}
+.ap-scale{background:#fff;box-shadow:0 4px 18px rgba(15,23,42,.18);overflow:hidden}
+.ap-foot{display:flex;gap:10px;justify-content:flex-end;padding:14px 18px;border-top:1px solid #eef2f7;background:#fff}
+.ap-btn{border:none;border-radius:11px;padding:11px 20px;font-weight:800;font-size:.8rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:8px}
+.ap-btn.pri{background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff}
+.ap-btn.pri:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(13,148,136,.3)}
+.ap-btn.gh{background:#f1f5f9;color:#475569}
+@media(max-width:760px){
+ .ap-fmts{grid-template-columns:1fr 1fr}
+ .ap-box{max-height:96vh}
+ .ap-btn{flex:1;justify-content:center}
+}
+</style>
+
+<!-- ===== Admin print dialog (#13, #18) ===== -->
+<div id="apModal" onclick="if(event.target===this)closeAdminPrint()">
+    <div class="ap-box">
+        <div id="apHead"></div>
+        <div id="apPreview"></div>
+        <div class="ap-foot" id="apFoot"></div>
+    </div>
+</div>
+</body>
+</html>
+

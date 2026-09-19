@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supplier Products - Admin - ResellerHub BD</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:#f1f5f9;color:#0f172a;font-size:.88rem;line-height:1.5}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+
+/* ===== Sidebar (PC + Mobile) ===== */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:250px;background:linear-gradient(180deg,#0f172a 0%,#0a0e1a 100%);color:#cbd5e1;z-index:200;overflow-y:auto;display:flex;flex-direction:column;transition:transform .3s ease}
+.sidebar-header{padding:20px 22px;border-bottom:1px solid #1e293b;display:flex;align-items:center;gap:12px}
+.sidebar-logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#dc2626,#b91c1c);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem}
+.sidebar-title h3{color:#fff;font-size:1.05rem;font-weight:800;margin:0}
+.sidebar-title small{color:#34d399;font-size:.7rem;letter-spacing:1px;display:block;margin-top:2px}
+.sidebar-menu{list-style:none;padding:10px 0;margin:0;flex:1}
+.sidebar-divider{padding:14px 22px 5px;color:#64748b;font-size:.7rem;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.sidebar-menu li{margin:0}
+.sidebar-menu a{display:flex;align-items:center;gap:12px;padding:11px 22px;color:#cbd5e1;font-size:.85rem;font-weight:600;transition:all .15s;border-left:3px solid transparent}
+.sidebar-menu a i{width:18px;text-align:center;opacity:.7}
+.sidebar-menu a:hover{background:rgba(255,255,255,.05);color:#fff;border-left-color:#10b981}
+.sidebar-menu a.active{background:rgba(16,185,129,.15);color:#fff;border-left-color:#10b981;background:linear-gradient(90deg,rgba(16,185,129,.18),transparent)}
+.sidebar-menu a.active i{opacity:1;color:#10b981}
+.sidebar-foot{padding:12px 22px;border-top:1px solid #1e293b}
+
+/* ===== Hamburger + overlay (mobile) ===== */
+.hamburger{position:fixed;left:14px;top:14px;width:42px;height:42px;background:#0a0a0a;color:#fff;border-radius:10px;display:none;align-items:center;justify-content:center;font-size:1.1rem;z-index:150;box-shadow:0 4px 14px rgba(0,0,0,.2);cursor:pointer}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:140;display:none}
+.overlay.show{display:block}
+
+/* ===== Main ===== */
+.main{padding:24px 28px;margin:0 0 0 250px;width:calc(100% - 250px);box-sizing:border-box}
+.breadcrumb{padding:14px 28px 0;font-size:.82rem;color:#64748b;margin-bottom:0;display:flex;align-items:center;gap:8px}
+.breadcrumb b{color:#0a0a0a}
+.breadcrumb i{color:#94a3b8}
+
+/* ===== Page header ===== */
+.page-head{display:flex;justify-content:space-between;align-items:flex-start;margin:8px 0 18px;flex-wrap:wrap;gap:10px}
+.page-head h1{font-size:1.7rem;font-weight:800;display:flex;align-items:center;gap:10px;color:#0a0e1a}
+.page-head h1 i{color:#10b981}
+.page-head p{color:#64748b;font-size:.85rem;margin-top:4px}
+
+/* ===== Filter / Toolbar ===== */
+.toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;background:#fff;padding:14px 18px;border-radius:14px;box-shadow:0 2px 10px rgba(15,23,42,.06)}
+.toolbar input[type=text],.toolbar select{padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.86rem;background:#fff}
+.toolbar input[type=text]{min-width:220px;flex:1}
+.toolbar .pill{padding:10px 18px;border-radius:10px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-weight:700;font-size:.85rem;display:flex;align-items:center;gap:6px;cursor:pointer}
+.toolbar .pill.out{background:linear-gradient(135deg,#e2e8f0,#cbd5e1);color:#1e293b}
+
+/* ===== Counter strip ===== */
+.statbar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.statbox{background:#fff;padding:14px 16px;border-radius:12px;box-shadow:0 2px 8px rgba(15,23,42,.05);display:flex;align-items:center;gap:12px}
+.statbox .ico{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.statbox .b{font-size:1.35rem;font-weight:800;line-height:1}
+.statbox .l{font-size:.72rem;color:#64748b;margin-top:2px}
+.ic-blue{background:#dbeafe;color:#1d4ed8} .ic-green{background:#dcfce7;color:#15803d} .ic-amber{background:#fef3c7;color:#a16207} .ic-purple{background:#f3e8ff;color:#7e22ce}
+
+/* ===== Filter tabs ===== */
+.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tabs a{padding:10px 18px;border-radius:22px;font-size:.78rem;font-weight:800;background:#fff;color:#475569;border:1.5px solid #e2e8f0;display:flex;align-items:center;gap:6px}
+.tabs a.on{background:linear-gradient(135deg,#10b981,#059669);color:#fff;border-color:transparent;box-shadow:0 4px 10px rgba(16,185,129,.3)}
+
+/* ===== Products grid ===== */
+/* Item 3 — 7 cards per row, 21 per page */
+.products-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:14px}
+@media(max-width:1500px){.products-grid{grid-template-columns:repeat(5,1fr)}}
+@media(max-width:1024px){.products-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:860px){.products-grid{grid-template-columns:repeat(3,1fr)}}
+.pgbar{display:flex;justify-content:center;align-items:center;gap:7px;flex-wrap:wrap;margin:22px 0 6px}
+.pgbar button{min-width:34px;height:34px;padding:0 10px;border:1.5px solid #e2e8f0;background:#fff;color:#475569;border-radius:9px;font-size:.8rem;font-weight:800;cursor:pointer}
+.pgbar button:hover{border-color:#10b981;color:#059669}
+.pgbar button.on{background:#10b981;color:#fff;border-color:#10b981}
+.pgbar .pgi{font-size:.76rem;color:#94a3b8;margin-left:6px}
+.pcard{background:#fff;border-radius:14px;overflow:hidden;border:1px solid #eef0f6;transition:all .2s;box-shadow:0 2px 8px rgba(15,23,42,.04)}
+.pcard:hover{box-shadow:0 12px 28px rgba(15,23,42,.12);transform:translateY(-3px)}
+.pcard.dim{opacity:.55}
+.pimg{position:relative;height:190px;background:#f8fafc;overflow:hidden}
+/* Item 3 — full image visible, no crop */
+.pimg img{width:100%;height:100%;object-fit:contain;background:#fff;transition:transform .3s}
+.pcard:hover .pimg img{transform:scale(1.04)}
+.pimg .noimg{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:2.4rem}
+.disc-tag{position:absolute;top:8px;left:8px;background:#ef4444;color:#fff;font-size:.66rem;font-weight:800;padding:2px 8px;border-radius:10px}
+.low-tag{position:absolute;bottom:8px;left:8px;background:#f59e0b;color:#fff;font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:8px}
+.sup-tag{position:absolute;top:8px;right:8px;background:rgba(124,58,237,.92);color:#fff;font-size:.6rem;font-weight:800;padding:3px 9px;border-radius:10px;display:flex;align-items:center;gap:4px;max-width:85%;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+.phover{position:absolute;bottom:8px;right:8px;display:flex;gap:5px;opacity:0;transition:.2s}
+.pcard:hover .phover{opacity:1}
+.phover button{width:30px;height:30px;background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.18);color:#475569;font-size:.78rem;cursor:pointer}
+.phover button:hover{background:#10b981;color:#fff}
+.phover button.del:hover{background:#ef4444;color:#fff}
+.pinfo{padding:12px 14px}
+.pinfo h4{font-size:.92rem;font-weight:700;margin-bottom:5px;color:#0a0e1a;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.4em}
+.cat-badge{display:inline-block;font-size:.66rem;font-weight:700;padding:2px 8px;border-radius:6px;background:#f1f5f9;color:#475569;margin-bottom:6px}
+.sku-small{font-size:.7rem;color:#94a3b8;margin-bottom:6px}
+.pr-row{display:flex;justify-content:space-between;margin-bottom:6px}
+.pr-row .l{font-size:.66rem;color:#94a3b8}
+.pr-row .retail{font-weight:800;font-size:.9rem;color:#10b981}
+.pr-row .resell{font-weight:700;font-size:.78rem;color:#2563eb}
+.discount-pill{display:inline-block;background:#dcfce7;color:#15803d;font-size:.62rem;font-weight:800;padding:1px 7px;border-radius:4px;margin-left:5px}
+.act-tgl{width:100%;padding:7px;border:none;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;margin-top:4px}
+.act-on{background:#dcfce7;color:#15803d}
+.act-off{background:#f1f5f9;color:#64748b}
+
+/* ===== Modal ===== */
+/* BUG FIX — this read `justify-content:padding:20px`, ONE malformed declaration,
+   so BOTH `justify-content` and `padding` were dropped by the CSS parser. The
+   overlay therefore fell back to justify-content:flex-start, which pinned the
+   dialog to the LEFT edge with no padding, and the clipped content ("Seller:"
+   rendered as "eller:"). z-index:300 also sat BELOW the sidebar's 600, so the
+   sidebar painted over the dialog. Matched to the `.modal-overlay` rule every
+   other admin page already uses: centre, pad, and sit above the sidebar. */
+.ov{position:fixed;inset:0;background:rgba(15,23,42,.65);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.ov.show{display:flex}
+.mbox{background:#fff;border-radius:14px;max-width:780px;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,.3);animation:slideUp .3s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.mhd{padding:16px 22px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#fff,#f8fafc);border-bottom:1px solid #eef0f6}
+.mhd h3{font-size:1.1rem;font-weight:800;display:flex;align-items:center;gap:8px;margin:0}
+.mhd h3 i{color:#10b981}
+.mclose{background:none;border:none;font-size:1.4rem;cursor:pointer;color:#64748b;line-height:1;padding:0;width:32px;height:32px;border-radius:8px}
+.mclose:hover{background:#f1f5f9}
+.mbody{padding:20px 22px;overflow-y:auto;flex:1}
+.mfoot{padding:14px 22px;border-top:1px solid #eef0f6;display:flex;gap:10px;background:#f8fafc}
+.mfoot button{flex:1;padding:12px;border-radius:10px;font-weight:800;cursor:pointer;font-size:.88rem}
+.mfoot .cancel{background:#e2e8f0;color:#1e293b}
+.mfoot .reject{background:linear-gradient(135deg,#fee2e2,#fecaca);color:#dc2626}
+.mfoot .approve{background:linear-gradient(135deg,#10b981,#059669);color:#fff;box-shadow:0 4px 14px rgba(16,185,129,.3)}
+
+/* ===== Form fields ===== */
+.fg{margin-bottom:13px}
+.fg label{display:block;font-weight:600;font-size:.84rem;margin-bottom:5px;color:#334155}
+.fg label .req{color:#ef4444}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px 13px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:.88rem;font-family:inherit;box-sizing:border-box;background:#fff}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.12)}
+.fg textarea{resize:vertical;min-height:60px}
+.fg .hint{font-size:.7rem;color:#94a3b8;margin-top:4px}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.fg-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
+.fg-row-3 .fg{margin-bottom:0}
+.price-in{position:relative}
+.price-in .taka{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#10b981;font-weight:700}
+.price-in input{padding-left:30px !important}
+.summary-box{background:linear-gradient(135deg,#f1f5f9,#e2e8f0);border-radius:12px;padding:14px;margin:14px 0;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.summary-box .it{text-align:center;min-width:90px}
+.summary-box .it .l{font-size:.66rem;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.summary-box .it .v{font-size:1.1rem;font-weight:900;margin-top:4px}
+.it.cost .v{color:#1d4ed8} .it.resell .v{color:#15803d} .it.cust .v{color:#7e22ce}
+.warn-box{background:#fef9c3;border-radius:8px;padding:9px 12px;margin-top:10px;font-size:.75rem;color:#92400e;display:flex;align-items:center;gap:8px}
+.color-chip{width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(0,0,0,.1);display:inline-block;margin:2px}
+.size-pill{display:inline-block;background:#f1f5f9;color:#475569;font-size:.66rem;font-weight:700;padding:1px 8px;border-radius:8px;margin:1px}
+
+        .sprow-l { font-size:.8rem; font-weight:700; color:#334155; display:block; margin-bottom:5px; }
+        .sphint { font-size:.68rem; color:#94a3b8; margin-top:4px; }
+        .spin { width:100%; padding:10px 13px; border:1.5px solid #e2e8f0; border-radius:9px; font-size:.86rem; box-sizing:border-box; font-family:inherit; }
+        .spin:focus { outline:none; border-color:#10b981; box-shadow:0 0 0 3px rgba(16,185,129,.12); }
+        .spreq { color:#ef4444; }
+        .sptoggle { position:relative; width:46px; height:26px; background:#10b981; border-radius:20px; cursor:pointer; transition:.2s; flex:none; display:inline-block; vertical-align:middle; }
+        .sptoggle.off { background:#d1d5db; }
+        .sptoggle::after { content:''; position:absolute; top:3px; left:23px; width:20px; height:20px; background:#fff; border-radius:50%; transition:.2s; }
+        .sptoggle.off::after { left:3px; }
+        .spcolgrid { display:grid; grid-template-columns:repeat(6,1fr); gap:9px; }
+        .spcol { border:1.5px solid #e2e8f0; border-radius:9px; padding:9px 4px; text-align:center; cursor:pointer; transition:.15s; }
+        .spcol:hover { border-color:#10b981; }
+        .spcol.on { border-color:#10b981; background:#ecfdf5; }
+        .spcol .c { width:26px; height:26px; border-radius:50%; margin:0 auto 5px; border:1px solid rgba(0,0,0,.08); }
+        .spcol p { font-size:.62rem; font-weight:600; color:#475569; margin:0; }
+        .spszp { padding:6px 14px; border-radius:16px; font-size:.74rem; font-weight:700; cursor:pointer; background:#f1f5f9; color:#475569; border:none; }
+        .spszp.on { background:#10b981; color:#fff; }
+        .spszc { padding:7px 13px; border-radius:9px; font-size:.76rem; font-weight:700; cursor:pointer; background:#fff; color:#475569; border:1.5px solid #e2e8f0; }
+        .spszc.on { background:#10b981; color:#fff; border-color:#10b981; }
+        .spchip { background:#ecfdf5; color:#047857; font-size:.7rem; font-weight:800; padding:4px 10px; border-radius:14px; display:inline-block; }
+        .spup { width:110px; height:110px; border:2px dashed #cbd5e1; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#94a3b8; cursor:pointer; font-size:.72rem; font-weight:700; gap:6px; }
+        .spup:hover { border-color:#10b981; color:#10b981; }
+        .spgalbox { border:1.5px dashed #e2e8f0; border-radius:10px; padding:16px; text-align:center; color:#94a3b8; font-size:.78rem; margin-top:12px; }
+        .spthumb { position:relative; width:74px; height:74px; border-radius:10px; overflow:hidden; border:2px solid #e2e8f0; flex:none; }
+        .spthumb img { width:100%; height:100%; object-fit:cover; }
+        .spthumb .x { position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%; background:#ef4444; color:#fff; border:none; font-size:.6rem; cursor:pointer; line-height:1; }
+        .spthumb .main { position:absolute; bottom:0; left:0; right:0; background:rgba(16,185,129,.92); color:#fff; font-size:.55rem; text-align:center; font-weight:700; }
+        /* drag & drop affordances (this request) */
+        .spthumb[draggable="true"] { cursor:grab; }
+        .spthumb.dragging { opacity:.4; cursor:grabbing; }
+        .spthumb.dragover { border-color:#4f46e5; box-shadow:0 0 0 3px rgba(79,70,229,.28); transform:scale(.94); }
+        .sppsum { background:#f8fafc; border-radius:10px; padding:14px; margin-top:14px; }
+        .sppsum .r { display:flex; padding:5px 0; font-size:.8rem; border-bottom:1px dashed #eef0f6; }
+        .sppsum .r:last-child { border-bottom:none; }
+        .sppsum .r b { width:45%; color:#64748b; font-weight:600; }
+        .sppsum .r span { flex:1; text-align:right; font-weight:600; color:#1e293b; }
+        .sptk { color:#10b981; font-weight:800; }
+        .spstab { padding:10px 13px; font-size:.8rem; font-weight:800; color:#64748b; cursor:pointer; border-bottom:2.5px solid transparent; margin-bottom:-2px; white-space:nowrap; }
+        .spstab.on { color:#10b981; border-bottom-color:#10b981; }
+        #spEditModal { position:fixed; inset:0; background:rgba(15,23,42,.65); z-index:400; display:none; align-items:center; justify-content:center; padding:20px; }
+        #spEditModal.show { display:flex; }
+        #spEditModal .modal { background:#fff; border-radius:16px; max-width:700px; width:100%; max-height:92vh; overflow-y:auto; position:relative; padding:22px 24px; box-sizing:border-box; box-shadow:0 30px 80px rgba(0,0,0,.35); }
+        .spupd { width:100%; padding:10px 13px; border:1.5px solid #e2e8f0; border-radius:9px; font-size:.86rem; box-sizing:border-box; font-family:inherit; background:#fff; }
+        .spupd:focus { outline:none; border-color:#10b981; box-shadow:0 0 0 3px rgba(16,185,129,.12); }
+
+/* ===== Toast ===== */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0a0a0a;color:#fff;padding:12px 22px;border-radius:12px;font-size:.85rem;font-weight:700;z-index:9999;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+
+/* ===== Mobile ===== */
+@media(max-width:900px){
+.hamburger{display:flex}
+/* 2026-09-16 — MOBILE FIX (this request). The base rule is
+   `.main{margin:0 0 0 250px; width:calc(100% - 250px)}` — it reserves 250px for the
+   sidebar. The mobile rule below reset margin-left but NOT width, so on a phone the
+   content stayed `100% - 250px` wide: a narrow column pinned to the left with a large
+   empty gap on the right, which is exactly what the screenshot showed. Resetting the
+   width to 100% lets the toolbar, the status tabs and the product grid use the full
+   screen, matching the normal Products page. Nothing else in this rule changed. */
+.main{margin-left:0;width:100% !important;max-width:100% !important;padding:84px 16px 96px;box-sizing:border-box}
+.breadcrumb{padding-left:16px;padding-right:16px}
+.products-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+.statbar{grid-template-columns:repeat(2,1fr);gap:10px}
+.fg-row,.fg-row-3{grid-template-columns:1fr}
+.toolbar{flex-direction:column;align-items:stretch}
+.toolbar input[type=text]{min-width:0}
+/* 2026-09-16 — MOBILE FIX (this request). Two real problems on a phone:
+   1. .phover (the edit / delete buttons on each product) is opacity:0 and only
+      revealed by .pcard:hover. A touch screen has no hover, so those buttons were
+      UNREACHABLE — the product cards looked broken and could not be acted on.
+      They are now always visible at mobile width.
+   2. .pimg is a fixed 190px tall while the card is only ~180px wide in the
+      2-column mobile grid, so every image was a tall sliver. It now keeps a square
+      ratio and scales with the card.
+   Both live inside the existing max-width:900px query, so DESKTOP IS UNCHANGED. */
+.pcard .phover{opacity:1}
+.pimg{height:auto;aspect-ratio:1/1}
+.phover button{width:34px;height:34px;font-size:.86rem}
+.page-head h1{font-size:1.25rem}
+.statbox{padding:12px 13px;gap:9px}
+.statbox .ico{width:36px;height:36px;font-size:.95rem}
+.statbox .b{font-size:1.15rem}
+.tabs a{padding:9px 14px;font-size:.74rem}
+.pinfo{padding:12px}
+}
+@media(max-width:480px){.products-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+
+
+
+
+<style id="lx-sb-final">
+/* ===== ADMIN SIDEBAR v4 — fresh premium design (authoritative) ===== */
+body .lx-sidebar { position:fixed !important; left:0 !important; top:0 !important; bottom:0 !important; width:264px !important; background:linear-gradient(180deg,#0d1226 0%,#171233 100%) !important; border-right:1px solid rgba(129,140,248,.14) !important; z-index:600 !important; overflow-y:auto !important; overflow-x:hidden !important; display:flex !important; flex-direction:column !important; transform:none !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; font-family:'Inter','Hind Siliguri',sans-serif !important; }
+body .lx-sidebar::before { content:'' !important; position:absolute !important; top:-80px !important; right:-60px !important; width:260px !important; height:260px !important; background:radial-gradient(circle,rgba(99,102,241,.18),transparent 70%) !important; pointer-events:none !important; }
+body .lx-brand { display:flex !important; align-items:center !important; gap:12px !important; padding:20px 18px !important; border-bottom:1px solid rgba(129,140,248,.14) !important; position:relative !important; }
+body .lx-brand-ic { width:42px !important; height:42px !important; border-radius:13px !important; background:linear-gradient(135deg,#6366f1,#a855f7) !important; display:flex !important; align-items:center !important; justify-content:center !important; color:#fff !important; font-size:1.05rem !important; box-shadow:0 8px 20px rgba(99,102,241,.4) !important; flex-shrink:0 !important; }
+body .lx-brand-tx b { color:#fff !important; font-size:1.02rem !important; font-weight:900 !important; display:block !important; line-height:1.2 !important; }
+body .lx-brand-tx small { color:#818cf8 !important; font-size:.6rem !important; font-weight:800 !important; letter-spacing:2px !important; }
+body .lx-close { margin-left:auto !important; background:rgba(255,255,255,.06) !important; border:none !important; color:#94a3b8 !important; width:30px !important; height:30px !important; border-radius:9px !important; cursor:pointer !important; font-size:1rem !important; display:none !important; align-items:center !important; justify-content:center !important; }
+body .lx-close:hover { background:#fee2e2 !important; color:#dc2626 !important; }
+body .lx-menu { padding:14px 12px !important; flex:1 !important; }
+body .sec-label { font-size:.6rem !important; font-weight:900 !important; letter-spacing:2.2px !important; color:#6b7280 !important; text-transform:uppercase !important; padding:14px 12px 6px !important; display:flex !important; align-items:center !important; gap:8px !important; }
+body .sec-label::before { content:'' !important; width:14px !important; height:2px !important; background:linear-gradient(90deg,#6366f1,#a855f7) !important; border-radius:2px !important; }
+body .sb-item { position:relative !important; display:flex !important; align-items:center !important; gap:11px !important; padding:9px 12px !important; margin:3px 0 !important; border-radius:12px !important; color:#b6c2e2 !important; text-decoration:none !important; font-size:.86rem !important; font-weight:600 !important; transition:all .2s !important; border:1px solid transparent !important; background:transparent !important; opacity:1 !important; visibility:visible !important; pointer-events:auto !important; box-shadow:none !important; transform:none !important; }
+body .sb-item .sb-ico { width:30px !important; height:30px !important; border-radius:9px !important; background:rgba(255,255,255,.05) !important; display:flex !important; align-items:center !important; justify-content:center !important; font-size:.82rem !important; flex-shrink:0 !important; transition:all .2s !important; }
+body .sb-item .sb-txt { flex:1 !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; display:block !important; }
+body .sb-item:hover { background:rgba(99,102,241,.13) !important; color:#fff !important; }
+body .sb-item:hover .sb-ico { background:rgba(99,102,241,.3) !important; }
+body .sb-item.on { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; border-color:rgba(129,140,248,.35) !important; }
+body .sb-item.on::before { content:'' !important; position:absolute !important; left:-12px !important; top:50% !important; transform:translateY(-50%) !important; width:3.5px !important; height:60% !important; background:linear-gradient(180deg,#818cf8,#c084fc) !important; border-radius:3px !important; }
+body .sb-item.on .sb-ico { background:linear-gradient(135deg,#6366f1,#a855f7) !important; color:#fff !important; }
+/* page-এর নিচের inline-highlight script সবসময় হারাবে */
+body .sb-item[style] { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; }
+body .sb-badge { background:#fbbf24 !important; color:#1e293b !important; font-size:.62rem !important; padding:1px 8px !important; border-radius:10px !important; font-weight:800 !important; margin-left:auto !important; }
+body .main { margin-left:264px !important; min-height:100vh !important; }
+body .side-overlay { display:none !important; position:fixed !important; inset:0 !important; background:rgba(7,10,26,.6) !important; z-index:590 !important; backdrop-filter:blur(2px) !important; }
+body .side-overlay.show { display:block !important; pointer-events:auto !important; }
+body .hamburger { display:none !important; }
+/* ===== মোবাইল/ট্যাবলেট: slide drawer ===== */
+@media (max-width:1024px) {
+    body .main { margin-left:0 !important; }
+    body .lx-sidebar { transform:translateX(-100%) !important; box-shadow:none !important; }
+    body .lx-sidebar.open { transform:none !important; box-shadow:30px 0 70px rgba(7,10,26,.6) !important; }
+    body .lx-close { display:flex !important; }
+    body .hamburger { display:inline-flex !important; }
+    body { overflow-x:hidden !important; }
+}
+</style>
+
+
+
+
+
+<style id="lx-ovf-fix">
+@media(max-width:768px){ body{overflow-x:hidden !important} }
+</style>
+<style id="lx-orders-badge-n">.orders-badge-n{color:#fbbf24;font-weight:900;font-size:.72rem}.orders-badge-n:empty{display:none}</style>
+<style id="lx-sb-size-pin">
+/* BUG FIX — this is the ONLY admin page that sets a root font size:
+   `html,body{...font-size:.88rem}` above. rem always resolves against the ROOT,
+   so every rem-sized sidebar child rendered ~12% smaller here (13.76px → 12.11px)
+   while the sidebar's 264px width stayed the same — which is why the sidebar
+   visibly shrank on this page and grew back on every other page.
+   These pin the sidebar to the exact px it has on all 23 other pages (root 16px).
+   Scoped to the sidebar only: the rest of this page is deliberately untouched. */
+body .lx-sidebar .lx-brand-ic     { font-size:16.80px !important; }  /* 1.05rem */
+body .lx-sidebar .lx-brand-tx b   { font-size:16.32px !important; }  /* 1.02rem */
+body .lx-sidebar .lx-brand-tx small { font-size:9.60px !important; } /*  .6rem  */
+body .lx-sidebar .lx-close        { font-size:16.00px !important; }  /* 1rem    */
+body .lx-sidebar .sec-label       { font-size:9.60px !important; }   /*  .6rem  */
+body .lx-sidebar .sb-item         { font-size:13.76px !important; }  /*  .86rem */
+body .lx-sidebar .sb-item .sb-ico { font-size:13.12px !important; }  /*  .82rem */
+body .lx-sidebar .sb-badge        { font-size:9.92px !important; }   /*  .62rem */
+</style>
+<style id="admin-mobile-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   The admin topbar measured about 474px across on a 390px phone (25px padding, an
+   h2 at 1.2rem, 12px gaps, a wide user pill), so the logout button was pushed past
+   the right edge. Several admin tables are also built by JS with NO .table-scroll
+   wrapper, so they widened the whole page instead of scrolling.
+   EVERY rule below sits inside a max-width query, so the DESKTOP LAYOUT IS
+   UNCHANGED. This is an ADDED block — no existing rule is modified or removed. */
+@media (max-width:768px){
+  .topbar { padding:10px 12px; gap:8px; }
+  .topbar h2 { font-size:.92rem; }
+  .topbar h2 i { margin-right:4px; }
+  .topbar-right { gap:6px; }
+  .user-pill { padding:5px 9px; font-size:.72rem; }
+  .btn-logout { padding:7px 10px; }
+  /* a table without a scroll wrapper would otherwise push the page wide */
+  .data-table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%; }
+}
+</style>
+<style id="panel-fullwidth-fix">
+/* 2026-09-16 — FULL-WIDTH FIX for the admin and supplier panels (this request).
+   The whole page sat in a narrow column with empty space on the right, because the
+   base rule reserves the sidebar with `margin-left`, and a block element with
+   margin-left and width:auto is only (100% - that) wide. A LATER rule in the same
+   file re-asserted the margin with !important, so the earlier mobile override lost.
+   This block is the LAST thing in the document, so it wins, and it resets width as
+   well as margin. Desktop is untouched — everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<aside class="lx-sidebar sidebar" id="sidebar">
+    <div class="lx-brand">
+        <span class="lx-brand-ic"><i class="fas fa-user-shield"></i></span>
+        <div class="lx-brand-tx"><b>AdminHub</b><small>CONTROL PANEL</small></div>
+        <button class="lx-close" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+    <nav class="lx-menu">
+        <div class="sec-label">Main</div>
+        <a href="dashboard.html" class="sb-item"><span class="sb-ico"><i class="fas fa-chart-line"></i></span><span class="sb-txt">Dashboard</span></a>
+        <a href="orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-shopping-cart"></i></span><span class="sb-txt">All Orders<span class="orders-badge-n" id="ordersBadgeN"></span></span><span class="orders-badge" style="display:none;margin-left:auto;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:.62rem;font-weight:800"></span></a>
+        <a href="multi-supplier-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-people-arrows"></i></span><span class="sb-txt">Multi-Supplier Orders<span class="orders-badge-n" id="msCount"></span></span></a>
+        <a href="products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box"></i></span><span class="sb-txt">Products</span></a>
+        <div class="sec-label">Users</div>
+        <a href="resellers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-users"></i></span><span class="sb-txt">Resellers</span></a>
+        <a href="suppliers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-warehouse"></i></span><span class="sb-txt">Suppliers</span></a>
+        <a href="supplier-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-boxes-stacked"></i></span><span class="sb-txt">Supplier Products</span></a>
+        <a href="add-reseller.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Add Reseller</span></a>
+        <a href="add-supplier.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck"></i></span><span class="sb-txt">Add Supplier</span></a>
+        <a href="approvals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-check"></i></span><span class="sb-txt">Approvals</span></a>
+        <a href="withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-money-bill-wave"></i></span><span class="sb-txt">Withdrawals</span></a>
+        <a href="supplier-withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-hand-holding-dollar"></i></span><span class="sb-txt">Supplier Withdraw</span></a>
+        <a href="transactions.html" class="sb-item"><span class="sb-ico"><i class="fas fa-receipt"></i></span><span class="sb-txt">Transaction History</span></a>
+        <a href="moderators.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-shield"></i></span><span class="sb-txt">Moderators</span></a>
+        <div class="sec-label">Referral</div>
+        <a href="referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Reseller Referral</span></a>
+        <a href="supplier-referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck-arrow-right"></i></span><span class="sb-txt">Supplier Referral</span></a>
+                <a href="myshop-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-bag-shopping"></i></span><span class="sb-txt">My Shop Orders</span></a>
+        <a href="myshop-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box-open"></i></span><span class="sb-txt">My Shop Products</span></a>
+        <div class="sec-label">Offers &amp; Banners</div>
+        <a href="add-offer.html" class="sb-item"><span class="sb-ico"><i class="fas fa-plus-circle"></i></span><span class="sb-txt">Add Offers</span></a>
+        <a href="manage-offers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-gift"></i></span><span class="sb-txt">Manage Offers</span></a>
+        <a href="add-banner.html" class="sb-item"><span class="sb-ico"><i class="fas fa-image"></i></span><span class="sb-txt">Add Banners</span></a>
+        <a href="manage-banners.html" class="sb-item"><span class="sb-ico"><i class="fas fa-images"></i></span><span class="sb-txt">Manage Banners</span></a>
+        <div class="sec-label">System</div>
+        <a href="messages.html" class="sb-item"><span class="sb-ico"><i class="fas fa-comments"></i></span><span class="sb-txt">Messages<span class="orders-badge-n" id="msgBadgeN"></span></span></a>
+        <a href="settings.html" class="sb-item"><span class="sb-ico"><i class="fas fa-cog"></i></span><span class="sb-txt">Settings</span></a>
+        <a href="../index.html" class="sb-item"><span class="sb-ico"><i class="fas fa-globe"></i></span><span class="sb-txt">Visit Site</span></a>
+    </nav>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<button class="hamburger" id="hamBtn" aria-label="Menu"><i class="fas fa-bars"></i></button>
+<div class="overlay" id="overlay"></div>
+
+<nav class="breadcrumb" aria-label="breadcrumb">
+<i class="fas fa-home"></i><a href="dashboard.html" style="color:#475569">Admin</a> &nbsp;›&nbsp; <a href="suppliers.html" style="color:#475569">Suppliers</a> &nbsp;›&nbsp; <b>Supplier Products</b>
+</nav>
+
+<main class="main" id="main">
+<div class="page-head">
+<div>
+<h1><i class="fas fa-boxes"></i> Supplier Products</h1>
+<p>Supplier-দের আপলোড করা সব product review, approve ও manage করুন</p>
+</div>
+</div>
+
+<div class="statbar" id="statbar">
+<div class="statbox"><div class="ico ic-blue"><i class="fas fa-box"></i></div><div><div class="b" id="bTotal">0</div><div class="l">Total Products</div></div></div>
+<div class="statbox"><div class="ico ic-amber"><i class="fas fa-clock"></i></div><div><div class="b" id="bPending">0</div><div class="l">Pending Approval</div></div></div>
+<div class="statbox"><div class="ico ic-green"><i class="fas fa-check"></i></div><div><div class="b" id="bActive">0</div><div class="l">Active & Published</div></div></div>
+<div class="statbox"><div class="ico ic-purple"><i class="fas fa-warehouse"></i></div><div><div class="b" id="bSuppliers">0</div><div class="l">Active Suppliers</div></div></div>
+</div>
+
+<div class="toolbar">
+<input type="text" id="searchBox" placeholder="🔍 Search product, supplier, SKU...">
+<select id="statusSel"><option value="">All Status</option><option value="pending">⏳ Pending</option><option value="approved">✅ Approved</option><option value="inactive">🚫 Inactive</option></select>
+<select id="sortSel"><option value="newest">Newest First</option><option value="oldest">Oldest First</option><option value="discount">High Discount</option><option value="price">Price Low-High</option></select>
+</div>
+
+<div class="tabs" id="statusTabs">
+<a href="#" data-st="pending" class="on"><i class="fas fa-clock"></i> Pending</a>
+<a href="#" data-st="approved"><i class="fas fa-check-circle"></i> Approved</a>
+<a href="#" data-st="inactive"><i class="fas fa-pause-circle"></i> Inactive</a>
+<a href="#" data-st="all"><i class="fas fa-list"></i> All Products</a>
+</div>
+
+<div id="emptyState" class="empty" style="display:none;background:#fff;padding:60px;border-radius:14px;color:#94a3b8;margin-top:18px"><i class="fas fa-boxes" style="font-size:3rem;display:block;margin-bottom:12px;opacity:.4"></i>No products found. Suppliers will appear here once they upload products.</div>
+
+<div class="products-grid" id="grid"></div>
+<!-- Item 3 — centered pagination (21 per page = 7 x 3) -->
+<div class="pgbar" id="spPageBar"></div>
+</main>
+
+<!-- ====== Approve/Edit Modal ====== -->
+<div class="ov" id="apprModal">
+<div class="mbox">
+<div class="mhd"><h3><i class="fas fa-shield" style="color:#10b981"></i> <span id="apTitle">Product Review</span></h3><button class="mclose" onclick="closeAppr()">&times;</button></div>
+<div class="mbody" id="apBody"></div>
+<div class="mfoot">
+<button class="cancel" onclick="closeAppr()">Cancel</button>
+<button class="reject" id="apRejectBtn"><i class="fas fa-ban"></i> Reject</button>
+<button class="approve" id="apApproveBtn"><i class="fas fa-check-double"></i> Approve & Publish</button>
+</div>
+</div>
+</div>
+
+<div id="toast"></div>
+
+<script src="../app.js"></script><script>(function(){function paint(){try{var n=(typeof adminNewOrderCount==="function")?adminNewOrderCount():(typeof adminOrderBadgeCount==="function"?adminOrderBadgeCount():0);var els=document.querySelectorAll(".orders-badge");for(var i=0;i<els.length;i++){els[i].textContent=n;els[i].style.display=n>0?"inline-block":"none";}}catch(e){}var lb=document.getElementById("ordersBadgeN");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+(function(){
+var u=sessionStorage.getItem('user_id'),t=sessionStorage.getItem('user_type');
+if(!u||(t!=='admin'&&t!=='moderator')){sessionStorage.clear();window.location.replace('login.html');return}
+
+var STATUS='pending';
+// Fallback if app.js cached (admin pricing rule)
+if(typeof window.adminPrice!=='function'){window.adminPrice=function(c){c=Number(c)||0;return c<1000?c+100:(c<=2000?c+150:c+200)}}
+if(typeof window.adminPriceLabel!=='function'){window.adminPriceLabel=function(c){c=Number(c)||0;return c<1000?'+৳100':(c<=2000?'+৳150':'+৳200')}}
+var CM={Red:'#ef4444',Blue:'#3b82f6',Green:'#22c55e',Black:'#0a0a0a',White:'#f5f5f5',Yellow:'#eab308',Pink:'#ec4899',Orange:'#f97316',Purple:'#a855f7',Gray:'#6b7280',Brown:'#92400e',Beige:'#d4a574',Navy:'#1e3a8a'};
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function showToast(m,t){
+var el=document.getElementById('toast');
+el.textContent=m;
+el.style.background=t==='error'?'#dc2626':'#0a0a0a';
+el.style.display='block';
+clearTimeout(window._tt);
+window._tt=setTimeout(function(){el.style.display='none'},2800);
+}
+
+function gV(id){
+var e=document.getElementById(id);
+return e?e.value:'';
+}
+
+function renderStats(){
+var all=getData(DB_KEYS.PRODUCTS)||[];
+var supps=getData(DB_KEYS.SUPPLIERS)||[];
+var pending=0,active=0,total=0;
+for(var i=0;i<all.length;i++){if(all[i].supplierId){total++;if(all[i].approved===false)pending++;if(all[i].approved&&all[i].is_active!==false)active++;}}
+var activesups=0;
+for(var j=0;j<supps.length;j++){if(supps[j].status==='approved'||supps[j].is_active!==false)activesups++;}
+document.getElementById('bTotal').textContent=total;
+document.getElementById('bPending').textContent=pending;
+document.getElementById('bActive').textContent=active;
+document.getElementById('bSuppliers').textContent=activesups;
+}
+
+function getSupplierName(id){
+var sups=getData(DB_KEYS.SUPPLIERS)||[];
+for(var i=0;i<sups.length;i++){if(String(sups[i].id)===String(id)){return sups[i].shopName||sups[i].name||'Supplier';}}
+var p=getData(DB_KEYS.PRODUCTS)||[];
+for(var j=0;j<p.length;j++){if(String(p[j].supplierId)===String(id)&&p[j].supplierName)return p[j].supplierName;}
+return'Supplier';
+}
+
+function getFiltered(){
+var all=getData(DB_KEYS.PRODUCTS)||[];
+var q=gV('searchBox').trim().toLowerCase();
+var sf=STATUS||gV('statusSel');
+var sortBy=gV('sortSel');
+var list=all.filter(function(p){
+if(!p.supplierId)return false;
+if(q){
+if((p.name||'').toLowerCase().indexOf(q)===-1&&(p.sku||'').toLowerCase().indexOf(q)===-1&&(p.supplierName||'').toLowerCase().indexOf(q)===-1)return false;
+}
+if(sf==='pending'&&!(p.approved===false))return false;
+if(sf==='approved'&&!(p.approved===true&&p.is_active!==false))return false;
+if(sf==='inactive'&&p.is_active!==false)return false;
+if(sf==='active'&&p.is_active===false)return false;
+return true;
+});
+if(sortBy==='oldest')list.sort(function(a,b){return(a.id||0)-(b.id||0)});
+else if(sortBy==='discount')list.sort(function(a,b){return(b.discount||0)-(a.discount||0)});
+else if(sortBy==='price')list.sort(function(a,b){return(a.cost||a.price||0)-(b.cost||b.price||0)});
+else list.sort(function(a,b){return(b.id||0)-(a.id||0)});
+return list;
+}
+
+/* Item 3 — 21 products per page (7 columns x 3 rows) */
+var SP_PAGE_SIZE=21;
+var spPage=1;
+window.spGoPage=function(n){spPage=n;renderGrid();var g=document.getElementById('grid');if(g&&g.scrollIntoView)g.scrollIntoView({behavior:'smooth',block:'start'});};
+function renderPageBar(total){
+var bar=document.getElementById('spPageBar');
+if(!bar)return;
+if(total<=1){bar.innerHTML='';return;}
+var h='';
+if(spPage>1)h+='<button onclick="spGoPage('+(spPage-1)+')">&lsaquo; Prev</button>';
+var maxBtns=7,start=Math.max(1,spPage-3),end=Math.min(total,start+maxBtns-1);
+start=Math.max(1,end-maxBtns+1);
+if(start>1)h+='<button onclick="spGoPage(1)">1</button>'+(start>2?'<span style="color:#cbd5e1">…</span>':'');
+for(var i=start;i<=end;i++)h+='<button class="'+(i===spPage?'on':'')+'" onclick="spGoPage('+i+')">'+i+'</button>';
+if(end<total)h+=(end<total-1?'<span style="color:#cbd5e1">…</span>':'')+'<button onclick="spGoPage('+total+')">'+total+'</button>';
+if(spPage<total)h+='<button onclick="spGoPage('+(spPage+1)+')">Next &rsaquo;</button>';
+bar.innerHTML=h;
+}
+function renderGrid(){
+var all=getFiltered();
+var totalPages=Math.max(1,Math.ceil(all.length/SP_PAGE_SIZE));
+if(spPage>totalPages)spPage=totalPages;
+if(spPage<1)spPage=1;
+var list=all.slice((spPage-1)*SP_PAGE_SIZE,spPage*SP_PAGE_SIZE);
+var grid=document.getElementById('grid');
+var empty=document.getElementById('emptyState');
+if(!all.length){empty.style.display='block';grid.innerHTML='';renderPageBar(1);return;}
+empty.style.display='none';
+var html='';
+for(var i=0;i<list.length;i++){
+var p=list[i];
+var supName=getSupplierName(p.supplierId);
+var cost=p.cost||p.buy_price||0;
+var rp=p.reseller_price||adminPrice(cost)||0;
+var cp=p.customer_price||Math.round(rp*1.8)||0;
+var discount=p.discount||0;
+var stock=p.stock||0;
+var stockClass=stock===0?'b-d':(stock<=5?'b-w':'b-a');
+var stockText=stock===0?'Out':(stock<=5?'Low':'In Stock');
+var img=p.image?'<img src="'+esc(p.image)+'" alt="'+esc(p.name)+'">':'<div class="noimg"><i class="fas fa-box"></i></div>';
+var adminChecked=(p.is_active!==false);
+var status=p.approved===false?'<span class="badge b-w">⏳ Pending</span>':(p.is_active===false?'<span class="badge b-d">Inactive</span>':'<span class="badge b-a">✓ Active</span>');
+html+='<div class="pcard'+(p.approved===false?' pending':'')+'">';
+html+='<div class="pimg">'+img;
+if(discount>0)html+='<div class="disc-tag">-'+discount+'%</div>';
+if(stock<=5)html+='<div class="low-tag"><i class="fas fa-exclamation-triangle"></i> '+stockText+'</div>';
+html+='<div class="phover">';
+html+='<button data-act="view" data-id="'+esc(p.id)+'" title="View"><i class="fas fa-eye"></i></button>';if(p.approved===false)html+='<button data-act="approve" data-id="'+esc(p.id)+'" title="Approve" style="color:#10b981"><i class="fas fa-check"></i></button>';
+html+='<button data-act="edit" data-id="'+esc(p.id)+'" title="Edit"><i class="fas fa-pen"></i></button>';
+html+='<button class="del" data-act="toggle" data-id="'+esc(p.id)+'" title="Toggle Active"><i class="fas fa-'+(adminChecked?'pause':'play')+'"></i></button>';
+html+='<button class="del" data-act="delete" data-id="'+esc(p.id)+'" title="Delete"><i class="fas fa-trash"></i></button>';
+html+='</div></div>';
+html+='<div class="pinfo">';
+/* Item 9 — Category › Subcategory › Sub-subcategory */
+html+='<span class="cat-badge" title="'+esc((typeof productCategoryChain==='function'?productCategoryChain(p):(p.category||'Uncategorized')))+'">'+esc((typeof productCategoryChain==='function'?productCategoryChain(p):(p.category||'Uncategorized')))+'</span>';
+html+='<h4 title="'+esc(p.name)+'">'+esc(p.name||'Untitled')+'</h4>';
+html+='<div class="sup-tag"><i class="fas fa-warehouse"></i> '+esc(supName)+'</div>';
+if(p.sku)html+='<div class="sku-small">SKU: '+esc(p.sku)+'</div>';
+if(p.colors&&p.colors.length){
+html+='<div style="margin-bottom:6px">';
+for(var c=0;c<Math.min(p.colors.length,4);c++){html+='<span class="color-chip" style="background:'+esc(CM[p.colors[c]]||p.colors[c].toLowerCase()||'#94a3b8')+'"></span>';}
+if(p.colors.length>4)html+='<span class="size-pill">+'+p.colors.length+'</span>';
+html+='</div>';}
+if(p.sizes&&p.sizes.length){
+html+='<div style="margin-bottom:6px">';
+for(var s=0;s<Math.min(p.sizes.length,5);s++){html+='<span class="size-pill">'+esc(p.sizes[s])+'</span>';}
+if(p.sizes.length>5)html+='<span class="size-pill">+'+p.sizes.length+'</span>';
+html+='</div>';}
+html+='<div class="pr-row"><div><div class="l">Customer Price</div><div class="retail">'+formatCurrency(cp)+' <span class="discount-pill">3-tier</span></div></div><div style="text-align:right"><div class="l">Reseller</div><div class="resell">'+formatCurrency(rp)+'</div></div></div>';
+html+='<div style="display:flex;justify-content:space-between;align-items:center;font-size:.72rem;color:#64748b;margin-bottom:4px"><span>Stock: <b style="color:'+(stock<=5?'#dc2626':'#0f172a')+'">'+stock+'</b></span>'+status+'</div>';
+html+='<button class="act-tgl '+(adminChecked?'act-on':'act-off')+'" data-act="toggle" data-id="'+esc(p.id)+'">'+(adminChecked?'✓ Active — click to deactivate':'○ Inactive — click to activate')+'</button>';
+html+='</div></div>';
+}
+document.getElementById('grid').innerHTML=html;
+renderPageBar(totalPages);
+}
+
+function quickToggle(id){
+var ps=getData(DB_KEYS.PRODUCTS)||[];
+for(var i=0;i<ps.length;i++){if(String(ps[i].id)===String(id)){ps[i].is_active=ps[i].is_active===false;break;}}
+setData(DB_KEYS.PRODUCTS,ps);
+addNotification(ps.find(function(x){return String(x.id)===String(id)}).supplierId,'product','আপনার product admin দ্বারা status পরিবর্তন করা হয়েছে',true);
+showToast('Status updated!','success');
+renderGrid();renderStats();
+}
+
+function quickDelete(id){
+/* MODERATOR (this request) — a moderator may NOT delete a product.
+   They can take it off sale with the Active toggle, which is the
+   supported alternative, so nothing is unreachable for them. */
+if (typeof blockIfModerator === 'function' && blockIfModerator('প্রোডাক্ট ডিলিট (Out of Stock করুন)')) return;
+if(!confirm('সতর্কতা: এই product পুরোপুরি মুছে যাবে। নিশ্চিত?'))return;
+var ps=getData(DB_KEYS.PRODUCTS)||[];
+var p=null;var out=[];
+for(var i=0;i<ps.length;i++){if(String(ps[i].id)===String(id)){p=ps[i];continue;}out.push(ps[i]);}
+setData(DB_KEYS.PRODUCTS,out);
+if(p&&p.supplierId)addNotification(p.supplierId,'product','আপনার product "'+p.name+'" admin দ্বারা মুছে ফেলা হয়েছে',true);
+logActivity('product_deleted_admin','Admin deleted: '+p.name);
+showToast('Product deleted!','success');
+renderGrid();renderStats();
+}
+window.quickToggle=quickToggle;window.quickDelete=quickDelete;
+
+var APPR_DATA=null;
+window.openAppr=function(id,mode){
+
+var ps=getData(DB_KEYS.PRODUCTS)||[];
+var p=null;for(var i=0;i<ps.length;i++){if(String(ps[i].id)===String(id)){p=ps[i];break;}}
+if(!p)return;
+APPR_DATA={id:id,mode:mode||'view'};
+var sizes=p.sizes?((Array.isArray(p.sizes)?p.sizes.join(', '):p.sizes)):'';
+var colors=p.colors?((Array.isArray(p.colors)?p.colors.join(', '):p.colors)):'';
+var discount=p.discount||p.discount_percent||0;
+var cost=p.cost||p.buy_price||0;
+var rp=p.reseller_price||adminPrice(cost)||0;
+var cp=p.customer_price||Math.round(rp*1.8)||0;
+var supName=getSupplierName(p.supplierId);
+var isPending=p.approved===false;
+
+var h='';
+h+='<div style="display:grid;grid-template-columns:200px 1fr;gap:18px;margin-bottom:18px;align-items:flex-start">';
+if(p.image)h+='<img src="'+esc(p.image)+'" style="width:200px;height:200px;border-radius:10px;object-fit:cover;border:1px solid #e2e8f0">';
+else h+='<div class="noimg" style="width:200px;height:200px;background:#f8fafc;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:3rem"><i class="fas fa-box"></i></div>';
+h+='<div>';
+h+='<div style="display:flex;gap:8px;margin-bottom:6px"><span class="badge '+(isPending?'b-w':'b-a')+'">'+p.name+'</span></div>';
+h+='<div style="font-size:.85rem;color:#475569;line-height:1.7">';
+h+='<div><b>Supplier:</b> '+esc(supName)+'</div>';
+h+='<div><b>Category:</b> '+(p.category||'—')+'</div>';
+if(p.sku)h+='<div><b>SKU:</b> '+esc(p.sku)+'</div>';
+h+='<div><b>Stock:</b> '+(p.stock||0)+' pcs</div>';
+if(p.material)h+='<div><b>Material:</b> '+esc(p.material)+'</div>';
+h+='</div></div></div>';
+
+h+='<div class="summary-box">';
+h+='<div class="it cost"><div class="l">Supplier Price</div><div class="v">'+formatCurrency(cost)+'</div></div>';
+h+='<div class="it resell"><div class="l">Reseller Price</div><div class="v">'+formatCurrency(rp)+'</div></div>';
+h+='<div class="it cust"><div class="l">Customer Price</div><div class="v">'+formatCurrency(cp)+'</div></div>';
+h+='<div class="it"><div class="l">Status</div><div class="v" style="font-size:.85rem">'+(isPending?'<span class="badge b-w">⏳ Pending</span>':(p.is_active===false?'<span class="badge b-d">Inactive</span>':'<span class="badge b-a">Active</span>'))+'</div></div>';
+h+='</div>';
+h+='<div style="font-size:.72rem;color:#64748b;margin-top:8px;background:#f8fafc;border-radius:8px;padding:8px 12px"><i class="fas fa-tag" style="color:#10b981"></i> রিসেলার প্রাইস অটো হিসাব: <b>৳1000-এর নিচে +৳100</b> • <b>৳1000–2000 +৳150</b> • <b>৳2000-এর উপরে +৳200</b></div>';
+if(colors){
+h+='<div class="fg"><label>Colors</label><div>';
+var cs=p.colors;
+for(var c=0;c<cs.length;c++)h+='<span class="color-chip" style="background:'+esc(CM[cs[c]]||cs[c].toLowerCase())+';margin-right:6px"></span><span style="font-size:.78rem;color:#475569;margin-right:12px">'+esc(cs[c])+'</span>';
+h+='</div></div>';}
+if(sizes){
+h+='<div class="fg"><label>Sizes</label><div>';
+var ss=p.sizes;
+for(var s=0;s<ss.length;s++)h+='<span class="size-pill" style="margin-right:4px;font-size:.78rem">'+esc(ss[s])+'</span>';
+h+='</div></div>';}
+if(p.description)h+='<div class="fg"><label>Description</label><textarea rows="3" readonly style="background:#f8fafc;cursor:not-allowed">'+esc(p.description)+'</textarea></div>';
+
+if(mode==='edit'){
+h+='<hr style="margin:16px 0;border:none;border-top:1px dashed #e2e8f0"><div style="font-weight:800;margin-bottom:8px;color:#10b981"><i class="fas fa-pen"></i> Edit Mode — Admin Override</div>';
+h+='<div class="fg"><label>Product Name <span class="req">*</span></label><input id="ep_name" value="'+esc(p.name)+'"></div>';
+h+='<div class="fg-row"><div class="fg"><label>SKU</label><input id="ep_sku" value="'+esc(p.sku)+'"></div>';
+h+='<div class="fg"><label>Category <span class="req">*</span></label><input id="ep_cat" value="'+esc(p.category)+'"></div></div>';
+h+='<div class="fg"><label>Description</label><textarea id="ep_desc" rows="2">'+esc(p.description||'')+'</textarea></div>';
+h+='<div class="fg-row-3"><div class="fg"><label>Customer Price (৳) *</label><div class="price-in"><span class="taka">৳</span><input type="number" id="ep_cprice" value="'+cp+'"></div></div>';
+h+='<div class="fg"><label>Reseller Price (৳) *</label><div class="price-in"><span class="taka">৳</span><input type="number" id="ep_rprice" value="'+rp+'"></div></div>';
+h+='<div class="fg"><label>Stock *</label><input type="number" id="ep_stock" value="'+(p.stock||0)+'"></div></div>';
+h+='<div class="fg-row-3"><div class="fg"><label>Supplier Cost (৳)</label><div class="price-in"><span class="taka">৳</span><input type="number" id="ep_cost" value="'+cost+'"></div></div>';
+h+='<div class="fg"><label>Discount %</label><input type="number" id="ep_disc" value="'+discount+'" min="0" max="90"></div>';
+h+='<div class="fg"><label>YouTube</label><input id="ep_yt" value="'+esc(p.youtube||'')+'"></div></div>';
+h+='<div class="fg-row"><div class="fg"><label>Image URL</label><input id="ep_img" value="'+esc(p.image||'')+'"></div>';
+h+='<div class="fg"><label>Material</label><input id="ep_mat" value="'+esc(p.material||'')+'"></div></div>';
+h+='<div class="fg-row"><div class="fg"><label>Sizes (csv)</label><input id="ep_sizes" value="'+esc(sizes)+'"></div>';
+h+='<div class="fg"><label>Colors (csv)</label><input id="ep_colors" value="'+esc(colors)+'"></div></div>';
+h+='<div class="warn-box"><i class="fas fa-shield-alt"></i> Admin Override — Save করলে supplier-কে notification যাবে।</div>';
+}
+
+document.getElementById('apTitle').innerHTML=isPending?'⏳ Pending Product Review':(mode==='edit'?'✏️ Edit Product (Admin)':'👁 Product Details');
+document.getElementById('apBody').innerHTML=h;
+document.getElementById('apRejectBtn').style.display=isPending?'':'none';
+document.getElementById('apApproveBtn').style.display=(isPending||mode==='edit')?'':'none';
+document.getElementById('apprModal').classList.add('show');
+}
+
+window.closeAppr=function(){document.getElementById('apprModal').classList.remove('show')}
+
+document.getElementById('apApproveBtn').onclick=function(){
+if(!APPR_DATA)return;
+if(APPR_DATA.mode==='edit'){saveEdit();return;}
+var id=APPR_DATA.id;
+var ps=getData(DB_KEYS.PRODUCTS)||[];
+for(var i=0;i<ps.length;i++){if(String(ps[i].id)===String(id)){var base=ps[i].cost||ps[i].price||0;var rp=adminPrice(base);ps[i].buy_price=base;ps[i].price=rp;ps[i].reseller_price=rp;if(!ps[i].customer_price)ps[i].customer_price=Math.round(rp*1.8);ps[i].approved=true;ps[i].is_active=true;ps[i].published=true;ps[i].approvedAt=new Date().toISOString();break;}}
+setData(DB_KEYS.PRODUCTS,ps);
+var p=ps.find(function(x){return String(x.id)===String(id)});
+if(p&&p.supplierId)addNotification(p.supplierId,'product','আপনার product "'+p.name+'" approve হয়েছে! Reseller price: '+formatCurrency(p.reseller_price||p.price)+' ৳',true);
+logActivity('product_approved','Admin approved: '+p.name);
+showToast('✓ Product approved & published!','success');
+closeAppr();renderGrid();renderStats();
+};
+
+document.getElementById('apRejectBtn').onclick=function(){
+/* MODERATOR (this request) — Reject removes the product from the store
+   outright, so it is a product delete and is blocked for a moderator. */
+if (typeof blockIfModerator === 'function' && blockIfModerator('প্রোডাক্ট ডিলিট (Out of Stock করুন)')) return;
+if(!confirm('Reject করলে product মুছে যাবে। নিশ্চিত?'))return;
+if(!APPR_DATA)return;
+var id=APPR_DATA.id;
+var ps=getData(DB_KEYS.PRODUCTS)||[];
+var p=null;var out=[];
+for(var i=0;i<ps.length;i++){if(String(ps[i].id)===String(id)){p=ps[i];continue;}out.push(ps[i]);}
+setData(DB_KEYS.PRODUCTS,out);
+if(p&&p.supplierId)addNotification(p.supplierId,'product','আপনার product "'+p.name+'" reject হয়েছে — ডিটেইলস ঠিক করে আবার আপলোড করুন',true);
+logActivity('product_rejected','Admin rejected: '+p.name);
+showToast('Product rejected!','success');
+closeAppr();renderGrid();renderStats();
+window.apRejectBtn=document.getElementById('apRejectBtn');};
+
+// === Edit mode Save ===
+window.saveEdit=function(){
+if(!APPR_DATA)return;
+var ps=getData(DB_KEYS.PRODUCTS)||[];
+var p=null;for(var i=0;i<ps.length;i++){if(String(ps[i].id)===String(APPR_DATA.id)){p=ps[i];break;}}
+if(!p)return;
+p.name=gV('ep_name').trim();p.sku=gV('ep_sku').trim();p.category=gV('ep_cat').trim();
+p.description=gV('ep_desc');p.stock=parseInt(gV('ep_stock'))||0;
+p.discount=parseInt(gV('ep_disc'))||0;p.cost=parseInt(gV('ep_cost'))||0;p.buy_price=p.cost;
+p.reseller_price=parseInt(gV('ep_rprice'))||p.cost;p.price=p.reseller_price;
+p.customer_price=parseInt(gV('ep_cprice'))||Math.round(p.reseller_price*1.8);
+p.image=gV('ep_img');p.youtube=gV('ep_yt');p.material=gV('ep_mat');
+var sRaw=gV('ep_sizes');var cRaw=gV('ep_colors');
+p.sizes=sRaw?sRaw.split(',').map(function(x){return x.trim()}).filter(Boolean):[];
+p.colors=cRaw?cRaw.split(',').map(function(x){return x.trim()}).filter(Boolean):[];
+setData(DB_KEYS.PRODUCTS,ps);
+if(p.supplierId)addNotification(p.supplierId,'product','আপনার product "'+p.name+'" admin দ্বারা edit করা হয়েছে',true);
+logActivity('product_edited_admin','Admin edited: '+p.name);
+showToast('✓ Product updated!','success');
+closeAppr();renderGrid();
+}
+
+    function spEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+    /* 2026-09-15 — the markup calls this from an inline handler (an on* attribute), and an
+       inline handler runs in GLOBAL scope. It was declared inside this page IIFE, so the
+       call threw "spCloseEdit is not defined" and the control did nothing. Function declarations
+       hoist, so exposing it here is safe. */
+    window.spCloseEdit = spCloseEdit;
+    function spCloseEdit(){var m=document.getElementById('spEditModal');if(m)m.classList.remove('show')}
+    window.spOpenEdit=function(pid){
+        var ps=getData(DB_KEYS.PRODUCTS)||[];
+        var p=null,supId=null;
+        for(var i=0;i<ps.length;i++){if(String(ps[i].id)===String(pid)){p=ps[i];supId=ps[i].supplierId;break}}
+        if(!p)return;
+        var m=document.getElementById('spEditModal');
+        if(!m){m=document.createElement('div');m.id='spEditModal';m.className='show';m.innerHTML='<div class="modal"><div id="supProdBody"></div></div>';document.body.appendChild(m)}
+        else{m.classList.add('show')}
+        supEditProd(pid,supId);
+    };
+
+    var SP_PALETTE = [['Red','#ef4444'],['Pink','#ec4899'],['Orange','#f97316'],['Yellow','#eab308'],['Green','#22c55e'],['Teal','#14b8a6'],['Blue','#3b82f6'],['Indigo','#6366f1'],['Purple','#a855f7'],['White','#f8fafc'],['Black','#111827'],['Gray','#6b7280'],['Brown','#92400e'],['Beige','#d4b896'],['Navy','#1e3a5f'],['Maroon','#7f1d1d'],['Gold','#ca8a04'],['Silver','#94a3b8']];
+    var SP_SIZES = { Clothing: ['XS','S','M','L','XL','XXL','3XL','4XL'], Shoes: ['36','37','38','39','40','41','42','43'], Kids: ['1-2 Years','2-3 Years','3-4 Years','4-5 Years','5-6 Years'] };
+    window._spImgs = []; window._spCols = []; window._spSzs = []; window._spSzPreset = 'Clothing'; window._spRpTouched = false;
+
+    window.spFillSubSubs = function(keepVal) {
+        var cs = document.getElementById('sp_cat'); var sb = document.getElementById('sp_sub'); var ssub = document.getElementById('sp_subsub');
+        if (!cs || !sb || !ssub) return;
+        var cats = getData(DB_KEYS.CATEGORIES) || []; var c = null;
+        for (var i = 0; i < cats.length; i++) { if (cats[i].name === cs.value) c = cats[i]; }
+        var list = (c && c.subSubs && c.subSubs[sb.value]) ? c.subSubs[sb.value] : [];
+        var cur = (keepVal !== undefined && keepVal !== null) ? keepVal : ssub.value;
+        var h = '<option value="">Sub-sub category (optional)</option>';
+        for (var j = 0; j < list.length; j++) h += '<option value="' + spEsc(list[j]) + '">' + spEsc(list[j]) + '</option>';
+        h += '<option value="__NEW_SS__">➕ Create Sub-Sub Category...</option>';
+        ssub.innerHTML = h;
+        if (cur && cur !== '__NEW_SS__') ssub.value = cur;
+        spSubSubChange();
+    };
+    window.spSubSubChange = function() {
+        var ssub = document.getElementById('sp_subsub'); var w = document.getElementById('spNewSubSubWrap');
+        if (!ssub || !w) return;
+        w.style.display = ssub.value === '__NEW_SS__' ? 'flex' : 'none';
+    };
+    window.spAddSubSubNew = function() {
+        var cs = document.getElementById('sp_cat'); var sb = document.getElementById('sp_sub'); var el = document.getElementById('sp_newsubsub');
+        var n = el.value.trim(); if (!n) { showToast('Sub-sub category-র নাম লিখুন!', 'error'); return; }
+        if (!cs.value || !sb.value) { showToast('আগে category ও sub-category বাছুন!', 'error'); return; }
+        var cats = getData(DB_KEYS.CATEGORIES) || [];
+        for (var i = 0; i < cats.length; i++) {
+            if (cats[i].name === cs.value) {
+                cats[i].subSubs = cats[i].subSubs || {};
+                var arr = cats[i].subSubs[sb.value] || [];
+                var ex = false;
+                for (var j = 0; j < arr.length; j++) { if (arr[j].toLowerCase() === n.toLowerCase()) ex = true; }
+                if (ex) { showToast('এই sub-sub category already আছে!', 'error'); return; }
+                arr.push(n);
+                cats[i].subSubs[sb.value] = arr;
+                break;
+            }
+        }
+        setData(DB_KEYS.CATEGORIES, cats);
+        el.value = '';
+        spFillSubSubs(n);
+        showToast('✅ Sub-sub category "' + n + '" created!', 'success');
+        logActivity('subsubcategory_created', 'Admin created sub-sub category: ' + n + ' under ' + cs.value + ' → ' + sb.value);
+    };
+    window.spFillSubs = function(keepVal, subSubKeep) {
+        var cs = document.getElementById('sp_cat'); var sub = document.getElementById('sp_sub');
+        if (!cs || !sub) return;
+        var cats = getData(DB_KEYS.CATEGORIES) || []; var c = null;
+        for (var i = 0; i < cats.length; i++) { if (cats[i].name === cs.value) c = cats[i]; }
+        var subs = (c && c.subs) || [];
+        var cur = (keepVal !== undefined && keepVal !== null) ? keepVal : sub.value;
+        var h = '<option value="">Sub-category বাছুন (optional)</option>';
+        for (var j = 0; j < subs.length; j++) h += '<option value="' + spEsc(subs[j]) + '">' + spEsc(subs[j]) + '</option>';
+        h += '<option value="__new__">➕ Create Sub-Category...</option>';
+        sub.innerHTML = h;
+        if (cur && cur !== '__new__') sub.value = cur;
+        spSubChange(subSubKeep);
+    };
+    window.spSubChange = function(subSubKeep) {
+        var sub = document.getElementById('sp_sub'); var w = document.getElementById('spNewSubWrap');
+        if (!sub || !w) return;
+        w.style.display = sub.value === '__new__' ? 'flex' : 'none';
+        if (typeof spFillSubSubs === 'function') spFillSubSubs(subSubKeep);
+    };
+    window.spAddSubNew = function() {
+        var cs = document.getElementById('sp_cat'); var el = document.getElementById('sp_newsub');
+        var n = el.value.trim(); if (!n) { showToast('Sub-category-র নাম লিখুন!', 'error'); return; }
+        if (!cs.value) { showToast('আগে category বাছুন!', 'error'); return; }
+        var cats = getData(DB_KEYS.CATEGORIES) || [];
+        for (var i = 0; i < cats.length; i++) {
+            if (cats[i].name === cs.value) {
+                cats[i].subs = cats[i].subs || [];
+                var ex = false;
+                for (var j = 0; j < cats[i].subs.length; j++) { if (cats[i].subs[j].toLowerCase() === n.toLowerCase()) ex = true; }
+                if (ex) { showToast('এই sub-category already আছে!', 'error'); return; }
+                cats[i].subs.push(n);
+                break;
+            }
+        }
+        setData(DB_KEYS.CATEGORIES, cats);
+        try { var ss = getData(DB_KEYS.SUB_SECTIONS) || []; var ex2 = false; for (var k = 0; k < ss.length; k++) { if ((ss[k].name || ss[k]) === n) ex2 = true; } if (!ex2) ss.push({ id: Date.now(), name: n, emoji: '🏷', image: '' }); setData(DB_KEYS.SUB_SECTIONS, ss); } catch (e) {}
+        el.value = '';
+        spFillSubs(n);
+        showToast('✅ Sub-category "' + n + '" created!', 'success');
+        logActivity('subcategory_created', 'Admin created sub-category: ' + n + ' under ' + cs.value);
+    };
+    window.sptab = function(n) {
+        var tabs = document.querySelectorAll('#spTabs .spstab');
+        for (var i = 0; i < tabs.length; i++) tabs[i].classList.toggle('on', i === n);
+        var panes = document.querySelectorAll('#spPanes .sppane');
+        for (var j = 0; j < panes.length; j++) panes[j].style.display = (j === n) ? 'block' : 'none';
+        var dots = document.querySelectorAll('#spDots i');
+        for (var d = 0; d < dots.length; d++) { dots[d].style.background = d === n ? '#10b981' : '#cbd5e1'; dots[d].style.width = d === n ? '18px' : '6px'; }
+    };
+    window.spTog = function(id) { var el = document.getElementById(id); if (el) el.classList.toggle('off'); };
+
+    window.spTogCol = function(name) {
+        var i = window._spCols.indexOf(name);
+        if (i === -1) window._spCols.push(name); else window._spCols.splice(i, 1);
+        spDrawCols();
+    };
+    window.spAddCol = function() {
+        var el = document.getElementById('sp_newcol'); if (!el) return;
+        var n = el.value.trim(); if (!n) return;
+        if (window._spCols.indexOf(n) === -1) window._spCols.push(n);
+        el.value = ''; spDrawCols();
+    };
+    function spDrawCols() {
+        var box = document.getElementById('spColGrid'); if (!box) return;
+        var items = box.querySelectorAll('.spcol');
+        for (var i = 0; i < items.length; i++) { if (window._spCols.indexOf(items[i].getAttribute('data-c')) !== -1) items[i].classList.add('on'); else items[i].classList.remove('on'); }
+        var chips = document.getElementById('spColChips'); if (!chips) return;
+        var h = '';
+        for (var c = 0; c < window._spCols.length; c++) h += '<span class="spchip">' + spEsc(window._spCols[c].toUpperCase()) + '</span> ';
+        chips.innerHTML = h;
+        if (typeof spSumUpd === 'function') spSumUpd();
+    }
+    window.spSzPreset = function(name) {
+        window._spSzPreset = name;
+        var ps = document.querySelectorAll('.spszp');
+        for (var i = 0; i < ps.length; i++) ps[i].classList.toggle('on', ps[i].getAttribute('data-p') === name);
+        spDrawSzs();
+    };
+    window.spTogSz = function(sz) {
+        var i = window._spSzs.indexOf(sz);
+        if (i === -1) window._spSzs.push(sz); else window._spSzs.splice(i, 1);
+        spDrawSzs();
+    };
+    window.spAddSz = function() {
+        var el = document.getElementById('sp_newsz'); if (!el) return;
+        var n = el.value.trim(); if (!n) return;
+        if (window._spSzs.indexOf(n) === -1) window._spSzs.push(n);
+        el.value = ''; spDrawSzs();
+    };
+    function spDrawSzs() {
+        var row = document.getElementById('spSzRow'); if (!row) return;
+        var list = SP_SIZES[window._spSzPreset] || [];
+        var h = '';
+        for (var i = 0; i < list.length; i++) h += '<span class="spszc' + (window._spSzs.indexOf(list[i]) !== -1 ? ' on' : '') + '" onclick="spTogSz(\'' + list[i] + '\')">' + list[i] + '</span> ';
+        row.innerHTML = h;
+        var chips = document.getElementById('spSzChips'); if (!chips) return;
+        var ch = '';
+        for (var c = 0; c < window._spSzs.length; c++) ch += '<span class="spchip">' + spEsc(window._spSzs[c]) + '</span> ';
+        chips.innerHTML = ch;
+        if (typeof spSumUpd === 'function') spSumUpd();
+    }
+    window.spPickImgs = function(e) {
+        var fl = e.target.files || [];
+        for (var i = 0; i < fl.length; i++) {
+            if (fl[i].size > 2 * 1048576) { showToast('One image too large (max 2MB)!', 'error'); continue; }
+            (function(file) { var r = new FileReader(); r.onload = function() { window._spImgs.push(r.result); spDrawImgs(); }; r.readAsDataURL(file); })(fl[i]);
+        }
+        e.target.value = '';
+    };
+    window.spAddUrl = function() { var u = prompt('Image URL দিন:'); if (!u) return; window._spImgs.push(u.trim()); spDrawImgs(); };
+    window.spRmImg = function(i) { window._spImgs.splice(i, 1); spDrawImgs(); };
+    /* ---- drag & drop reordering (this request) ----
+       Index-based over window._spImgs, which stays the single source of truth:
+       every handler re-renders from the array, so a stale DOM node can never win.
+       Dropping a thumbnail onto the first slot makes it the MAIN image. */
+    var _spDragFrom = -1;
+    window.spDragStart = function(i, ev) {
+        _spDragFrom = i;
+        if (ev) {
+            if (ev.dataTransfer) { ev.dataTransfer.effectAllowed = 'move'; try { ev.dataTransfer.setData('text/plain', String(i)); } catch (e) {} }
+            var el = ev.currentTarget || ev.target;
+            if (el && el.classList) el.classList.add('dragging');
+        }
+    };
+    window.spDragOver = function(ev) {
+        if (ev) { if (ev.preventDefault) ev.preventDefault(); if (ev.dataTransfer) ev.dataTransfer.dropEffect = 'move'; }
+        return false;
+    };
+    window.spDragEnter = function(ev) { var el = ev && (ev.currentTarget || ev.target); if (el && el.classList) el.classList.add('dragover'); };
+    window.spDragLeave = function(ev) { var el = ev && (ev.currentTarget || ev.target); if (el && el.classList) el.classList.remove('dragover'); };
+    window.spDragEnd = function() { _spDragFrom = -1; spClearDragMarks(); };
+    window.spDrop = function(i, ev) {
+        if (ev) { if (ev.preventDefault) ev.preventDefault(); if (ev.stopPropagation) ev.stopPropagation(); }
+        spMoveTo(_spDragFrom, i);
+        _spDragFrom = -1;
+        return false;
+    };
+    function spMoveTo(from, to) {
+        if (from < 0 || to < 0 || from === to) return;
+        if (from >= window._spImgs.length || to >= window._spImgs.length) return;
+        var v = window._spImgs.splice(from, 1)[0];
+        window._spImgs.splice(to, 0, v);
+        spDrawImgs();
+    }
+    function spClearDragMarks() {
+        var cells = document.querySelectorAll('#spGal .spthumb');
+        for (var i = 0; i < cells.length; i++) { if (cells[i].classList) { cells[i].classList.remove('dragging'); cells[i].classList.remove('dragover'); } }
+    }
+    function spDrawImgs() {
+        var gal = document.getElementById('spGal'); if (!gal) return;
+        var h = '';
+        /* The "Main" tag is now only on the FIRST tile — it used to be printed on
+           every tile, which made the badge meaningless. */
+        for (var i = 0; i < window._spImgs.length; i++) h += '<div class="spthumb" draggable="true" ondragstart="spDragStart(' + i + ',event)" ondragover="spDragOver(event)" ondragenter="spDragEnter(event)" ondragleave="spDragLeave(event)" ondrop="spDrop(' + i + ',event)" ondragend="spDragEnd(event)"><img src="' + window._spImgs[i] + '" draggable="false"><button class="x" onclick="spRmImg(' + i + ')">✕</button>' + (i === 0 ? '<span class="main">Main</span>' : '') + '</div>';
+        gal.innerHTML = h;
+        var msg = document.getElementById('spGalMsg');
+        if (msg) msg.textContent = window._spImgs.length + ' image(s) uploaded. First image = main display.';
+        if (typeof spSumUpd === 'function') spSumUpd();
+    }
+    window.spCostSync = function() {
+        var c = document.getElementById('sp_cost'), r = document.getElementById('sp_rp');
+        if (!c || !r) return;
+        if (!window._spRpTouched) r.value = adminPrice(parseInt(c.value) || 0);
+        if (typeof spSumUpd === 'function') spSumUpd();
+    };
+    window.spRpTouch = function() { window._spRpTouched = true; };
+    window.spSumUpd = function() {
+        var box = document.getElementById('spSum'); if (!box) return;
+        var g = function(id) { var e = document.getElementById(id); return e ? e.value : ''; };
+        var rp = parseInt(g('sp_rp')) || 0;
+        var h = '';
+        h += '<div class="r"><b>Name:</b><span>' + spEsc(g('sp_name') || '—') + '</span></div>';
+        h += '<div class="r"><b>SKU:</b><span>' + spEsc(g('sp_sku') || '—') + '</span></div>';
+        var cs = document.getElementById('sp_cat');
+        h += '<div class="r"><b>Category:</b><span>' + spEsc(cs && cs.value ? cs.value : '—') + '</span></div>';
+        h += '<div class="r"><b>Brand:</b><span>' + spEsc(g('sp_brand') || '—') + '</span></div>';
+        h += '<div class="r"><b>Customer Price:</b><span>' + formatCurrency(parseInt(g('sp_cprice')) || 0) + '</span></div>';
+        h += '<div class="r"><b>Reseller Price:</b><span class="sptk" style="color:#2563eb;">' + formatCurrency(rp) + '</span></div>';
+        h += '<div class="r"><b>Stock:</b><span>' + spEsc(g('sp_stock') || '0') + '</span></div>';
+        h += '<div class="r"><b>Colors:</b><span>' + (window._spCols.length ? window._spCols.length + ' colors' : '—') + '</span></div>';
+        h += '<div class="r"><b>Sizes:</b><span>' + (window._spSzs.length ? window._spSzs.join(', ') : '—') + '</span></div>';
+        h += '<div class="r"><b>Images:</b><span>' + window._spImgs.length + ' photos</span></div>';
+        box.innerHTML = h;
+    };
+
+    window.supEditProd = function(pid, supId) {
+        var products = getData(DB_KEYS.PRODUCTS) || [];
+        var p = null;
+        for (var i = 0; i < products.length; i++) { if (String(products[i].id) === String(pid)) { p = products[i]; break; } }
+        if (!p) return;
+        window._spImgs = (p.images && p.images.length) ? p.images.slice() : (p.image ? [p.image] : []);
+        window._spCols = (p.colors && p.colors.length) ? p.colors.slice() : [];
+        window._spSzs = (p.sizes && p.sizes.length) ? p.sizes.slice() : [];
+        window._spRpTouched = !!p.reseller_price;
+        var base = p.cost || p.price || 0;
+        function fld(lid, lbl, id, val, type, hint, ph, req) {
+            var h = '<div><label class="sprow-l">' + lbl + (req ? ' <span class="spreq">*</span>' : '') + '</label>';
+            h += '<input class="spin" id="' + id + '" type="' + (type || 'text') + '" value="' + spEsc(val) + '" placeholder="' + (ph || '') + '" ' + (lid ? 'oninput="spSumUpd()" ' : '') + '>';
+            if (hint) h += '<div class="sphint">' + hint + '</div>';
+            return h + '</div>';
+        }
+        var h = '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px;">';
+        h += '<div><h3 style="margin:0;font-size:1.1rem;color:#059669;"><span style="color:#10b981;font-weight:900;">+</span> Edit Product</h3><p style="margin:2px 0 0;font-size:.75rem;color:#64748b;">Update product details below.</p></div>';
+        h += '<button onclick="spCloseEdit()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#64748b;line-height:1;">×</button></div>';
+        h += '<div id="spTabs" style="display:flex;border-bottom:2px solid #f1f5f9;margin:10px 0 16px;gap:2px;flex-wrap:wrap;">';
+        var TABS = ['ⓘ Basic Info', '🖼 Images', '🏷 Pricing', '🎨 Colors & Sizes', '📋 Details'];
+        for (var t = 0; t < TABS.length; t++) h += '<span class="spstab' + (t === 0 ? ' on' : '') + '" onclick="sptab(' + t + ')">' + TABS[t] + '</span>';
+        h += '</div><div id="spPanes">';
+        // ---- Pane 0: Basic Info ----
+        h += '<div class="sppane" style="display:block;">';
+        h += fld(1, 'Product Name', 'sp_name', p.name, 'text', '', '', true);
+        h += '<div style="margin:11px 0;"><label class="sprow-l">Description</label><textarea class="spin" id="sp_desc" rows="4" oninput="spSumUpd()" style="resize:vertical;">' + spEsc(p.description || '') + '</textarea></div>';
+        h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">';
+        h += '<div><label class="sprow-l">Category</label><select class="spin" id="sp_cat" onchange="spFillSubs();spSumUpd()"><option value="">Select category</option>';
+        var cats = getData(DB_KEYS.CATEGORIES) || [];
+        for (var ci = 0; ci < cats.length; ci++) h += '<option value="' + spEsc(cats[ci].name) + '"' + (cats[ci].name === p.category ? ' selected' : '') + '>' + spEsc(cats[ci].name) + '</option>';
+        if (p.category && !cats.some(function(c) { return c.name === p.category; })) h += '<option value="' + spEsc(p.category) + '" selected>' + spEsc(p.category) + '</option>';
+        h += '</select></div>';
+        h += '<div><label class="sprow-l">Sub Category</label><select class="spin" id="sp_sub" onchange="spSubChange()"></select><div id="spNewSubWrap" style="display:none;gap:6px;margin-top:8px;"><input class="spin" id="sp_newsub" placeholder="নতুন sub-category-র নাম" style="margin:0;" onkeydown="if(event.key===\'Enter\')spAddSubNew()"><button class="btn" style="background:#10b981;color:#fff;padding:9px 14px;white-space:nowrap;" onclick="spAddSubNew()">✓ Add</button></div></div>';
+        h += '</div>';
+        h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:11px;">';
+        h += '<div><label class="sprow-l">Sub-Sub Category</label><select class="spin" id="sp_subsub" onchange="spSubSubChange()"></select><div id="spNewSubSubWrap" style="display:none;gap:6px;margin-top:8px;"><input class="spin" id="sp_newsubsub" placeholder="নতুন sub-sub category-র নাম" style="margin:0;" onkeydown="if(event.key===\'Enter\')spAddSubSubNew()"><button class="btn" style="background:#10b981;color:#fff;padding:9px 14px;white-space:nowrap;" onclick="spAddSubSubNew()">✓ Add</button></div><div class="sphint">(optional — settings-এ define করলে অটো suggest হবে)</div></div>';
+        h += fld(1, 'YouTube Video Link', 'sp_yt', p.youtube || '', 'text', '(optional — product page-এ video play হবে)', 'https://www.youtube.com/watch?v=...');
+        h += '</div>';
+        h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:11px;">';
+        h += fld(1, 'SKU / Product Code', 'sp_sku', p.sku, 'text');
+        h += fld(1, 'Brand', 'sp_brand', p.brand || '', 'text', '', 'Brand name');
+        h += '</div>';
+        h += '<div style="display:flex;align-items:center;gap:12px;background:#f8fafc;padding:13px 15px;border-radius:11px;margin-top:13px;">';
+        h += '<span class="sptoggle' + (p.is_active === false ? ' off' : '') + '" id="sp_tgl" onclick="spTog(\'sp_tgl\')"></span>';
+        h += '<span><b style="font-size:.87rem;">Active</b><br><small style="color:#64748b;">— visible to customers</small></span></div>';
+        h += '</div>';
+        // ---- Pane 1: Images ----
+        h += '<div class="sppane" style="display:none;">';
+        h += '<p style="font-size:.8rem;color:#475569;margin:0 0 12px;">Upload high-quality product images. First image will be the main display image.</p>';
+        h += '<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;">';
+        h += '<label class="spup"><i class="fas fa-upload" style="font-size:1.2rem;"></i>Add Image<input type="file" accept="image/*" multiple onchange="spPickImgs(event)" style="display:none;"></label>';
+        h += '<div id="spGal" style="display:flex;gap:9px;flex-wrap:wrap;"></div>';
+        h += '</div>';
+        h += '<div class="spgalbox" id="spGalMsg">0 image(s) uploaded. First image = main display.</div>';
+        h += '<div style="margin-top:10px;"><button class="btn btn-sm" style="background:#e2e8f0;color:#334155;" onclick="spAddUrl()"><i class="fas fa-link"></i> Add Image URL</button></div>';
+        h += '</div>';
+        // ---- Pane 2: Pricing ----
+        h += '<div class="sppane" style="display:none;">';
+        h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">';
+        h += '<div><label class="sprow-l">Customer Price (৳) <span class="spreq">*</span></label><input class="spin" id="sp_cprice" type="number" value="' + (p.customer_price || Math.round((p.reseller_price || adminPrice(base)) * 1.8)) + '" oninput="spSumUpd()"><div class="sphint">Price customers pay</div></div>';
+        h += '<div><label class="sprow-l">Reseller Price (৳) <span class="spreq">*</span></label><input class="spin" id="sp_rp" type="number" value="' + (p.reseller_price || adminPrice(base)) + '" oninput="spRpTouch();spSumUpd()"><div class="sphint">Price resellers pay</div></div>';
+        h += '</div>';
+        h += '<div style="margin-top:12px;"><label class="sprow-l">Admin Buying Price (৳) <small style="color:#94a3b8;font-weight:600;">(supplier থেকে কেনা মূল্য)</small></label><input class="spin" id="sp_cost" type="number" value="' + base + '" oninput="spCostSync()"><div class="sphint">Admin profit = Reseller Price – Buying Price</div></div>';
+        h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">';
+        h += fld(0, 'Discount %', 'sp_disc', p.discount_percent || 0, 'number');
+        h += fld(0, 'Stock Quantity', 'sp_stock', p.stock || 0, 'number');
+        h += '</div>';
+        h += '</div>';
+        // ---- Pane 3: Colors & Sizes ----
+        h += '<div class="sppane" style="display:none;">';
+        h += '<b style="font-size:.82rem;color:#334155;display:block;margin-bottom:9px;">🎨 Available Colors</b>';
+        h += '<div class="spcolgrid" id="spColGrid">';
+        for (var pc = 0; pc < SP_PALETTE.length; pc++) h += '<div class="spcol" data-c="' + SP_PALETTE[pc][0] + '" onclick="spTogCol(\'' + SP_PALETTE[pc][0] + '\')"><div class="c" style="background:' + SP_PALETTE[pc][1] + ';"></div><p>' + SP_PALETTE[pc][0] + '</p></div>';
+        h += '</div>';
+        h += '<div style="display:flex;gap:9px;margin-top:11px;"><input class="spin" id="sp_newcol" placeholder="Custom color name..." style="flex:1;" onkeydown="if(event.key===\'Enter\')spAddCol()"><button class="btn" style="background:#10b981;color:#fff;padding:10px 18px;" onclick="spAddCol()">Add</button></div>';
+        h += '<div id="spColChips" style="margin-top:9px;"></div>';
+        h += '<b style="font-size:.82rem;color:#334155;display:block;margin:16px 0 9px;">📏 Available Sizes</b>';
+        h += '<div style="display:flex;gap:7px;margin-bottom:10px;">';
+        var PRE = ['Clothing', 'Shoes', 'Kids'];
+        for (var pr = 0; pr < PRE.length; pr++) h += '<button class="spszp' + (pr === 0 ? ' on' : '') + '" data-p="' + PRE[pr] + '" onclick="spSzPreset(\'' + PRE[pr] + '\')">' + PRE[pr] + '</button>';
+        h += '</div>';
+        h += '<div id="spSzRow" style="display:flex;gap:7px;flex-wrap:wrap;"></div>';
+        h += '<div style="display:flex;gap:9px;margin-top:11px;"><input class="spin" id="sp_newsz" placeholder="Custom size (e.g. 32×34)..." style="flex:1;" onkeydown="if(event.key===\'Enter\')spAddSz()"><button class="btn" style="background:#10b981;color:#fff;padding:10px 18px;" onclick="spAddSz()">Add</button></div>';
+        h += '<div id="spSzChips" style="margin-top:9px;"></div>';
+        h += '</div>';
+        // ---- Pane 4: Details ----
+        h += '<div class="sppane" style="display:none;">';
+        h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">';
+        h += fld(0, 'Material', 'sp_material', p.material || '', 'text', '', 'e.g. 100% Cotton');
+        h += fld(0, 'Weight', 'sp_weight', p.weight || '', 'text');
+        h += '</div>';
+        h += '<b style="font-size:.82rem;color:#334155;display:block;margin:14px 0 0;">Product Summary</b>';
+        h += '<div class="sppsum" id="spSum"></div>';
+        h += '</div>';
+        h += '</div>';
+        // dots + footer
+        h += '<div id="spDots" style="display:flex;gap:5px;align-items:center;margin:18px 0 4px;">';
+        for (var d = 0; d < 5; d++) h += '<i style="width:' + (d === 0 ? '18px' : '6px') + ';height:6px;border-radius:3px;background:' + (d === 0 ? '#10b981' : '#cbd5e1') + ';display:inline-block;transition:.2s;"></i>';
+        h += '</div>';
+        h += '<div style="display:flex;gap:9px;justify-content:flex-end;margin-top:10px;"><button class="btn" style="background:#eef0f6;color:#334155;padding:11px 22px;" onclick="spCloseEdit()">Cancel</button><button class="btn" style="background:#10b981;color:#fff;padding:11px 22px;font-weight:800;" onclick="supSaveEdit(\'' + pid + '\',\'' + supId + '\')">Save Changes</button></div>';
+        document.getElementById('supProdBody').innerHTML = h;
+        spFillSubs(p.subSection || p.sub_category || '', p.subSub || '');
+        spDrawImgs(); spDrawCols(); spDrawSzs(); spSumUpd();
+    };
+
+    window.supSaveEdit = function(pid, supId) {
+        var g = function(id) { return document.getElementById(id); };
+        var products = getData(DB_KEYS.PRODUCTS) || [];
+        for (var i = 0; i < products.length; i++) {
+            if (String(products[i].id) === String(pid)) {
+                var p = products[i];
+                var nm = g('sp_name').value.trim();
+                if (nm) p.name = nm;
+                p.description = g('sp_desc').value;
+                p.category = g('sp_cat').value || p.category;
+                p.subSection = g('sp_sub').value.trim();
+                p.subSub = (g('sp_subsub').value === '__NEW_SS__') ? '' : g('sp_subsub').value.trim();
+                p.youtube = g('sp_yt').value.trim();
+                p.sku = g('sp_sku').value.trim();
+                p.brand = g('sp_brand').value.trim();
+                p.is_active = !g('sp_tgl').classList.contains('off');
+                p.colors = window._spCols.slice();
+                p.sizes = window._spSzs.slice();
+                var base = parseInt(g('sp_cost').value) || p.cost || 0;
+                p.cost = base; p.buy_price = base;
+                var rp = parseInt(g('sp_rp').value) || adminPrice(base);
+                p.reseller_price = rp; p.price = rp;
+                p.customer_price = parseInt(g('sp_cprice').value) || Math.round(rp * 1.8);
+                p.discount_percent = parseInt(g('sp_disc').value) || 0;
+                p.stock = parseInt(g('sp_stock').value) || 0;
+                p.material = g('sp_material').value.trim();
+                p.weight = g('sp_weight').value.trim();
+                p.images = window._spImgs.slice();
+                p.image = window._spImgs.length ? window._spImgs[0] : '';
+                addNotification(p.supplierId, 'product', 'Admin আপনার product "' + p.name + '" edit করেছেন। Reseller price: ' + formatCurrency(rp), true);
+                logActivity('product_edited_admin', 'Admin full-edited supplier product: ' + p.name);
+                break;
+            }
+        }
+        setData(DB_KEYS.PRODUCTS, products);
+        showToast('✓ Product updated!', 'success');
+        renderGrid();
+        spCloseEdit();
+    };
+
+// Product action delegation (works on freshly rendered grid)
+document.getElementById('grid').addEventListener('click',function(e){
+try{
+var btn=e.target.closest('button[data-act]');if(!btn)return;
+var id=btn.getAttribute('data-id');var act=btn.getAttribute('data-act');
+if(act==='view')openAppr(id,'view');
+else if(act==='approve')openAppr(id,'approve');
+else if(act==='edit'){spOpenEdit(id);}
+else if(act==='toggle'){quickToggle(id);}
+else if(act==='delete'){quickDelete(id);}
+}catch(err){console.error(err);showToast('Error: '+err.message,'error')}
+});
+
+// Sidebar active highlight
+document.querySelectorAll('.sidebar-menu a').forEach(function(a){
+var href=a.getAttribute('href')||'';
+if(location.pathname.indexOf(href.replace('../','').replace('index.html',''))>=0&&href!=='../index.html')a.classList.add('active');
+else if(location.pathname==='/ResellerHub/admin/'&&href==='dashboard.html')a.classList.add('active');
+});
+var sb=document.querySelector('.sidebar');
+if(location.pathname.indexOf('supplier-products')>=0){
+document.querySelectorAll('.sidebar-menu a[href="suppliers.html"]').forEach(function(a){a.classList.remove('active');});
+}
+
+// Filters
+document.getElementById('searchBox').addEventListener('input',function(){try{spPage=1;renderGrid()}catch(e){console.error(e)}});
+document.getElementById('statusSel').addEventListener('change',function(){try{STATUS=this.value;document.querySelectorAll('#statusTabs a').forEach(function(x){x.classList.remove('on')});var tw=document.querySelector('#statusTabs a[data-st="'+STATUS+'"]');if(tw)tw.classList.add('on');spPage=1;renderGrid()}catch(e){console.error(e)}});
+document.getElementById('sortSel').addEventListener('change',function(){try{spPage=1;renderGrid()}catch(e){console.error(e)}});
+
+document.querySelectorAll('#statusTabs a').forEach(function(a){
+a.addEventListener('click',function(e){
+e.preventDefault();
+document.querySelectorAll('#statusTabs a').forEach(function(x){x.classList.remove('on')});
+a.classList.add('on');
+STATUS=a.getAttribute('data-st');
+spPage=1;
+renderGrid();
+});
+});
+
+// Mobile sidebar toggle
+var hamBtn=document.getElementById('hamBtn');
+var overlay=document.getElementById('overlay');
+if(hamBtn){
+hamBtn.addEventListener('click',function(){
+sb.classList.toggle('open');
+overlay.classList.toggle('show');
+});
+overlay.addEventListener('click',function(){sb.classList.remove('open');overlay.classList.remove('show');});
+document.querySelectorAll('.sidebar-menu a').forEach(function(a){
+a.addEventListener('click',function(){sb.classList.remove('open');overlay.classList.remove('show');});
+});
+window.addEventListener('resize',function(){if(window.innerWidth>900){sb.classList.remove('open');overlay.classList.remove('show');}});
+}
+
+// === Modal buttons adapt to mode ===
+var origOpenAppr=window.openAppr;
+window.openAppr=function(id,mode){
+origOpenAppr(id,mode);
+var approveBtn=document.getElementById('apApproveBtn');
+var rejectBtn=document.getElementById('apRejectBtn');
+if(mode==='edit'){
+approveBtn.innerHTML='<i class="fas fa-save"></i> Save Changes';
+approveBtn.classList.add('ap-approve');
+}else{
+approveBtn.innerHTML='<i class="fas fa-check-double"></i> Approve & Publish';
+approveBtn.classList.remove('ap-approve');
+}
+};
+
+// Initial render
+renderGrid();
+renderStats();
+setInterval(function(){renderGrid();renderStats();},15000);
+})();
+
+// Global re-exports for legacy inline-onclick references (closeAppr, etc.)
+window.closeAppr=window.closeAppr||function(){var m=document.getElementById('apprModal');if(m)m.classList.remove('show')};
+</script>
+
+<script>
+/* Admin sidebar toggle (additive) */
+if (!window.toggleSidebar) {
+    window.toggleSidebar = function(open) {
+        var sb = document.querySelector('.sidebar');
+        if (!sb) return;
+        if (open === undefined) open = !sb.classList.contains('open');
+        sb.classList.toggle('open', open);
+        var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+        if (ov) ov.classList.toggle('show', open);
+    };
+}
+</script>
+
+
+<script id="lx-auto-active">
+(function() {
+    var page = location.pathname.split('/').pop();
+    document.querySelectorAll('.sb-item').forEach(function(a) {
+        var href = (a.getAttribute('href') || '').split('?')[0];
+        if (href === page) a.classList.add('on');
+    });
+    /* ADMIN ONLY (this request) — a moderator must not see the Moderators page,
+       which is the one screen that could let them recruit another moderator.
+       The page itself also bounces a moderator; this hides the door as well. */
+    try {
+        if (sessionStorage.getItem('user_type') !== 'admin') {
+            document.querySelectorAll('.sb-item[href="moderators.html"]').forEach(function (a) { a.style.display = 'none'; });
+        }
+    } catch (e) {}
+})();
+</script>
+</body>
+</html>

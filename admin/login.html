@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - ResellerHub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1e3a8a 0%, #312e81 100%); padding: 20px; }
+        .login-card { background: white; border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); width: 100%; max-width: 420px; padding: 45px 35px; }
+        .icon-circle { width: 80px; height: 80px; background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 2rem; box-shadow: 0 10px 25px rgba(220,38,38,0.3); }
+        h1 { text-align: center; font-size: 1.7rem; margin-bottom: 8px; color: #1e293b; }
+        .subtitle { text-align: center; color: #64748b; margin-bottom: 30px; font-size: 0.95rem; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 7px; font-size: 0.9rem; color: #334155; }
+        .form-group input { width: 100%; padding: 13px 15px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 0.95rem; box-sizing: border-box; }
+        .form-group input:focus { outline: none; border-color: #dc2626; }
+        .btn { width: 100%; padding: 14px; border-radius: 10px; font-weight: 700; font-size: 1rem; cursor: pointer; border: none; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; }
+        .btn-danger { background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; }
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(220,38,38,0.3); }
+        .back-link { text-align: center; margin-top: 20px; }
+        .back-link a { color: #2563eb; text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+        .error-msg { background: #fee2e2; color: #dc2626; padding: 10px 14px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9rem; display: none; text-align: center; }
+    </style>
+
+<style>
+/* ===== Login UI polish (visual only) ===== */
+@keyframes lxUp{from{opacity:0;transform:translateY(30px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes lxBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@keyframes lxGlow{0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,0)}50%{box-shadow:0 0 0 10px rgba(99,102,241,.14)}}
+@keyframes lxField{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.login-card,.lcard,.auth-card,.login-box,.card,.abox{animation:lxUp .65s cubic-bezier(.2,.8,.3,1) both !important}
+.login-card .login-card-icon,.lcard .ic,.abox .ic,.login-icon{animation:lxBob 4.5s ease-in-out infinite !important}
+.form-group{animation:lxField .5s ease both}
+.form-group:nth-of-type(1){animation-delay:.15s}
+.form-group:nth-of-type(2){animation-delay:.25s}
+.form-group:nth-of-type(3){animation-delay:.35s}
+input:focus,select:focus,textarea:focus{transform:translateY(-1px);transition:all .25s !important}
+.btn[type=submit],.btn-amber,.btn-primary,.btn-danger{transition:all .28s !important;position:relative;overflow:hidden}
+.btn[type=submit]:hover,.btn-amber:hover,.btn-primary:hover,.btn-danger:hover{transform:translateY(-2px) !important;filter:brightness(1.08);box-shadow:0 12px 26px rgba(15,23,42,.22) !important}
+</style>
+<style id="panel-fullwidth-fix">
+/* 2026-09-16 — FULL-WIDTH FIX for the admin and supplier panels (this request).
+   The whole page sat in a narrow column with empty space on the right, because the
+   base rule reserves the sidebar with `margin-left`, and a block element with
+   margin-left and width:auto is only (100% - that) wide. A LATER rule in the same
+   file re-asserted the margin with !important, so the earlier mobile override lost.
+   This block is the LAST thing in the document, so it wins, and it resets width as
+   well as margin. Desktop is untouched — everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="icon-circle"><i class="fas fa-user-shield"></i></div>
+        <h1>Admin Login</h1>
+        <p class="subtitle">Enter admin credentials to continue</p>
+
+        <div class="error-msg" id="errorMsg">Invalid credentials!</div>
+
+        <form id="loginForm" autocomplete="off">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="username" placeholder="Enter your email" required autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Enter password" required autocomplete="off">
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:600;color:#64748b;margin-bottom:12px;cursor:pointer"><input type="checkbox" id="aRemember" style="width:auto"> মনে রাখুন — বারবার login লাগবে না</label>
+            <div style="text-align:right;margin:-6px 0 12px"><a href="#" onclick="return admForgot()" style="color:#dc2626;font-weight:700;font-size:.8rem;text-decoration:none"><i class="fas fa-key"></i> Forgot Password?</a></div>
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-right-to-bracket"></i> Login
+            </button>
+        </form>
+
+        <div id="admForgotBox" style="display:none;background:#fef2f2;border:1px solid #fecaca;padding:14px;border-radius:10px;margin-top:16px;font-size:.85rem;color:#991b1b">
+            <strong><i class="fas fa-key"></i> Admin Reset Password (Email Verification)</strong>
+            <!-- Step 1 -->
+            <div id="afStep1" style="margin-top:10px">
+                <p style="font-size:.75rem;margin:0 0 10px">আপনার admin email লিখে code পাঠান।</p>
+                <input type="email" id="afEmail" placeholder="admin email" style="width:100%;padding:9px 12px;border:2px solid #fecaca;border-radius:8px;box-sizing:border-box;margin-bottom:10px">
+                <button type="button" onclick="afSend()" style="width:100%;padding:10px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer"><i class="fas fa-paper-plane"></i> Send Verification Code to Gmail</button>
+            </div>
+            <!-- Step 2 -->
+            <div id="afStep2" style="display:none;margin-top:10px">
+                <p style="font-size:.75rem;margin:0 0 10px"><i class="fas fa-envelope-open-text"></i> Gmail draft খুলেছে — <b>Send</b> চাপলে code inbox-এ যাবে। সেই <b>6-digit code</b> বসান:</p>
+                <input type="text" id="afCode" placeholder="Enter 6-digit code" maxlength="6" style="width:100%;padding:10px 12px;border:2px solid #fecaca;border-radius:8px;text-align:center;font-size:1.1rem;font-weight:800;letter-spacing:8px;box-sizing:border-box;margin-bottom:10px">
+                <button type="button" onclick="afVerify()" style="width:100%;padding:10px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer"><i class="fas fa-check-circle"></i> Verify Code</button>
+                <div style="text-align:center;margin-top:8px"><a href="#" onclick="afSend();return false" style="font-size:.75rem;color:#dc2626">Resend code</a></div>
+            </div>
+            <!-- Step 3 -->
+            <div id="afStep3" style="display:none;margin-top:10px">
+                <p style="font-size:.75rem;color:#059669;margin:0 0 10px"><i class="fas fa-check-circle"></i> Code verified! নতুন admin password দিন:</p>
+                <input type="password" id="afNew" placeholder="New password (min 8)" style="width:100%;padding:9px 12px;border:2px solid #fecaca;border-radius:8px;box-sizing:border-box;margin-bottom:10px">
+                <button type="button" onclick="afSave()" style="width:100%;padding:10px;background:#10b981;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer"><i class="fas fa-save"></i> Save New Password</button>
+            </div>
+        </div>
+
+        <div class="back-link" style="margin-top:18px;">
+            <a href="../index.html"><i class="fas fa-arrow-left"></i> Back to main site</a>
+        </div>
+    </div>
+
+    <script src="../app.js"></script>
+    <script>
+    /* Owner / admin sign-in addresses (2026-09-15).
+       An ALLOW-LIST, not a single constant: the original address is kept so an
+       existing "Remember me" record and the password-reset flow keep working.
+       Adding an address must never be able to lock anybody out. */
+    var ADMIN_OWNER_EMAILS = ['stylexshopping@gmail.com', 'randomoniumgoes@gmail.com'];
+    function isAdminOwnerEmail(v) {
+        var e = String(v === undefined || v === null ? '' : v).trim().toLowerCase();
+        for (var i = 0; i < ADMIN_OWNER_EMAILS.length; i++) { if (ADMIN_OWNER_EMAILS[i] === e) return true; }
+        return false;
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var email = document.getElementById('username').value.trim();
+        var password = document.getElementById('password').value;
+
+        // Only Stylex Shopping credentials work
+        var savedPass = 'Stylexshopping@26';
+        try { var ap = JSON.parse(localStorage.getItem('rh_admin_pass') || 'null'); if (ap && ap.pass) savedPass = ap.pass; } catch (e) {}
+        if (isAdminOwnerEmail(email) && password === savedPass) {
+            sessionStorage.setItem('user_id', 'admin');
+            sessionStorage.setItem('user_type', 'admin');
+            sessionStorage.setItem('user_name', 'Admin');
+            try {
+                if (document.getElementById('aRemember').checked) {
+                    localStorage.setItem('rh_remember_admin', JSON.stringify({ email: email, pass: password }));
+                } else { localStorage.removeItem('rh_remember_admin'); }
+            } catch (e) {}
+            window.location.href = 'dashboard.html';
+        } else {
+            /* MODERATOR (this request, 2026-09-14) — a moderator account created
+               on the Moderators page signs in HERE, with its own email/password,
+               and lands in the same admin panel with restricted rights. An
+               account switched off by the admin cannot sign in. */
+            var mod = (typeof findModeratorByLogin === 'function') ? findModeratorByLogin(email, password) : null;
+            if (mod) {
+                sessionStorage.setItem('user_id', String(mod.id));
+                sessionStorage.setItem('user_type', 'moderator');
+                sessionStorage.setItem('user_name', mod.name || mod.email || 'Moderator');
+                try { localStorage.removeItem('rh_remember_admin'); } catch (e) {}
+                window.location.href = 'dashboard.html';
+                return;
+            }
+            var err = document.getElementById('errorMsg');
+            err.textContent = 'Invalid email or password!';
+            err.style.display = 'block';
+            setTimeout(function() { err.style.display = 'none'; }, 3000);
+        }
+    });
+    // ===== Admin Gmail verification code flow =====
+    // ===== Remember me: auto-login =====
+    (function() {
+        try {
+            var rm = JSON.parse(localStorage.getItem('rh_remember_admin') || 'null');
+            if (rm && rm.email && rm.pass && isAdminOwnerEmail(rm.email)) {
+                var saved = 'Stylexshopping@26';
+                try { var ap = JSON.parse(localStorage.getItem('rh_admin_pass') || 'null'); if (ap && ap.pass) saved = ap.pass; } catch (e) {}
+                if (rm.pass === saved) {
+                    sessionStorage.setItem('user_id', 'admin');
+                    sessionStorage.setItem('user_type', 'admin');
+                    sessionStorage.setItem('user_name', 'Admin');
+                    window.location.replace('dashboard.html');
+                    return;
+                }
+            }
+        } catch (e) {}
+    })();
+    var afState = { email: '', code: '' };
+    function admForgot() {
+        var box = document.getElementById('admForgotBox');
+        box.style.display = box.style.display === 'none' || !box.style.display ? 'block' : 'none';
+        document.getElementById('afStep1').style.display = 'block';
+        document.getElementById('afStep2').style.display = 'none';
+        document.getElementById('afStep3').style.display = 'none';
+        return false;
+    }
+    function afErr(t) {
+        var err = document.getElementById('errorMsg');
+        err.textContent = t; err.style.display = 'block';
+        setTimeout(function() { err.style.display = 'none'; }, 4000);
+    }
+    function afSend() {
+        var em = document.getElementById('afEmail').value.trim().toLowerCase();
+        if (!isAdminOwnerEmail(em)) { afErr('শুধু admin email দিয়ে reset করা যাবে!'); return; }
+        afState.email = em;
+        afState.code = String(Math.floor(100000 + Math.random() * 900000));
+        try { sessionStorage.setItem('fp_code_admin', JSON.stringify({ email: em, code: afState.code, exp: Date.now() + 600000 })); } catch (e) {}
+        var gm = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(em) + '&su=' + encodeURIComponent('ResellerHub BD — ADMIN Password Reset Code') + '&body=' + encodeURIComponent('আপনার ADMIN verification code: ' + afState.code + '\n\nএই code ১০ মিনিটের জন্য বৈধ। কাউকে code দিবেন না!\n\n— ResellerHub BD Security');
+        window.open(gm, '_blank');
+        document.getElementById('afStep1').style.display = 'none';
+        document.getElementById('afStep2').style.display = 'block';
+        document.getElementById('afStep3').style.display = 'none';
+    }
+    function afVerify() {
+        var c = document.getElementById('afCode').value.trim();
+        var st = null;
+        try { st = JSON.parse(sessionStorage.getItem('fp_code_admin') || 'null'); } catch (e) {}
+        if (!st) { afErr('আগে code পাঠান!'); return; }
+        if (Date.now() > st.exp) { afErr('Code-এর সময় শেষ! Resend করুন।'); return; }
+        if (c !== st.code) { afErr('ভুল code! আবার চেষ্টা করুন।'); return; }
+        document.getElementById('afStep1').style.display = 'none';
+        document.getElementById('afStep2').style.display = 'none';
+        document.getElementById('afStep3').style.display = 'block';
+    }
+    function afSave() {
+        var np = document.getElementById('afNew').value;
+        if (np.length < 8) { afErr('Password কমপক্ষে ৮ অক্ষরের হতে হবে!'); return; }
+        try { localStorage.setItem('rh_admin_pass', JSON.stringify({ pass: np })); } catch (e) {}
+        logActivity('admin_password_reset', 'Admin password reset via Gmail verification code');
+        document.getElementById('admForgotBox').style.display = 'none';
+        document.getElementById('password').value = np;
+        afErr('Admin password reset সফল! এখন login করুন।');
+    }
+    </script>
+
+
+<script>
+/* ADMIN ONLY (this request) — hide the Moderators entry from a moderator session.
+   The Moderators page itself also bounces a moderator, so this is the second
+   layer, not the only one. */
+(function () {
+    try {
+        if (sessionStorage.getItem('user_type') !== 'admin') {
+            document.querySelectorAll('.sb-item[href="moderators.html"]').forEach(function (a) { a.style.display = 'none'; });
+        }
+    } catch (e) {}
+})();
+</script>
+</body>
+</html>

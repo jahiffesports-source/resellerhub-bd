@@ -1,0 +1,2323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Shop Settings - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root { --pri:#4f46e5; --prid:#4338ca; --vio:#7c3aed; --grn:#10b981; --gold:#fbbf24; --dark:#0f172a; --gray:#64748b; }
+        body { font-family:'Inter','Hind Siliguri',sans-serif; background:#eef1f9; color:#1e293b; padding-bottom:70px; overflow-x:hidden; }
+
+        /* ===== Animations ===== */
+        @keyframes dashUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:none} }
+        @keyframes dashSide { from{opacity:0;transform:translateX(-24px)} to{opacity:1;transform:none} }
+        @keyframes iconBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        @keyframes drift { 0%,100%{transform:translate(0,0) rotate(0)} 33%{transform:translate(24px,-18px) rotate(3deg)} 66%{transform:translate(-16px,14px) rotate(-2deg)} }
+        @keyframes welcomeShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        @keyframes barGrow { from{height:0 !important} }
+        @keyframes tilePop { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:none} }
+        .sidebar-header, .sidebar-menu a { animation:dashSide .4s ease both; }
+        .welcome { animation:dashUp .55s .1s ease both; }
+        .quick-row .quick-btn:nth-child(1) { animation:dashUp .5s .18s ease both; }
+        .quick-row .quick-btn:nth-child(2) { animation:dashUp .5s .24s ease both; }
+        .quick-row .quick-btn:nth-child(3) { animation:dashUp .5s .3s ease both; }
+        .quick-row .quick-btn:nth-child(4) { animation:dashUp .5s .36s ease both; }
+        .stats-grid .stat-card:nth-child(1) { animation:dashUp .5s .3s ease both; }
+        .stats-grid .stat-card:nth-child(2) { animation:dashUp .5s .38s ease both; }
+        .stats-grid .stat-card:nth-child(3) { animation:dashUp .5s .46s ease both; }
+        .stats-grid .stat-card:nth-child(4) { animation:dashUp .5s .54s ease both; }
+        .card { animation:dashUp .55s .5s ease both; }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:248px; background:linear-gradient(180deg,#0b1029 0%,#151a3a 100%); color:#c7d2fe; z-index:200; overflow-y:auto; transition:transform 0.3s; box-shadow:4px 0 24px rgba(11,16,41,.35); }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; justify-content:space-between; align-items:center; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:40px; height:40px; background:linear-gradient(135deg,var(--pri),var(--vio)); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .sidebar-logo h3 { color:white; font-size:1rem; font-weight:900; }
+        .sidebar-logo small { color:#818cf8; font-size:0.66rem; display:block; font-weight:700; letter-spacing:1px; }
+        .sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; }
+        .sidebar-menu { list-style:none; padding:12px 10px; }
+        .sidebar-menu li { margin:3px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:11px 15px; color:#c7d2fe; text-decoration:none; font-size:0.88rem; font-weight:600; border-radius:11px; transition:all .22s; }
+        .sidebar-menu a:hover { background:rgba(129,140,248,.14); color:white; transform:translateX(4px); }
+        .sidebar-menu a.active { background:linear-gradient(135deg,var(--pri),var(--vio)); color:white; box-shadow:0 8px 20px rgba(79,70,229,.4); }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 15px 5px; color:#6366f1; font-size:0.66rem; text-transform:uppercase; letter-spacing:1.4px; font-weight:800; }
+        .menu-badge { background:var(--gold); color:#1e293b; font-size:0.68rem; padding:1px 8px; border-radius:10px; font-weight:800; margin-left:auto; }
+        .menu-badge-n { color:var(--gold); font-weight:900; }
+
+        .side-overlay { display:none; position:fixed; inset:0; background:rgba(11,16,41,.55); z-index:150; backdrop-filter:blur(2px); }
+
+        /* ===== MAIN ===== */
+        .main { margin-left:248px; min-height:100vh; }
+        .topbar { background:rgba(255,255,255,.88); backdrop-filter:blur(12px); padding:12px 22px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 14px rgba(15,23,42,.06); position:sticky; top:0; z-index:100; }
+        .topbar-left { display:flex; align-items:center; gap:12px; }
+        .hamburger { display:none; background:none; border:none; font-size:1.3rem; color:#1e293b; cursor:pointer; padding:4px; }
+        .topbar h2 { font-size:1.12rem; font-weight:800; }
+        .topbar-right { display:flex; align-items:center; gap:8px; }
+        .topbar-balance { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#7c2d12; padding:7px 15px; border-radius:22px; font-weight:800; font-size:0.84rem; white-space:nowrap; box-shadow:0 4px 12px rgba(245,158,11,.35); }
+        .topbar-user { display:flex; align-items:center; gap:7px; padding:6px 14px; background:#eef2ff; color:var(--pri); border-radius:22px; font-size:0.84rem; font-weight:700; }
+        .btn-logout { background:#fee2e2; color:#dc2626; border:none; padding:8px 12px; border-radius:10px; cursor:pointer; font-size:0.85rem; transition:all .25s; }
+        .btn-logout:hover { background:#dc2626; color:#fff; transform:translateY(-1px); }
+
+        .content { padding:22px 28px; width:100%; }
+
+        /* ===== Welcome — index hero style (dark + orbit) ===== */
+        .welcome { background:radial-gradient(700px 400px at 80% 10%, #312e81 0%, transparent 55%), radial-gradient(500px 320px at 8% 90%, #1e1b4b 0%, transparent 55%), linear-gradient(150deg,#0b1029,#12102e 60%,#181436); color:white; padding:30px 32px; border-radius:26px; margin-bottom:22px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; position:relative; overflow:hidden; box-shadow:0 22px 50px rgba(11,16,41,.4); animation:dashUp .55s .1s ease both; }
+        .w-orbit { position:absolute; border:1px solid rgba(129,140,248,.22); border-radius:50%; pointer-events:none; }
+        .w-orbit.o1 { width:340px; height:340px; top:-140px; right:-80px; animation:drift 14s ease-in-out infinite; }
+        .w-orbit.o2 { width:240px; height:240px; bottom:-110px; left:-60px; animation:drift 18s ease-in-out infinite reverse; }
+        .w-kicker { display:inline-flex; align-items:center; gap:7px; background:rgba(129,140,248,.18); border:1px solid rgba(129,140,248,.45); color:#c7d2fe; font-size:.66rem; font-weight:900; letter-spacing:1.6px; padding:5px 14px; border-radius:18px; margin-bottom:12px; position:relative; }
+        .welcome h3 { font-size:1.5rem; font-weight:900; margin-bottom:4px; position:relative; }
+        .w-grad { background:linear-gradient(90deg,#a5b4fc,#f0abfc,#67e8f9); background-size:200% auto; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; animation:welcomeShift 5s linear infinite; }
+        .welcome p { opacity:0.92; font-size:0.9rem; position:relative; }
+        .welcome .ref-code { background:rgba(129,140,248,.25); border:1px solid rgba(129,140,248,.4); padding:3px 12px; border-radius:14px; font-weight:800; font-size:0.76rem; position:relative; }
+        .btn-welcome { background:linear-gradient(135deg,var(--grn),#059669); color:white; padding:14px 26px; border-radius:14px; border:none; font-weight:800; cursor:pointer; font-size:0.92rem; white-space:nowrap; position:relative; transition:all .28s; box-shadow:0 12px 28px rgba(16,185,129,.4); }
+        .btn-welcome:hover { transform:translateY(-3px); box-shadow:0 18px 36px rgba(16,185,129,.5); }
+
+        /* Pending banner */
+        .pending-banner { background:linear-gradient(135deg,#fef3c7,#fde68a); border-left:5px solid #f59e0b; padding:15px 19px; border-radius:14px; margin-bottom:18px; }
+        .pending-banner h4 { color:#92400e; font-size:0.95rem; margin-bottom:3px; }
+        .pending-banner p { color:#78350f; font-size:0.85rem; }
+
+        /* ===== Kickers (index-style section badges) ===== */
+        .kick { display:inline-flex; align-items:center; font-size:.6rem; font-weight:900; letter-spacing:1.6px; color:var(--pri); background:#eef2ff; padding:4px 12px; border-radius:16px; margin-right:9px; vertical-align:2px; }
+
+        /* Stats */
+        .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:15px; margin-bottom:20px; }
+        .stat-card { background:white; padding:19px; border-radius:18px; box-shadow:0 3px 14px rgba(15,23,42,.05); border:1px solid #eef2f7; display:flex; align-items:center; gap:14px; transition:all .28s; }
+        .stat-card:hover { transform:translateY(-4px); box-shadow:0 16px 32px rgba(15,23,42,.11); }
+        .stat-icon { width:52px; height:52px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:1.35rem; flex-shrink:0; }
+        .stat-icon.green { background:linear-gradient(135deg,#d1fae5,#a7f3d0); color:#059669; }
+        .stat-icon.blue { background:linear-gradient(135deg,#e0e7ff,#c7d2fe); color:var(--pri); }
+        .stat-icon.orange { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#d97706; }
+        .stat-icon.purple { background:linear-gradient(135deg,#ede9fe,#ddd6fe); color:#7c3aed; }
+        .stat-card .label { font-size:0.74rem; color:var(--gray); margin-bottom:3px; font-weight:700; }
+        .stat-card .value { font-size:1.32rem; font-weight:900; }
+
+        /* Quick actions */
+        .quick-row { display:grid; grid-template-columns:repeat(4,1fr); gap:13px; margin-bottom:20px; }
+        .quick-btn { background:white; border:1px solid #eef2f7; border-radius:18px; padding:17px 10px; cursor:pointer; text-align:center; box-shadow:0 3px 12px rgba(15,23,42,.05); transition:all .25s; text-decoration:none; }
+        .quick-btn:hover { transform:translateY(-4px); box-shadow:0 14px 30px rgba(79,70,229,.14); border-color:#c7d2fe; }
+        .quick-btn .qi { width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin:0 auto 9px; transition:transform .3s; }
+        .quick-btn:hover .qi { transform:scale(1.12) rotate(-6deg); }
+        .quick-btn p { font-size:0.8rem; font-weight:700; color:#334155; }
+
+        /* ===== SALES ANALYTICS ===== */
+        .analytics { background:white; border-radius:20px; border:1px solid #eef2f7; box-shadow:0 4px 16px rgba(15,23,42,.05); padding:20px 22px; margin-bottom:20px; animation:dashUp .55s .48s ease both; }
+        .analytics-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:8px; }
+        .analytics-head h4 { font-size:0.95rem; font-weight:800; }
+        .analytics-head small { color:var(--gray); font-size:.72rem; font-weight:700; }
+        .atile-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+        .atile { border-radius:16px; padding:14px 16px; text-align:center; animation:tilePop .45s ease both; transition:transform .25s; }
+        .atile:hover { transform:translateY(-3px); }
+        .atile:nth-child(2) { animation-delay:.08s; } .atile:nth-child(3) { animation-delay:.16s; } .atile:nth-child(4) { animation-delay:.24s; }
+        .atile .tl { font-size:.64rem; font-weight:800; letter-spacing:.8px; text-transform:uppercase; opacity:.85; }
+        .atile .tv { font-size:1.18rem; font-weight:900; margin-top:3px; }
+        .atile.t-ind { background:linear-gradient(135deg,#e0e7ff,#c7d2fe); color:#3730a3; }
+        .atile.t-grn { background:linear-gradient(135deg,#d1fae5,#a7f3d0); color:#065f46; }
+        .atile.t-amb { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#92400e; }
+        .atile.t-vio { background:linear-gradient(135deg,#ede9fe,#ddd6fe); color:#5b21b6; }
+        .achart { display:flex; align-items:flex-end; gap:10px; height:170px; padding:6px 4px 0; }
+        .acol { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
+        .abar { width:100%; max-width:44px; border-radius:9px 9px 4px 4px; background:linear-gradient(180deg,var(--pri),var(--vio)); min-height:5px; transition:height .8s cubic-bezier(.2,.8,.3,1); box-shadow:0 4px 10px rgba(79,70,229,.25); position:relative; }
+        .abar:hover { filter:brightness(1.15); }
+        .abar .av { position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-size:.62rem; font-weight:800; color:var(--pri); white-space:nowrap; opacity:0; transition:opacity .3s; }
+        .acol:hover .av { opacity:1; }
+        .abar.zero { background:#e2e8f0; box-shadow:none; }
+        .abar.zero .av { color:#94a3b8; }
+        .alab { font-size:.64rem; font-weight:800; color:var(--gray); }
+        .duo { display:grid; grid-template-columns:1.6fr 1fr; gap:20px; align-items:start; }
+
+        .card { background:white; border-radius:20px; box-shadow:0 4px 16px rgba(15,23,42,.05); border:1px solid #eef2f7; margin-bottom:20px; overflow:hidden; animation:dashUp .55s .5s ease both; }
+        .card-header { padding:15px 20px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; }
+        .card-header h4 { font-size:0.95rem; font-weight:800; }
+        .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+        .data-table { width:100%; border-collapse:collapse; min-width:600px; }
+        .data-table th { text-align:left; padding:11px 18px; background:#f8fafc; font-weight:700; font-size:0.68rem; color:var(--gray); text-transform:uppercase; white-space:nowrap; }
+        .data-table td { padding:12px 18px; border-bottom:1px solid #f4f6fb; font-size:0.84rem; }
+        .data-table tr:hover { background:#f8faff; }
+        .badge { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; white-space:nowrap; }
+        .b-delivered { background:#d1fae5; color:#065f46; }
+        .b-shipped { background:#e0e7ff; color:#4338ca; }
+        .b-processing { background:#e0f2fe; color:#0369a1; }
+        .b-cancelled { background:#fee2e2; color:#991b1b; }
+        .b-new { background:#fef3c7; color:#92400e; }
+        .b-pending { background:#fef3c7; color:#92400e; }
+        .b-confirmed { background:#dbeafe; color:#1e40af; }
+        .b-packaging { background:#ede9fe; color:#6d28d9; }
+        .b-shipping { background:#e0e7ff; color:#4338ca; }
+        .b-wfr { background:#fef9c3; color:#854d0e; }
+        .b-returned { background:#ffe4e6; color:#9f1239; }
+        .btn { padding:6px 12px; border:none; border-radius:8px; font-size:0.8rem; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:5px; transition:all .22s; }
+        .btn-primary { background:linear-gradient(135deg,var(--pri),var(--prid)); color:white; }
+        .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 14px rgba(79,70,229,.35); }
+        .empty { text-align:center; padding:38px 16px; color:var(--gray); }
+        .empty i { font-size:2.2rem; margin-bottom:8px; opacity:0.4; }
+        .empty a { color:var(--pri); font-weight:700; }
+
+        .notif-item { padding:12px 18px; border-bottom:1px solid #f4f6fb; display:flex; gap:11px; align-items:flex-start; font-size:0.86rem; transition:background .2s; }
+        .notif-item:hover { background:#f8faff; }
+        .notif-item:last-child { border-bottom:none; }
+        .notif-item i { color:var(--pri); margin-top:3px; }
+
+        /* ===== MOBILE BOTTOM NAV ===== */
+        .bottom-nav { display:none; position:fixed; bottom:10px; left:12px; right:12px; background:rgba(255,255,255,.92); backdrop-filter:blur(14px); border:1px solid #eef2f7; box-shadow:0 10px 30px rgba(15,23,42,.16); z-index:400; padding:7px 6px calc(7px + env(safe-area-inset-bottom)); border-radius:20px; }
+        .bottom-nav a { display:flex; flex-direction:column; align-items:center; gap:2px; text-decoration:none; color:#94a3b8; font-size:0.62rem; font-weight:700; padding:6px 6px; border-radius:12px; flex:1; transition:all .2s; }
+        .bottom-nav a i { font-size:1.12rem; }
+        .bottom-nav a.active { color:var(--pri); background:#eef2ff; }
+        .bn-menu { background:linear-gradient(135deg,var(--pri),var(--vio)); color:#fff; border-radius:14px; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .bn-menu i { color:#fff; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width:1024px) { .stats-grid { grid-template-columns:repeat(2,1fr); } .quick-row { grid-template-columns:repeat(4,1fr); } .duo { grid-template-columns:1fr; } .atile-row { grid-template-columns:1fr 1fr; } }
+        @media (max-width:768px) {
+            body { padding-bottom:86px; }
+            .sidebar { transform:translateX(-100%); width:272px; }
+            .sidebar.open { transform:translateX(0); }
+            .side-overlay.show { display:block; }
+            .sidebar-close-m { display:block; }
+            .main { margin-left:0; }
+            .hamburger { display:block; }
+            .topbar-user span { max-width:78px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+            .stats-grid { grid-template-columns:1fr 1fr; gap:10px; }
+            .stat-card { padding:14px 12px; flex-direction:column; text-align:center; gap:8px; }
+            .stat-card .value { font-size:1.12rem; }
+            .quick-row { grid-template-columns:repeat(2,1fr); gap:10px; }
+            .welcome { flex-direction:column; text-align:center; padding:24px 18px; }
+            .btn-welcome { width:100%; }
+            .bottom-nav { display:flex; }
+            .content { padding:14px; }
+            .topbar { padding:11px 14px; }
+            /* 2026-09-16 — MOBILE FIX (this request). The topbar measured about 440px
+               across on a 390px phone, so the logout button was pushed past the right
+               edge and looked cut off. These rules tighten the SAME header so it fits a
+               narrow screen. Nothing is hidden and nothing outside this media query is
+               touched, so the desktop layout is unchanged. */
+            .topbar { padding:10px 12px; }
+            .topbar-left { gap:8px; }
+            .topbar h2 { font-size:.98rem; }
+            .topbar-right { gap:6px; }
+            .topbar-balance { padding:6px 10px; font-size:.78rem; }
+            .topbar-user { padding:5px 10px; font-size:.78rem; }
+            .topbar-user span { max-width:52px; }
+
+            .atile-row { grid-template-columns:1fr 1fr; gap:9px; }
+            .achart { gap:5px; height:130px; }
+            .analytics { padding:16px 14px; }
+        }
+        @media (max-width:400px) { .quick-row { grid-template-columns:1fr 1fr; } .stats-grid { grid-template-columns:1fr 1fr; } }
+
+</style>
+
+<style id="lx-nav-force">
+@media(max-width:768px){
+    .bottom-nav{display:flex !important;position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;opacity:1 !important;visibility:visible !important;transform:none !important}
+    body{padding-bottom:86px !important}
+}
+</style>
+
+<style id="lx-bnav">
+/* ===== Complete bottom-nav styling ===== */
+.bottom-nav{position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;display:flex !important;align-items:stretch;background:rgba(255,255,255,.97) !important;backdrop-filter:blur(14px);border:1px solid #e8ecf4 !important;border-radius:18px !important;box-shadow:0 -4px 24px rgba(15,23,42,.14) !important;padding:7px 6px calc(7px + env(safe-area-inset-bottom)) !important}
+.bottom-nav a,.bottom-nav button{flex:1 !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;gap:3px !important;padding:7px 2px !important;border:none !important;background:none !important;color:#7b879c !important;font-size:.62rem !important;font-weight:700 !important;text-decoration:none !important;cursor:pointer !important;border-radius:12px !important;font-family:inherit !important;line-height:1.2 !important}
+.bottom-nav a i,.bottom-nav button i{font-size:1.18rem !important;line-height:1 !important}
+.bottom-nav a span,.bottom-nav button span{display:block !important}
+.bottom-nav a:hover,.bottom-nav button:hover{color:#4f46e5 !important;background:#eef2ff !important;transform:translateY(-2px)}
+.bottom-nav a.active{color:#4f46e5 !important;background:#eef2ff !important}
+.bottom-nav .bn-menu{color:#4f46e5 !important;background:#eef2ff !important;box-shadow:none !important;border-radius:12px !important}
+.bottom-nav .bn-menu:hover{background:#e0e7ff !important}
+.bottom-nav .bn-menu i,.bottom-nav .bn-menu span{color:#4f46e5 !important}
+body{padding-bottom:86px !important}
+@media(min-width:769px){
+    .bottom-nav{display:none !important}
+    body{padding-bottom:0 !important}
+}
+</style>
+
+<style>
+@media(max-width:768px){
+    .sidebar{transform:translateX(-100%) !important;transition:transform .32s cubic-bezier(.2,.8,.3,1) !important;display:block !important}
+    .sidebar.open{transform:translateX(0) !important;box-shadow:24px 0 60px rgba(11,16,41,.45) !important}
+}
+</style>
+
+<style id="lx-logout-fix">
+/* Logout fix: the open sidebar must paint ABOVE the fixed mobile bottom-nav,
+   otherwise the last menu item (Logout) is covered and un-tappable. */
+.sidebar{ z-index:900 !important; }
+.side-overlay{ z-index:880 !important; }
+.sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+@supports selector(:has(*)){
+  body:has(.sidebar.open) .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+}
+@media(min-width:769px){ .sidebar-menu{ padding-bottom:12px !important; } }
+</style>
+
+<style id="lx-sidebar-fix">
+/* ===== Reseller sidebar — canonical & stable (do not mutate at runtime) ===== */
+/* 1) Labels and section headings are ALWAYS visible. The old template hid
+      .sidebar-menu a span and .sidebar-divider under 768px, which made menu
+      text disappear and the "Account" heading vanish on some pages. */
+.sidebar .sidebar-menu a span{ display:inline !important; }
+.sidebar .sidebar-menu .sidebar-divider,
+.sidebar .sidebar-divider{ display:block !important; }
+.sidebar .sidebar-logo h3{ display:block !important; }
+.sidebar .sidebar-logo small{ display:block !important; }
+
+/* 2) Fixed geometry — the sidebar is never collapsed to a 70px icon rail. */
+.sidebar{ width:248px !important; z-index:900 !important; overflow-y:auto !important; }
+.side-overlay{ z-index:880 !important; }
+@media(min-width:769px){
+    .main{ margin-left:248px !important; }
+    .sidebar{ transform:none !important; }
+}
+@media(max-width:768px){
+    .main{ margin-left:0 !important; }
+    .sidebar{ transform:translateX(-100%) !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; display:block !important; }
+    .sidebar.open{ transform:translateX(0) !important; box-shadow:24px 0 60px rgba(11,16,41,.45) !important; }
+}
+
+/* 3) Row geometry is locked: the "All Orders" counter is absolutely positioned
+      so a changing number can never push the rows below it up or down. */
+.sidebar .sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.sidebar .sidebar-menu li{ position:relative; display:block; margin:3px 0; }
+.sidebar .sidebar-menu a{ display:flex !important; align-items:center; gap:12px; padding:11px 15px; }
+.sidebar .menu-badge{ position:absolute; right:12px; top:50%; transform:translateY(-50%); margin-left:0 !important; }
+
+/* 4) Mobile: hide the bottom nav while the drawer is open so the last item
+      (Logout) is never covered. */
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+
+/* 5) Close button inside the drawer on mobile. */
+.sidebar .sidebar-close-m{ display:none; }
+@media(max-width:768px){ .sidebar .sidebar-close-m{ display:block !important; } }
+</style>
+
+<style id="reseller-hamburger-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   Every reseller page hides the hamburger with ".hamburger{display:none}", but most
+   pages never turn it back ON at mobile width — only products.html did. So on a phone
+   there was no way to open the sidebar on Products, Orders, Wallet, Withdrawals,
+   Courier, Messages, Support, Profile, Referral or Website Integration.
+   This shows the SAME existing button (onclick="menuToggle()") at mobile width only.
+   It is an ADDED block and lives entirely inside a max-width query, so the DESKTOP
+   LAYOUT IS UNCHANGED. */
+@media (max-width:768px){
+  .hamburger { display:block !important; }
+}
+</style>
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon"><i class="fas fa-store"></i></div>
+            <div><h3>ResellerHub</h3><small>Reseller Panel</small></div>
+        </div>
+        
+        <button class="sidebar-close-m" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+        <ul class="sidebar-menu">
+        <li class="sidebar-divider">Main</li>
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+        <li><a href="products.html"><i class="fas fa-box"></i> <span>Products</span></a></li>
+        <li><a href="my-shop.html"><i class="fas fa-store"></i> <span>My Shop</span></a></li>
+        <li><a href="transactions.html"><i class="fas fa-right-left"></i> <span>Transactions</span></a></li>
+        <li class="sidebar-divider">Orders</li>
+        <li><a href="my-orders.html"><i class="fas fa-list"></i> <span>All Orders<span class="menu-badge-n" id="ordersBadgeLabel"></span></span></a> <span class="menu-badge" id="ordersBadge" style="display:none">0</span></li>
+        <li><a href="order.html"><i class="fas fa-cart-plus"></i> <span>Add New Order</span></a></li>
+        <li><a href="offers.html"><i class="fas fa-gift"></i> <span>Offers</span></a></li>
+        <li><a href="shop-categories.html"><i class="fas fa-sitemap"></i> <span>Shop Categories</span></a></li>
+        <li class="sidebar-divider">My Shop</li>
+        <li><a href="my-shop-settings.html" class="active"><i class="fas fa-sliders"></i> <span>Shop Settings</span></a></li>
+        <li><a href="my-products.html"><i class="fas fa-box-open"></i> <span>My Products</span></a></li>
+        <li><a href="my-shop-orders.html"><i class="fas fa-bag-shopping"></i> <span>My Shop Orders</span></a></li>
+        <li><a href="customer-messages.html"><i class="fas fa-comment-dots"></i> <span>Customer Messages<span class="menu-badge-n" id="cmsgBadgeLabel"></span></span></a></li>
+        <li class="sidebar-divider">Account</li>
+        <li><a href="wallet.html"><i class="fas fa-wallet"></i> <span>Wallet</span></a></li>
+        <li><a href="withdrawals.html"><i class="fas fa-money-bill-wave"></i> <span>Withdrawals</span></a></li>
+        <li><a href="courier.html"><i class="fas fa-truck"></i> <span>Courier</span></a></li>
+        <li><a href="messages.html"><i class="fas fa-comments"></i> <span>Messages<span class="menu-badge-n" id="msgBadgeLabel"></span></span></a></li>
+        <li><a href="support.html"><i class="fas fa-headset"></i> <span>Support</span></a></li>
+        <li><a href="profile.html"><i class="fas fa-user-cog"></i> <span>Profile</span></a></li>
+        <li><a href="referral.html"><i class="fas fa-user-plus"></i> <span>Referral</span></a></li>
+        <li><a href="website-integration.html"><i class="fas fa-plug"></i> <span>Website Integration</span></a></li>
+        <li><a href="../index.html"><i class="fas fa-globe"></i> <span>Visit Site</span></a></li>
+        <li><a href="javascript:void(0)" onclick="resellerLogout()" style="color:#dc2626"><i class="fas fa-right-from-bracket"></i> <span>Logout</span></a></li>
+    </ul>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+        <div class="topbar-left">
+            <button class="hamburger" onclick="toggleSidebar(true)"><i class="fas fa-bars"></i></button>
+            <h2><i class="fas fa-sliders" style="color:#2563eb;margin-right:6px;"></i> Shop Settings</h2>
+        </div>
+        <div class="topbar-right">
+            <div class="topbar-balance"><i class="fas fa-coins"></i> <span id="topBalance">0</span></div>
+            <div class="topbar-user"><i class="fas fa-user" style="color:#2563eb;"></i> <span id="userName">User</span></div>
+            <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content">
+<style id="lx-shopset">
+.ms-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;background:#fff;padding:9px;border-radius:14px;box-shadow:0 2px 10px rgba(15,23,42,.06)}
+.ms-tab{padding:9px 16px;border-radius:10px;font-size:.78rem;font-weight:800;color:#64748b;cursor:pointer;border:none;background:transparent;font-family:inherit;transition:all .18s;display:inline-flex;align-items:center;gap:7px}
+.ms-tab:hover{background:#f1f5f9;color:#334155}
+.ms-tab.on{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;box-shadow:0 6px 16px rgba(79,70,229,.3)}
+.ms-pane{display:none}
+.ms-pane.on{display:block}
+.ms-card{background:#fff;border-radius:15px;box-shadow:0 2px 12px rgba(15,23,42,.06);padding:20px 22px;margin-bottom:16px}
+.ms-card h3{font-size:.95rem;font-weight:900;margin-bottom:4px;display:flex;align-items:center;gap:9px}
+.ms-card h3 i{color:#4f46e5}
+.ms-card .hint{font-size:.76rem;color:#64748b;margin-bottom:14px;line-height:1.6}
+.ms-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+.ms-kpi{background:#f8fafc;border:1px solid #eef2f7;border-radius:13px;padding:14px 15px}
+.ms-kpi .l{font-size:.63rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.ms-kpi .v{font-size:1.2rem;font-weight:900;color:#0f172a;line-height:1.15;word-break:break-all}
+.ms-kpi.hl{background:linear-gradient(135deg,#eef2ff,#e0e7ff);border-color:#c7d2fe}
+.ms-kpi.hl .v{color:#4338ca}
+.ms-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 0;border-bottom:1px solid #f1f5f9;flex-wrap:wrap}
+.ms-row:last-child{border-bottom:none}
+.ms-row .nm{font-weight:800;font-size:.85rem;color:#0f172a}
+.ms-row .ds{font-size:.72rem;color:#94a3b8;margin-top:2px;line-height:1.5}
+.ms-lab{font-size:.74rem;font-weight:800;color:#475569;display:block;margin-bottom:5px}
+.ms-inp{width:100%;padding:10px 13px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.85rem;font-family:inherit;box-sizing:border-box}
+.ms-inp:focus{outline:none;border-color:#4f46e5;box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+.ms-btn{border:none;border-radius:10px;padding:10px 18px;font-weight:800;font-size:.78rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.ms-btn.pri{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff}
+.ms-btn.pri:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(79,70,229,.3)}
+.ms-btn.gh{background:#f1f5f9;color:#475569}
+.ms-btn.gh:hover{background:#e2e8f0}
+.ms-btn.dn{background:#fee2e2;color:#dc2626}
+/* ===== ITEM 20 — Homepage Sections arrangement ===== */
+/* ===== 2026-09-17 — the block editor modal ===== */
+.hb-ov{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}
+.hb-box{background:#fff;border-radius:18px;max-width:620px;width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,.4);overflow:hidden}
+.hb-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #eef2f7;background:#f8fafc}
+.hb-hd b{font-size:1rem;font-weight:900;color:#0f172a;display:flex;align-items:center;gap:8px}
+.hb-hd b i{color:#4f46e5}
+.hb-x{border:none;background:none;font-size:1.7rem;line-height:1;color:#94a3b8;cursor:pointer;padding:0 4px}
+.hb-x:hover{color:#dc2626}
+.hb-bd{padding:18px 20px;overflow-y:auto}
+.hb-f{margin-bottom:15px}
+.hb-f>label{display:block;font-size:.8rem;font-weight:800;color:#334155;margin-bottom:6px}
+.hb-f>label i{color:#dc2626;font-style:normal}
+.hb-f>label em{font-size:.68rem;font-weight:600;color:#94a3b8;font-style:normal;margin-left:5px}
+.hb-cnt{float:right;font-size:.68rem;font-weight:800;color:#4f46e5;background:#eef2ff;border-radius:6px;padding:2px 8px}
+.hb-in{width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;font-size:.84rem;font-family:inherit;color:#0f172a;background:#fff;outline:none}
+.hb-in:focus{border-color:#818cf8;box-shadow:0 0 0 3px rgba(99,102,241,.12)}
+.hb-in:disabled{background:#f1f5f9;color:#94a3b8}
+.hb-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.hb-list{max-height:210px;overflow-y:auto;border:1.5px solid #e2e8f0;border-radius:10px;padding:6px}
+.hb-grp{margin-bottom:6px}
+.hb-grp-h{font-size:.64rem;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;padding:5px 7px 3px}
+.hb-pk{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:8px;cursor:pointer}
+.hb-pk:hover{background:#f8fafc}
+.hb-pk input{width:16px;height:16px;accent-color:#4f46e5;cursor:pointer;flex:0 0 16px}
+.hb-pk-n{flex:1;font-size:.79rem;font-weight:600;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hb-pk-t{font-size:.75rem;font-weight:800;color:#dc2626}
+.hb-none{padding:14px;text-align:center;color:#94a3b8;font-size:.8rem}
+.hb-ft{display:flex;gap:10px;justify-content:flex-end;padding:15px 20px;border-top:1px solid #eef2f7;background:#f8fafc}
+.hb-btn{border:none;border-radius:10px;padding:11px 20px;font-size:.84rem;font-weight:800;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px}
+.hb-btn.gh{background:#e2e8f0;color:#334155}
+.hb-btn.pri{background:#4f46e5;color:#fff}
+.hb-btn.pri:hover{background:#4338ca}
+@media(max-width:600px){.hb-3{grid-template-columns:1fr}.hb-box{max-height:94vh}}
+.hs-blk{background:#f8fafc;border:1px solid #e2e8f0;border-radius:13px;padding:13px 15px;margin-bottom:16px}
+.hs-blk-hd{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+.hs-blk-hd b{font-size:.88rem;font-weight:900;color:#0f172a}
+.hs-blk-hd>span{font-size:.68rem;font-weight:800;color:#94a3b8;text-transform:uppercase}
+.hs-blk-empty{color:#94a3b8;font-size:.8rem;font-weight:600;padding:10px 0}
+.hs-blk-row{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid #eef2f7;border-radius:11px;padding:9px 12px;margin-bottom:7px}
+.hs-blk-ic{width:34px;height:34px;flex:0 0 34px;border-radius:9px;background:#eef2ff;color:#4f46e5;display:flex;align-items:center;justify-content:center;font-size:.95rem}
+.hs-blk-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.hs-blk-tx b{font-size:.82rem;font-weight:900;color:#0f172a}
+.hs-blk-tx small{font-size:.64rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px}
+.hs-blk-tx em{font-size:.68rem;font-style:normal;font-weight:700;color:#64748b}
+.hs-blk-ops{display:flex;gap:4px}
+.hs-blk-ops button{width:28px;height:28px;border:1px solid #e2e8f0;background:#fff;color:#475569;border-radius:7px;font-size:.74rem;font-weight:900;cursor:pointer;padding:0}
+.hs-blk-ops button:hover{background:#eef2ff;border-color:#c7d2fe}
+.hs-blk-ops button.del:hover{background:#fee2e2;border-color:#fecaca;color:#dc2626}
+.hs-modal{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px}
+.hs-modal-in{background:#fff;border-radius:16px;max-width:560px;width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 30px 70px rgba(0,0,0,.35)}
+.hs-modal-hd{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid #eef2f7}
+.hs-modal-hd b{font-size:1rem;font-weight:900;color:#0f172a}
+.hs-modal-hd button{border:none;background:none;font-size:1.5rem;line-height:1;color:#94a3b8;cursor:pointer}
+.hs-modal-bd{padding:16px 18px;overflow-y:auto}
+.hs-modal-ft{display:flex;gap:9px;justify-content:flex-end;padding:14px 18px;border-top:1px solid #eef2f7}
+.hs-pklist{max-height:190px;overflow-y:auto;border:1px solid #eef2f7;border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:5px}
+.hs-pk{display:flex;align-items:center;gap:8px;font-size:.78rem;font-weight:600;color:#334155;cursor:pointer;padding:3px 5px;border-radius:6px}
+.hs-pk:hover{background:#f8fafc}
+.hs-pk input{width:15px;height:15px;accent-color:#4f46e5;cursor:pointer}
+.hs-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#eef2ff;border-radius:11px;padding:11px 14px;font-size:.76rem;color:#4338ca;font-weight:700;margin-bottom:16px}
+.hs-bar b{font-weight:900}
+.hs-sec{background:#f8fafc;border:1px solid #eef2f7;border-radius:13px;padding:13px 15px;margin-bottom:12px}
+.hs-sec.hs-d2{margin-left:16px;border-left:3px solid #e0e7ff}
+.hs-sec.hs-d3{margin-left:32px;border-left:3px solid #e0e7ff}
+/* 2026-09-15 — the add-a-main-menu row above the section list */
+.hs-newmenu{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 14px;padding:12px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px}
+.hs-newmenu .ms-inp{flex:1;min-width:200px}
+.hs-sh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px}
+.hs-sh b{font-size:.85rem;font-weight:900;color:#0f172a}
+.hs-sh>span{font-size:.66rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px}
+.hs-sh .ms-btn{margin-left:auto;padding:6px 11px;font-size:.7rem}
+.hs-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.hs-item{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #eef2f7;border-radius:9px;padding:7px 11px;font-size:.78rem}
+.hs-item.pin{border-color:#c7d2fe;background:#f5f7ff}
+.hs-nm{flex:1;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hs-tag{font-size:.6rem;font-weight:900;color:#94a3b8;background:#f1f5f9;border-radius:6px;padding:2px 7px;text-transform:uppercase;letter-spacing:.4px}
+.hs-ops{display:flex;gap:4px}
+.hs-ops button,.hs-mini2{border:1px solid #e2e8f0;background:#fff;color:#475569;border-radius:7px;padding:3px 8px;font-size:.7rem;font-weight:800;cursor:pointer;font-family:inherit;line-height:1.4}
+.hs-ops button:hover{background:#eef2ff;border-color:#c7d2fe}
+.hs-ops button.del:hover{background:#fee2e2;border-color:#fecaca;color:#dc2626}
+.hs-mini2{background:#eef2ff;border-color:#c7d2fe;color:#4338ca}
+.hs-add{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hs-add select{flex:1;min-width:170px;padding:8px 11px;font-size:.76rem}
+.hs-add .ms-btn{padding:8px 13px;font-size:.72rem}
+.hs-empty{text-align:center;color:#94a3b8;padding:34px 16px;font-size:.8rem}
+.hs-empty i{font-size:2rem;display:block;margin-bottom:10px;opacity:.5}
+.hs-empty b{display:block;color:#475569;margin-bottom:4px}
+
+.ms-btn.ok{background:#dcfce7;color:#16a34a}
+.colors{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:13px}
+.cf{display:flex;align-items:center;gap:12px;background:#f8fafc;border:1px solid #eef2f7;border-radius:12px;padding:11px 13px}
+.cf input[type=color]{width:48px;height:40px;border:none;border-radius:9px;cursor:pointer;background:none;padding:0;flex:none}
+.cf .cf-t{flex:1;min-width:0}
+.cf .cf-t b{display:block;font-size:.76rem;font-weight:800;color:#334155}
+.cf .cf-t small{font-family:'Courier New',monospace;font-size:.68rem;color:#94a3b8}
+.pv{border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;margin-top:16px}
+.pv-h{padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
+.pv-h b{font-size:.95rem}
+.pv-b{padding:18px}
+.pv-b .pv-card{background:#fff;border-radius:11px;padding:14px;box-shadow:0 1px 4px rgba(15,23,42,.08);margin-bottom:11px}
+.pv-f{padding:13px 18px;text-align:center;font-size:.72rem;font-weight:700}
+/* Category strip preview — full-bleed band, links centred, exactly like the
+   real storefront bar (.nav is 100% wide, .nav-in is the 70% centred row). */
+.pv-c{padding:11px 18px;display:flex;justify-content:center;gap:22px;border-top:1px solid rgba(0,0,0,.05);border-bottom:1px solid rgba(0,0,0,.05)}
+.pv-c span{font-size:.68rem;font-weight:800;letter-spacing:.8px}
+.pv-c span.on{border-bottom:1.8px solid currentColor}
+.px-box{border:1px solid #e2e8f0;border-radius:13px;padding:15px 17px;margin-bottom:12px}
+.px-h{display:flex;align-items:center;gap:10px;margin-bottom:11px;flex-wrap:wrap}
+.px-h i{font-size:1.15rem}
+.px-h b{font-size:.86rem;font-weight:900;flex:1}
+.px-stat{font-size:.64rem;font-weight:900;padding:3px 10px;border-radius:999px}
+.px-stat.on{background:#dcfce7;color:#166534}
+.px-stat.off{background:#f1f5f9;color:#94a3b8}
+.dns{background:#0f172a;color:#e2e8f0;border-radius:12px;padding:15px 17px;font-family:'Courier New',monospace;font-size:.76rem;line-height:1.85;overflow-x:auto;margin:12px 0}
+.dns b{color:#fbbf24}
+.cat-tree{margin-top:6px}
+.ct-l{padding:10px 13px;border:1px solid #eef2f7;border-radius:11px;margin-bottom:8px;background:#fafbff}
+.ct-l2{margin-left:20px;border-color:#f1f5f9;background:#fff}
+.ct-l3{margin-left:40px;border-color:#f1f5f9;background:#fff}
+.tg{position:relative;width:46px;height:26px;background:#10b981;border-radius:20px;cursor:pointer;transition:.2s;flex:none;display:inline-block;vertical-align:middle}
+.tg.off{background:#d1d5db}
+.tg::after{content:'';position:absolute;top:3px;left:23px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.2s}
+.tg.off::after{left:3px}
+.banner{border-radius:13px;padding:14px 17px;margin-bottom:16px;font-size:.82rem;font-weight:700;line-height:1.6;display:flex;align-items:flex-start;gap:10px}
+.banner i{margin-top:2px;flex:none}
+.banner.warn{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+.banner.ok{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+.banner.bad{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+@media(max-width:900px){.ms-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){
+ .ms-tabs{padding:7px;gap:6px}
+ .ms-tab{flex:1;justify-content:center;padding:9px 8px;font-size:.7rem}
+ .ms-card{padding:16px 15px}
+ .ms-grid{grid-template-columns:1fr 1fr;gap:9px}
+ .ms-row{flex-direction:column;align-items:flex-start;gap:9px}
+ .ms-btn{width:100%;justify-content:center}
+ .ct-l2{margin-left:12px}.ct-l3{margin-left:24px}
+}
+</style>
+
+<div class="ms-tabs">
+    <button class="ms-tab on" data-p="ov" onclick="msTab('ov')"><i class="fas fa-gauge-high"></i> Overview</button>
+    <button class="ms-tab" data-p="th" onclick="msTab('th')"><i class="fas fa-palette"></i> Customize</button>
+    <button class="ms-tab" data-p="px" onclick="msTab('px')"><i class="fas fa-bullseye"></i> Tracking &amp; Pixels</button>
+    <button class="ms-tab" data-p="dm" onclick="msTab('dm')"><i class="fas fa-globe"></i> Domain</button>
+    <button class="ms-tab" data-p="ct" onclick="msTab('ct')"><i class="fas fa-sitemap"></i> Shop Categories</button>
+    <button class="ms-tab" data-p="hs" onclick="msTab('hs')"><i class="fas fa-table-cells-large"></i> Homepage Sections</button>
+</div>
+
+<!-- ===== Reset to Default (2026-09-18 request) — ONE button, on every tab.
+     Puts this shop back on the ADMIN's default design: the default banners and
+     the default homepage sections. Shown above the panes so it is reachable
+     whichever tab the reseller is on. See msResetToDefault() below. ===== -->
+<div class="ms-card" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:14px 18px;margin-bottom:16px">
+    <div>
+        <b style="font-size:.86rem"><i class="fas fa-rotate-left"></i> Reset to Default</b>
+        <div class="hint" style="margin:3px 0 0">নিজের ব্যানার বা হোমপেজ সেকশন বদলে ফেলেছেন? এই বাটনে চাপলে <b>অ্যাডমিনের ডিফল্ট ডিজাইন</b> আবার ফিরে আসবে। আপনার প্রোডাক্ট বা অর্ডার কিছুই মুছবে না।</div>
+    </div>
+    <button class="ms-btn gh" id="msResetBtn" onclick="msResetToDefault()"><i class="fas fa-rotate-left"></i> Reset to Default</button>
+</div>
+
+<div id="shopStatusBanner"></div>
+
+<!-- ================= OVERVIEW ================= -->
+<div class="ms-pane on" id="pane-ov">
+    <!-- #1/#4 — ONE logo upload for the whole shop. It is stored on the existing
+         reseller `shop_logo` field, and BOTH the My Shop header and the My Shop
+         footer read that same value — there is no second/duplicate upload. -->
+    <div class="ms-card">
+        <h3><i class="fas fa-image"></i> Shop Logo</h3>
+        <p class="hint">এই logo আপনার My Shop-এর <b>Header</b> ও <b>Footer</b> দুটোতেই দেখাবে। যেকোনো size/shape-এর logo দিতে পারেন — display-এর সময় সেটা নিজে থেকেই সুন্দরভাবে fit হবে (কাটা বা টানা হবে না)।</p>
+        <div class="ms-row">
+            <div style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap">
+                <!-- live preview: drag the logo to position it, zoom to fit.
+                     The SAVED image is rendered to a square canvas, so the
+                     stored logo fills the frame with no stray white space. -->
+                <div id="lgPrev" title="Zoom করে টেনে position করুন"
+                     style="width:150px;height:150px;border:1.5px solid #e2e8f0;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;color:#cbd5e1;font-size:2rem;flex:none;cursor:grab;touch-action:none;user-select:none">
+                    <i class="fas fa-image"></i>
+                </div>
+                <div style="flex:1;min-width:210px">
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+                        <button class="ms-btn gh" onclick="document.getElementById('lgFile').click()"><i class="fas fa-upload"></i> Upload Logo</button>
+                        <button class="ms-btn gh" onclick="msRemoveLogo()" style="color:#dc2626"><i class="fas fa-trash"></i> Remove</button>
+                        <input type="file" id="lgFile" accept="image/*" style="display:none" onchange="msPickLogo(this)">
+                    </div>
+                    <div id="lgTools" style="display:none">
+                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:9px">
+                            <button class="ms-btn gh" onclick="lgZoomBy(-0.1)" title="Zoom Out"><i class="fas fa-magnifying-glass-minus"></i></button>
+                            <input type="range" id="lgZoom" min="0.3" max="3" step="0.01" value="1" oninput="lgZoomSet(this.value)" style="flex:1;min-width:120px">
+                            <button class="ms-btn gh" onclick="lgZoomBy(0.1)" title="Zoom In"><i class="fas fa-magnifying-glass-plus"></i></button>
+                        </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                            <button class="ms-btn pri" onclick="msSaveLogoEdit()"><i class="fas fa-check"></i> Save</button>
+                            <button class="ms-btn gh" onclick="lgReset()"><i class="fas fa-rotate-left"></i> Reset</button>
+                            <button class="ms-btn gh" onclick="msCancelLogoEdit()">Cancel</button>
+                        </div>
+                        <p class="hint" style="margin-top:9px;margin-bottom:0">ছবি টেনে position করুন, স্লাইডার/বাটন দিয়ে zoom করুন, তারপর <b>Save</b> চাপুন। সেভ হওয়া logo-টি ফ্রেম ভর্তি থাকবে — চারপাশে ফাঁকা সাদা জায়গা থাকবে না।</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Part 9 — "Shop Smart Lifestyles" promotional banner ON/OFF.
+         Stored per reseller inside the shop settings (`banner.show`), DEFAULT ON,
+         so switching it OFF affects only THIS shop and persists across refresh /
+         logout / login. my-shop.html reads it with shopBannerOn(rid) and simply
+         hides the existing hero block — nothing else about the page changes. -->
+    <div class="ms-card">
+        <h3><i class="fas fa-rectangle-ad"></i> Shop Smart Lifestyles Banner</h3>
+        <p class="hint">আপনার My Shop Homepage-এর উপরে থাকা <b>"SHOP SMART · LIVE STYLISH"</b> promotional bannerটি চালু বা বন্ধ করুন। বন্ধ করলে শুধু এই bannerটি আর দেখাবে না — আপনার product, category বা অন্য কোনো কিছুই বদলাবে না।</p>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+            <div>
+                <b style="font-size:.86rem" id="bnState">চালু (ON)</b>
+                <div class="hint" style="margin:3px 0 0">Default: ON — নতুন reseller-দের জন্য চালু থাকে।</div>
+            </div>
+            <span class="tg" id="bnToggle" onclick="msToggleBanner()" role="switch" aria-checked="true" title="ON/OFF"></span>
+        </div>
+        <!-- Part 9b (2026-09-18 request) — the reseller's OWN banners (up to 3).
+             The built-in design stays as the DEMO; uploaded images drop into the
+             same slot on the storefront and slide every 2 seconds. -->
+        <div style="margin-top:16px;border-top:1px solid #e2e8f0;padding-top:14px">
+            <b style="font-size:.86rem"><i class="fas fa-image"></i> নিজের ব্যানার আপলোড করুন <span style="font-weight:700;font-size:.78rem;color:#64748b">(সর্বোচ্চ ৩টি)</span></b>
+            <p class="hint" style="margin:4px 0 10px">
+                উপরে যে ব্যানারটা আছে সেটা <b>ডেমো</b>। আপনি চাইলে নিজের <b>৩টি পর্যন্ত</b> ব্যানার দিতে পারেন —
+                <b>একই জায়গাতেই</b> বসবে (হোমপেজের উপরে, পুরো চওড়া)। <b>২টি বা ৩টি</b> দিলে
+                অটোমেটিক slider হবে (প্রতি ২ সেকেন্ডে একটা করে)।<br>
+                <b>ছবি কাটা পড়বে না</b> — আপনি যে সাইজের ছবি দেবেন, পুরো ছবিটাই সেই সাইজে দেখাবে।
+                না দিলে ডেমো ব্যানারটাই আগের মতো থাকবে।
+            </p>
+            <div id="bnGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:12px"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                <button class="ms-btn pri" id="bnAddBtn" onclick="document.getElementById('bnFile').click()"><i class="fas fa-upload"></i> ব্যানার যোগ করুন</button>
+                <input type="file" id="bnFile" accept="image/*" style="display:none" onchange="msPickBanner(this)">
+                <button class="ms-btn" id="bnClearBtn" onclick="msClearBanner()" style="display:none"><i class="fas fa-rotate-left"></i> ডেমো ব্যানারে ফিরে যান</button>
+                <span id="bnImgNote" class="hint" style="margin:0"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parts 8-16 — My Shop HERO images.
+         Stored on the existing reseller record as `shop_heroes` (max 3), read
+         back by my-shop.html via shopHeroes(rid). One upload system, one
+         source of truth — the same pattern as the Shop Logo above. -->
+    <div class="ms-card">
+        <h3><i class="fas fa-panorama"></i> My Shop Hero Images <span style="font-weight:700;font-size:.78rem;color:#64748b">(সর্বোচ্চ ৩টি)</span></h3>
+        <p class="hint">
+            এই ছবিগুলো শুধু আপনার <b>My Shop Homepage</b>-এর উপরে slider হিসেবে দেখাবে —
+            কোনো Category page-এ দেখাবে না। যেকোনো size/aspect ratio-এর ছবি দিতে পারেন;
+            পুরো ছবিটাই দেখাবে, কাটা বা টানা হবে না।
+            <br><b>১টি ছবি</b> দিলে সেটি স্থির থাকবে (slide হবে না)।
+            <b>২টি বা ৩টি</b> দিলে অটোমেটিক slider হবে (প্রতি ৫ সেকেন্ডে)।
+            ছবি দিলে আপনার নিজের ছবিই দেখাবে — কোনো বাড়তি লেখা/বাটন বসানো হবে না।
+        </p>
+        <div id="heroGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:12px"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <button class="ms-btn pri" id="heroAddBtn" onclick="document.getElementById('heroFile').click()"><i class="fas fa-upload"></i> Hero Image যোগ করুন</button>
+            <input type="file" id="heroFile" accept="image/*" style="display:none" onchange="msPickHero(this)">
+            <span id="heroCount" class="hint" style="margin:0"></span>
+        </div>
+    </div>
+
+    <!-- #27-#29 — per-shop social links, saved into this shop's settings -->
+    <div class="ms-pane-card ms-card">
+        <h3><i class="fas fa-share-nodes"></i> Social Media Links</h3>
+        <p class="hint">আপনার My Shop-এর Footer-এ Facebook / Instagram / TikTok বাটনে এই লিংকগুলো ব্যবহার হবে। খালি রাখলে বাটনটি দেখানো হবে না।</p>
+        <!-- 2026-09-17 — SHOP SEO (this request). These set what Google and social
+             previews read for the shop's own pages: the tab title, the meta
+             description, the keywords and the share card. Blank = the shop name
+             and description are used instead, so an empty field never breaks a tag. -->
+        <div class="fg" style="grid-column:1/-1;border:1px solid #e2e8f0;border-radius:12px;padding:12px;background:#f8fafc">
+          <label style="font-weight:800;color:#334155"><i class="fas fa-magnifying-glass-chart"></i> Shop SEO <small style="color:#94a3b8;font-weight:600">(ঐচ্ছিক — খালি রাখলে দোকানের নাম ও বর্ণনা ব্যবহার হবে)</small></label>
+        </div>
+        <div class="fg"><label>SEO Title</label><input id="setSeoTitle" maxlength="70" placeholder="Google-এ যে টাইটেল দেখাবে"></div>
+        <div class="fg"><label>Keywords <small style="color:#94a3b8">(কমা দিয়ে)</small></label><input id="setSeoKeys" placeholder="e.g. online shop, dhaka, fashion"></div>
+        <div class="fg" style="grid-column:1/-1"><label>SEO Description</label><textarea id="setSeoDesc" rows="2" maxlength="170" placeholder="Google-এ যে বর্ণনা দেখাবে (১৫০-১৬০ অক্ষর ভালো)"></textarea></div>
+        <div class="fg"><label><i class="fab fa-facebook" style="color:#1877f2"></i> Facebook URL</label>
+            <input class="ms-inp" id="socFb" placeholder="https://facebook.com/yourpage" autocomplete="off"></div>
+        <div class="fg"><label><i class="fab fa-instagram" style="color:#e1306c"></i> Instagram URL</label>
+            <input class="ms-inp" id="socIg" placeholder="https://instagram.com/yourpage" autocomplete="off"></div>
+        <div class="fg"><label><i class="fab fa-tiktok"></i> TikTok URL</label>
+            <input class="ms-inp" id="socTk" placeholder="https://tiktok.com/@yourpage" autocomplete="off"></div>
+        <button class="ms-btn pri" onclick="msSaveSocial()"><i class="fas fa-floppy-disk"></i> Save Links</button>
+    </div>
+    <div class="ms-card">
+        <h3><i class="fas fa-gauge-high"></i> My Shop Summary</h3>
+        <p class="hint">আপনার storefront-এর বর্তমান অবস্থা — শুধুমাত্র আপনার শপের তথ্য।</p>
+        <div class="ms-grid" id="ovGrid"></div>
+    </div>
+    <div class="ms-card">
+        <h3><i class="fas fa-link"></i> Shop Links</h3>
+        <p class="hint">Shop URL শেয়ার করুন — কাস্টমার সরাসরি আপনার শপে ঢুকতে পারবে।</p>
+        <div class="ms-row">
+            <div><div class="nm">Shop URL</div><div class="ds" id="ovUrl">—</div></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="ms-btn gh" onclick="msCopyUrl()"><i class="fas fa-copy"></i> Copy</button>
+                <a class="ms-btn pri" id="ovOpen" target="_blank" style="text-decoration:none"><i class="fas fa-external-link-alt"></i> Open Shop</a>
+            </div>
+        </div>
+        <div class="ms-row">
+            <div><div class="nm">Custom Domain</div><div class="ds" id="ovDomain">Not connected</div></div>
+            <button class="ms-btn gh" onclick="msTab('dm')"><i class="fas fa-gear"></i> Manage</button>
+        </div>
+    </div>
+</div>
+
+<!-- ================= CUSTOMIZE ================= -->
+<div class="ms-pane" id="pane-th">
+    <div class="ms-card">
+        <h3><i class="fas fa-palette"></i> Customize My Shop</h3>
+        <p class="hint">নিচের কালারগুলো <b>শুধুমাত্র আপনার</b> My Shop-এ apply হবে। অন্য কোনো reseller-এর shop-এ প্রভাব পড়বে না।</p>
+        <div class="colors" id="colorGrid"></div>
+        <div style="display:flex;gap:9px;margin-top:16px;flex-wrap:wrap">
+            <button class="ms-btn pri" onclick="msSaveTheme()"><i class="fas fa-save"></i> Save Theme</button>
+            <button class="ms-btn gh" onclick="msResetTheme()"><i class="fas fa-rotate-left"></i> Reset to Default</button>
+        </div>
+        <div class="pv" id="themePreview">
+            <div class="pv-h" id="pvH"><b>My Shop</b><span style="font-size:.72rem;font-weight:800" id="pvHs">HEADER</span></div>
+            <div class="pv-c" id="pvC"><span class="on">FASHION</span><span>ELECTRONICS</span><span>HOME &amp; LIVING</span></div>
+            <div class="pv-b" id="pvB">
+                <div class="pv-card"><b style="font-size:.8rem">Product Title</b><div style="font-size:.7rem;margin-top:4px" id="pvT">Product description text</div></div>
+                <button class="ms-btn" id="pvBtn" style="pointer-events:none">Order Now</button>
+            </div>
+            <div class="pv-f" id="pvF">FOOTER</div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= PIXELS ================= -->
+<div class="ms-pane" id="pane-px">
+    <div class="ms-card">
+        <h3><i class="fas fa-bullseye"></i> Tracking &amp; Pixels</h3>
+        <p class="hint">Pixel ID <b>শুধুমাত্র আপনার</b> My Shop-এ load হবে — অন্য কোনো shop-এ নয়। Save করার পর <b>Connected ✓</b> দেখাবে।</p>
+
+        <div class="px-box">
+            <div class="px-h"><i class="fab fa-meta" style="color:#0866ff"></i><b>Meta / Facebook Pixel</b><span class="px-stat off" id="pxStatMeta">Not connected</span></div>
+            <label class="ms-lab">Pixel ID</label>
+            <input class="ms-inp" id="pxMeta" placeholder="e.g. 123456789012345" autocomplete="off">
+            <div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap">
+                <button class="ms-btn pri" onclick="msSavePixel('meta')"><i class="fas fa-plug"></i> Connect / Save</button>
+                <button class="ms-btn dn" onclick="msDisconnectPixel('meta')"><i class="fas fa-link-slash"></i> Disconnect</button>
+            </div>
+        </div>
+
+        <div class="px-box">
+            <div class="px-h"><i class="fab fa-tiktok" style="color:#111"></i><b>TikTok Pixel</b><span class="px-stat off" id="pxStatTiktok">Not connected</span></div>
+            <label class="ms-lab">Pixel ID</label>
+            <input class="ms-inp" id="pxTiktok" placeholder="e.g. CABCDEFGHIJKLMNOPQR" autocomplete="off">
+            <div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap">
+                <button class="ms-btn pri" onclick="msSavePixel('tiktok')"><i class="fas fa-plug"></i> Connect / Save</button>
+                <button class="ms-btn dn" onclick="msDisconnectPixel('tiktok')"><i class="fas fa-link-slash"></i> Disconnect</button>
+            </div>
+        </div>
+
+        <div class="px-box">
+            <div class="px-h"><i class="fab fa-instagram" style="color:#e1306c"></i><b>Meta / Instagram Tracking</b><span class="px-stat off" id="pxStatInstagram">Not connected</span></div>
+            <p class="hint" style="margin-bottom:9px">Instagram-এর জন্য Meta Pixel-ই ব্যবহার হয় (Meta-owned) — আলাদা Meta Pixel ID দিন অথবা Facebook-এর সাথে একই ID ব্যবহার করুন।</p>
+            <label class="ms-lab">Meta Pixel ID (Instagram ads)</label>
+            <input class="ms-inp" id="pxInstagram" placeholder="e.g. 123456789012345" autocomplete="off">
+            <div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap">
+                <button class="ms-btn pri" onclick="msSavePixel('instagram')"><i class="fas fa-plug"></i> Connect / Save</button>
+                <button class="ms-btn dn" onclick="msDisconnectPixel('instagram')"><i class="fas fa-link-slash"></i> Disconnect</button>
+            </div>
+        </div>
+
+        <div class="px-box" style="background:#fafbff">
+            <div class="px-h"><i class="fas fa-server" style="color:#7c3aed"></i><b>Server-side endpoint (optional)</b></div>
+            <p class="hint" style="margin-bottom:9px">Meta Conversions API-এর মতো server-side tracking-এর জন্য আপনার নিজস্ব endpoint দিন (যেমন <code>https://yoursite.com/capi.php</code>)। খালি রাখলে শুধু browser pixel ব্যবহার হবে।</p>
+            <input class="ms-inp" id="pxCapi" placeholder="https://yoursite.com/capi.php" autocomplete="off">
+            <div style="margin-top:11px"><button class="ms-btn pri" onclick="msSaveCapi()"><i class="fas fa-save"></i> Save Endpoint</button></div>
+        </div>
+
+        <div class="banner warn" style="margin-bottom:0">
+            <i class="fas fa-circle-info"></i>
+            <span>Browser pixel ID সবসময় page source-এ দৃশ্যমান হয় — এটি Facebook/TikTok-এর নিজস্ব নিয়ম। Token/secret-এর মতো গোপন তথ্য এখানে রাখবেন না; সেই কাজের জন্য উপরের <b>server-side endpoint</b> ব্যবহার করুন (credentials সেখানে server-এ থাকে)।</span>
+        </div>
+    </div>
+</div>
+
+<!-- ================= DOMAIN ================= -->
+<div class="ms-pane" id="pane-dm">
+    <div class="ms-card">
+        <h3><i class="fas fa-globe"></i> Connect Custom Domain</h3>
+        <p class="hint">আপনার নিজের domain যুক্ত করুন — যেমন <code>www.mybusiness.com</code> বা <code>shop.mybusiness.com</code>।</p>
+        <label class="ms-lab">Domain</label>
+        <input class="ms-inp" id="dmName" placeholder="www.mybusiness.com" autocomplete="off">
+        <div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap">
+            <button class="ms-btn pri" onclick="msSaveDomain()"><i class="fas fa-save"></i> Save Domain</button>
+            <button class="ms-btn gh" onclick="msVerifyDomain()"><i class="fas fa-shield-check"></i> Verify DNS</button>
+            <button class="ms-btn dn" onclick="msRemoveDomain()"><i class="fas fa-trash"></i> Remove</button>
+        </div>
+        <div id="dmStatus" style="margin-top:14px"></div>
+        <div id="dmDns" style="display:none">
+            <p class="hint" style="margin-top:16px"><b>১.</b> আপনার DNS provider-এ নিচের TXT record যোগ করুন, তারপর <b>Verify DNS</b> চাপুন।</p>
+            <div class="dns" id="dmTxt"></div>
+            <p class="hint" style="margin-top:6px"><b>২.</b> Verification সফল হলে domain activate হবে। এরপর নিচের CNAME/A record দিয়ে traffic পাঠান।</p>
+            <div class="dns" id="dmCname"></div>
+        </div>
+        <div class="banner warn" style="margin-top:14px;margin-bottom:0">
+            <i class="fas fa-lock"></i>
+            <span><b>SSL/HTTPS:</b> custom domain-এ HTTPS চালু করতে হবে আপনার hosting/CDN-এ (যেমন Cloudflare-এর free SSL)। এই অ্যাপটি শুধু চেক করে page HTTPS-এ load হয়েছে কি না — <span id="dmSsl">—</span></span>
+        </div>
+    </div>
+</div>
+
+<!-- ================= CATEGORIES ================= -->
+<div class="ms-pane" id="pane-ct">
+    <div class="ms-card">
+        <h3><i class="fas fa-sitemap"></i> Shop Categories</h3>
+        <p class="hint">Admin-এর তৈরি category গুলো এখানে দেখাবে। আপনি নতুন category তৈরি করতে পারবেন না — শুধু আপনার shop-এর জন্য <b>ON/OFF</b> করতে পারবেন। কোনো কিছু ডিলিট হয় না।</p>
+        <div class="cat-tree" id="catTree"></div>
+    </div>
+</div>
+
+<!-- ================= HOMEPAGE SECTIONS (item 20) ================= -->
+<div class="ms-pane" id="pane-hs">
+    <div class="ms-card">
+        <h3><i class="fas fa-table-cells-large"></i> Homepage Sections</h3>
+        <p class="hint">আপনার My Shop হোমপেজে সেকশনগুলো এই ক্রমে দেখায় — <b>মেইন ক্যাটাগরি → সাব ক্যাটাগরি → সাব-সাব ক্যাটাগরি</b>। প্রতিটি প্রোডাক্ট ঠিক <b>একবারই</b> দেখায় — তার সবচেয়ে নির্দিষ্ট সেকশনে। কোনো প্রোডাক্ট এক সেকশন থেকে অন্য সেকশনে নিতে চাইলে সেটি ওই সেকশনে <b>Pin</b> করুন; পিন করা প্রোডাক্ট আগের সেকশন থেকে সরে আসে। সেকশনের শেষে ফুটার — এর নিচে আর কোনো প্রোডাক্ট থাকে না।</p>
+        <!-- 2026-09-15 — the mixed "all products" block. OFF by default; when on,
+             at most 30 products at the chosen 4–10 per row. -->
+        <div style="background:#f8fafc;border:1px solid #eef2f7;border-radius:12px;padding:13px 15px;margin-bottom:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+            <div style="flex:1;min-width:200px">
+                <b style="font-size:.8rem;color:#334155">Show "All Products" block</b>
+                <div style="font-size:.72rem;color:#94a3b8;margin-top:3px">বন্ধ থাকলে হোমপেজে শুধু ক্যাটাগরি-ভিত্তিক সেকশন দেখাবে। চালু করলে সর্বোচ্চ ৩০টি প্রোডাক্ট দেখাবে।</div>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:700;color:#475569;cursor:pointer">
+                <input type="checkbox" id="hpShowAll" onchange="msSaveHomepage()" style="width:auto"> চালু
+            </label>
+            <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:.76rem;font-weight:800;color:#334155">প্রতি রো-তে</span>
+                <select id="hpPerRow" onchange="msSaveHomepage()" style="padding:7px 10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.8rem">
+                    <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                    <option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option>
+                </select>
+                <span style="font-size:.7rem;color:#94a3b8">(সর্বনিম্ন ৪, সর্বোচ্চ ১০)</span>
+            </div>
+        </div>
+        <div class="hs-bar">
+            <span><i class="fas fa-layer-group"></i> প্রতি সেকশনে <b id="hsPer">6</b>টি কার্ড, বাকিগুলো <b>View All</b>-এ</span>
+            <span id="hsPinned">0</span>
+        </div>
+        <div class="hs-secs" id="hsSecs"></div>
+        <!-- 2026-09-15 — sections the reseller removed. Restore any of them here. -->
+        <div id="hsHiddenBox" style="display:none;margin-top:14px;background:#f8fafc;border:1px solid #eef2f7;border-radius:12px;padding:13px 15px">
+            <b style="font-size:.78rem;color:#334155"><i class="fas fa-eye-slash"></i> সরানো সেকশনগুলো</b>
+            <div style="font-size:.7rem;color:#94a3b8;margin:3px 0 9px">এই সেকশনগুলো হোমপেজে দেখাবে না। আবার যোগ করতে "ফেরান" চাপুন — প্রোডাক্ট মুছে যায় না।</div>
+            <div id="hsHiddenList" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        </div>
+    </div>
+</div>
+
+    </div>
+</main>
+
+<script src="../app.js"></script><script>(function(){function paint(){try{var b=document.getElementById("ordersBadge");var uid=sessionStorage.getItem("user_id");if(!uid)return;if(sessionStorage.getItem("user_type")!=="reseller")return;var n=(typeof resellerNewOrderCount==="function")?resellerNewOrderCount(uid):0;if(b){b.textContent=n;b.style.display=n>0?"inline-block":"none";}var lb=document.getElementById("ordersBadgeLabel");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+/* ---- session / identity (never trust a URL param) ---- */
+var uid = sessionStorage.getItem('user_id');
+var utype = sessionStorage.getItem('user_type');
+if (!uid || utype !== 'reseller') { window.location.replace('login.html'); }
+var ME = null;
+function loadMe() {
+    var list = getData(DB_KEYS.RESELLERS) || [];
+    for (var i = 0; i < list.length; i++) { if (String(list[i].id) === String(uid)) { ME = list[i]; break; } }
+    return !!ME;
+}
+if (!loadMe()) { sessionStorage.clear(); window.location.replace('login.html'); }
+var RID = ME ? ME.id : null;
+function sEsc(v) {
+    return String(v === undefined || v === null ? '' : v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function sMoney(n) { return '\u09F3' + (Number(n) || 0).toLocaleString('en-IN'); }
+function sSet(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; }
+function sHtml(id, v) { var e = document.getElementById(id); if (e) e.innerHTML = v; }
+try {
+    sSet('userName', ME.businessName || ME.name || 'Reseller');
+    sSet('topBalance', (Number(ME.balance) || 0).toLocaleString('en-IN'));
+} catch (e) {}
+</script>
+<script>
+/* ================= My Shop Settings (tenant scoped to RID) ================= */
+var THEME_FIELDS = [
+    { k: 'primary', l: 'Primary Color', h: '#e91e63' },
+    { k: 'secondary', l: 'Secondary Color', h: '#7c3aed' },
+    { k: 'button', l: 'Button Color', h: '#e91e63' },
+    { k: 'text', l: 'Text Color', h: '#111111' },
+    { k: 'background', l: 'Background Color', h: '#f5f6fa' },
+    { k: 'header', l: 'Header Color', h: '#0a0a0a' },
+    /* Category Color — the FULL-WIDTH strip that holds the main category links,
+       straight under the header. It is 100% of the screen edge to edge; only the
+       links inside it are centred at 70%. It used to borrow the header colour. */
+    { k: 'category', l: 'Category Color', h: '#ffffff' },
+    { k: 'footer', l: 'Footer Color', h: '#0a0a0a' }
+];
+
+function msTab(p) {
+    var panes = document.querySelectorAll('.ms-pane');
+    for (var i = 0; i < panes.length; i++) panes[i].classList.remove('on');
+    var el = document.getElementById('pane-' + p); if (el) el.classList.add('on');
+    var tabs = document.querySelectorAll('.ms-tab');
+    for (var j = 0; j < tabs.length; j++) tabs[j].classList.toggle('on', tabs[j].getAttribute('data-p') === p);
+    try { window.scrollTo(0, 0); } catch (e) {}
+}
+
+/* #27-#31 — social links live in this shop's settings (per reseller). */
+function msRenderSocial(){
+  var soc={facebook:'',instagram:'',tiktok:''};
+  try{ soc=shopSocial(String(RID)) }catch(e){}
+  function v(id,val){ var e=document.getElementById(id); if(e)e.value=val||''; }
+  v('socFb',soc.facebook); v('socIg',soc.instagram); v('socTk',soc.tiktok);
+}
+window.msSaveSocial=function(){
+  function g(id){ var e=document.getElementById(id); return e?String(e.value||'').trim():''; }
+  try{
+    var s2=getShopSettings(String(RID));
+    s2.social={facebook:g('socFb'),instagram:g('socIg'),tiktok:g('socTk')};
+    saveShopSettings(String(RID),s2);
+    showToast('Social links saved — আপনার My Shop Footer-এ দেখাবে।','success');
+  }catch(e){ showToast('সেভ করা যায়নি।','error'); }
+};
+
+/* ---------- Shop Logo (#1, #2, #4) ----------
+   ONE upload. Stored on the existing reseller `shop_logo` field, which is
+   exactly what my-shop.html / my-shop-product.html / my-shop-checkout.html
+   already read for BOTH the header and the footer. */
+function msShopLogo() {
+    try {
+        var r = findResellerById(RID) || findResellerById(parseInt(RID)) || null;
+        return r ? (r.shop_logo || r.shopLogo || r.logo || '') : '';
+    } catch (e) { return ''; }
+}
+function msSetShopLogo(v) {
+    try {
+        var rs = getData(DB_KEYS.RESELLERS) || [];
+        for (var i = 0; i < rs.length; i++) {
+            if (String(rs[i].id) === String(RID)) {
+                rs[i].shop_logo = v || '';
+                rs[i].shopLogo = v || '';
+                setData(DB_KEYS.RESELLERS, rs);
+                return true;
+            }
+        }
+    } catch (e) {}
+    return false;
+}
+function msRenderLogo() {
+    var box = document.getElementById('lgPrev');
+    if (!box) return;
+    var lg = msShopLogo();
+    /* No padding — the saved logo already fills a square frame, so `contain`
+       shows it edge to edge with no stray white space. */
+    box.innerHTML = lg
+        ? '<img src="' + sEsc(lg) + '" alt="Shop logo" style="width:100%;height:100%;object-fit:contain;background:#fff;padding:0">'
+        : '<i class="fas fa-image"></i>';
+}
+/* ---------- logo zoom / position editor (#4) ---------- */
+var lgSrc = null, lgImg = null, lgZ = 1, lgX = 0, lgY = 0, lgDrag = null;
+function lgBox(){ return document.getElementById('lgPrev'); }
+function lgFitBase(){
+    if (!lgImg) return 1;
+    var b = lgBox(); if (!b) return 1;
+    return Math.min(b.clientWidth / lgImg.width, b.clientHeight / lgImg.height);
+}
+function lgDraw(){
+    var b = lgBox(); if (!b) return;
+    var w = lgImg.width * lgFitBase() * lgZ, h = lgImg.height * lgFitBase() * lgZ;
+    b.innerHTML = '<img src="' + sEsc(lgSrc) + '" style="width:' + w + 'px;height:' + h + 'px;position:relative;left:' + lgX + 'px;top:' + lgY + 'px;pointer-events:none;max-width:none">';
+}
+window.lgZoomBy = function (d) { lgZoomSet((lgZ + d < 0.3 ? 0.3 : lgZ + d > 3 ? 3 : lgZ + d)); };
+window.lgZoomSet = function (v) {
+    /* Part 4 — clamp the zoom state HERE, not just via the slider's min/max.
+       A range input silently clamps only its own DISPLAYED value, so an
+       out-of-range `lgZ` used to render (and SAVE) the logo at a different zoom
+       than the control showed. The state is now the single source of truth. */
+    var z = parseFloat(v);
+    if (isNaN(z)) z = 1;
+    lgZ = z < 0.3 ? 0.3 : (z > 3 ? 3 : z);
+    var s = document.getElementById('lgZoom'); if (s) s.value = lgZ;
+    if (lgImg) lgDraw();
+};
+window.lgReset = function () { lgZ = 1; lgX = 0; lgY = 0; lgZoomSet(1); if (lgImg) lgDraw(); };
+window.msCancelLogoEdit = function () {
+    lgSrc = null; lgImg = null;
+    var t = document.getElementById('lgTools'); if (t) t.style.display = 'none';
+    msRenderLogo();
+};
+/* Part 3 — TRIM the white margins a square canvas bakes in.
+   Crops `canvas` down to the pixels that are actually part of the logo and
+   returns a NEW, tightly-cropped canvas (with a small even breathing gap), or
+   null when there is nothing worth trimming / the canvas cannot be read.
+   A near-white pixel on every channel counts as background, so this works for
+   a transparent PNG and for a JPG logo sitting on a white sheet alike. */
+function msTrimWhite(canvas, ctx, S) {
+    var data;
+    try { data = ctx.getImageData(0, 0, S, S).data; } catch (e) { return null; }
+    var minX = S, minY = S, maxX = -1, maxY = -1, x, y, i;
+    var T = 246;                                   /* lighter than this on all 3 channels = background */
+    for (y = 0; y < S; y++) {
+        for (x = 0; x < S; x++) {
+            i = (y * S + x) * 4;
+            if (data[i + 3] < 8) continue;                        /* transparent */
+            if (data[i] >= T && data[i + 1] >= T && data[i + 2] >= T) continue;
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+        }
+    }
+    if (maxX < 0 || maxY < 0) return null;                        /* nothing but white — keep as-is */
+    var w = maxX - minX + 1, h = maxY - minY + 1;
+    var pad = Math.round(Math.max(w, h) * 0.04);                  /* small even gap */
+    var outW = w + pad * 2, outH = h + pad * 2;
+    /* already tight (a full-bleed JPG, for example) -> nothing to do */
+    if (outW >= S - 1 && outH >= S - 1) return null;
+    var nc = document.createElement('canvas');
+    nc.width = outW; nc.height = outH;
+    var ng = nc.getContext('2d');
+    ng.fillStyle = '#ffffff'; ng.fillRect(0, 0, outW, outH);
+    ng.drawImage(canvas, minX, minY, w, h, pad, pad, w, h);
+    return nc;
+}
+window.msSaveLogoEdit = function () {
+    if (!lgImg) return;
+    /* Render the framed result so the stored logo fills the square canvas. */
+    var S = 320, c = document.createElement('canvas');
+    c.width = S; c.height = S;
+    var g = c.getContext('2d');
+    g.fillStyle = '#ffffff'; g.fillRect(0, 0, S, S);
+    var bw = lgBox() ? lgBox().clientWidth : S, bh = lgBox() ? lgBox().clientHeight : S;
+    var k = S / Math.max(bw, bh);
+    var w = lgImg.width * lgFitBase() * lgZ * k, h = lgImg.height * lgFitBase() * lgZ * k;
+    var cx = S / 2 + lgX * k, cy = S / 2 + lgY * k;
+    g.drawImage(lgImg, cx - w / 2, cy - h / 2, w, h);
+
+    /* Part 3 — the old code stored this whole 320x320 WHITE square, so a wide or
+       tall logo carried big empty bands that showed up as "unnecessary white
+       space" around the logo in the header and footer tile. Crop to the artwork
+       first. If anything goes wrong the untrimmed square is still saved, so a
+       logo can never be lost. */
+    var out = '';
+    try {
+        var trimmed = msTrimWhite(c, g, S);
+        out = (trimmed || c).toDataURL('image/png');
+    } catch (e) {
+        try { out = c.toDataURL('image/png'); } catch (e2) { out = ''; }
+    }
+    if (!out) { showToast('Logo তৈরি করা যায়নি।', 'error'); return; }
+    if (msSetShopLogo(out)) {
+        lgSrc = null; lgImg = null;
+        var t = document.getElementById('lgTools'); if (t) t.style.display = 'none';
+        msRenderLogo();
+        showToast('Logo saved — Header ও Footer-এ দেখাবে।', 'success');
+    } else showToast('Logo সেভ করা যায়নি।', 'error');
+};
+window.msPickLogo = function (inp) {
+    var f = inp && inp.files && inp.files[0];
+    if (!f) return;
+    if (f.size > 2 * 1024 * 1024) { showToast('লোগোর সাইজ ২MB এর কম হতে হবে।', 'error'); inp.value = ''; return; }
+    var r = new FileReader();
+    r.onload = function () {
+        var im = new Image();
+        im.onload = function () {
+            lgSrc = r.result; lgImg = im; lgZ = 1; lgX = 0; lgY = 0;
+            var t = document.getElementById('lgTools'); if (t) t.style.display = 'block';
+            lgZoomSet(1); lgDraw();
+        };
+        im.onerror = function () { showToast('ছবিটি পড়া যায়নি।', 'error'); };
+        im.src = r.result;
+        inp.value = '';
+    };
+    r.readAsDataURL(f);
+};
+/* drag to position */
+(function bindLgDrag(){
+    function start(e){
+        if (!lgImg) return;
+        var p = e.touches ? e.touches[0] : e;
+        lgDrag = { x: p.clientX, y: p.clientY, ox: lgX, oy: lgY };
+        e.preventDefault();
+    }
+    function move(e){
+        if (!lgDrag) return;
+        var p = e.touches ? e.touches[0] : e;
+        lgX = lgDrag.ox + (p.clientX - lgDrag.x);
+        lgY = lgDrag.oy + (p.clientY - lgDrag.y);
+        lgDraw();
+        if (e.cancelable) e.preventDefault();
+    }
+    function end(){ lgDrag = null; }
+    document.addEventListener('DOMContentLoaded', function () {
+        var b = lgBox(); if (!b) return;
+        b.addEventListener('mousedown', start);
+        b.addEventListener('touchstart', start, { passive: false });
+        window.addEventListener('mousemove', move);
+        window.addEventListener('touchmove', move, { passive: false });
+        window.addEventListener('mouseup', end);
+        window.addEventListener('touchend', end);
+    });
+})();
+window.msRemoveLogo = function () {
+    if (!msShopLogo()) { showToast('কোনো logo আপলোড করা নেই।', 'warning'); return; }
+    if (!confirm('Logo সরিয়ে দেবেন?')) return;
+    if (msSetShopLogo('')) { msRenderLogo(); showToast('Logo removed.', 'success'); }
+};
+
+/* ---------- My Shop Hero Images (Parts 8-16) ----------
+   Storage + the max-3 rule live in app.js (`shopHeroes` / `shopAddHero` /
+   `shopRemoveHero`), so the storefront and this panel can never disagree about
+   which images a shop owns. This page only drives the upload + preview UI. */
+function msHeroList() {
+    try { return shopHeroes(RID) || []; } catch (e) { return []; }
+}
+function msRenderHeroes() {
+    var box = document.getElementById('heroGrid');
+    if (!box) return;
+    var list = msHeroList();
+    box.innerHTML = '';
+    for (var i = 0; i < list.length; i++) {
+        (function (idx, src) {
+            var d = document.createElement('div');
+            d.style.cssText = 'position:relative;border:1.5px solid #e2e8f0;border-radius:14px;overflow:hidden;background:#f8fafc;aspect-ratio:16/9';
+            d.innerHTML =
+                '<img src="' + sEsc(src) + '" alt="Hero ' + (idx + 1) + '" style="width:100%;height:100%;object-fit:contain;display:block">' +
+                '<span style="position:absolute;top:6px;left:6px;background:rgba(15,23,42,.72);color:#fff;font-size:.62rem;font-weight:800;padding:3px 8px;border-radius:8px">' + (idx + 1) + '</span>';
+            var rm = document.createElement('button');
+            rm.type = 'button';
+            rm.innerHTML = '<i class="fas fa-trash"></i>';
+            rm.title = 'Remove';
+            rm.style.cssText = 'position:absolute;top:6px;right:6px;background:#dc2626;color:#fff;border:none;width:28px;height:28px;border-radius:8px;cursor:pointer;font-size:.72rem';
+            rm.onclick = function () { msRemoveHeroAt(idx); };
+            d.appendChild(rm);
+            box.appendChild(d);
+        })(i, list[i]);
+    }
+    /* the add button disappears once the 3-image limit is reached, so the cap
+       is visible rather than only enforced on submit */
+    var addBtn = document.getElementById('heroAddBtn');
+    if (addBtn) addBtn.style.display = (list.length >= 3) ? 'none' : '';
+    var cnt = document.getElementById('heroCount');
+    if (cnt) cnt.textContent = list.length ? (list.length + ' / 3টি যোগ করা হয়েছে' + (list.length === 1 ? ' — স্থির থাকবে (slide হবে না)' : ' — অটোমেটিক slider হবে')) : 'এখনো কোনো Hero Image দেওয়া হয়নি।';
+}
+window.msPickHero = function (inp) {
+    var f = inp && inp.files && inp.files[0];
+    if (!f) return;
+    if (f.size > 5 * 1024 * 1024) { showToast('Hero ছবির সাইজ ৫MB এর কম হতে হবে।', 'error'); inp.value = ''; return; }
+    if (msHeroList().length >= 3) { showToast('সর্বোচ্চ ৩টি Hero Image দেওয়া যাবে।', 'error'); inp.value = ''; return; }
+    var r = new FileReader();
+    r.onload = function () {
+        var im = new Image();
+        im.onload = function () {
+            /* Keep the ORIGINAL image (no lossy re-encode, no forced dimension).
+               Only shrink when it is genuinely huge — so a big upload still
+               fits in localStorage while a normal one is stored as-is. */
+            var out = r.result;
+            try {
+                var MAXW = 1920;
+                if (im.width > MAXW) {
+                    var k = MAXW / im.width;
+                    var c = document.createElement('canvas');
+                    c.width = MAXW; c.height = Math.round(im.height * k);
+                    var g = c.getContext('2d');
+                    g.drawImage(im, 0, 0, c.width, c.height);
+                    out = c.toDataURL('image/jpeg', 0.92);
+                }
+            } catch (e) { out = r.result; }
+            var res = shopAddHero(RID, out);
+            inp.value = '';
+            if (!res.ok) { showToast(res.message || 'সেভ করা যায়নি।', 'error'); return; }
+            msRenderHeroes();
+            showToast('Hero image যোগ হয়েছে — My Shop Homepage-এ দেখাবে।', 'success');
+        };
+        im.onerror = function () { showToast('ছবিটি পড়া যায়নি।', 'error'); inp.value = ''; };
+        im.src = r.result;
+    };
+    r.readAsDataURL(f);
+};
+function msRemoveHeroAt(idx) {
+    if (!confirm('এই Hero Image টি সরিয়ে দেবেন?')) return;
+    var res = shopRemoveHero(RID, idx);
+    if (!res.ok) { showToast(res.message || 'সরানো যায়নি।', 'error'); return; }
+    msRenderHeroes();
+    showToast('Hero image সরানো হয়েছে।', 'success');
+}
+
+/* ---------- Overview (#46, #47) ---------- */
+function msRenderOverview() {
+    var s = shopSummary(RID);
+    var banner = document.getElementById('shopStatusBanner');
+    if (banner) {
+        banner.innerHTML = s.enabled
+            ? '<div class="banner ok"><i class="fas fa-circle-check"></i><span><b>My Shop is Active.</b> আপনার storefront লাইভ আছে।</span></div>'
+            : '<div class="banner bad"><i class="fas fa-circle-xmark"></i><span><b>Your My Shop has been disabled by Admin.</b> কাস্টমার আপনার shop দেখতে বা অর্ডার করতে পারবে না। আপনার product/order ডেটা অক্ষত আছে।</span></div>';
+    }
+    var cards = [
+        { l: 'Shop Status', v: s.enabled ? 'Active' : 'Disabled by Admin', hl: !s.enabled },
+        { l: 'Custom Domain', v: (s.domain.name ? s.domain.name : 'Not connected') + (s.domain.status === 'active' ? ' ✓' : ''), hl: false },
+        { l: 'Total Products', v: s.totalProducts, hl: false },
+        { l: 'Own Products', v: s.ownProducts, hl: false },
+        { l: 'My Shop Orders', v: s.orders, hl: false },
+        { l: 'Pending Orders', v: s.pending, hl: false },
+        { l: 'Delivered Orders', v: s.delivered, hl: false },
+        { l: 'Total My Shop Sales', v: sMoney(s.sales), hl: false },
+        { l: 'Pixel Connection', v: s.pixels.length ? s.pixels.join(', ') : 'None', hl: false }
+    ];
+    var h = '';
+    for (var i = 0; i < cards.length; i++) {
+        h += '<div class="ms-kpi' + (cards[i].hl ? ' hl' : '') + '"><div class="l">' + sEsc(cards[i].l) + '</div><div class="v">' + sEsc(cards[i].v) + '</div></div>';
+    }
+    sHtml('ovGrid', h);
+    var url = location.origin + location.pathname.replace(/[^\/]*$/, '') + 'my-shop.html?rid=' + RID;
+    sSet('ovUrl', url);
+    var open = document.getElementById('ovOpen'); if (open) open.href = 'my-shop.html?rid=' + RID;
+    sSet('ovDomain', s.domain.name ? (s.domain.name + ' — ' + (s.domain.status === 'active' ? 'Active ✓' : 'Pending verification')) : 'Not connected');
+}
+function msCopyUrl() {
+    var url = location.origin + location.pathname.replace(/[^\/]*$/, '') + 'my-shop.html?rid=' + RID;
+    msCopy(url, 'Shop link copied!');
+}
+function msCopy(t, msg) {
+    try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(t); showToast(msg || 'Copied!', 'success'); return; } } catch (e) {}
+    try {
+        var ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        showToast(msg || 'Copied!', 'success');
+    } catch (e) { showToast('Copy failed', 'error'); }
+}
+
+/* ---------- Customize (#2) ---------- */
+function msRenderTheme() {
+    var th = getShopSettings(RID).theme;
+    var h = '';
+    for (var i = 0; i < THEME_FIELDS.length; i++) {
+        var f = THEME_FIELDS[i];
+        h += '<div class="cf"><input type="color" id="thc-' + f.k + '" value="' + sEsc(th[f.k]) + '" oninput="msPreviewTheme()">' +
+             '<div class="cf-t"><b>' + f.l + '</b><small id="thv-' + f.k + '">' + sEsc(th[f.k]) + '</small></div></div>';
+    }
+    sHtml('colorGrid', h);
+    msPreviewTheme();
+}
+function msReadThemeForm() {
+    var t = {};
+    for (var i = 0; i < THEME_FIELDS.length; i++) {
+        var f = THEME_FIELDS[i];
+        var el = document.getElementById('thc-' + f.k);
+        t[f.k] = el ? el.value : DEFAULT_SHOP_THEME[f.k];
+    }
+    return t;
+}
+/* Legible link colour for the category strip — delegates to the one canonical
+   resolver in app.js so the preview matches the real storefront exactly. */
+function msReadableOn(hex) {
+    try { if (typeof rhTextOnColor === 'function') return rhTextOnColor(hex); } catch (e) {}
+    return '#222222';
+}
+/* ---------- Homepage "all products" block (2026-09-15) ---------- */
+function msLoadHomepage() {
+    try {
+        var hp = (typeof shopHomepage === 'function') ? shopHomepage(RID) : { showAll: false, perRow: 6 };
+        var cb = document.getElementById('hpShowAll'); if (cb) cb.checked = !!hp.showAll;
+        var sel = document.getElementById('hpPerRow'); if (sel) sel.value = String(hp.perRow || 6);
+    } catch (e) {}
+}
+function msSaveHomepage() {
+    try {
+        var cb = document.getElementById('hpShowAll');
+        var sel = document.getElementById('hpPerRow');
+        if (typeof setShopHomepage === 'function') {
+            setShopHomepage(RID, { showAll: !!(cb && cb.checked), perRow: sel ? sel.value : 6 });
+        }
+        showToast('Homepage setting saved — শুধু আপনার shop-এ apply হবে।', 'success');
+    } catch (e) {}
+}
+function msPreviewTheme() {
+    var t = msReadThemeForm();
+    for (var i = 0; i < THEME_FIELDS.length; i++) {
+        var f = THEME_FIELDS[i];
+        sSet('thv-' + f.k, t[f.k]);
+    }
+    var pvH = document.getElementById('pvH'); if (pvH) { pvH.style.background = t.header; pvH.style.color = '#fff'; }
+    var pvHs = document.getElementById('pvHs'); if (pvHs) pvHs.style.color = t.primary;
+    var pvC = document.getElementById('pvC');
+    if (pvC) {
+        var cc = t.category || DEFAULT_SHOP_THEME.category;
+        pvC.style.background = cc;
+        pvC.style.color = msReadableOn(cc);
+    }
+    var pvB = document.getElementById('pvB'); if (pvB) pvB.style.background = t.background;
+    var pvT = document.getElementById('pvT'); if (pvT) pvT.style.color = t.text;
+    var pvBtn = document.getElementById('pvBtn'); if (pvBtn) { pvBtn.style.background = t.button; pvBtn.style.color = '#fff'; }
+    var pvF = document.getElementById('pvF'); if (pvF) { pvF.style.background = t.footer; pvF.style.color = t.secondary; }
+}
+function msSaveTheme() {
+    patchShopSettings(RID, { theme: msReadThemeForm() });
+    showToast('Theme saved — শুধু আপনার shop-এ apply হবে।', 'success');
+    logActivity('shop_theme_saved', (ME.businessName || ME.name) + ' updated My Shop theme');
+}
+function msResetTheme() {
+    patchShopSettings(RID, { theme: JSON.parse(JSON.stringify(DEFAULT_SHOP_THEME)) });
+    msRenderTheme();
+    showToast('Default theme restored.', 'success');
+}
+
+/* ---------- Pixels (#3, #7) ---------- */
+var PX_META = { label: 'Meta', color: '#0866ff' };
+function msRenderPixels() {
+    var px = getShopSettings(RID).pixels;
+    var keys = ['meta', 'tiktok', 'instagram'];
+    var ids = { meta: 'pxMeta', tiktok: 'pxTiktok', instagram: 'pxInstagram' };
+    var stats = { meta: 'pxStatMeta', tiktok: 'pxStatTiktok', instagram: 'pxStatInstagram' };
+    for (var i = 0; i < keys.length; i++) {
+        var k = keys[i], cfg = px[k] || {};
+        var inp = document.getElementById(ids[k]); if (inp) inp.value = cfg.id || '';
+        var st = document.getElementById(stats[k]);
+        if (st) {
+            st.className = 'px-stat ' + (cfg.connected ? 'on' : 'off');
+            st.textContent = cfg.connected ? 'Connected ✓' : 'Not connected';
+        }
+    }
+    var capi = document.getElementById('pxCapi'); if (capi) capi.value = px.capiEndpoint || '';
+}
+function msSavePixel(kind) {
+    var ids = { meta: 'pxMeta', tiktok: 'pxTiktok', instagram: 'pxInstagram' };
+    var el = document.getElementById(ids[kind]);
+    var v = el ? String(el.value || '').trim() : '';
+    if (!v) { showToast('Pixel ID দিন!', 'error'); return; }
+    var s = getShopSettings(RID);
+    if (!s.pixels[kind]) s.pixels[kind] = { id: '', connected: false, connectedAt: null };
+    s.pixels[kind].id = v;
+    s.pixels[kind].connected = true;
+    s.pixels[kind].connectedAt = new Date().toISOString();
+    saveShopSettings(RID, s);
+    msRenderPixels();
+    showToast('Connected ✓', 'success');
+    logActivity('shop_pixel_connected', (ME.businessName || ME.name) + ' connected ' + kind + ' pixel');
+}
+function msDisconnectPixel(kind) {
+    var s = getShopSettings(RID);
+    if (!s.pixels[kind]) s.pixels[kind] = { id: '', connected: false, connectedAt: null };
+    s.pixels[kind].id = '';
+    s.pixels[kind].connected = false;
+    s.pixels[kind].connectedAt = null;
+    saveShopSettings(RID, s);
+    msRenderPixels();
+    showToast('Pixel disconnected.', 'success');
+}
+function msSaveCapi() {
+    var el = document.getElementById('pxCapi');
+    patchShopSettings(RID, { pixels: { capiEndpoint: el ? String(el.value || '').trim() : '' } });
+    showToast('Endpoint saved.', 'success');
+}
+
+/* ---------- Domain (#8 - #11) ---------- */
+function msRenderDomain() {
+    var d = getShopSettings(RID).domain || { name: '', status: 'none' };
+    var inp = document.getElementById('dmName'); if (inp) inp.value = d.name || '';
+    var box = document.getElementById('dmStatus');
+    if (box) {
+        var map = { none: ['Not connected', 'banner warn'], pending: ['Pending DNS verification', 'banner warn'], active: ['Active ✓ — এই domain আপনার shop-এ mapped', 'banner ok'] };
+        var m = map[d.status] || map.none;
+        box.innerHTML = '<div class="' + m[1] + '"><i class="fas fa-globe"></i><span><b>' + sEsc(d.name || 'No domain') + '</b> — ' + m[0] + '</span></div>';
+    }
+    var ssl = document.getElementById('dmSsl');
+    if (ssl) ssl.textContent = location.protocol === 'https:' ? 'এই page HTTPS-এ load হয়েছে ✓' : 'এই page HTTP-এ চলছে (hosting-এ SSL চালু করুন)';
+    var wrap = document.getElementById('dmDns');
+    if (wrap) wrap.style.display = d.name ? 'block' : 'none';
+    if (d.name) {
+        var token = shopDomainToken(RID);
+        sHtml('dmTxt', 'Type  : <b>TXT</b>\nName  : <b>_rhbd-verify.' + sEsc(normaliseDomain(d.name)) + '</b>\nValue : <b>' + sEsc(token) + '</b>');
+        sHtml('dmCname', 'Type  : <b>CNAME</b>\nName  : <b>' + sEsc(normaliseDomain(d.name)) + '</b>  (বা www)\nValue : <b>' + sEsc(location.hostname || 'your-resellerhub-host.com') + '</b>\n\n— অথবা A Record —\nType  : <b>A</b>\nName  : <b>' + sEsc(normaliseDomain(d.name)) + '</b>\nValue : <b>আপনার hosting-এর IP</b>');
+    }
+}
+function msSaveDomain() {
+    var el = document.getElementById('dmName');
+    var v = normaliseDomain(el ? el.value : '');
+    if (!v || v.indexOf('.') === -1) { showToast('সঠিক domain দিন!', 'error'); return; }
+    /* a domain can only ever belong to ONE shop (#11) */
+    var owner = findShopByDomain(v);
+    if (owner !== null && String(owner) !== String(RID)) {
+        showToast('এই domain ইতিমধ্যে অন্য একটি shop-এর সাথে যুক্ত!', 'error');
+        return;
+    }
+    var s = getShopSettings(RID);
+    s.domain.name = v;
+    s.domain.status = 'pending';
+    s.domain.token = shopDomainToken(RID);
+    saveShopSettings(RID, s);
+    msRenderDomain();
+    showToast('Domain saved — এখন DNS record যোগ করুন।', 'success');
+}
+function msVerifyDomain() {
+    var s = getShopSettings(RID);
+    if (!s.domain || !s.domain.name) { showToast('আগে domain save করুন!', 'error'); return; }
+    var box = document.getElementById('dmStatus');
+    if (box) box.innerHTML = '<div class="banner warn"><i class="fas fa-spinner fa-spin"></i><span>DNS check করা হচ্ছে...</span></div>';
+    var host = '_rhbd-verify.' + normaliseDomain(s.domain.name);
+    var token = shopDomainToken(RID);
+    /* DNS-over-HTTPS lookup — no private data leaves the browser except the hostname */
+    fetch('https://dns.google/resolve?name=' + encodeURIComponent(host) + '&type=TXT')
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+            var found = false;
+            var ans = j.Answer || [];
+            for (var i = 0; i < ans.length; i++) {
+                if (String(ans[i].data || '').indexOf(token) !== -1) { found = true; break; }
+            }
+            if (found) {
+                s.domain.status = 'active';
+                s.domain.verifiedAt = new Date().toISOString();
+                saveShopSettings(RID, s);
+                showToast('Domain verified & activated ✓', 'success');
+                logActivity('shop_domain_verified', (ME.businessName || ME.name) + ' verified domain ' + s.domain.name);
+            } else {
+                s.domain.status = 'pending';
+                saveShopSettings(RID, s);
+                showToast('TXT record পাওয়া যায়নি — DNS propagate করতে কিছুক্ষণ লাগতে পারে।', 'error');
+            }
+            msRenderDomain();
+        })
+        .catch(function () {
+            showToast('DNS check করা যায়নি (নেটওয়ার্ক/CORS)। পরে আবার চেষ্টা করুন।', 'error');
+            msRenderDomain();
+        });
+}
+function msRemoveDomain() {
+    patchShopSettings(RID, { domain: { name: '', status: 'none', verifiedAt: null } });
+    msRenderDomain();
+    showToast('Domain removed.', 'success');
+}
+
+/* ---------- Categories (#20 - #25) ---------- */
+function msRenderCategories() {
+    var cats = getData(DB_KEYS.CATEGORIES) || [];
+    if (!cats.length) { sHtml('catTree', '<div class="banner warn"><i class="fas fa-circle-info"></i><span>Admin এখনো কোনো category তৈরি করেনি।</span></div>'); return; }
+    /* PARTS 10-12 — show only the ACTIVE structure, exactly as the shop nav does.
+       The migration keeps retired/legacy records in the database with
+       `primary:false`; they never appear in the nav (`shopMainCategories` skips
+       them), yet this editor used to list them, so the reseller saw "Men Fashion"
+       AND "Men's Fashion" as two conflicting Main Categories and could toggle a
+       category that could never appear in their shop. Filtering here makes the
+       editor and the nav show the SAME six categories in the SAME order.
+       Nothing is deleted or rewritten — the retired records and every product
+       relationship stay exactly as they are. */
+    cats = cats.filter(function (c) { return !(c && c.primary === false); });
+    var h = '';
+    for (var i = 0; i < cats.length; i++) {
+        var c = cats[i] || {};
+        var cname = String(c.name || '');
+        var cOn = isCategoryVisible(RID, 'cats', cname);
+        h += '<div class="ct-l"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px">' +
+             '<div><b style="font-size:.84rem">' + sEsc(cname) + '</b><div class="ds" style="font-size:.7rem;color:#94a3b8">Category</div></div>' +
+             '<span class="tg' + (cOn ? '' : ' off') + '" onclick="msToggleCat(\'cats\',' + JSON.stringify(cname).replace(/"/g, '&quot;') + ')"></span></div>';
+
+        var subs = [];
+        if (c.subs && c.subs.length) subs = c.subs;
+        else if (c.subSubs) { for (var k in c.subSubs) { if (Object.prototype.hasOwnProperty.call(c.subSubs, k)) subs.push(k); } }
+        for (var j = 0; j < subs.length; j++) {
+            /* PARTS 10-12 — the admin category tree stores a sub as an OBJECT
+               ({name, subs:[…]}), but this renderer used `String(subs[j])`,
+               which printed "[object Object]" instead of the category name.
+               `catEntryName()` is the app's canonical reader: it returns the
+               real `.name` for an object and passes a plain string through, so
+               the SAME tree the admin edits now renders as readable names. */
+            var subEntry = subs[j];
+            var sname = (typeof catEntryName === 'function') ? catEntryName(subEntry)
+                                                            : String((subEntry && subEntry.name) || subEntry || '');
+            if (!sname) continue;
+            var sOn = isCategoryVisible(RID, 'subs', shopCatKey(cname, sname));
+            h += '<div class="ct-l ct-l2"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px">' +
+                 '<div><span style="font-size:.8rem;font-weight:700">' + sEsc(sname) + '</span><div class="ds" style="font-size:.68rem;color:#94a3b8">Subcategory</div></div>' +
+                 '<span class="tg' + (sOn ? '' : ' off') + '" onclick="msToggleSub(\'subs\',' + JSON.stringify(cname).replace(/"/g, '&quot;') + ',' + JSON.stringify(sname).replace(/"/g, '&quot;') + ')"></span></div>';
+
+            /* PARTS 10-12 — sub-sub list. The canonical location is
+               `subs[].subs` (what the admin editor and addSubSubCategory()
+               write); the legacy `subs[].subSubs` and the legacy map
+               `c.subSubs[sub]` are still read so no existing admin data is
+               lost. Names are read with catEntryName() for the same reason. */
+            var sss = [], seenSS = {};
+            function _pushSS(v) {
+                var arr = Object.prototype.toString.call(v) === '[object Array]' ? v : [];
+                for (var q = 0; q < arr.length; q++) {
+                    var nm = (typeof catEntryName === 'function') ? catEntryName(arr[q])
+                                                                  : String((arr[q] && arr[q].name) || arr[q] || '');
+                    if (!nm || seenSS[nm.toLowerCase()]) continue;
+                    seenSS[nm.toLowerCase()] = 1; sss.push(nm);
+                }
+            }
+            if (subEntry && typeof subEntry === 'object') { _pushSS(subEntry.subs); _pushSS(subEntry.subSubs); }
+            if (c.subSubs) _pushSS(c.subSubs[sname]);
+            for (var m = 0; m < sss.length; m++) {
+                var ssname = sss[m];
+                var ssOn = isCategoryVisible(RID, 'subsubs', shopCatKey(cname, sname, ssname));
+                h += '<div class="ct-l ct-l3"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px">' +
+                     '<div><span style="font-size:.76rem">' + sEsc(ssname) + '</span><div class="ds" style="font-size:.64rem;color:#94a3b8">Sub-subcategory</div></div>' +
+                     '<span class="tg' + (ssOn ? '' : ' off') + '" onclick="msToggleSubSub(\'subsubs\',' + JSON.stringify(cname).replace(/"/g, '&quot;') + ',' + JSON.stringify(sname).replace(/"/g, '&quot;') + ',' + JSON.stringify(ssname).replace(/"/g, '&quot;') + ')"></span></div></div>';
+            }
+            h += '</div>';
+        }
+        h += '</div>';
+    }
+    sHtml('catTree', h);
+}
+function msToggleCat(level, cname) {
+    setCategoryVisible(RID, level, cname, !isCategoryVisible(RID, level, cname));
+    msRenderCategories();
+}
+function msToggleSub(level, cname, sname) {
+    var key = shopCatKey(cname, sname);
+    setCategoryVisible(RID, level, key, !isCategoryVisible(RID, level, key));
+    msRenderCategories();
+}
+function msToggleSubSub(level, cname, sname, ssname) {
+    var key = shopCatKey(cname, sname, ssname);
+    setCategoryVisible(RID, level, key, !isCategoryVisible(RID, level, key));
+    msRenderCategories();
+}
+
+/* ---------- Part 9 — Shop Smart Lifestyles banner ON/OFF ----------
+   Reads/writes THIS reseller's own shop setting (`banner.show`, default ON).
+   Nothing global, nothing duplicated: my-shop.html reads the same value through
+   shopBannerOn(rid) in app.js. */
+function msRenderBanner() {
+    var t = document.getElementById('bnToggle');
+    if (!t) return;
+    var on = (typeof shopBannerOn === 'function') ? shopBannerOn(RID) : true;
+    t.className = 'tg' + (on ? '' : ' off');
+    t.setAttribute('aria-checked', on ? 'true' : 'false');
+    var s = document.getElementById('bnState');
+    if (s) s.textContent = on ? 'চালু (ON)' : 'বন্ধ (OFF)';
+    msRenderBannerImg();
+}
+/* Part 9b (2026-09-18 request) — the banners shown in this grid: up to THREE,
+   sliding every 2 seconds on the storefront.
+   2026-09-18 (this request) — the grid reads shopBannerManageImages(), the
+   SETTINGS-PAGE view: the reseller's own saved list, else the admin's defaults.
+   It deliberately does NOT read the storefront view: that one is premium-gated,
+   so for a shop whose premium was not open the grid fell back to the admin's
+   defaults the instant a banner was deleted — the delete was saved and then
+   invisible, which is exactly "ডিলিট করা যাইতেছে না". Reading what we WRITE
+   fixes it in every premium state.
+   Because every write saves the WHOLE list, deleting one of the defaults copies
+   the rest into the reseller's own settings and from then on the shop follows
+   THEIR list — so "Reset to Default" can always bring the admin's set back. */
+function msBannerList() {
+    try { return (typeof shopBannerManageImages === 'function') ? (shopBannerManageImages(RID) || []) : []; } catch (e) { return []; }
+}
+/* How many the reseller has saved THEMSELVES (0 => the admin's defaults are what
+   is on screen). Reads the SAVED list, never the gated one, so the note stays
+   truthful whatever the premium state is. */
+function msBannerOwnCount() {
+    try { return (typeof shopBannerSavedImages === 'function') ? (shopBannerSavedImages(RID) || []).length : 0; } catch (e) { return 0; }
+}
+function msRenderBannerImg() {
+    var box = document.getElementById('bnGrid');
+    var clr = document.getElementById('bnClearBtn'), note = document.getElementById('bnImgNote');
+    var add = document.getElementById('bnAddBtn');
+    var list = msBannerList();
+    if (box) {
+        box.innerHTML = '';
+        for (var i = 0; i < list.length; i++) {
+            (function (idx, src) {
+                var d = document.createElement('div');
+                d.style.cssText = 'position:relative;border:1.5px solid #e2e8f0;border-radius:14px;overflow:hidden;background:#f8fafc';
+                d.innerHTML =
+                    '<img src="' + sEsc(src) + '" alt="Banner ' + (idx + 1) + '" style="width:100%;height:auto;display:block">' +
+                    '<span style="position:absolute;top:6px;left:6px;background:rgba(15,23,42,.72);color:#fff;font-size:.62rem;font-weight:800;padding:3px 8px;border-radius:8px">' + (idx + 1) + '</span>';
+                var rm = document.createElement('button');
+                rm.type = 'button';
+                rm.innerHTML = '<i class="fas fa-trash"></i>';
+                rm.title = 'Remove';
+                rm.style.cssText = 'position:absolute;top:6px;right:6px;background:#dc2626;color:#fff;border:none;width:28px;height:28px;border-radius:8px;cursor:pointer;font-size:.72rem';
+                rm.onclick = function () { msRemoveBannerAt(idx); };
+                d.appendChild(rm);
+                box.appendChild(d);
+            })(i, list[i]);
+        }
+    }
+    /* the add button disappears at the limit, so the cap is visible */
+    if (add) add.style.display = (list.length >= 3) ? 'none' : '';
+    if (clr) clr.style.display = list.length ? '' : 'none';
+    if (note) {
+        /* 2026-09-18 — three DIFFERENT states, and they must not be confused:
+             own list present + empty  -> the reseller removed every banner
+             own list absent           -> never touched, the admin's defaults show
+             own list present + items  -> the reseller's own banners              */
+        var ownList = (typeof shopBannerHasOwnList === 'function') ? shopBannerHasOwnList(RID) : false;
+        if (!list.length) {
+            note.textContent = 'এখন আপনার শপে কোনো ব্যানার নেই। অ্যাডমিনের ডিফল্ট ব্যানার ফিরিয়ে আনতে “ডেমো ব্যানারে ফিরে যান” চাপুন।';
+        } else if (!ownList) {
+            /* the admin's defaults are on screen — say so plainly, and say what
+               the reseller can do about it, rather than pretending they are his. */
+            note.textContent = 'এখন অ্যাডমিনের ডিফল্ট ' + list.length + 'টি ব্যানার দেখানো হচ্ছে' +
+                (list.length > 1 ? ' — প্রতি ২ সেকেন্ডে slide হবে' : '') +
+                '। চাইলে ✕ চেপে মুছে নিজের ব্যানার দিন, অথবা “Reset to Default” চাপুন।';
+        } else {
+            note.textContent = list.length + ' / 3টি যোগ করা হয়েছে' +
+                (list.length === 1 ? ' — একটাই থাকবে (slide হবে না)' : ' — প্রতি ২ সেকেন্ডে slide হবে');
+        }
+    }
+}
+window.msPickBanner = function (inp) {
+    var f = inp && inp.files && inp.files[0];
+    if (!f) return;
+    if (f.size > 5 * 1024 * 1024) { showToast('ব্যানার ছবির সাইজ ৫MB এর কম হতে হবে।', 'error'); inp.value = ''; return; }
+    if (msBannerList().length >= 3) { showToast('সর্বোচ্চ ৩টি ব্যানার দেওয়া যাবে।', 'error'); inp.value = ''; return; }
+    var r = new FileReader();
+    r.onload = function () {
+        var im = new Image();
+        im.onload = function () {
+            /* Same treatment as the Hero images: keep the ORIGINAL (so nothing is
+               cropped or re-shaped), and only shrink a genuinely huge upload so
+               it still fits in storage. */
+            var out = r.result;
+            try {
+                var MAXW = 1920;
+                if (im.width > MAXW) {
+                    var k = MAXW / im.width;
+                    var c = document.createElement('canvas');
+                    c.width = MAXW; c.height = Math.round(im.height * k);
+                    c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+                    out = c.toDataURL('image/jpeg', 0.92);
+                }
+            } catch (e) { out = r.result; }
+            var list = msBannerList();
+            list.push(out);
+            var ok = setShopBannerImages(RID, list);
+            inp.value = '';
+            if (!ok) { showToast('সেভ করা যায়নি — storage পূর্ণ হতে পারে।', 'error'); return; }
+            msRenderBannerImg();
+            showToast('ব্যানার যোগ হয়েছে — My Shop Homepage-এ দেখাবে।', 'success');
+        };
+        im.onerror = function () { showToast('ছবিটি পড়া যায়নি।', 'error'); inp.value = ''; };
+        im.src = r.result;
+    };
+    r.readAsDataURL(f);
+};
+function msRemoveBannerAt(idx) {
+    if (!confirm('এই ব্যানারটি সরিয়ে দেবেন?')) return;
+    var list = msBannerList();
+    if (idx < 0 || idx >= list.length) return;
+    list.splice(idx, 1);
+    if (!setShopBannerImages(RID, list)) { showToast('সরানো যায়নি।', 'error'); return; }
+    msRenderBannerImg();
+    showToast('ব্যানার সরানো হয়েছে।', 'success');
+}
+window.msClearBanner = function () {
+    /* 2026-09-18 — this button means "back to the DEFAULT", so it must REMOVE the
+       reseller's own list, not save an empty one. Saving [] would mean "I want no
+       banners at all" and the demo/default would never come back. */
+    if (!confirm('নিজের সব ব্যানার সরিয়ে অ্যাডমিনের ডিফল্ট ব্যানারে ফিরে যাবেন?')) return;
+    var ok = (typeof shopBannerClearOwn === 'function') ? shopBannerClearOwn(RID) : false;
+    if (!ok) { showToast('সরানো যায়নি।', 'error'); return; }
+    msRenderBannerImg();
+    showToast('ডিফল্ট ব্যানারে ফিরে গেছেন।', 'success');
+};
+window.msToggleBanner = function () {
+    var on = !((typeof shopBannerOn === 'function') ? shopBannerOn(RID) : true);
+    setShopBanner(RID, on);
+    msRenderBanner();
+    showToast(on ? 'Banner চালু করা হয়েছে ✓' : 'Banner বন্ধ করা হয়েছে', 'success');
+};
+
+/* ==========================================================================
+   RESET TO DEFAULT  (2026-09-18, this request)
+   --------------------------------------------------------------------------
+   ONE button. It puts this shop back on the ADMIN's default design: the default
+   banners and the default homepage sections (blocks). It does this by dropping
+   the reseller's OWN banner images and their OWN blocks, so the shared defaults
+   show through again — nothing is deleted from the platform, and no other shop
+   is touched.
+   The banner ON/OFF switch is deliberately left alone: turning the banner off is
+   a choice the reseller made, not an edit this button should undo.
+   ========================================================================== */
+window.msResetToDefault = function () {
+    /* nothing of the reseller's own is in play — say so instead of reporting a
+       reset that did not change anything */
+    if (typeof shopHasOwnOverrides === 'function' && !shopHasOwnOverrides(RID)) {
+        showToast('আপনার নিজের কোনো পরিবর্তন নেই — সব আগে থেকেই ডিফল্ট।', 'success');
+        return;
+    }
+    if (!confirm('Reset to Default?\n\nআপনার নিজের দেওয়া ব্যানার ও হোমপেজ সেকশন মুছে যাবে — ' +
+                 'অ্যাডমিনের ডিফল্ট ব্যানার ও হোমপেজ সেকশন আবার ফিরে আসবে।\n\n' +
+                 '(ব্যানারের চালু/বন্ধ সুইচ আগের মতোই থাকবে।)\n\nনিশ্চিত?')) return;
+    var ok = (typeof shopResetToDefault === 'function') ? shopResetToDefault(RID) : false;
+    if (!ok) { showToast('রিসেট করা যায়নি — storage পূর্ণ হতে পারে।', 'error'); return; }
+    msRenderBannerImg();
+    try { if (typeof hsRender === 'function') hsRender(); } catch (e) { }
+    showToast('Reset to Default সম্পন্ন ✓', 'success');
+};
+
+
+/* ==========================================================================
+   ITEM 20 (spec, 2026-09-14) — HOMEPAGE SECTION ARRANGEMENT
+   --------------------------------------------------------------------------
+   The My Shop homepage shows, per main category: the main-category products,
+   then that category's sub-category products, then its sub-sub-category
+   products — and nothing below that but the footer. Every product appears in
+   exactly ONE section (its deepest match).
+
+   This panel lets the reseller change WHICH products sit in WHICH section and
+   in what order. "Pin" moves a product into the section, in the pinned order;
+   "✕" releases it back to automatic. Pins are stored per reseller in
+   `rh_shop_sections`, so one shop's arrangement can never reach into another
+   shop's homepage, and the admin can arrange any shop through the same store.
+   Nothing here deletes or edits a product — it only decides placement.
+   ========================================================================== */
+window._hsSecs = [];
+function hsJs(v) { return String(v === undefined || v === null ? '' : v).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+function hsRender() {
+    var box = document.getElementById('hsSecs');
+    if (!box) return;
+    var per = document.getElementById('hsPer');
+    if (per) per.textContent = String(SHOP_SECTION_PRODUCTS);
+    /* includeEmpty — a menu with no products yet must still be listed here, or
+       the reseller cannot see or manage what they just created. The homepage
+       calls this without the flag, so it never renders an empty block. */
+    var secs = shopHomepageSections(RID, { includeEmpty: true });
+    var all = shopVisibleProducts(RID);
+    window._hsSecs = secs;
+    var totalPinned = 0;
+    for (var t = 0; t < secs.length; t++) totalPinned += shopSectionPinnedIds(RID, secs[t].key).length;
+    var pinCount = document.getElementById('hsPinned');
+    if (pinCount) pinCount.textContent = totalPinned ? (totalPinned + 'টি প্রোডাক্ট হাতে সাজানো') : 'সব সেকশন অটোমেটিক';
+
+    var opts = '<option value="">— অন্য সেকশন থেকে প্রোডাক্ট আনুন —</option>';
+    for (var a = 0; a < all.length; a++) {
+        opts += '<option value="' + esc(String(all[a].id)) + '">' + esc(String(all[a].name || '')) + '</option>';
+    }
+    if (!secs.length) {
+        /* 2026-09-18 (this request) — the BLOCK list MUST still render here.
+           A block is independent of the category sections: the admin's DEFAULT
+           blocks live in this panel, and so do the reseller's own. The old code
+           returned BEFORE hsBlocksHTML() was ever called, so any shop with no
+           visible category sections lost the whole block panel — including the
+           admin's defaults. That is exactly "অ্যাডমিনের ব্লকটা My Shop Settings-এ
+           দেখা যাচ্ছে না". `shopHomepageSections()` is empty whenever the shop has
+           every category switched OFF (Shop Categories) or has no products yet,
+           so this was reachable, not theoretical. */
+        box.innerHTML = '<div class="hs-empty"><i class="fas fa-box-open"></i><b>কোনো সেকশন নেই</b>' +
+            'আগে My Products থেকে প্রোডাক্ট আপলোড করুন — তারপর সেকশনগুলো এখানে দেখাবে।</div>' +
+            hsBlocksHTML() + hsPoliciesHTML();
+        hsRenderHidden();
+        return;
+    }
+    /* 2026-09-17 — the menu-tree buttons (add a main menu / add a sub / delete a
+       menu) were removed at the user's request: a reseller does not create
+       categories, the admin does. What remains on this page is only what the
+       homepage BLOCKS need. */
+    /* 2026-09-17 — HOMEPAGE BLOCKS (this request). These are the rows a customer
+       actually sees on the shop homepage — "Flash Deals", "Half Sleeve". The
+       reseller creates them here. Everything below this panel is the older
+       category-section list, left untouched. */
+    /* 2026-09-17 — the OLD category-section list is no longer drawn. The homepage
+       is built entirely from the reseller's blocks, so showing a list of every
+       category here only confused things. `secs` is still computed above because
+       other code reads the count. */
+    var h = hsBlocksHTML() + hsPoliciesHTML();
+    box.innerHTML = h;
+    hsRenderHidden();
+    return;
+    /* ---- the old category-section renderer below is now unused ---- */
+    for (var i = 0; i < secs.length; i++) {
+        var s = secs[i];
+        var pinned = shopSectionPinnedIds(RID, s.key);
+        var isPin = {};
+        for (var q = 0; q < pinned.length; q++) isPin[String(pinned[q])] = 1;
+        var shown = shopSectionShown(s);
+        h += '<div class="hs-sec hs-d' + s.depth + '" data-sec="' + esc(s.key) + '">' +
+             '<div class="hs-sh">' +
+             '<b>' + esc(shopSectionTitle(s)) + '</b><span>' + s.total + ' product' + (s.total === 1 ? '' : 's') + '</span>' +
+
+             /* 2026-09-15 — remove this WHOLE section from the homepage. Display
+                only: the products stay, they just stop getting their own block. */
+             '<button class="ms-btn dn" title="হোমপেজ থেকে এই সেকশনটি সরান" onclick="hsHide(\'' + hsJs(s.key) + '\')"><i class="fas fa-eye-slash"></i> সরান</button>' +
+             /* 2026-09-15 — manage the MENU itself, at every level:
+                  depth 1 (main)   -> add a sub
+                  depth 2 (sub)    -> add a sub-sub
+                  depth 3          -> nothing to nest under
+                and every level can be deleted. */
+             '</div><div class="hs-list">';
+        if (!shown.length) h += '<div class="hs-item"><span class="hs-nm" style="color:#94a3b8">— খালি —</span></div>';
+        for (var k = 0; k < shown.length; k++) {
+            var p = shown[k];
+            var id = String(p.id);
+            h += '<div class="hs-item' + (isPin[id] ? ' pin' : '') + '">' +
+                 '<span class="hs-nm">' + esc(String(p.name || '')) + '</span>' +
+                 (isPin[id]
+                    ? '<span class="hs-ops">' +
+                      '<button title="উপরে" onclick="hsMove(\'' + hsJs(s.key) + '\',\'' + hsJs(id) + '\',-1)">\u2191</button>' +
+                      '<button title="নিচে" onclick="hsMove(\'' + hsJs(s.key) + '\',\'' + hsJs(id) + '\',1)">\u2193</button>' +
+                      '<button class="del" title="Auto-তে ফেরান" onclick="hsUnpin(\'' + hsJs(s.key) + '\',\'' + hsJs(id) + '\')">\u2715</button>' +
+                      '</span>'
+                    : '<span class="hs-tag">auto</span>' +
+                      '<button class="hs-mini2" onclick="hsPin(\'' + hsJs(s.key) + '\',\'' + hsJs(id) + '\')">Pin</button>') +
+                 '</div>';
+        }
+        h += '</div><div class="hs-add"><select class="ms-inp" id="hsSel' + i + '">' + opts + '</select>' +
+             '<button class="ms-btn pri" onclick="hsAddHere(' + i + ')"><i class="fas fa-plus"></i> এখানে আনুন</button></div></div>';
+    }
+    box.innerHTML = h;
+    hsRenderHidden();
+}
+window.hsRender = hsRender;
+function hsPin(key, pid) { pinProductToShopSection(RID, key, pid); hsRender(); showToast('সেকশনে pin করা হয়েছে ✓', 'success'); }
+window.hsPin = hsPin;
+
+/* ===========================================================================
+   2026-09-15 — ADD / DELETE a MENU from the Homepage Sections page.
+   Main, sub and sub-sub menus can all be added and deleted from here, so the
+   reseller never has to leave this tab to manage the tree.
+
+   Two different things are called "delete" and the UI must not blur them:
+     * a menu the RESELLER created  -> actually removed from their own tree
+     * an ADMIN category            -> cannot be deleted (it is not theirs), so
+       it is switched OFF for their shop instead. The confirmation says which
+       one is about to happen, because the second also hides its products.
+   =========================================================================== */
+/* is this exact menu one the reseller created themselves? */
+function hsIsOwnMenu(p) {
+    try {
+        var list = getOwnCategories(RID);
+        for (var i = 0; i < list.length; i++) {
+            if (String(list[i].name) !== String(p.cat)) continue;
+            /* A `shared: true` node is the ADMIN's category materialised inside
+               this reseller's tree purely to carry their extra children — the
+               NODE ITSELF is not theirs, so it must not be reported as "own".
+               Without this, "মেনু মুছুন" on an admin sub would really delete the
+               local node instead of switching the admin category off. */
+            if (!p.sub) return !list[i].shared;                       /* own main  */
+            var subs = list[i].subs || [];
+            for (var j = 0; j < subs.length; j++) {
+                var sn = (typeof catEntryName === 'function') ? catEntryName(subs[j]) : (subs[j].name || subs[j]);
+                if (String(sn) !== String(p.sub)) continue;
+                var shared = !!(subs[j] && subs[j].shared);
+                if (!p.subsub) return !shared;                        /* own sub   */
+                /* a sub-sub BELOW a shared parent IS the reseller's own */
+                var sss = subs[j].subSubs || [];
+                for (var k = 0; k < sss.length; k++) if (String(sss[k]) === String(p.subsub)) return true;
+                return false;
+            }
+        }
+    } catch (e) {}
+    return false;
+}
+window.hsAddMainMenu = function () {
+    var inp = document.getElementById('hsNewMain');
+    var name = String((inp && inp.value) || '').trim();
+    if (!name) { showToast('মেনুর নাম লিখুন।', 'error'); return; }
+    var r = null;
+    try { r = ownCategoryAdd(RID, name, null); } catch (e) { r = { ok: false }; }
+    if (!r || !r.ok) { showToast((r && r.message) || 'যোগ করা গেল না।', 'error'); return; }
+    if (inp) inp.value = '';
+    showToast('মেইন মেনু “' + name + '” যোগ হয়েছে ✓', 'success');
+    hsRender();
+};
+window.hsAddMenu = function (key) {
+    var p = shopSectionParts(key);
+    var isSub = !p.sub;                       /* depth 1 -> add a sub */
+    var name = prompt(isSub ? 'নতুন সাব-মেনুর নাম লিখুন:' : 'নতুন সাব-সাব মেনুর নাম লিখুন:');
+    if (name === null) return;
+    name = String(name).trim();
+    if (!name) return;
+    var r = null;
+    try {
+        r = ownCategoryAdd(RID, name, isSub ? { cat: p.cat, sub: null } : { cat: p.cat, sub: p.sub });
+    } catch (e) { r = { ok: false }; }
+    if (!r || !r.ok) { showToast((r && r.message) || 'যোগ করা গেল না।', 'error'); return; }
+    showToast('“' + name + '” যোগ হয়েছে ✓', 'success');
+    hsRender();
+};
+/* The DELETE itself, with no confirmation. Split out so a BULK delete can ask ONCE
+   and then run this per row — asking once per row made the browser suppress the
+   repeated dialogs, so only the first few sections were ever deleted and the rest
+   looked like the button did nothing. */
+/* 2026-09-17 — a save that FAILS must say so. patchShopSettings() returns false when
+   the write does not land (storage full / store error), and every hs* handler used to
+   ignore that: the toast said "✓", hsRender() re-read the OLD data, and the row came
+   back — which is exactly "নিজে নিজে রিসেট হয়ে যায়". This is the project's own house
+   rule: check setData()'s return. */
+function hsSaveOk(res, what) {
+    if (res === false) {
+        showToast('সেভ করা যায়নি — ব্রাউজারের storage ভর্তি। কিছু জায়গা খালি করে আবার চেষ্টা করুন।', 'error');
+        return false;
+    }
+    return true;
+}
+function hsDeleteMenuSilent(key) {
+    var p = shopSectionParts(key);
+    var label = p.subsub || p.sub || p.cat;
+    var own = hsIsOwnMenu(p);
+    try {
+        if (own) {
+            ownCategoryRemove(RID, { cat: p.cat, sub: p.sub || null, subSub: p.subsub || null });
+        } else if (!p.sub) {
+            setCategoryVisible(RID, 'cats', p.cat, false);
+        } else if (!p.subsub) {
+            setCategoryVisible(RID, 'subs', shopCatKey(p.cat, p.sub), false);
+        } else {
+            setCategoryVisible(RID, 'subsubs', shopCatKey(p.cat, p.sub, p.subsub), false);
+        }
+        /* delete-also-hides (2026-09-17, this request).
+           An Admin category cannot really be deleted, so it is switched OFF via
+           setCategoryVisible. But the section LIST filters on shopSectionHidden(),
+           which reads a completely different store (rh_shop_settings.hiddenSections).
+           The two never met, so "মুছে ফেলুন" changed a flag the list does not read and
+           the row stayed on screen — which is exactly "ডিলিট করা যাইতেছে না".
+           Now a delete ALSO marks the section hidden, so it leaves the list. */
+        try { hsSaveOk(setShopSectionHidden(RID, key, true), 'delete'); } catch (e2) { }
+    } catch (e) { showToast('মুছে ফেলা গেল না।', 'error'); return; }
+    showToast(own ? '“' + label + '” মেনু মুছে ফেলা হয়েছে ✓'
+                  : '“' + label + '” আপনার শপ থেকে লুকানো হয়েছে ✓', 'success');
+    return true;
+}
+window.hsDeleteMenu = function (key) {
+    var p = shopSectionParts(key);
+    var label = p.subsub || p.sub || p.cat;
+    var own = hsIsOwnMenu(p);
+    var msg = own
+        ? '“' + label + '” মেনুটি আপনার নিজের বানানো — সম্পূর্ণ মুছে ফেলা হবে। নিশ্চিত?'
+        : '“' + label + '” একটি Admin ক্যাটাগরি, তাই সম্পূর্ণ মোছা যাবে না — পরিবর্তে আপনার শপ থেকে লুকানো হবে (এর প্রোডাক্টগুলোও শপে দেখাবে না)। নিশ্চিত?';
+    if (!confirm(msg)) return;
+    hsDeleteMenuSilent(key);
+    hsRender();
+};
+/* ---------- remove / restore a whole homepage section (2026-09-15) ----------
+   The reseller decides which categories get their own homepage block. Removing
+   one is a DISPLAY choice — the products are never touched. */
+function hsRenderHidden() {
+    var box = document.getElementById('hsHiddenBox');
+    var list = document.getElementById('hsHiddenList');
+    if (!box || !list) return;
+    var keys = (typeof shopHiddenSections === 'function') ? shopHiddenSections(RID) : [];
+    if (!keys.length) { box.style.display = 'none'; list.innerHTML = ''; return; }
+    box.style.display = 'block';
+    var h = '';
+    for (var i = 0; i < keys.length; i++) {
+        var k = String(keys[i]);
+        /* the key is "Main||Sub||SubSub" — show the deepest part, like the headings */
+        var parts = k.split('||').filter(function (x) { return x !== ''; });
+        var label = parts.length ? parts[parts.length - 1] : k;
+        h += '<span style="display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid #e2e8f0;border-radius:9px;padding:5px 10px;font-size:.76rem;font-weight:700;color:#475569">' +
+             esc(label) +
+             '<button class="ms-btn gh" style="padding:3px 9px;font-size:.7rem" onclick="hsShow(\'' + hsJs(k) + '\')"><i class="fas fa-rotate-left"></i> ফেরান</button>' +
+             '</span>';
+    }
+    list.innerHTML = h;
+}
+function hsHide(key) {
+    if (typeof setShopSectionHidden === 'function') setShopSectionHidden(RID, key, true);
+    hsRender();
+    showToast('সেকশনটি হোমপেজ থেকে সরানো হলো।', 'success');
+}
+function hsShow(key) {
+    if (typeof setShopSectionHidden === 'function') setShopSectionHidden(RID, key, false);
+    hsRender();
+    showToast('সেকশনটি আবার যোগ হলো ✓', 'success');
+}
+window.hsHide = hsHide;
+window.hsShow = hsShow;
+function hsUnpin(key, pid) { unpinProductFromShopSection(RID, key, pid); hsRender(); showToast('Auto-তে ফেরানো হয়েছে', 'success'); }
+window.hsUnpin = hsUnpin;
+function hsMove(key, pid, dir) { moveShopSectionPin(RID, key, pid, dir); hsRender(); }
+window.hsMove = hsMove;
+function hsReset(key) { clearShopSectionPins(RID, key); hsRender(); showToast('সেকশনটি আবার অটোমেটিক', 'success'); }
+window.hsReset = hsReset;
+function hsAddHere(i) {
+    var s = window._hsSecs[i];
+    if (!s) return;
+    var el = document.getElementById('hsSel' + i);
+    var pid = el ? String(el.value || '') : '';
+    if (!pid) { showToast('আগে একটি প্রোডাক্ট বেছে নিন।', 'warning'); return; }
+    pinProductToShopSection(RID, s.key, pid);
+    hsRender();
+    showToast('প্রোডাক্ট সেকশনে যোগ হয়েছে ✓', 'success');
+}
+window.hsAddHere = hsAddHere;
+
+/* ===========================================================================
+   HOMEPAGE BLOCKS — the reseller's own rows on the shop homepage.
+   A block is one row: icon + title + subtitle + up to 6 product cards.
+   Two kinds, as the user specified:
+     * CATEGORY block — pick a category / sub / sub-sub. Gets a "View All" that
+       opens that category. If no products are hand-picked it fills itself from
+       what the customer has been browsing inside that category.
+     * MIXED block — no category. Hand-picked products from anywhere. NO "View All".
+   =========================================================================== */
+window._hsBlockEdit = null;   /* the id currently open for editing */
+var HS_ICONS = [
+  ['fa-bolt','⚡ বাজ'],['fa-fire','🔥 আগুন'],['fa-star','⭐ তারা'],['fa-crown','👑 ক্রাউন'],
+  ['fa-gift','🎁 গিফট'],['fa-tags','🏷️ ট্যাগ'],['fa-percent','％ ছাড়'],['fa-heart','❤️ হার্ট'],
+  ['fa-bag-shopping','🛍️ ব্যাগ'],['fa-truck-fast','🚚 ডেলিভারি'],['fa-shirt','👕 শার্ট'],
+  ['fa-mobile-screen','📱 মোবাইল'],['fa-baby','🧸 বাচ্চা'],['fa-house','🏠 হোম'],
+  ['fa-clock','⏰ সময়'],['fa-medal','🏅 মেডেল']
+];
+
+function hsBlocksHTML() {
+    var list = (typeof shopBlocks === 'function') ? shopBlocks(RID) : [];
+    var h = '<div class="hs-blk">' +
+      '<div class="hs-blk-hd"><b><i class="fas fa-layer-group"></i> হোমপেজ ব্লক</b>' +
+      '<span>' + list.length + ' টি</span>' +
+      '<button class="ms-btn pri" style="margin-left:auto" onclick="hsBlockNew()"><i class="fas fa-plus"></i> নতুন ব্লক</button></div>';
+
+    if (!list.length) {
+        h += '<div class="hs-blk-empty"><i class="fas fa-layer-group"></i> এখনো কোনো ব্লক নেই। ' +
+             '<b>“নতুন ব্লক”</b> চেপে প্রথম ব্লকটি বানান — যেমন “Flash Deals”।</div></div>';
+        return h;
+    }
+    for (var i = 0; i < list.length; i++) {
+        var b = list[i];
+        var where = b.cat
+            ? (b.subsub ? (b.cat + ' › ' + b.sub + ' › ' + b.subsub) : (b.sub ? (b.cat + ' › ' + b.sub) : b.cat))
+            : 'ক্যাটাগরি ছাড়া (মিশ্র)';
+        var nPicks = (b.products || []).length;
+        h += '<div class="hs-blk-row">' +
+          '<span class="hs-blk-ic"><i class="fas ' + esc(String(b.icon || 'fa-bolt')) + '"></i></span>' +
+          '<span class="hs-blk-tx"><b>' + esc(String(b.title || '(নাম নেই)')) + '</b>' +
+          '<small>' + esc(String(b.subtitle || '—')) + '</small>' +
+          '<em>' + esc(where) + ' · ' + (nPicks ? (nPicks + 'টি হাতে বাছা') : 'কাস্টমারের পছন্দ অনুযায়ী') +
+          (b.cat ? ' · View All আছে' : ' · View All নেই') + '</em></span>' +
+          '<span class="hs-blk-ops">' +
+          '<button title="উপরে" onclick="hsBlockMove(\'' + hsJs(b.id) + '\',-1)">\u2191</button>' +
+          '<button title="নিচে" onclick="hsBlockMove(\'' + hsJs(b.id) + '\',1)">\u2193</button>' +
+          '<button class="ed" title="সম্পাদনা" onclick="hsBlockNew(\'' + hsJs(b.id) + '\')"><i class="fas fa-pen"></i></button>' +
+          '<button class="del" title="ব্লক মুছুন" onclick="hsBlockDel(\'' + hsJs(b.id) + '\')"><i class="fas fa-trash-can"></i></button>' +
+          '</span></div>';
+    }
+    h += '</div>';
+    return h;
+}
+window.hsBlockNew = function (id) {
+    window._hsBlockEdit = id || null;
+    var b = null;
+    if (id) {
+        var list = shopBlocks(RID);
+        for (var i = 0; i < list.length; i++) if (String(list[i].id) === String(id)) b = list[i];
+    }
+    b = b || { icon: 'fa-bolt', title: '', subtitle: '', cat: '', sub: '', subsub: '', products: [] };
+
+    /* main categories */
+    var mains = asArray(shopMainCategories(RID)), mainOpts = '<option value="">— বেছে নিন —</option>';
+    for (var m = 0; m < mains.length; m++) {
+        var mn = String(mains[m].name || '');
+        mainOpts += '<option value="' + esc(mn) + '"' + (b.cat === mn ? ' selected' : '') + '>' + esc(mn) + '</option>';
+    }
+    /* icons */
+    var icons = '';
+    for (var ic = 0; ic < HS_ICONS.length; ic++) {
+        icons += '<option value="' + HS_ICONS[ic][0] + '"' + (b.icon === HS_ICONS[ic][0] ? ' selected' : '') + '>' + HS_ICONS[ic][1] + '</option>';
+    }
+    /* products — grouped by category, with a search box */
+    var prods = asArray(shopVisibleProducts(RID)), picks = {};
+    for (var p = 0; p < (b.products || []).length; p++) picks[String(b.products[p])] = 1;
+    var groups = {}, order = [];
+    for (var q = 0; q < prods.length; q++) {
+        var g = String(prods[q].category || 'অন্যান্য');
+        if (!groups[g]) { groups[g] = []; order.push(g); }
+        groups[g].push(prods[q]);
+    }
+    var pickHTML = '';
+    if (!prods.length) {
+        pickHTML = '<div class="hb-none">কোনো প্রোডাক্ট নেই — আগে My Products থেকে আপলোড করুন।</div>';
+    } else {
+        for (var o = 0; o < order.length; o++) {
+            pickHTML += '<div class="hb-grp" data-g="' + esc(order[o]) + '"><div class="hb-grp-h">' + esc(order[o]) + '</div>';
+            var arr = groups[order[o]];
+            for (var z = 0; z < arr.length; z++) {
+                var pid = String(arr[z].id), nm2 = String(arr[z].name || '');
+                pickHTML += '<label class="hb-pk" data-n="' + esc(nm2.toLowerCase()) + '">' +
+                  '<input type="checkbox" class="hb-cb" value="' + esc(pid) + '"' + (picks[pid] ? ' checked' : '') + '>' +
+                  '<span class="hb-pk-n">' + esc(nm2) + '</span>' +
+                  '<span class="hb-pk-t">৳' + (Number(arr[z].customer_price) || Number(arr[z].price) || 0) + '</span></label>';
+            }
+            pickHTML += '</div>';
+        }
+    }
+
+    var html = '<div class="hb-ov"><div class="hb-box">' +
+      '<div class="hb-hd"><b><i class="fas fa-layer-group"></i> ' + (id ? 'ব্লক সম্পাদনা' : 'নতুন ব্লক') + '</b>' +
+      '<button class="hb-x" onclick="hsBlockClose()">&times;</button></div>' +
+      '<div class="hb-bd">' +
+
+      '<div class="hb-f"><label>ব্লকের নাম <i>*</i></label>' +
+      '<input id="hbTitle" class="hb-in" value="' + esc(String(b.title || '')) + '" placeholder="যেমন: Flash Deals"></div>' +
+
+      '<div class="hb-f"><label>সাবটাইটেল <em>নামের নিচে ছোট লেখা</em></label>' +
+      '<input id="hbSub" class="hb-in" value="' + esc(String(b.subtitle || '')) + '" placeholder="যেমন: LIMITED TIME GRAB IT FAST"></div>' +
+
+      '<div class="hb-f"><label>আইকন</label><select id="hbIcon" class="hb-in">' + icons + '</select></div>' +
+
+      '<div class="hb-f"><label>ক্যাটাগরি <em>না দিলে মিশ্র ব্লক — View All থাকবে না</em></label>' +
+      '<div class="hb-3">' +
+      '<select id="hbMain" class="hb-in" onchange="hbFillSubs()">' + mainOpts + '</select>' +
+      '<select id="hbSub2" class="hb-in" onchange="hbFillSubSubs()" disabled><option value="">— সাব —</option></select>' +
+      '<select id="hbSubSub" class="hb-in" disabled><option value="">— সাব-সাব —</option></select>' +
+      '</div></div>' +
+
+      '<div class="hb-f"><label>প্রোডাক্ট <em>না বাছলে কাস্টমারের পছন্দ অনুযায়ী দেখাবে</em>' +
+      '<span class="hb-cnt" id="hbCnt"></span></label>' +
+      '<input id="hbSearch" class="hb-in" placeholder="🔍 প্রোডাক্ট খুঁজুন…" oninput="hbFilter(this.value)" style="margin-bottom:7px">' +
+      '<div class="hb-list" id="hbList">' + pickHTML + '</div></div>' +
+
+      '</div><div class="hb-ft">' +
+      '<button class="hb-btn gh" onclick="hsBlockClose()">বাতিল</button>' +
+      '<button class="hb-btn pri" onclick="hsBlockSave()"><i class="fas fa-check"></i> সেভ করুন</button>' +
+      '</div></div></div>';
+
+    var host = document.createElement('div');
+    host.id = 'hsBlockModal';
+    host.innerHTML = html;
+    document.body.appendChild(host);
+
+    /* pre-select the saved category chain */
+    try {
+        if (b.cat) { document.getElementById('hbMain').value = b.cat; hbFillSubs(b.sub || '', b.subsub || ''); }
+        else hbFillSubs('', '');
+    } catch (e) { }
+    hbCount();
+};
+/* the three-level category picker */
+window.hbFillSubs = function (wantSub, wantSS) {
+    var mn = '', m = document.getElementById('hbMain');
+    if (m) mn = String(m.value || '');
+    var s2 = document.getElementById('hbSub2'), s3 = document.getElementById('hbSubSub');
+    if (!s2 || !s3) return;
+    var subs = mn ? asArray(shopSubCategories(RID, mn)) : [];
+    s2.innerHTML = '<option value="">— সাব —</option>';
+    for (var i = 0; i < subs.length; i++) {
+        var sn = String(subs[i].name || '');
+        s2.innerHTML += '<option value="' + esc(sn) + '"' + (wantSub === sn ? ' selected' : '') + '>' + esc(sn) + '</option>';
+    }
+    s2.disabled = !subs.length;
+    hbFillSubSubs(wantSS);
+};
+window.hbFillSubSubs = function (wantSS) {
+    var mn = '', sn = '';
+    var m = document.getElementById('hbMain'), s2 = document.getElementById('hbSub2');
+    if (m) mn = String(m.value || '');
+    if (s2) sn = String(s2.value || '');
+    var s3 = document.getElementById('hbSubSub');
+    if (!s3) return;
+    var sss = (mn && sn) ? asArray(shopSubSubCategories(RID, mn, sn)) : [];
+    s3.innerHTML = '<option value="">— সাব-সাব —</option>';
+    for (var i = 0; i < sss.length; i++) {
+        var tn = String(sss[i].name || '');
+        s3.innerHTML += '<option value="' + esc(tn) + '"' + (wantSS === tn ? ' selected' : '') + '>' + esc(tn) + '</option>';
+    }
+    s3.disabled = !sss.length;
+};
+window.hbFilter = function (q) {
+    q = String(q || '').toLowerCase().trim();
+    var list = document.getElementById('hbList');
+    if (!list) return;
+    var grps = [].slice.call(list.querySelectorAll('.hb-grp')), total = 0;
+    for (var i = 0; i < grps.length; i++) {
+        var rows = [].slice.call(grps[i].querySelectorAll('.hb-pk')), hit = 0;
+        for (var j = 0; j < rows.length; j++) {
+            var ok = !q || String(rows[j].getAttribute('data-n') || '').indexOf(q) !== -1;
+            rows[j].style.display = ok ? '' : 'none';
+            if (ok) hit++;
+        }
+        grps[i].style.display = hit ? '' : 'none';
+        total += hit;
+    }
+    var c = document.getElementById('hbCnt');
+    if (c) c.textContent = total + 'টি';
+};
+window.hbCount = function () {
+    var cbs = [].slice.call(document.querySelectorAll('#hsBlockModal .hb-cb'));
+    var n = 0;
+    for (var i = 0; i < cbs.length; i++) if (cbs[i].checked) n++;
+    var c = document.getElementById('hbCnt');
+    if (c) c.textContent = n ? (n + 'টি বাছা হয়েছে') : 'কাস্টমারের পছন্দ';
+};
+window.hsBlockClose = function () {
+    var m = document.getElementById('hsBlockModal');
+    if (m && m.parentNode) m.parentNode.removeChild(m);
+    window._hsBlockEdit = null;
+};
+window.hsBlockSave = function () {
+    var g = function (id) { var e = document.getElementById(id); return e ? e.value : ''; };
+    var title = String(g('hbTitle') || '').trim();
+    if (!title) { showToast('ব্লকের নাম দিন!', 'error'); return; }
+    /* the three separate dropdowns the rebuilt modal uses — NOT the old hbCat */
+    var cbs = [].slice.call(document.querySelectorAll('#hsBlockModal .hb-cb'));
+    var picks = [];
+    for (var i = 0; i < cbs.length; i++) if (cbs[i].checked) picks.push(String(cbs[i].value));
+    var data = {
+        title: title, subtitle: String(g('hbSub') || '').trim(), icon: String(g('hbIcon') || 'fa-bolt'),
+        cat: String(g('hbMain') || ''), sub: String(g('hbSub2') || ''), subsub: String(g('hbSubSub') || ''),
+        products: picks
+    };
+    var r;
+    if (window._hsBlockEdit) r = shopBlockUpdate(RID, window._hsBlockEdit, data);
+    else { r = shopBlockAdd(RID, data); r = !!r; }
+    if (r === false) { showToast('সেভ করা যায়নি — storage ভর্তি।', 'error'); return; }
+    hsBlockClose();
+    showToast('ব্লক সেভ হয়েছে ✓', 'success');
+    hsRender();
+};
+window.hsBlockDel = function (id) {
+    if (!confirm('এই ব্লকটি মুছে ফেলা হবে। প্রোডাক্ট মুছবে না, শুধু ব্লকটি যাবে। নিশ্চিত?')) return;
+    if (shopBlockRemove(RID, id) === false) { showToast('মুছা যায়নি।', 'error'); return; }
+    showToast('ব্লক মুছে ফেলা হয়েছে ✓', 'success');
+    hsRender();
+};
+window.hsBlockMove = function (id, dir) {
+    if (shopBlockMove(RID, id, dir) === false) return;
+    hsRender();
+};
+/* ===========================================================================
+   2026-09-17 - SHOP POLICIES (this request).
+   The four links in the shop footer - Delivery Policy, Return Policy, Privacy,
+   About Us - are written by the reseller here, in their own words. Saved per shop
+   in rh_shop_settings[rid].policies and opened by the footer.
+   =========================================================================== */
+function hsPoliciesHTML() {
+    var cur = (typeof shopPolicies === 'function') ? shopPolicies(RID) : {};
+    var h = '<div class="hs-blk" style="margin-top:16px">' +
+      '<div class="hs-blk-hd"><b><i class="fas fa-file-lines"></i> পলিসি ও পেজ</b>' +
+      '<span>ফুটারে দেখাবে</span>' +
+      '<button class="ms-btn pri" style="margin-left:auto" onclick="hsPolicyEdit()"><i class="fas fa-pen"></i> লিখুন</button></div>';
+    var any = false;
+    for (var i = 0; i < SHOP_POLICY_KEYS.length; i++) {
+        var k = SHOP_POLICY_KEYS[i].k, lbl = SHOP_POLICY_KEYS[i].label;
+        var txt = String(cur[k] || '');
+        if (txt) any = true;
+        h += '<div class="hs-blk-row"><span class="hs-blk-ic"><i class="fas fa-file-lines"></i></span>' +
+             '<span class="hs-blk-tx"><b>' + esc(lbl) + '</b>' +
+             '<small>' + (txt ? esc(txt.slice(0, 60)) + (txt.length > 60 ? '…' : '') : '— এখনো লেখা হয়নি —') + '</small></span>' +
+             '<span class="hs-blk-ops"><button class="ed" title="লিখুন" onclick="hsPolicyEdit(\'' + k + '\')"><i class="fas fa-pen"></i></button></span></div>';
+    }
+    if (!any) {
+        h += '<div class="hs-blk-empty"><i class="fas fa-circle-info"></i> ' +
+             'লিখলে আপনার দোকানের ফুটারে ওই নামে ক্লিক করলে আপনার লেখা পলিসি দেখা যাবে।</div>';
+    }
+    h += '</div>';
+    return h;
+}
+window.hsPolicyEdit = function (key) {
+    var k = key || (SHOP_POLICY_KEYS[0] && SHOP_POLICY_KEYS[0].k) || 'delivery';
+    window._hsPolicyKey = k;
+    var cur = (typeof shopPolicies === 'function') ? shopPolicies(RID) : {};
+    var label = k;
+    for (var i = 0; i < SHOP_POLICY_KEYS.length; i++) if (SHOP_POLICY_KEYS[i].k === k) label = SHOP_POLICY_KEYS[i].label;
+    /* No dropdown: the row the reseller clicked already says which policy this is. */
+    var html = '<div class="hb-ov"><div class="hb-box"><div class="hb-hd"><b><i class="fas fa-file-lines"></i> ' + esc(label) + '</b>' +
+      '<button class="hb-x" onclick="hsPolicyClose()">&times;</button></div>' +
+      '<div class="hb-bd"><div class="hb-f">' +
+      '<label>আপনার লেখা <em>আপনার দোকানের ফুটারে ক্লিক করলে এটাই দেখা যাবে</em></label>' +
+      '<textarea id="hpText" class="hb-in" rows="13" placeholder="যেমন: আমরা সারা বাংলাদেশে ২-৩ দিনে ডেলিভারি করি…">' + esc(String((cur && cur[k] && cur[k] !== 'undefined') ? cur[k] : '')) + '</textarea>' +
+      '</div></div><div class="hb-ft"><button class="hb-btn gh" onclick="hsPolicyClose()">বাতিল</button>' +
+      '<button class="hb-btn pri" onclick="hsPolicySave()"><i class="fas fa-check"></i> সেভ করুন</button></div></div></div>';
+    var host = document.createElement('div');
+    host.id = 'hsPolicyModal';
+    host.innerHTML = html;
+    document.body.appendChild(host);
+    var t = document.getElementById('hpText');
+    if (t) { try { t.focus(); } catch (e) { } }
+};
+window.hsPolicyClose = function () {
+    var m = document.getElementById('hsPolicyModal');
+    if (m && m.parentNode) m.parentNode.removeChild(m);
+};
+window.hsPolicySave = function () {
+    try {
+        var k = window._hsPolicyKey || 'delivery';
+        var el = document.getElementById('hpText');
+        var t = el ? String(el.value || '') : '';
+        if (typeof setShopPolicy !== 'function') {
+            showToast('সেভ করা যায়নি — পেজটি আবার লোড করুন।', 'error');
+            return;
+        }
+        var r = setShopPolicy(RID, k, t);
+        if (r === false) {
+            showToast('সেভ করা যায়নি — ব্রাউজারের storage ভর্তি।', 'error');
+            return;
+        }
+        hsPolicyClose();
+        showToast('পলিসি সেভ হয়েছে ✓', 'success');
+        try { hsRender(); } catch (e) { }
+    } catch (err) {
+        showToast('সেভ করা যায়নি: ' + (err && err.message ? err.message : 'unknown'), 'error');
+    }
+};
+/* ---------- boot ---------- */
+if (RID !== null) {
+  hsRender();
+  msRenderLogo();
+  msRenderHeroes();
+  msRenderBanner();
+  msRenderSocial();
+  msRenderOverview();
+  msRenderTheme();
+  msRenderPixels();
+  msRenderDomain();
+  msRenderCategories();
+  msLoadHomepage();
+}
+
+</script>
+</body>
+</html>

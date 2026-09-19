@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reseller Login - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%); padding: 20px; overflow-x:hidden; }
+        .login-card { background: white; border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); width: 100%; max-width: 420px; padding: 45px 35px; }
+        .icon-circle { width: 80px; height: 80px; background: linear-gradient(135deg, #2563eb, #1e40af); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 2rem; box-shadow: 0 10px 25px rgba(37,99,235,0.3); }
+        h1 { text-align: center; font-size: 1.7rem; margin-bottom: 8px; color: #1e293b; }
+        .subtitle { text-align: center; color: #64748b; margin-bottom: 30px; font-size: 0.95rem; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 7px; font-size: 0.9rem; color: #334155; }
+        .form-group input { width: 100%; padding: 13px 15px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 0.95rem; box-sizing: border-box; }
+        .form-group input:focus { outline: none; border-color: #2563eb; }
+        .btn { width: 100%; padding: 14px; border-radius: 10px; font-weight: 700; font-size: 1rem; cursor: pointer; border: none; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; }
+        .btn-primary { background: linear-gradient(135deg, #2563eb, #1e40af); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(37,99,235,0.3); }
+        .back-link { text-align: center; margin-top: 20px; }
+        .back-link a { color: #2563eb; text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+        .error-msg { background: #fee2e2; color: #dc2626; padding: 10px 14px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9rem; display: none; text-align: center; }
+    </style>
+
+<style>
+/* ===== Login UI polish (visual only) ===== */
+@keyframes lxUp{from{opacity:0;transform:translateY(30px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes lxBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@keyframes lxGlow{0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,0)}50%{box-shadow:0 0 0 10px rgba(99,102,241,.14)}}
+@keyframes lxField{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.login-card,.lcard,.auth-card,.login-box,.card,.abox{animation:lxUp .65s cubic-bezier(.2,.8,.3,1) both !important}
+.login-card .login-card-icon,.lcard .ic,.abox .ic,.login-icon{animation:lxBob 4.5s ease-in-out infinite !important}
+.form-group{animation:lxField .5s ease both}
+.form-group:nth-of-type(1){animation-delay:.15s}
+.form-group:nth-of-type(2){animation-delay:.25s}
+.form-group:nth-of-type(3){animation-delay:.35s}
+input:focus,select:focus,textarea:focus{transform:translateY(-1px);transition:all .25s !important}
+.btn[type=submit],.btn-amber,.btn-primary,.btn-danger{transition:all .28s !important;position:relative;overflow:hidden}
+.btn[type=submit]:hover,.btn-amber:hover,.btn-primary:hover,.btn-danger:hover{transform:translateY(-2px) !important;filter:brightness(1.08);box-shadow:0 12px 26px rgba(15,23,42,.22) !important}
+</style>
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="icon-circle"><i class="fas fa-store"></i></div>
+        <h1>Reseller Login</h1>
+        <p class="subtitle">Login to your reseller account</p>
+
+        <div class="error-msg" id="errorMsg">Invalid email or password!</div>
+
+        <form id="loginForm" autocomplete="off">
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="text" id="email" name="user_email" placeholder="Enter your email" required autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <div style="position:relative">
+                    <input type="password" id="password" name="user_password" placeholder="Enter your password" required autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly');" style="padding-right:42px">
+                    <button type="button" onclick="togglePass('password',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#64748b"><i class="fas fa-eye"></i></button>
+                </div>
+            </div>
+            <div style="text-align:right;margin:-8px 0 12px"><a href="#" onclick="forgotPass()" style="color:#2563eb;font-size:.82rem;font-weight:600;text-decoration:none">Forgot Password?</a></div>
+            <label style="display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:600;color:#475569;margin-bottom:14px;cursor:pointer"><input type="checkbox" id="rememberMe" style="width:auto"> মনে রাখুন — বারবার login লাগবে না</label>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-right-to-bracket"></i> Login
+            </button>
+            <div style="text-align:center;margin-top:16px;font-size:.86rem;color:#475569">
+                Don't have an account? <a href="register.html" style="color:#2563eb;font-weight:800;text-decoration:none">Register</a>
+            </div>
+        </form>
+
+        <div id="forgotBox" style="display:none;background:#dbeafe;border:1px solid #93c5fd;padding:14px;border-radius:10px;margin-top:16px;font-size:.85rem;color:#1e40af">
+            <strong><i class="fas fa-key"></i> Reset Password (Email Verification)</strong><br><br>
+            <!-- Step 1: Email -->
+            <div id="fpStep1">
+                <div class="form-group" style="margin-bottom:10px"><label style="font-size:.8rem">Enter your registered email</label><input type="email" id="fpEmail" placeholder="your@gmail.com" style="width:100%;padding:9px 12px;border:2px solid #e2e8f0;border-radius:8px;box-sizing:border-box"></div>
+                <button onclick="fpSend()" style="width:100%;padding:10px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer"><i class="fas fa-paper-plane"></i> Send Verification Code to Gmail</button>
+            </div>
+            <!-- Step 2: Code -->
+            <div id="fpStep2" style="display:none">
+                <p style="font-size:.8rem;margin-bottom:10px"><i class="fas fa-envelope-open-text"></i> আপনার Gmail-এ একটা Gmail draft খুলেছে — <b>Send</b> চাপলে verification code আপনার ইনবক্সে চলে যাবে। সেই <b>6-digit code</b> এখানে বসান:</p>
+                <div class="form-group" style="margin-bottom:10px"><input type="text" id="fpCode" placeholder="Enter 6-digit code" maxlength="6" style="width:100%;padding:10px 12px;border:2px solid #e2e8f0;border-radius:8px;text-align:center;font-size:1.2rem;font-weight:800;letter-spacing:8px;box-sizing:border-box"></div>
+                <button onclick="fpVerify()" style="width:100%;padding:10px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer"><i class="fas fa-check-circle"></i> Verify Code</button>
+                <div style="text-align:center;margin-top:8px"><a href="#" onclick="fpResend()" style="font-size:.75rem;color:#2563eb">Resend code</a></div>
+            </div>
+            <!-- Step 3: New password -->
+            <div id="fpStep3" style="display:none">
+                <p style="font-size:.8rem;color:#059669;margin-bottom:10px"><i class="fas fa-check-circle"></i> Code verified! এখন নতুন password দিন:</p>
+                <div class="form-group" style="margin-bottom:10px"><input type="password" id="fpPass" placeholder="New password (min 6)" style="width:100%;padding:9px 12px;border:2px solid #e2e8f0;border-radius:8px;box-sizing:border-box"></div>
+                <button onclick="fpSave()" style="width:100%;padding:10px;background:#10b981;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer"><i class="fas fa-save"></i> Save New Password</button>
+            </div>
+            <div id="fpMsg" style="margin-top:10px;display:none;padding:8px;background:#d1fae5;color:#065f46;border-radius:6px;font-size:.8rem"></div>
+        </div>
+
+        <div class="back-link" style="margin-top:18px;">
+            <a href="../index.html"><i class="fas fa-arrow-left"></i> Back to main site</a>
+        </div>
+    </div>
+
+    <script src="../app.js"></script><script>(function(){function paint(){try{var b=document.getElementById("ordersBadge");var uid=sessionStorage.getItem("user_id");if(!uid)return;if(sessionStorage.getItem("user_type")!=="reseller")return;var n=(typeof resellerNewOrderCount==="function")?resellerNewOrderCount(uid):0;if(b){b.textContent=n;b.style.display=n>0?"inline-block":"none";}var lb=document.getElementById("ordersBadgeLabel");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+    <script>
+    function togglePass(id, btn) {
+        var inp = document.getElementById(id);
+        if (inp.type === 'password') { inp.type = 'text'; btn.innerHTML = '<i class="fas fa-eye-slash"></i>'; }
+        else { inp.type = 'password'; btn.innerHTML = '<i class="fas fa-eye"></i>'; }
+    }
+    function forgotPass() {
+        var box = document.getElementById('forgotBox');
+        box.style.display = box.style.display === 'none' || !box.style.display ? 'block' : 'none';
+    }
+    // ===== Gmail verification code flow =====
+    var fpState = { email: '', code: '' };
+    function fpMsgShow(t, ok) {
+        var msg = document.getElementById('fpMsg');
+        msg.textContent = t; msg.style.display = 'block';
+        msg.style.background = ok ? '#d1fae5' : '#fee2e2';
+        msg.style.color = ok ? '#065f46' : '#dc2626';
+    }
+    function fpSend() {
+        var em = document.getElementById('fpEmail').value.trim().toLowerCase();
+        if (!em) { fpMsgShow('Email লিখুন!', false); return; }
+        var resellers = getData(DB_KEYS.RESELLERS);
+        var found = false;
+        for (var i = 0; i < resellers.length; i++) {
+            if ((resellers[i].email && resellers[i].email.toLowerCase() === em) || resellers[i].phone === em) { found = true; break; }
+        }
+        if (!found) { fpMsgShow('এই email দিয়ে কোনো account নেই!', false); return; }
+        fpState.email = em;
+        fpState.code = String(Math.floor(100000 + Math.random() * 900000));
+        try { sessionStorage.setItem('fp_code_reseller', JSON.stringify({ email: em, code: fpState.code, exp: Date.now() + 600000 })); } catch (e) {}
+        var gm = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(em) + '&su=' + encodeURIComponent('ResellerHub BD — Password Reset Code') + '&body=' + encodeURIComponent('আপনার ResellerHub BD verification code: ' + fpState.code + '\n\nএই code ১০ মিনিটের জন্য বৈধ।\n\n— ResellerHub BD Team');
+        window.open(gm, '_blank');
+        document.getElementById('fpStep1').style.display = 'none';
+        document.getElementById('fpStep2').style.display = 'block';
+        document.getElementById('fpStep3').style.display = 'none';
+        fpMsgShow('Gmail draft খোলা হয়েছে — Send চাপলে code আপনার inbox-এ যাবে। কোডটা ১০ মিনিট বৈধ।', true);
+    }
+    function fpResend() { fpSend(); }
+    function fpVerify() {
+        var c = document.getElementById('fpCode').value.trim();
+        var st = null;
+        try { st = JSON.parse(sessionStorage.getItem('fp_code_reseller') || 'null'); } catch (e) {}
+        if (!st) { fpMsgShow('আগে code পাঠান (Send Verification Code)!', false); return; }
+        if (Date.now() > st.exp) { fpMsgShow('Code-এর সময় শেষ! আবার Resend করুন।', false); return; }
+        if (c !== st.code) { fpMsgShow('ভুল code! আবার চেষ্টা করুন।', false); return; }
+        fpState.email = st.email;
+        document.getElementById('fpStep2').style.display = 'none';
+        document.getElementById('fpStep3').style.display = 'block';
+        fpMsgShow('Code verified!', true);
+    }
+    function fpSave() {
+        var np = document.getElementById('fpPass').value;
+        if (np.length < 6) { fpMsgShow('Password কমপক্ষে ৬ অক্ষরের হতে হবে!', false); return; }
+        var resellers = getData(DB_KEYS.RESELLERS);
+        for (var i = 0; i < resellers.length; i++) {
+            if ((resellers[i].email && resellers[i].email.toLowerCase() === fpState.email) || resellers[i].phone === fpState.email) {
+                resellers[i].password = np;
+                break;
+            }
+        }
+        setData(DB_KEYS.RESELLERS, resellers);
+        logActivity('password_reset', 'Reseller password reset via Gmail code: ' + fpState.email);
+        fpMsgShow('Password reset সফল! এখন নতুন password দিয়ে login করুন।', true);
+        try { sessionStorage.removeItem('fp_code_reseller'); } catch (e) {}
+        setTimeout(function() { document.getElementById('forgotBox').style.display = 'none'; }, 2500);
+    }
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var email = document.getElementById('email').value.trim();
+        var password = document.getElementById('password').value;
+        var resellers = getData(DB_KEYS.RESELLERS);
+        var user = null;
+        for (var i = 0; i < resellers.length; i++) {
+            var r = resellers[i];
+            var matchEmail = (r.email && r.email.toLowerCase() === email.toLowerCase());
+            var matchPhone = (r.phone && r.phone === email);
+            if ((matchEmail || matchPhone) && r.password === password) {
+                user = r;
+                break;
+            }
+        }
+        if (user) {
+            if (user.status === 'banned') {
+                showError('Your account is banned. Contact support.');
+                return;
+            }
+            if (user.status === 'rejected') {
+                showError('Your account was rejected.');
+                return;
+            }
+            setCurrentUser(user.id, 'reseller');
+            setOnline(user.id, true);
+            logActivity('reseller_login', user.name + ' logged in');
+            try {
+                /* PART 46 — never store the password. Only a signed, expiring token. */
+                localStorage.removeItem('rh_remember_reseller');   /* wipe any legacy plaintext record */
+                if (document.getElementById('rememberMe').checked) {
+                    savePersistentSession(user.id, 'reseller');
+                } else {
+                    clearPersistentSession();
+                }
+            } catch (e) {}
+            window.location.href = 'dashboard.html';
+        } else {
+            showError('Invalid email or password! User not found.');
+        }
+    });
+    function showError(msg) {
+        var el = document.getElementById('errorMsg');
+        el.textContent = msg;
+        el.style.display = 'block';
+        setTimeout(function() { el.style.display = 'none'; }, 4000);
+    }
+    // ===== PART 43, 44 — Remember me: signed-token auto-login =====
+    // The token lives in localStorage, is signed, expires in 30 days, and is
+    // destroyed by Logout. No password is ever written to storage.
+    (function() {
+        try {
+            localStorage.removeItem('rh_remember_reseller');   /* legacy cleanup */
+            var remembered = (typeof readPersistentSession === 'function') ? readPersistentSession() : null;
+            if (!remembered || remembered.type !== 'reseller') return;
+            var user = (typeof restorePersistentSession === 'function') ? restorePersistentSession('reseller') : null;
+            if (!user) return;
+            setCurrentUser(user.id, 'reseller');
+            setOnline(user.id, true);
+            var cb = document.getElementById('rememberMe');
+            if (cb) cb.checked = true;
+            window.location.replace('dashboard.html');
+        } catch (e) {}
+    })();
+    </script>
+
+
+</body>
+</html>

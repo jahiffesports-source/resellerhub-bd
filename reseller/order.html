@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Order - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#f1f5f9; color:#1e293b; overflow-x:hidden; }
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:240px; background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%); color:#cbd5e1; z-index:100; overflow-y:auto; }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid #334155; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:38px; height:38px; background:linear-gradient(135deg,#2563eb,#1e40af); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; }
+        .sidebar-logo h3 { color:white; font-size:1rem; }
+        .sidebar-logo small { color:#94a3b8; font-size:0.7rem; display:block; }
+        .sidebar-menu { list-style:none; padding:12px 0; }
+        .sidebar-menu li { margin:2px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:10px 20px; color:#cbd5e1; text-decoration:none; font-size:0.88rem; }
+        .sidebar-menu a:hover { background:rgba(255,255,255,0.05); color:white; }
+        .sidebar-menu a.active { background:#2563eb; color:white; }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 20px 5px; color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+        .main { margin-left:240px; min-height:100vh; }
+        .topbar { background:white; padding:14px 25px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:sticky; top:0; z-index:50; }
+        .topbar h2 { font-size:1.2rem; font-weight:600; }
+        .topbar-right { display:flex; align-items:center; gap:12px; }
+        .topbar-balance { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:white; padding:6px 16px; border-radius:20px; font-weight:600; font-size:0.9rem; }
+        .topbar-user { display:flex; align-items:center; gap:8px; padding:6px 14px; background:#f1f5f9; border-radius:20px; font-size:0.88rem; }
+        .btn-logout { background:#ef4444; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:500; }
+        .content { padding:25px; }
+
+        .order-grid { display:grid; grid-template-columns:360px 1fr; gap:20px; align-items:start; }
+        .panel { background:white; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); overflow:hidden; }
+        .panel-header { padding:15px 20px; border-bottom:1px solid #e2e8f0; font-weight:700; font-size:0.98rem; display:flex; align-items:center; gap:10px; }
+        .ph-icon { width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0; }
+        .breadcrumb { font-size:0.85rem; color:#64748b; display:flex; align-items:center; gap:8px; }
+        .hamburger { display:none; background:none; border:none; font-size:1.3rem; color:#1e293b; cursor:pointer; }
+        @media(max-width:768px){ .breadcrumb{display:none;} .hamburger{display:block;} }
+        .panel-body { padding:20px; }
+
+        .fgroup { margin-bottom:14px; }
+        .fgroup label { display:block; font-weight:600; font-size:0.83rem; margin-bottom:5px; color:#334155; }
+        .fgroup input, .fgroup select, .fgroup textarea { width:100%; padding:10px 12px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:0.9rem; font-family:inherit; }
+        .fgroup input:focus, .fgroup select:focus, .fgroup textarea:focus { outline:none; border-color:#2563eb; }
+        .fgroup textarea { resize:vertical; }
+
+        .ship-options { border:1.5px solid #e2e8f0; border-radius:8px; overflow:hidden; }
+        .ship-opt { display:flex; align-items:center; gap:10px; padding:12px 14px; cursor:pointer; border-bottom:1px solid #f1f5f9; }
+        .ship-opt:last-child { border-bottom:none; }
+        .ship-opt:hover { background:#f8fafc; }
+        .ship-opt input { width:auto; accent-color:#2563eb; }
+        .ship-opt .price { margin-left:auto; font-weight:700; color:#2563eb; }
+
+        .search-wrap { position:relative; margin-bottom:16px; }
+        .search-wrap input { width:100%; padding:12px 14px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:0.92rem; }
+        .search-wrap input:focus { outline:none; border-color:#2563eb; }
+        .search-results { position:absolute; top:100%; left:0; right:0; background:white; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,0.12); z-index:200; max-height:320px; overflow-y:auto; display:none; }
+        .search-results.show { display:block; }
+        .sr-item { display:flex; gap:12px; padding:10px 14px; cursor:pointer; border-bottom:1px solid #f8fafc; align-items:center; }
+        .sr-item:hover { background:#f0f9ff; }
+        .sr-item img { width:44px; height:44px; border-radius:6px; object-fit:cover; background:#f1f5f9; }
+        .sr-item .noimg { width:44px; height:44px; border-radius:6px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#cbd5e1; }
+        .sr-item h5 { font-size:0.88rem; }
+        .sr-item p { font-size:0.78rem; color:#64748b; }
+        .sr-item .p { margin-left:auto; font-weight:700; color:#2563eb; white-space:nowrap; }
+
+        .cart-table { width:100%; border-collapse:collapse; }
+        .cart-table th { text-align:left; padding:9px 10px; background:#f8fafc; font-weight:600; font-size:0.7rem; color:#64748b; text-transform:uppercase; }
+        .cart-table td { padding:10px; border-bottom:1px solid #f1f5f9; font-size:0.85rem; vertical-align:middle; }
+        .cart-prod { display:flex; align-items:center; gap:10px; }
+        .cart-prod img { width:44px; height:44px; border-radius:6px; object-fit:cover; background:#f1f5f9; }
+        .cart-prod .noimg { width:44px; height:44px; border-radius:6px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#cbd5e1; flex-shrink:0; }
+        .cart-prod h5 { font-size:0.85rem; line-height:1.3; }
+        .cart-table input[type="number"], .cart-table select { width:64px; padding:6px 8px; border:1.5px solid #e2e8f0; border-radius:6px; font-size:0.85rem; }
+        .cart-table select { width:auto; min-width:70px; }
+        .cart-table input.resale { width:80px; }
+        .rm-btn { background:#fee2e2; color:#dc2626; border:none; width:30px; height:30px; border-radius:6px; cursor:pointer; }
+
+        .summary { background:#f8fafc; border-radius:10px; padding:18px; margin-top:16px; }
+        .sum-row { display:flex; justify-content:space-between; align-items:center; padding:7px 0; font-size:0.9rem; }
+        .inr-box { display:flex; align-items:center; gap:5px; background:white; border:1.5px solid #e2e8f0; border-radius:8px; padding:5px 10px; }
+        .inr-box input { border:none; outline:none; width:72px; text-align:right; font-size:0.9rem; font-weight:600; padding:0; }
+        .inr-box input:focus { outline:none; }
+        .inr-box:focus-within { border-color:#2563eb; }
+        .inr-box .taka { font-weight:700; color:#2563eb; font-size:0.9rem; }
+        .sum-total { font-size:1.15rem; font-weight:800; color:#2563eb; border-top:1px dashed #cbd5e1; margin-top:6px; padding-top:10px; }
+        .sum-profit { color:#10b981; font-weight:700; }
+        .submit-row { text-align:right; margin-top:16px; }
+        .btn { padding:10px 22px; border:none; border-radius:8px; font-weight:700; font-size:0.92rem; cursor:pointer; display:inline-flex; align-items:center; gap:7px; }
+        .btn-green { background:#10b981; color:white; }
+        .btn-green:hover { background:#059669; }
+        .btn-green:disabled { background:#94a3b8; cursor:not-allowed; }
+
+        .empty-cart { text-align:center; padding:40px 20px; color:#94a3b8; }
+        .empty-cart i { font-size:2.5rem; margin-bottom:10px; opacity:0.4; }
+
+        @media (max-width:1100px) { .order-grid { grid-template-columns:1fr; } }
+        @media (max-width:768px) {
+            .sidebar { width:70px; }
+            .sidebar-logo h3, .sidebar-logo small, .sidebar-menu a span, .sidebar-divider { display:none; }
+            .main { margin-left:70px; }
+            .content { padding:14px; }
+            .topbar { padding:12px 14px; }
+            .topbar h2 { font-size:1rem; }
+            .panel-body { padding:14px; }
+            .fgroup input, .fgroup select, .fgroup textarea { font-size:16px; }
+            .submit-row .btn { width:100%; justify-content:center; padding:14px; font-size:1rem; }
+            .cart-table input[type="number"], .cart-table input.resale { width:60px; height:36px; font-size:0.95rem; }
+            .cart-table select { height:36px; }
+            .rm-btn { width:38px; height:38px; }
+            .summary { padding:14px; }
+            /* Mobile drawer sidebar */
+            .sidebar { transform:translateX(-100%); width:250px; transition:transform .3s; }
+            .sidebar.open { transform:translateX(0); box-shadow:10px 0 30px rgba(0,0,0,0.3); }
+            .sidebar.open .sidebar-logo h3, .sidebar.open .sidebar-logo small, .sidebar.open .sidebar-menu a span, .sidebar.open .sidebar-divider { display:block; }
+            .side-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:150; }
+            .side-overlay.show { display:block; }
+        }
+    </style>
+<link rel="stylesheet" href="rstyle.css">
+<style id="lx-theme">
+/* ============ ResellerHub Premium Theme (visual-only overrides) ============ */
+:root { --lx-pri:#4f46e5; --lx-prid:#4338ca; --lx-vio:#7c3aed; --lx-grn:#10b981; }
+@keyframes lxPgUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+@keyframes lxPop { from{opacity:0;transform:scale(.94)} to{opacity:1;transform:none} }
+@keyframes lxRow { from{opacity:0;transform:translateX(-14px)} to{opacity:1;transform:none} }
+
+body { background:#eef1f9 !important; }
+
+/* ---- Sidebar + Topbar (synced with dashboard v3) ---- */
+/* ===== SIDEBAR ===== */
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:248px !important; background:linear-gradient(180deg,#0b1029 0%,#151a3a 100%); color:#c7d2fe; z-index:200; overflow-y:auto; transition:transform 0.3s; box-shadow:4px 0 24px rgba(11,16,41,.35); }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; justify-content:space-between; align-items:center; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:40px; height:40px; background:linear-gradient(135deg,var(--pri),var(--vio)); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .sidebar-logo h3 { color:white; font-size:1rem; font-weight:900; }
+        .sidebar-logo small { color:#818cf8; font-size:0.66rem; display:block; font-weight:700; letter-spacing:1px; }
+        .sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; }
+        .sidebar-menu { list-style:none; padding:12px 10px; }
+        .sidebar-menu li { margin:3px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:11px 15px; color:#c7d2fe; text-decoration:none; font-size:0.88rem; font-weight:600; border-radius:11px; transition:all .22s; }
+        .sidebar-menu a:hover { background:rgba(129,140,248,.14); color:white; transform:translateX(4px); }
+        .sidebar-menu a.active { background:linear-gradient(135deg,var(--pri),var(--vio)); color:white; box-shadow:0 8px 20px rgba(79,70,229,.4); }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 15px 5px; color:#6366f1; font-size:0.66rem; text-transform:uppercase; letter-spacing:1.4px; font-weight:800; }
+        .menu-badge { background:var(--gold); color:#1e293b; font-size:0.68rem; padding:1px 8px; border-radius:10px; font-weight:800; margin-left:auto; }
+        .menu-badge-n { color:var(--gold); font-weight:900; }
+
+        .side-overlay { display:none; position:fixed; inset:0; background:rgba(11,16,41,.55); z-index:150; backdrop-filter:blur(2px); }
+
+        /* ===== MAIN ===== */
+        .main { margin-left:248px !important; min-height:100vh; }
+@media(max-width:768px){
+    .main{margin-left:0 !important}
+    .sidebar{transform:translateX(-100%) !important;transition:transform .3s ease}
+    .sidebar.open{transform:translateX(0) !important;box-shadow:20px 0 60px rgba(11,16,41,.4)}
+    .sidebar-close-m{display:block !important}
+    .side-overlay{position:fixed;inset:0;background:rgba(11,16,41,.55);z-index:150;backdrop-filter:blur(2px)}
+    .side-overlay.show{display:block !important}
+    .status-cards{display:grid !important;grid-template-columns:1fr 1fr !important;gap:10px !important}
+}
+
+        .topbar { background:rgba(255,255,255,.88); backdrop-filter:blur(12px); padding:12px 22px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 14px rgba(15,23,42,.06); position:sticky; top:0; z-index:100; }
+            /* 2026-09-16 — MOBILE FIX (this request). The topbar measured about 440px
+               across on a 390px phone, so the logout button was pushed past the right
+               edge and looked cut off. These rules tighten the SAME header so it fits a
+               narrow screen. Nothing is hidden and nothing outside this media query is
+               touched, so the desktop layout is unchanged. */
+            .topbar { padding:10px 12px; }
+            .topbar-left { gap:8px; }
+            .topbar h2 { font-size:.98rem; }
+            .topbar-right { gap:6px; }
+            .topbar-balance { padding:6px 10px; font-size:.78rem; }
+            .topbar-user { padding:5px 10px; font-size:.78rem; }
+            .topbar-user span { max-width:52px; }
+
+        .topbar-left { display:flex; align-items:center; gap:12px; }
+        .hamburger { display:none; background:none; border:none; font-size:1.3rem; color:#1e293b; cursor:pointer; padding:4px; }
+        .topbar h2 { font-size:1.12rem; font-weight:800; }
+        .topbar-right { display:flex; align-items:center; gap:8px; }
+        .topbar-balance { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#7c2d12; padding:7px 15px; border-radius:22px; font-weight:800; font-size:0.84rem; white-space:nowrap; box-shadow:0 4px 12px rgba(245,158,11,.35); }
+        .topbar-user { display:flex; align-items:center; gap:7px; padding:6px 14px; background:#eef2ff; color:var(--pri); border-radius:22px; font-size:0.84rem; font-weight:700; }
+        .btn-logout { background:#fee2e2; color:#dc2626; border:none; padding:8px 12px; border-radius:10px; cursor:pointer; font-size:0.85rem; transition:all .25s; }
+        .btn-logout:hover { background:#dc2626; color:#fff; transform:translateY(-1px); }
+
+
+        /* ---- Stats / status cards ---- */
+.stat-card { border-radius:18px !important; border:1px solid #eef2f7 !important; box-shadow:0 3px 14px rgba(15,23,42,.05) !important; transition:all .28s !important; animation:lxPgUp .5s ease both; }
+.stat-card:hover { transform:translateY(-4px) !important; box-shadow:0 16px 32px rgba(15,23,42,.11) !important; }
+.status-cards .stat-card:nth-child(1), .stats-row .stat-card:nth-child(1) { animation-delay:.08s; }
+.status-cards .stat-card:nth-child(2), .stats-row .stat-card:nth-child(2) { animation-delay:.16s; }
+.status-cards .stat-card:nth-child(3), .stats-row .stat-card:nth-child(3) { animation-delay:.24s; }
+.status-cards .stat-card:nth-child(4), .stats-row .stat-card:nth-child(4) { animation-delay:.32s; }
+.stat-icon.green { background:linear-gradient(135deg,#d1fae5,#a7f3d0) !important; color:#059669 !important; }
+.stat-icon.blue { background:linear-gradient(135deg,#e0e7ff,#c7d2fe) !important; color:#4f46e5 !important; }
+.stat-icon.orange { background:linear-gradient(135deg,#fef3c7,#fde68a) !important; color:#d97706 !important; }
+.stat-icon.purple { background:linear-gradient(135deg,#ede9fe,#ddd6fe) !important; color:#7c3aed !important; }
+
+/* ---- Inputs ---- */
+input,select,textarea { border-radius:10px !important; transition:border-color .2s, box-shadow .2s !important; }
+input:focus,select:focus,textarea:focus { border-color:#4f46e5 !important; box-shadow:0 0 0 3px rgba(79,70,229,.12) !important; outline:none !important; }
+
+/* ---- Modals ---- */
+.modal-overlay.show .modal { animation:lxPop .32s cubic-bezier(.2,.9,.3,1.15) both; }
+
+/* ---- Content entrance ---- */
+.content > * { animation:lxPgUp .5s ease both; }
+.content > *:nth-child(2) { animation-delay:.08s; }
+.content > *:nth-child(3) { animation-delay:.16s; }
+.content > *:nth-child(4) { animation-delay:.24s; }
+.content > *:nth-child(5) { animation-delay:.32s; }
+
+/* ---- Floating bottom nav (products page) ---- */
+.bottom-nav { background:rgba(255,255,255,.92) !important; backdrop-filter:blur(14px); border:1px solid #eef2f7 !important; border-radius:20px !important; bottom:10px !important; left:12px !important; right:12px !important; box-shadow:0 10px 30px rgba(15,23,42,.16) !important; }
+.bottom-nav a.active { color:#4f46e5 !important; background:#eef2ff !important; }
+
+/* ---- Page-specific polish ---- */
+.products-grid { animation:lxPgUp .5s .2s ease both; }
+.section-head h2 { font-weight:900 !important; }
+.courier-card, .contact-card { border-radius:18px !important; transition:all .28s !important; }
+.courier-card:hover, .contact-card:hover { transform:translateY(-4px); box-shadow:0 16px 34px rgba(15,23,42,.12) !important; }
+.profile-header { border-radius:20px !important; overflow:hidden; }
+.panel { border-radius:20px !important; border:1px solid #eef2f7 !important; box-shadow:0 4px 16px rgba(15,23,42,.05) !important; }
+.balcard { border-radius:20px !important; }
+.fchip { transition:all .2s !important; }
+.fchip:hover { transform:translateY(-2px); }
+.tx { transition:background .2s !important; }
+.tx:hover { background:#f8faff !important; }
+.welcome { border-radius:22px !important; }
+</style>
+
+<style id="lx-theme-2">
+/* ---- Sidebar: text ALWAYS visible + full-width sidebar ---- */
+.sidebar-menu a span { display:inline !important; }
+.sidebar-divider { display:block !important; }
+.sidebar-logo h3, .sidebar-logo small { display:block !important; }
+.sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.25rem; cursor:pointer; }
+@media (min-width:769px) {
+    .sidebar { width:250px !important; }
+    .main { margin-left:250px !important; }
+    .sidebar-close-m { display:none !important; }
+}
+@media (max-width:768px) {
+    .sidebar { width:272px !important; transform:translateX(-100%); transition:transform .3s ease; }
+    .sidebar.open { transform:translateX(0) !important; box-shadow:20px 0 60px rgba(11,16,41,.4); }
+    .main { margin-left:0 !important; }
+    .sidebar-close-m { display:block !important; }
+    .side-overlay.show { display:block !important; }
+    .status-cards { display:grid !important; grid-template-columns:1fr 1fr !important; gap:10px !important; }
+}
+.bn-menu { background:linear-gradient(135deg,#4f46e5,#7c3aed) !important; color:#fff !important; border-radius:14px !important; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+.bn-menu i, .bn-menu span { color:#fff !important; }
+</style>
+<style id="lx-nav-force">
+@media(max-width:768px){
+    .bottom-nav{display:flex !important;position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;opacity:1 !important;visibility:visible !important;transform:none !important}
+    body{padding-bottom:86px !important}
+}
+</style>
+
+<style id="lx-bnav">
+/* ===== Complete bottom-nav styling ===== */
+.bottom-nav{position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;display:flex !important;align-items:stretch;background:rgba(255,255,255,.97) !important;backdrop-filter:blur(14px);border:1px solid #e8ecf4 !important;border-radius:18px !important;box-shadow:0 -4px 24px rgba(15,23,42,.14) !important;padding:7px 6px calc(7px + env(safe-area-inset-bottom)) !important}
+.bottom-nav a,.bottom-nav button{flex:1 !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;gap:3px !important;padding:7px 2px !important;border:none !important;background:none !important;color:#7b879c !important;font-size:.62rem !important;font-weight:700 !important;text-decoration:none !important;cursor:pointer !important;border-radius:12px !important;font-family:inherit !important;line-height:1.2 !important}
+.bottom-nav a i,.bottom-nav button i{font-size:1.18rem !important;line-height:1 !important}
+.bottom-nav a span,.bottom-nav button span{display:block !important}
+.bottom-nav a:hover,.bottom-nav button:hover{color:#4f46e5 !important;background:#eef2ff !important;transform:translateY(-2px)}
+.bottom-nav a.active{color:#4f46e5 !important;background:#eef2ff !important}
+.bottom-nav .bn-menu{color:#4f46e5 !important;background:#eef2ff !important;box-shadow:none !important;border-radius:12px !important}
+.bottom-nav .bn-menu:hover{background:#e0e7ff !important}
+.bottom-nav .bn-menu i,.bottom-nav .bn-menu span{color:#4f46e5 !important}
+body{padding-bottom:86px !important}
+@media(min-width:769px){
+    .bottom-nav{display:none !important}
+    body{padding-bottom:0 !important}
+}
+</style>
+
+<style>
+@media(max-width:768px){
+    .sidebar{transform:translateX(-100%) !important;transition:transform .32s cubic-bezier(.2,.8,.3,1) !important;display:block !important}
+    .sidebar.open{transform:translateX(0) !important;box-shadow:24px 0 60px rgba(11,16,41,.45) !important}
+}
+</style>
+
+<style id="lx-logout-fix">
+/* Logout fix: the open sidebar must paint ABOVE the fixed mobile bottom-nav,
+   otherwise the last menu item (Logout) is covered and un-tappable. */
+.sidebar{ z-index:900 !important; }
+.side-overlay{ z-index:880 !important; }
+.sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+@supports selector(:has(*)){
+  body:has(.sidebar.open) .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+}
+@media(min-width:769px){ .sidebar-menu{ padding-bottom:12px !important; } }
+</style>
+
+<style id="lx-sidebar-fix">
+/* ===== Reseller sidebar — canonical & stable (do not mutate at runtime) ===== */
+/* 1) Labels and section headings are ALWAYS visible. The old template hid
+      .sidebar-menu a span and .sidebar-divider under 768px, which made menu
+      text disappear and the "Account" heading vanish on some pages. */
+.sidebar .sidebar-menu a span{ display:inline !important; }
+.sidebar .sidebar-menu .sidebar-divider,
+.sidebar .sidebar-divider{ display:block !important; }
+.sidebar .sidebar-logo h3{ display:block !important; }
+.sidebar .sidebar-logo small{ display:block !important; }
+
+/* 2) Fixed geometry — the sidebar is never collapsed to a 70px icon rail. */
+.sidebar{ width:248px !important; z-index:900 !important; overflow-y:auto !important; }
+.side-overlay{ z-index:880 !important; }
+@media(min-width:769px){
+    .main{ margin-left:248px !important; }
+    .sidebar{ transform:none !important; }
+}
+@media(max-width:768px){
+    .main{ margin-left:0 !important; }
+    .sidebar{ transform:translateX(-100%) !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; display:block !important; }
+    .sidebar.open{ transform:translateX(0) !important; box-shadow:24px 0 60px rgba(11,16,41,.45) !important; }
+}
+
+/* 3) Row geometry is locked: the "All Orders" counter is absolutely positioned
+      so a changing number can never push the rows below it up or down. */
+.sidebar .sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.sidebar .sidebar-menu li{ position:relative; display:block; margin:3px 0; }
+.sidebar .sidebar-menu a{ display:flex !important; align-items:center; gap:12px; padding:11px 15px; }
+.sidebar .menu-badge{ position:absolute; right:12px; top:50%; transform:translateY(-50%); margin-left:0 !important; }
+
+/* 4) Mobile: hide the bottom nav while the drawer is open so the last item
+      (Logout) is never covered. */
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+
+/* 5) Close button inside the drawer on mobile. */
+.sidebar .sidebar-close-m{ display:none; }
+@media(max-width:768px){ .sidebar .sidebar-close-m{ display:block !important; } }
+</style>
+
+<style id="reseller-hamburger-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   Every reseller page hides the hamburger with ".hamburger{display:none}", but most
+   pages never turn it back ON at mobile width — only products.html did. So on a phone
+   there was no way to open the sidebar on Products, Orders, Wallet, Withdrawals,
+   Courier, Messages, Support, Profile, Referral or Website Integration.
+   This shows the SAME existing button (onclick="menuToggle()") at mobile width only.
+   It is an ADDED block and lives entirely inside a max-width query, so the DESKTOP
+   LAYOUT IS UNCHANGED. */
+@media (max-width:768px){
+  .hamburger { display:block !important; }
+}
+</style>
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon"><i class="fas fa-store"></i></div>
+            <div><h3>ResellerHub</h3><small>Reseller Panel</small></div>
+        </div>
+        
+        <button class="sidebar-close-m" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+        <ul class="sidebar-menu">
+        <li class="sidebar-divider">Main</li>
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+        <li><a href="products.html"><i class="fas fa-box"></i> <span>Products</span></a></li>
+        <li><a href="my-shop.html"><i class="fas fa-store"></i> <span>My Shop</span></a></li>
+        <li><a href="transactions.html"><i class="fas fa-right-left"></i> <span>Transactions</span></a></li>
+        <li class="sidebar-divider">Orders</li>
+        <li><a href="my-orders.html"><i class="fas fa-list"></i> <span>All Orders<span class="menu-badge-n" id="ordersBadgeLabel"></span></span></a></li>
+        <li><a href="order.html" class="active"><i class="fas fa-cart-plus"></i> <span>Add New Order</span></a></li>
+        <li><a href="offers.html"><i class="fas fa-gift"></i> <span>Offers</span></a></li>
+        <li><a href="shop-categories.html"><i class="fas fa-sitemap"></i> <span>Shop Categories</span></a></li>
+        <li class="sidebar-divider">My Shop</li>
+        <li><a href="my-shop-settings.html"><i class="fas fa-sliders"></i> <span>Shop Settings</span></a></li>
+        <li><a href="my-products.html"><i class="fas fa-box-open"></i> <span>My Products</span></a></li>
+        <li><a href="my-shop-orders.html"><i class="fas fa-bag-shopping"></i> <span>My Shop Orders</span></a></li>
+        <li><a href="customer-messages.html"><i class="fas fa-comment-dots"></i> <span>Customer Messages<span class="menu-badge-n" id="cmsgBadgeLabel"></span></span></a></li>
+        <li class="sidebar-divider">Account</li>
+        <li><a href="wallet.html"><i class="fas fa-wallet"></i> <span>Wallet</span></a></li>
+        <li><a href="withdrawals.html"><i class="fas fa-money-bill-wave"></i> <span>Withdrawals</span></a></li>
+        <li><a href="courier.html"><i class="fas fa-truck"></i> <span>Courier</span></a></li>
+        <li><a href="messages.html"><i class="fas fa-comments"></i> <span>Messages<span class="menu-badge-n" id="msgBadgeLabel"></span></span></a></li>
+        <li><a href="support.html"><i class="fas fa-headset"></i> <span>Support</span></a></li>
+        <li><a href="profile.html"><i class="fas fa-user-cog"></i> <span>Profile</span></a></li>
+        <li><a href="referral.html"><i class="fas fa-user-plus"></i> <span>Referral</span></a></li>
+        <li><a href="website-integration.html"><i class="fas fa-plug"></i> <span>Website Integration</span></a></li>
+        <li><a href="../index.html"><i class="fas fa-globe"></i> <span>Visit Site</span></a></li>
+        <li><a href="javascript:void(0)" onclick="resellerLogout()" style="color:#dc2626"><i class="fas fa-right-from-bracket"></i> <span>Logout</span></a></li>
+    </ul>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+        <div class="topbar-left">
+            <button class="hamburger" onclick="toggleSidebar(true)"><i class="fas fa-bars"></i></button>
+        </div>
+        <div class="breadcrumb"><i class="fas fa-tachometer-alt"></i> Dashboard <i class="fas fa-chevron-right" style="font-size:0.6rem;"></i> <span style="color:#1e293b;font-weight:600;">Order</span></div>
+        <div class="topbar-right">
+            <div class="topbar-balance"><i class="fas fa-coins"></i> <span id="topBalance">0</span></div>
+            <div class="topbar-user"><i class="fas fa-user"></i> <span id="userName">User</span></div>
+            <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+    <div style="background:white;padding:12px 25px;border-bottom:1px solid #e2e8f0;">
+        <button onclick="window.location.href='dashboard.html'" style="width:42px;height:42px;background:#1e293b;color:white;border:none;border-radius:10px;cursor:pointer;font-size:1rem;"><i class="fas fa-arrow-left"></i></button>
+    </div>
+
+    <div class="content">
+        <div class="order-grid">
+            <!-- LEFT: CUSTOMER INFORMATION -->
+            <div class="panel">
+                <div class="panel-header"><span class="ph-icon" style="background:#dbeafe;color:#2563eb;"><i class="fas fa-user"></i></span> Customer Information</div>
+                <div class="panel-body">
+                    <div class="fgroup">
+                        <label>Customer Phone *</label>
+                        <input type="tel" id="cPhone" placeholder="Enter Customer Phone" maxlength="11">
+                    </div>
+                    <div class="fgroup">
+                        <label>Customer Name *</label>
+                        <input type="text" id="cName" placeholder="Enter Customer Name">
+                    </div>
+                    <div class="fgroup">
+                        <label>Customer Address *</label>
+                        <textarea id="cAddress" rows="3" placeholder="Enter Customer Address"></textarea>
+                    </div>
+                    <div class="fgroup">
+                        <label>District *</label>
+                        <select id="cDistrict"><option value="">Search City...</option></select>
+                    </div>
+                    <div class="fgroup">
+                        <label>Thana / Upazila *</label>
+                        <select id="cThana"><option value="">Select district first</option></select>
+                    </div>
+                    <div class="fgroup">
+                        <label>Shipping Option</label>
+                        <div class="ship-options">
+                            <label class="ship-opt">
+                                <input type="radio" name="shipOpt" value="inside" checked onchange="onShipChange()">
+                                <span>Inside Dhaka</span>
+                                <span class="price" id="insidePrice">65.00৳</span>
+                            </label>
+                            <label class="ship-opt">
+                                <input type="radio" name="shipOpt" value="outside" onchange="onShipChange()">
+                                <span>Outside Dhaka</span>
+                                <span class="price" id="outsidePrice">120.00৳</span>
+                            </label>
+                        </div>
+                        <small style="color:#64748b;font-size:0.78rem;display:block;margin-top:6px;">Selecting a preset fills the shipping charge. You can change the amount in the order summary.</small>
+                    </div>
+                    <div class="fgroup">
+                        <label>Order Notes (Optional)</label>
+                        <textarea id="cNote" rows="3" placeholder="Special instructions for delivery..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: PRODUCT INFORMATION -->
+            <div class="panel">
+                <div class="panel-header"><span class="ph-icon" style="background:#d1fae5;color:#10b981;"><i class="fas fa-cube"></i></span> Product Information</div>
+                <div class="panel-body">
+                    <div class="fgroup">
+                        <label style="font-size:0.9rem;">Scan Barcode / Product Code</label>
+                        <div class="search-wrap" style="margin-bottom:10px;">
+                            <i class="fas fa-search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#94a3b8;"></i>
+                            <input type="text" id="prodSearch" placeholder="Type product name or code..." autocomplete="off" style="padding-left:38px;" oninput="onSearch()" onkeydown="onSearchKey(event)">
+                            <div class="search-results" id="searchResults"></div>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x:auto;">
+                        <table class="cart-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:36px;">#</th>
+                                    <th>Product</th>
+                                    <th>Variant</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Resale Price</th>
+                                    <th>Total</th>
+                                    <th>Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cartBody"></tbody>
+                        </table>
+                    </div>
+                    <div id="emptyCart" class="empty-cart"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.2" style="margin-bottom:10px;"><path d="M12 2L21 7v10l-9 5-9-5V7l9-5z"/><path d="M12 22V12M21 7l-9 5-9-5"/></svg><br>Search and add products above</div>
+
+                    <div class="summary">
+                        <div class="sum-row"><span>Items Subtotal:</span><span id="sumSubtotal">0.00 ৳</span></div>
+                        <div class="sum-row"><span>Shipping(+):</span><span class="inr-box"><input type="number" id="sumShipping" value="65" min="0" oninput="renderSummary()"><span class="taka">৳</span></span></div>
+                        <div class="sum-row"><span>Total:</span><span id="sumTotal">0.00 ৳</span></div>
+                        <div class="sum-row"><span>Advance Paid <small style="color:#94a3b8;">(deducted from total)</small>:</span><span class="inr-box"><input type="number" id="sumAdvance" value="0" min="0" oninput="renderSummary()"><span class="taka">৳</span></span></div>
+                        <div class="sum-row"><span>Due Amount:</span><span id="sumDue">0.00 ৳</span></div>
+                        <div class="sum-row sum-total"><span>Order Total:</span><span id="sumOrderTotal">0.00 ৳</span></div>
+                        <div class="sum-row"><span>COD Charge (1%):</span><span id="sumCod">0.00 ৳</span></div>
+                        <div class="sum-row"><span>Packaging Charge:</span><span id="sumPack">0.00 ৳</span></div>
+                        <div class="sum-row sum-profit"><span>Net Profit <small style="color:#94a3b8;">(after COD 1% + ৳10 packaging)</small>:</span><span id="sumNet">0.00 ৳</span></div>
+                    </div>
+
+                    <div class="submit-row">
+                        <button class="btn btn-green" onclick="submitOrder()"><i class="fas fa-check"></i> Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+
+<nav class="bottom-nav">
+    <a href="dashboard.html"><i class="fas fa-home"></i>Home</a>
+    <a href="products.html"><i class="fas fa-box"></i>Products</a>
+    <a href="my-orders.html"><i class="fas fa-list"></i>Orders</a>
+    <button class="bn-menu" onclick="menuToggle()"><i class="fas fa-bars"></i><span>Menu</span></button>
+    <a href="profile.html"><i class="fas fa-user"></i>Profile</a>
+</nav>
+<style>@media(max-width:768px){body{padding-bottom:86px !important}.bottom-nav{display:flex !important}.bn-menu{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.62rem;font-weight:700;padding:6px 6px;flex:1;border:none;cursor:pointer}.bn-menu i{font-size:1.12rem}}</style>
+<script src="../app.js"></script><script>(function(){function paint(){try{var b=document.getElementById("ordersBadge");var uid=sessionStorage.getItem("user_id");if(!uid)return;if(sessionStorage.getItem("user_type")!=="reseller")return;var n=(typeof resellerNewOrderCount==="function")?resellerNewOrderCount(uid):0;if(b){b.textContent=n;b.style.display=n>0?"inline-block":"none";}var lb=document.getElementById("ordersBadgeLabel");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+(function() {
+    var userId = sessionStorage.getItem('user_id');
+    if (!userId || sessionStorage.getItem('user_type') !== 'reseller') { window.location.replace('login.html'); return; }
+    var resellers = getData(DB_KEYS.RESELLERS);
+    var user = null;
+    for (var i = 0; i < resellers.length; i++) { if (resellers[i].id === parseInt(userId)) { user = resellers[i]; break; } }
+    if (!user) { sessionStorage.clear(); window.location.replace('login.html'); return; }
+    if (user.status !== 'approved') { showToast('Your account is not approved yet!', 'error'); setTimeout(function() { window.location.href = 'dashboard.html'; }, 1500); return; }
+
+    document.getElementById('userName').textContent = user.name;
+    document.getElementById('topBalance').textContent = formatCurrency(user.balance);
+
+    var cart = [];
+    /* (#24) double-submit guard for submitOrder() */
+    var _submitting = false;
+    var settings = getOne(DB_KEYS.SETTINGS);
+    var insideRate = settings.deliveryCharge || 60;
+    var outsideRate = settings.outsideCharge || 180;
+    /* 2026-09-18 (this request) — the DISTRICT decides the delivery zone here too,
+       with the SAME resolver the My Shop checkout uses: Dhaka -> Inside,
+       Dhaka Sub-Urban -> a fixed ৳100, any other district -> Outside. */
+    function orderDistrict() { var e = document.getElementById('cDistrict'); return e ? String(e.value || '') : ''; }
+    function orderZone() { return bdDeliveryZone(orderDistrict()); }
+    /* The two buttons must show what the chosen district ACTUALLY costs, so a
+       Sub-Urban order never shows "Outside Dhaka ৳180" next to a ৳100 charge. */
+    function paintShipRates() {
+        var z = orderZone();
+        var ip = document.getElementById('insidePrice'), op = document.getElementById('outsidePrice');
+        if (ip) ip.textContent = insideRate.toFixed(2) + '৳';
+        if (op) op.textContent = (z === 'suburban' ? BD_SUBURBAN_CHARGE : outsideRate).toFixed(2) + '৳';
+    }
+    /* Re-derive the zone AND the charge from the district. Sub-Urban highlights
+       "Outside Dhaka" because it is outside the city corporation. */
+    function syncShipFromDistrict() {
+        var z = orderZone();
+        var v = (z === 'inside') ? 'inside' : 'outside';
+        var r = document.querySelector('input[name="shipOpt"][value="' + v + '"]');
+        if (r) r.checked = true;
+        paintShipRates();
+        if (!cart.length) return;
+        var si = document.getElementById('sumShipping');
+        if (si) si.value = bdDeliveryRate(orderDistrict(), insideRate, outsideRate);
+        renderSummary();
+    }
+    document.getElementById('insidePrice').textContent = insideRate.toFixed(2) + '৳';
+    document.getElementById('outsidePrice').textContent = outsideRate.toFixed(2) + '৳';
+    paintShipRates();
+    document.getElementById('sumShipping').value = 0;
+
+    var DISTRICTS = ["Dhaka","Faridpur","Gazipur","Gopalganj","Kishoreganj","Madaripur","Manikganj","Munshiganj","Narayanganj","Narsingdi","Rajbari","Shariatpur","Tangail","Bogura","Chapainawabganj","Joypurhat","Naogaon","Natore","Pabna","Rajshahi","Sirajganj","Dinajpur","Gaibandha","Kurigram","Lalmonirhat","Nilphamari","Panchagarh","Rangpur","Thakurgaon","Barguna","Barishal","Bhola","Jhalokati","Patuakhali","Pirojpur","Bandarban","Brahmanbaria","Chandpur","Chattogram","Cumilla","Cox's Bazar","Feni","Khagrachhari","Lakshmipur","Noakhali","Rangamati","Habiganj","Moulvibazar","Sunamganj","Sylhet","Bagerhat","Chuadanga","Jashore","Jhenaidah","Khulna","Kushtia","Magura","Meherpur","Narail","Satkhira","Jamalpur","Mymensingh","Netrokona","Sherpur"];
+    var dOpts = '<option value="">Search City...</option>';
+    /* 2026-09-17 — ALL 64 districts (shared dataset). The old DISTRICTS array is kept
+       only as a fallback if app.js has not loaded. Choosing a district rebuilds the
+       Thana dropdown with that district's own thanas. */
+/* 2026-09-17 — rebuild the Thana dropdown for one district, so only real
+   Thanas/Upazilas of the chosen district can be picked. */
+function fillOrderThanas(district){
+    var t=document.getElementById('cThana');
+    if(!t) return;
+    var list=(typeof bdThanas==='function')?bdThanas(district):[];
+    if(!district||!list.length){
+        t.innerHTML='<option value="">Select district first</option>';
+        t.disabled=true;
+        return;
+    }
+    t.disabled=false;
+    var h='<option value="">Select thana / upazila</option>';
+    for(var i=0;i<list.length;i++)h+='<option>'+list[i]+'</option>';
+    t.innerHTML=h;
+}
+
+    var _names = (typeof BD_DISTRICT_NAMES !== 'undefined' && BD_DISTRICT_NAMES.length) ? BD_DISTRICT_NAMES : DISTRICTS;
+    for (var d = 0; d < _names.length; d++) dOpts += '<option value="' + _names[d] + '">' + _names[d] + '</option>';
+    var _dEl = document.getElementById('cDistrict');
+    if (_dEl) {
+        _dEl.innerHTML = dOpts;
+        /* 2026-09-17 — the Thana dropdown follows the district.
+           2026-09-18 — so does the delivery charge (the district decides it). */
+        _dEl.onchange = function () { fillOrderThanas(this.value); syncShipFromDistrict(); };
+    }
+    fillOrderThanas('');
+
+    function onShipChange() {
+        if (!cart.length) return; // shipping only applies when products added
+        /* 2026-09-18 (this request) — the DISTRICT decides the charge; this radio
+           no longer does. Re-derive straight away so the amount shown can never
+           disagree with the chosen district. */
+        syncShipFromDistrict();
+    }
+
+    // ===== PRODUCT SEARCH =====
+    /* (#4) Add New Order shows: admin products + supplier products + THIS
+       reseller's own uploaded products. Another reseller's product is filtered
+       out by the shared data layer, not by the page. */
+    function selectableProducts() { return resellerOrderableProducts(user.id); }
+    function itemVariantId(p, size, color) { return String(p.id) + '|' + (size || '-') + '|' + (color || '-'); }
+    function onSearch() {
+        var q = document.getElementById('prodSearch').value.trim().toLowerCase();
+        var box = document.getElementById('searchResults');
+        if (!q) { box.classList.remove('show'); box.innerHTML = ''; return; }
+        var products = selectableProducts();
+        var matches = [];
+        for (var i = 0; i < products.length; i++) {
+            var p = products[i];
+            if (p.name.toLowerCase().indexOf(q) !== -1 || (p.sku && p.sku.toLowerCase().indexOf(q) !== -1)) matches.push(p);
+            if (matches.length >= 8) break;
+        }
+        if (!matches.length) {
+            box.innerHTML = '<div style="padding:14px;text-align:center;color:#94a3b8;font-size:0.88rem;">No products found. Admin must add products first.</div>';
+            box.classList.add('show');
+            return;
+        }
+        var html = '';
+        for (var m = 0; m < matches.length; m++) {
+            var p = matches[m];
+            var img = p.image ? '<img src="' + p.image + '">' : '<div class="noimg"><i class="fas fa-box"></i></div>';
+            /* (#3) p.id is QUOTED — a reseller's own product id is a string
+               ("ROP…"), and an unquoted interpolation rendered addProduct(ROP…)
+               which threw ReferenceError, so own products were unclickable. */
+            html += '<div class="sr-item" onclick="addProduct(\'' + esc(p.id) + '\')">' + img +
+                '<div><h5>' + p.name + '</h5><p>' + (p.section ? sectionDisplay(p.section) : '') + ' • ' + (p.sku || 'No SKU') + ' • Stock: ' + (p.stock || 0) + '</p></div>' +
+                '<span class="p">' + formatCurrency(p.price) + '</span></div>';
+        }
+        box.innerHTML = html;
+        box.classList.add('show');
+    }
+
+    function onSearchKey(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            var q = document.getElementById('prodSearch').value.trim().toLowerCase();
+            if (!q) return;
+            /* (#4) same ownership-filtered set as the visible search results */
+            var products = selectableProducts();
+            for (var i = 0; i < products.length; i++) {
+                if (products[i].sku && products[i].sku.toLowerCase() === q) { addProduct(products[i].id); return; }
+            }
+            var box = document.getElementById('searchResults');
+            var first = box.querySelector('.sr-item');
+            if (first) first.click();
+        }
+    }
+
+    /* Historical cost actually paid for one cart line (frozen at order time). */
+    function lineCost(it) {
+        if (!it) return 0;
+        var v = it.cost_price;
+        if (v !== undefined && v !== null && v !== '') return Number(v) || 0;
+        return Number(it.price) || 0;
+    }
+    function addProduct(productId, preSize, preQty) {
+        /* (#4) BACKEND-LEVEL GUARD — the id is resolved from the ownership-filtered
+           set, so editing the id in the markup or devtools can never pull another
+           reseller's uploaded product into this order. */
+        var products = selectableProducts();
+        var p = null;
+        for (var i = 0; i < products.length; i++) { if (String(products[i].id) === String(productId)) { p = products[i]; break; } }
+        if (!p) { showToast('This product is not available for your account.', 'error'); return; }
+        var sizes = productSizes(p), colors = productColors(p);
+        var size = preSize || (sizes.length ? sizes[0] : '');
+        var color = colors.length ? colors[0] : '';
+        var vPrice = productVariantsActive(p) ? variantPriceFor(p, size, color) : 0;
+        var defaultResale = vPrice || p.customer_price || (p.reseller_price ? Math.round(p.reseller_price * 1.8) : p.price);
+        /* makeOrderLine freezes source / owner / variant / cost / selling price (#18, #19) */
+        var line = makeOrderLine(p, size, color, preQty || 1, defaultResale);
+        if (!line) return;
+        line.sizes = sizes;
+        line.colors = colors;
+        cart.push(line);
+        renderCart();
+        hideSearch();
+        document.getElementById('prodSearch').value = '';
+    }
+
+    function hideSearch() { document.getElementById('searchResults').classList.remove('show'); }
+
+    // ===== CART =====
+    function renderCart() {
+        var body = document.getElementById('cartBody');
+        document.getElementById('emptyCart').style.display = cart.length ? 'none' : 'block';
+        var html = '';
+        for (var i = 0; i < cart.length; i++) {
+            var it = cart[i];
+            var img = it.image ? '<img src="' + it.image + '">' : '<div class="noimg"><i class="fas ' + it.icon + '"></i></div>';
+            var variant = '<select onchange="setItem(' + i + ',\'size\',this.value)">';
+            if (it.sizes && it.sizes.length) {
+                // placeholder forces an explicit choice when a real variant exists
+                if (!it.size) variant += '<option value="">-- Size --</option>';
+                for (var s = 0; s < it.sizes.length; s++) variant += '<option value="' + it.sizes[s] + '"' + (it.size === it.sizes[s] ? ' selected' : '') + '>' + it.sizes[s] + '</option>';
+            } else { variant += '<option>Free</option>'; }
+            variant += '</select>';
+            if (it.colors && it.colors.length) {
+                variant += ' <select onchange="setItem(' + i + ',\'color\',this.value)">';
+                if (!it.color) variant += '<option value="">-- Color --</option>';
+                for (var c = 0; c < it.colors.length; c++) variant += '<option value="' + it.colors[c] + '"' + (it.color === it.colors[c] ? ' selected' : '') + '>' + it.colors[c] + '</option>';
+                variant += '</select>';
+            }
+            html += '<tr>' +
+                '<td>' + (i + 1) + '</td>' +
+                '<td><div class="cart-prod">' + img + '<div><h5>' + it.name + '</h5>' + (it.sku ? '<small style="color:#94a3b8;">' + it.sku + '</small>' : '') + '</div></div></td>' +
+                '<td>' + variant + '</td>' +
+                '<td><input type="number" min="1" value="' + it.qty + '" onchange="setItem(' + i + ',\'qty\',this.value)"></td>' +
+                '<td>' + formatCurrency(it.price) + '</td>' +
+                '<td><input type="number" class="resale" min="' + it.price + '" value="' + it.resale + '" onchange="setItem(' + i + ',\'resale\',this.value)"></td>' +
+                '<td><strong>' + formatCurrency(it.resale * it.qty) + '</strong></td>' +
+                '<td><button class="rm-btn" onclick="removeItem(' + i + ')"><i class="fas fa-times"></i></button></td>' +
+                '</tr>';
+        }
+        body.innerHTML = html;
+        renderSummary();
+    }
+
+    function setItem(idx, field, value) {
+        if (!cart[idx]) return;
+        if (field === 'qty') {
+            var q = parseInt(value) || 1;
+            if (q < 1) q = 1;
+            cart[idx].qty = q;
+        } else if (field === 'resale') {
+            var r = parseInt(value) || 0;
+            if (r < cart[idx].price) { showToast('Resale price cannot be less than wholesale (' + formatCurrency(cart[idx].price) + ')!', 'warning'); r = cart[idx].price; }
+            cart[idx].resale = r;
+            cart[idx].selling_price = r;
+        } else {
+            cart[idx][field] = value;
+            /* (#3, #18) size/colour changed -> re-read THAT variant's price and id */
+            var pp = null, pool = selectableProducts();
+            for (var z = 0; z < pool.length; z++) { if (String(pool[z].id) === String(cart[idx].productId)) { pp = pool[z]; break; } }
+            if (pp) {
+                var vp = variantPriceFor(pp, cart[idx].size || '', cart[idx].color || '');
+                if (vp > 0) { cart[idx].variant_price = vp; cart[idx].resale = vp; cart[idx].selling_price = vp; }
+                cart[idx].variant_id = variantIdFor(pp, cart[idx].size || '', cart[idx].color || '');
+            }
+        }
+        renderCart();
+    }
+
+    function removeItem(idx) {
+        cart.splice(idx, 1);
+        renderCart();
+    }
+
+    // ===== SUMMARY =====
+    function renderSummary() {
+        var subtotal = 0, profit = 0;
+        for (var i = 0; i < cart.length; i++) {
+            subtotal += cart[i].resale * cart[i].qty;
+            profit += (cart[i].resale - lineCost(cart[i])) * cart[i].qty;
+        }
+        var shipInput = document.getElementById('sumShipping');
+        if (!cart.length) {
+            shipInput.value = 0;
+            shipInput.disabled = true;
+        } else {
+            shipInput.disabled = false;
+            if (!parseInt(shipInput.value)) {
+                /* 2026-09-18 — the district decides the default charge */
+                shipInput.value = bdDeliveryRate(orderDistrict(), insideRate, outsideRate);
+            }
+        }
+        var shipping = parseInt(shipInput.value) || 0;
+        var advance = parseInt(document.getElementById('sumAdvance').value) || 0;
+        var total = subtotal + (cart.length ? shipping : 0);
+        var due = total - advance;
+        var cod = cart.length ? Math.round(total * 0.01) : 0;
+        var pack = cart.length ? 10 : 0;
+        var net = profit - cod - pack;
+        document.getElementById('sumSubtotal').textContent = subtotal.toFixed(2) + ' ৳';
+        document.getElementById('sumTotal').textContent = total.toFixed(2) + ' ৳';
+        document.getElementById('sumDue').textContent = due.toFixed(2) + ' ৳';
+        document.getElementById('sumOrderTotal').textContent = total.toFixed(2) + ' ৳';
+        document.getElementById('sumCod').textContent = cod.toFixed(2) + ' ৳';
+        document.getElementById('sumPack').textContent = pack.toFixed(2) + ' ৳';
+        document.getElementById('sumNet').textContent = net.toFixed(2) + ' ৳';
+    }
+
+    // ===== PREVIEW SELECTION PICKUP (from product page size/qty table) =====
+    (function pickPreviewSelection() {
+        try {
+            var raw = sessionStorage.getItem('rh_preview_order');
+            if (!raw) return;
+            sessionStorage.removeItem('rh_preview_order');
+            var sel = JSON.parse(raw);
+            if (!sel || !sel.productId) return;
+            /* (#4) only products this reseller may sell — another reseller's
+               uploaded product is dropped here, not just hidden in search. */
+            var pool = selectableProducts();
+            var p = null;
+            for (var i = 0; i < pool.length; i++) { if (String(pool[i].id) === String(sel.productId)) { p = pool[i]; break; } }
+            if (!p) return;
+            var sizes = productSizes(p), colors = productColors(p);
+            var margin = (p.cost && p.price > p.cost) ? (p.price - p.cost) : 0;
+            var vPrice = productVariantsActive(p) ? variantPriceFor(p, sel.size || '', sel.color || '') : 0;
+            var defaultResale = vPrice || p.customer_price || (p.price + margin);
+            function pushLine(size, qty) {
+                var line = makeOrderLine(p, size, sel.color || '', qty, defaultResale);
+                if (!line) return;
+                line.sizes = sizes; line.colors = colors;
+                cart.push(line);
+            }
+            if (sel.sizeQty && sel.sizeQty.length) {
+                for (var s = 0; s < sel.sizeQty.length; s++) {
+                    var sq = sel.sizeQty[s];
+                    if (!sq.qty || sq.qty < 1) continue;
+                    pushLine(sq.size || '', sq.qty);
+                }
+            } else {
+                pushLine(sel.size || '', sel.qty || 1);
+            }
+        } catch (e) { console.error('preview pickup error', e); }
+    })();
+
+    // ===== BUY NOW (single) + CART CHECKOUT (multi) pickup =====
+    (function pickBuyNowCart() {
+        try {
+            /* (#4) ownership-filtered pool — a tampered id simply resolves to null */
+            var products = selectableProducts();
+            function findP(id) { for (var i = 0; i < products.length; i++) { if (String(products[i].id) === String(id)) return products[i]; } return null; }
+            function pushIt(p, it) {
+                var margin = (p.cost && p.price > p.cost) ? (p.price - p.cost) : 0;
+                var vPrice = productVariantsActive(p) ? variantPriceFor(p, it.size || '', it.color || '') : 0;
+                var resale = it.resale || vPrice || p.customer_price || (p.price + margin);
+                var line = makeOrderLine(p, it.size || '', it.color || '', it.qty, resale);
+                if (!line) return;
+                line.sizes = productSizes(p); line.colors = productColors(p);
+                cart.push(line);
+            }
+            var bn = sessionStorage.getItem('rh_buynow');
+            if (bn) {
+                sessionStorage.removeItem('rh_buynow');
+                var bi = JSON.parse(bn);
+                var bp = findP(bi.productId);
+                if (bp && bi.sizeQty) {
+                    for (var j = 0; j < bi.sizeQty.length; j++) {
+                        var sq = bi.sizeQty[j];
+                        if (sq.qty > 0) pushIt(bp, { size: sq.size, qty: sq.qty, color: bi.color, resale: bi.resale });
+                    }
+                }
+            }
+            var cc = sessionStorage.getItem('rh_cart_checkout');
+            if (cc) {
+                sessionStorage.removeItem('rh_cart_checkout');
+                var carr = JSON.parse(cc);
+                for (var k = 0; k < carr.length; k++) {
+                    var ci = carr[k];
+                    var cp = findP(ci.productId);
+                    if (cp && ci.sizeQty) {
+                        for (var n = 0; n < ci.sizeQty.length; n++) {
+                            var sq2 = ci.sizeQty[n];
+                            if (sq2.qty > 0) pushIt(cp, { size: sq2.size, qty: sq2.qty, color: ci.color, resale: ci.resale });
+                        }
+                    }
+                }
+            }
+        } catch (e) { console.error('buynow/cart pickup error', e); }
+    })();
+
+    // ===== SUBMIT =====
+    function submitOrder() {
+        if (_submitting) return;               /* (#24) ignore a double submit */
+        var phone = document.getElementById('cPhone').value.trim();
+        var name = document.getElementById('cName').value.trim();
+        var address = document.getElementById('cAddress').value.trim();
+        var district = document.getElementById('cDistrict').value;
+        var thana = document.getElementById('cThana').value.trim();
+        var note = document.getElementById('cNote').value.trim();
+
+        if (!/^01[3-9]\d{8}$/.test(phone)) { showToast('Enter valid 11-digit customer phone!', 'error'); return; }
+        if (!name) { showToast('Enter customer name!', 'error'); return; }
+        if (!address) { showToast('Enter customer address!', 'error'); return; }
+        if (!district) { showToast('Select district!', 'error'); return; }
+        if (!thana) { showToast('Enter Thana/Upazila!', 'error'); return; }
+        if (!cart.length) { showToast('Add at least one product!', 'error'); return; }
+        // Shared variant guard — an order may never be created without a valid variant
+        if (typeof validateOrderItems === 'function') {
+            var vchk = validateOrderItems(cart);
+            if (!vchk.ok) { showToast(vchk.message, 'error'); return; }
+        }
+        /* (#5, #12, #13) BACKEND-LEVEL ownership guard — evaluated in the shared
+           data layer, so a tampered cart (or another reseller's product id
+           injected into the request) is rejected here regardless of the page. */
+        if (typeof validateResellerOrderOwnership === 'function') {
+            var ochk = validateResellerOrderOwnership(cart, user.id);
+            if (!ochk.ok) { showToast(ochk.message, 'error'); return; }
+        }
+        /* (#4, #18, #19) Ownership guard + freeze the historical fields on every
+           line. This runs at submit time too, so a cart seeded before the fix
+           (or tampered with in devtools) still cannot escape the reseller's set. */
+        var _pool = selectableProducts(), _byId = {};
+        for (var pi = 0; pi < _pool.length; pi++) _byId[String(_pool[pi].id)] = _pool[pi];
+        for (var ci = 0; ci < cart.length; ci++) {
+            var _p = _byId[String(cart[ci].productId)];
+            if (!_p) { showToast('"' + (cart[ci].name || 'Product') + '" is not available for your account.', 'error'); return; }
+            if (cart[ci].selling_price === undefined || cart[ci].selling_price === null || cart[ci].selling_price === '') cart[ci].selling_price = cart[ci].resale || 0;
+            if (cart[ci].cost_price === undefined || cart[ci].cost_price === null || cart[ci].cost_price === '') cart[ci].cost_price = lineCost(cart[ci]);
+            if (!cart[ci].variant_id) cart[ci].variant_id = variantIdFor(_p, cart[ci].size || '', cart[ci].color || '');
+            if (!cart[ci].product_source) cart[ci].product_source = productOwnerType(_p);
+            if (!cart[ci].product_owner_type) cart[ci].product_owner_type = productOwnerType(_p);
+            if (cart[ci].product_owner_id === undefined || cart[ci].product_owner_id === null) cart[ci].product_owner_id = productOwnerId(_p);
+            if (!cart[ci].shop_id && productOwnerType(_p) === 'reseller') cart[ci].shop_id = productOwnerId(_p);
+        }
+
+        var subtotal = 0, profit = 0;
+        for (var i = 0; i < cart.length; i++) {
+            subtotal += cart[i].resale * cart[i].qty;
+            profit += (cart[i].resale - lineCost(cart[i])) * cart[i].qty;
+        }
+        /* 2026-09-18 (this request) — the tier comes from the DISTRICT, so a
+           Sub-Urban order is stored as 'suburban' rather than being flattened
+           into inside/outside. */
+        var shipVal = orderZone();
+        var shipping = parseInt(document.getElementById('sumShipping').value) || 0;
+        var advance = parseInt(document.getElementById('sumAdvance').value) || 0;
+        var total = subtotal + shipping;
+        var codCharge = Math.round(total * 0.01);
+        var packagingCharge = 10;
+        profit = profit - codCharge - packagingCharge;
+
+        _submitting = true;                   /* (#24) all validation passed — lock */
+        var order = {
+            id: getNextOrderId(),
+            resellerId: user.id,
+            resellerName: user.name,
+            customer: name,
+            phone: phone,
+            address: address + ', ' + thana + ', ' + district,
+            district: district,
+            thana: thana,
+            shippingMethod: shipVal,
+            shippingCharge: shipping,
+            items: JSON.parse(JSON.stringify(cart)),
+            productName: cart[0].name + (cart.length > 1 ? ' +' + (cart.length - 1) + ' more' : ''),
+            productPrice: cart[0].price,
+            productCost: 0,
+            qty: 0,
+            itemsSubtotal: subtotal,
+            amount: total,
+            advance: advance,
+            due: total - advance,
+            codCharge: codCharge,
+            packagingCharge: packagingCharge,
+            profit: profit,
+            status: 'new',
+            date: new Date().toISOString().split('T')[0],
+            courier: '',
+            trackingId: '',
+            trackingUrl: '',
+            deliveryDate: null,
+            note: note,
+            adminNote: ''
+        };
+
+        /* (#14, #15, #17) ROUTING — an order made only of THIS reseller's own
+           uploaded products is a My Shop order and must never surface in
+           All Orders. A mixed order keeps the normal platform flow (it has
+           admin/supplier lines too), while its own-product lines still carry
+           their own source/ownership so profit and shipment stay correct.
+           The flag is written at creation time, from the real item sources. */
+        var _ownLines = 0, _otherLines = 0;
+        for (var s = 0; s < cart.length; s++) {
+            if (String(cart[s].product_owner_type) === 'reseller' && String(cart[s].product_owner_id) === String(user.id)) _ownLines++;
+            else _otherLines++;
+        }
+        if (_ownLines > 0 && _otherLines === 0) {
+            order.source = 'myshop';
+            order.order_source = 'myshop';
+            order.shop_id = user.id;
+            order.reseller_id = user.id;
+        }
+        /* Mixed-source order: the CUSTOMER keeps ONE combined order + ONE
+           delivery charge, but the order is viewed as ownership groups. We only
+           record the linkage here (parent id + own-line count) — no duplicate
+           order record is created (#13, #15, #20). */
+        if (_ownLines > 0 && _otherLines > 0) {
+            order.mixed_source = true;
+            order.parent_order_id = order.id;
+            order.has_own_group = true;
+            order.own_line_count = _ownLines;
+            order.catalog_line_count = _otherLines;
+        }
+        for (var q = 0; q < cart.length; q++) order.qty += cart[q].qty;
+
+        var orders = getData(DB_KEYS.ORDERS);
+        orders.push(order);
+        /* BUG FIX — setData() returns false when the write fails (quota exceeded,
+           private mode, file:// restrictions). The old code ignored that and then
+           redirected to the order list after 1.2s, so the reseller saw
+           "Order submitted! ID: ..." and landed on a list that did NOT contain the
+           order. A failed write is now reported and nothing is navigated. */
+        if (!setData(DB_KEYS.ORDERS, orders)) {
+            _submitting = false;              /* let the user retry */
+            try { console.error('Reseller order save failed — rh_orders was not written. Existing size =', ((localStorage.getItem('rh_orders') || '').length) + ' chars'); } catch (e) {}
+            showToast('Order could not be saved — storage is full. Space is being freed automatically; please try again in a few seconds.', 'error');
+            return;
+        }
+
+        /* 2026-09-18 — the order is safely stored, so remember this customer in the
+           reseller's Customer Information. Only the STREET address is kept: the
+           district and thana are separate fields, and the "Order" button puts this
+           value back into the street-address box, so storing the composed string
+           would duplicate them on the next order. */
+        try {
+            if (typeof ciRemember === 'function') {
+                ciRemember(user.id, { name: name, phone: phone, address: address,
+                                      district: district, thana: thana }, 'panel-order');
+            }
+        } catch (e) { }
+
+        /* (#4) Stock is reduced for the lines this reseller actually owns.
+           Admin / supplier product stock is deliberately untouched — that is the
+           platform's own pipeline and must keep behaving exactly as before. */
+        try { applyOwnProductStockDeduction(order, user.id); } catch (e) { console.error('stock deduction failed', e); }
+
+        var rs = getData(DB_KEYS.RESELLERS);
+        for (var j = 0; j < rs.length; j++) { if (rs[j].id === user.id) { rs[j].totalOrders = (rs[j].totalOrders || 0) + 1; break; } }
+        setData(DB_KEYS.RESELLERS, rs);
+
+        addTracking(order.id, 'New', 'ResellerHub', 'Order placed by reseller');
+        logActivity('order_placed', 'New order ' + order.id + ' by ' + user.name + ' (' + formatCurrency(total) + ')');
+
+        cart = [];
+        renderCart();
+        document.getElementById('cPhone').value = '';
+        document.getElementById('cName').value = '';
+        document.getElementById('cAddress').value = '';
+        document.getElementById('cThana').value = '';
+        document.getElementById('cNote').value = '';
+        showToast('Order submitted! ID: ' + order.id, 'success');
+        /* (#14) land on the page that actually owns this order */
+        var _dest = (order.source === 'myshop') ? 'my-shop-orders.html' : 'my-orders.html';
+        setTimeout(function() { window.location.href = _dest; }, 1200);
+    }
+
+    setOnline(user.id, true);
+    setInterval(function() { setOnline(user.id, true); }, 60000);
+    window.addEventListener('beforeunload', function() { setOnline(user.id, false); });
+
+    window.onSearch = onSearch;
+    window.onSearchKey = onSearchKey;
+    window.addProduct = addProduct;
+    window.setItem = setItem;
+    window.removeItem = removeItem;
+    window.renderSummary = renderSummary;
+    window.onShipChange = onShipChange;
+    window.submitOrder = submitOrder;
+    window.doLogout = doLogout;
+    window.toggleSidebar = function(open) {
+        document.getElementById('sidebar') ? document.querySelector('.sidebar').classList.toggle('open', open) : null;
+        document.getElementById('sideOverlay').classList.toggle('show', open);
+    };
+
+    // Hide search when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-wrap')) hideSearch();
+    });
+
+    /* 2026-09-18 — CUSTOMER INFORMATION prefill (this request).
+       Arriving from Customer Information's "Order" button, the customer's name,
+       number, street address AND their district + thana are already waiting in
+       sessionStorage: fill the form so the reseller only has to choose the product
+       and submit. Read ONCE and cleared, so a refresh — or any ordinary visit —
+       starts blank.
+
+       The district must be set BEFORE the thana, because the thana dropdown is
+       rebuilt from the district (fillOrderThanas). Both stay fully editable — this
+       is a starting point, not a lock. */
+    try {
+        var _pf = (typeof ciTakeOrderPrefill === 'function') ? ciTakeOrderPrefill() : null;
+        if (_pf) {
+            var _n = document.getElementById('cName');
+            var _p = document.getElementById('cPhone');
+            var _a = document.getElementById('cAddress');
+            if (_n && _pf.name) _n.value = _pf.name;
+            if (_p && _pf.phone) _p.value = _pf.phone;
+            if (_a && _pf.address) _a.value = _pf.address;
+
+            var _d = document.getElementById('cDistrict');
+            if (_d && _pf.district) {
+                /* only a district this build actually offers */
+                var _ok = false;
+                for (var _i = 0; _i < _d.options.length; _i++) {
+                    if (String(_d.options[_i].value) === String(_pf.district)) { _ok = true; break; }
+                }
+                if (_ok) {
+                    _d.value = _pf.district;
+                    if (typeof fillOrderThanas === 'function') fillOrderThanas(_pf.district);
+                    if (typeof syncShipFromDistrict === 'function') { try { syncShipFromDistrict(); } catch (e) {} }
+                    var _t = document.getElementById('cThana');
+                    if (_t && _pf.thana) {
+                        for (var _j = 0; _j < _t.options.length; _j++) {
+                            if (String(_t.options[_j].value) === String(_pf.thana) ||
+                                String(_t.options[_j].textContent).trim() === String(_pf.thana)) {
+                                _t.value = _t.options[_j].value || _t.options[_j].textContent.trim();
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (typeof showToast === 'function') {
+                showToast('কাস্টমারের নাম, নাম্বার, ঠিকানা ও এলাকা বসে গেছে — শুধু প্রোডাক্ট বেছে অর্ডার করুন।', 'success');
+            }
+        }
+    } catch (e) { }
+
+    renderCart();
+})();
+</script>
+
+<script>
+window.menuToggle = function() {
+    var sb = document.querySelector('.sidebar');
+    if (!sb) return;
+    var open = !sb.classList.contains('open');
+    if (window.toggleSidebar) window.toggleSidebar(open);
+    else { sb.classList.toggle('open', open); var ov = document.getElementById('sideOverlay'); if (ov) ov.classList.toggle('show', open); }
+};
+</script>
+
+
+<script>
+/* Robust menu toggle */
+if (!window.menuToggle) {
+    window.menuToggle = function() {
+        var sb = document.querySelector('.sidebar');
+        if (!sb) return;
+        var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+        var open = !sb.classList.contains('open');
+        sb.classList.toggle('open', open);
+        if (ov) ov.classList.toggle('show', open);
+        document.body.classList.toggle('sb-open', open);
+    };
+}
+</script>
+
+
+<script>
+/* Logout fix: keep the mobile bottom-nav in sync with the drawer state. */
+(function () {
+    function sync(open) {
+        try {
+            var sb = document.querySelector('.sidebar');
+            var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+            if (sb) sb.classList.toggle('open', !!open);
+            if (ov) ov.classList.toggle('show', !!open);
+            document.body.classList.toggle('sb-open', !!open);
+        } catch (e) {}
+    }
+    var orig = window.toggleSidebar;
+    window.toggleSidebar = function (open) {
+        try { if (typeof orig === 'function') orig(open); } catch (e) {}
+        sync(open);
+    };
+    window.menuToggle = function () {
+        var sb = document.querySelector('.sidebar');
+        var open = !(sb && sb.classList.contains('open'));
+        window.toggleSidebar(open);
+    };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Information - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root { --pri:#4f46e5; --prid:#4338ca; --vio:#7c3aed; --grn:#10b981; --gold:#fbbf24; --dark:#0f172a; --gray:#64748b; }
+        body { font-family:'Inter','Hind Siliguri',sans-serif; background:#eef1f9; color:#1e293b; padding-bottom:70px; overflow-x:hidden; }
+
+        /* ===== Animations ===== */
+        @keyframes dashUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:none} }
+        @keyframes dashSide { from{opacity:0;transform:translateX(-24px)} to{opacity:1;transform:none} }
+        @keyframes iconBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        @keyframes drift { 0%,100%{transform:translate(0,0) rotate(0)} 33%{transform:translate(24px,-18px) rotate(3deg)} 66%{transform:translate(-16px,14px) rotate(-2deg)} }
+        @keyframes welcomeShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        @keyframes barGrow { from{height:0 !important} }
+        @keyframes tilePop { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:none} }
+        .sidebar-header, .sidebar-menu a { animation:dashSide .4s ease both; }
+        .welcome { animation:dashUp .55s .1s ease both; }
+        .quick-row .quick-btn:nth-child(1) { animation:dashUp .5s .18s ease both; }
+        .quick-row .quick-btn:nth-child(2) { animation:dashUp .5s .24s ease both; }
+        .quick-row .quick-btn:nth-child(3) { animation:dashUp .5s .3s ease both; }
+        .quick-row .quick-btn:nth-child(4) { animation:dashUp .5s .36s ease both; }
+        .stats-grid .stat-card:nth-child(1) { animation:dashUp .5s .3s ease both; }
+        .stats-grid .stat-card:nth-child(2) { animation:dashUp .5s .38s ease both; }
+        .stats-grid .stat-card:nth-child(3) { animation:dashUp .5s .46s ease both; }
+        .stats-grid .stat-card:nth-child(4) { animation:dashUp .5s .54s ease both; }
+        .card { animation:dashUp .55s .5s ease both; }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:248px; background:linear-gradient(180deg,#0b1029 0%,#151a3a 100%); color:#c7d2fe; z-index:200; overflow-y:auto; transition:transform 0.3s; box-shadow:4px 0 24px rgba(11,16,41,.35); }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; justify-content:space-between; align-items:center; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:40px; height:40px; background:linear-gradient(135deg,var(--pri),var(--vio)); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .sidebar-logo h3 { color:white; font-size:1rem; font-weight:900; }
+        .sidebar-logo small { color:#818cf8; font-size:0.66rem; display:block; font-weight:700; letter-spacing:1px; }
+        .sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; }
+        .sidebar-menu { list-style:none; padding:12px 10px; }
+        .sidebar-menu li { margin:3px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:11px 15px; color:#c7d2fe; text-decoration:none; font-size:0.88rem; font-weight:600; border-radius:11px; transition:all .22s; }
+        .sidebar-menu a:hover { background:rgba(129,140,248,.14); color:white; transform:translateX(4px); }
+        .sidebar-menu a.active { background:linear-gradient(135deg,var(--pri),var(--vio)); color:white; box-shadow:0 8px 20px rgba(79,70,229,.4); }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 15px 5px; color:#6366f1; font-size:0.66rem; text-transform:uppercase; letter-spacing:1.4px; font-weight:800; }
+        .menu-badge { background:var(--gold); color:#1e293b; font-size:0.68rem; padding:1px 8px; border-radius:10px; font-weight:800; margin-left:auto; }
+        .menu-badge-n { color:var(--gold); font-weight:900; }
+
+        .side-overlay { display:none; position:fixed; inset:0; background:rgba(11,16,41,.55); z-index:150; backdrop-filter:blur(2px); }
+
+        /* ===== MAIN ===== */
+        .main { margin-left:248px; min-height:100vh; }
+        .topbar { background:rgba(255,255,255,.88); backdrop-filter:blur(12px); padding:12px 22px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 14px rgba(15,23,42,.06); position:sticky; top:0; z-index:100; }
+        .topbar-left { display:flex; align-items:center; gap:12px; }
+        .hamburger { display:none; background:none; border:none; font-size:1.3rem; color:#1e293b; cursor:pointer; padding:4px; }
+        .topbar h2 { font-size:1.12rem; font-weight:800; }
+        .topbar-right { display:flex; align-items:center; gap:8px; }
+        .topbar-balance { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#7c2d12; padding:7px 15px; border-radius:22px; font-weight:800; font-size:0.84rem; white-space:nowrap; box-shadow:0 4px 12px rgba(245,158,11,.35); }
+        .topbar-user { display:flex; align-items:center; gap:7px; padding:6px 14px; background:#eef2ff; color:var(--pri); border-radius:22px; font-size:0.84rem; font-weight:700; }
+        .btn-logout { background:#fee2e2; color:#dc2626; border:none; padding:8px 12px; border-radius:10px; cursor:pointer; font-size:0.85rem; transition:all .25s; }
+        .btn-logout:hover { background:#dc2626; color:#fff; transform:translateY(-1px); }
+
+        .content { padding:22px 28px; width:100%; }
+
+        /* ===== Welcome — index hero style (dark + orbit) ===== */
+        .welcome { background:radial-gradient(700px 400px at 80% 10%, #312e81 0%, transparent 55%), radial-gradient(500px 320px at 8% 90%, #1e1b4b 0%, transparent 55%), linear-gradient(150deg,#0b1029,#12102e 60%,#181436); color:white; padding:30px 32px; border-radius:26px; margin-bottom:22px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; position:relative; overflow:hidden; box-shadow:0 22px 50px rgba(11,16,41,.4); animation:dashUp .55s .1s ease both; }
+        .w-orbit { position:absolute; border:1px solid rgba(129,140,248,.22); border-radius:50%; pointer-events:none; }
+        .w-orbit.o1 { width:340px; height:340px; top:-140px; right:-80px; animation:drift 14s ease-in-out infinite; }
+        .w-orbit.o2 { width:240px; height:240px; bottom:-110px; left:-60px; animation:drift 18s ease-in-out infinite reverse; }
+        .w-kicker { display:inline-flex; align-items:center; gap:7px; background:rgba(129,140,248,.18); border:1px solid rgba(129,140,248,.45); color:#c7d2fe; font-size:.66rem; font-weight:900; letter-spacing:1.6px; padding:5px 14px; border-radius:18px; margin-bottom:12px; position:relative; }
+        .welcome h3 { font-size:1.5rem; font-weight:900; margin-bottom:4px; position:relative; }
+        .w-grad { background:linear-gradient(90deg,#a5b4fc,#f0abfc,#67e8f9); background-size:200% auto; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; animation:welcomeShift 5s linear infinite; }
+        .welcome p { opacity:0.92; font-size:0.9rem; position:relative; }
+        .welcome .ref-code { background:rgba(129,140,248,.25); border:1px solid rgba(129,140,248,.4); padding:3px 12px; border-radius:14px; font-weight:800; font-size:0.76rem; position:relative; }
+        .btn-welcome { background:linear-gradient(135deg,var(--grn),#059669); color:white; padding:14px 26px; border-radius:14px; border:none; font-weight:800; cursor:pointer; font-size:0.92rem; white-space:nowrap; position:relative; transition:all .28s; box-shadow:0 12px 28px rgba(16,185,129,.4); }
+        .btn-welcome:hover { transform:translateY(-3px); box-shadow:0 18px 36px rgba(16,185,129,.5); }
+
+        /* Pending banner */
+        .pending-banner { background:linear-gradient(135deg,#fef3c7,#fde68a); border-left:5px solid #f59e0b; padding:15px 19px; border-radius:14px; margin-bottom:18px; }
+        .pending-banner h4 { color:#92400e; font-size:0.95rem; margin-bottom:3px; }
+        .pending-banner p { color:#78350f; font-size:0.85rem; }
+
+        /* ===== Kickers (index-style section badges) ===== */
+        .kick { display:inline-flex; align-items:center; font-size:.6rem; font-weight:900; letter-spacing:1.6px; color:var(--pri); background:#eef2ff; padding:4px 12px; border-radius:16px; margin-right:9px; vertical-align:2px; }
+
+        /* Stats */
+        .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:15px; margin-bottom:20px; }
+        .stat-card { background:white; padding:19px; border-radius:18px; box-shadow:0 3px 14px rgba(15,23,42,.05); border:1px solid #eef2f7; display:flex; align-items:center; gap:14px; transition:all .28s; }
+        .stat-card:hover { transform:translateY(-4px); box-shadow:0 16px 32px rgba(15,23,42,.11); }
+        .stat-icon { width:52px; height:52px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:1.35rem; flex-shrink:0; }
+        .stat-icon.green { background:linear-gradient(135deg,#d1fae5,#a7f3d0); color:#059669; }
+        .stat-icon.blue { background:linear-gradient(135deg,#e0e7ff,#c7d2fe); color:var(--pri); }
+        .stat-icon.orange { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#d97706; }
+        .stat-icon.purple { background:linear-gradient(135deg,#ede9fe,#ddd6fe); color:#7c3aed; }
+        .stat-card .label { font-size:0.74rem; color:var(--gray); margin-bottom:3px; font-weight:700; }
+        .stat-card .value { font-size:1.32rem; font-weight:900; }
+
+        /* Quick actions */
+        .quick-row { display:grid; grid-template-columns:repeat(4,1fr); gap:13px; margin-bottom:20px; }
+        .quick-btn { background:white; border:1px solid #eef2f7; border-radius:18px; padding:17px 10px; cursor:pointer; text-align:center; box-shadow:0 3px 12px rgba(15,23,42,.05); transition:all .25s; text-decoration:none; }
+        .quick-btn:hover { transform:translateY(-4px); box-shadow:0 14px 30px rgba(79,70,229,.14); border-color:#c7d2fe; }
+        .quick-btn .qi { width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin:0 auto 9px; transition:transform .3s; }
+        .quick-btn:hover .qi { transform:scale(1.12) rotate(-6deg); }
+        .quick-btn p { font-size:0.8rem; font-weight:700; color:#334155; }
+
+        /* ===== SALES ANALYTICS ===== */
+        .analytics { background:white; border-radius:20px; border:1px solid #eef2f7; box-shadow:0 4px 16px rgba(15,23,42,.05); padding:20px 22px; margin-bottom:20px; animation:dashUp .55s .48s ease both; }
+        .analytics-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:8px; }
+        .analytics-head h4 { font-size:0.95rem; font-weight:800; }
+        .analytics-head small { color:var(--gray); font-size:.72rem; font-weight:700; }
+        .atile-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+        .atile { border-radius:16px; padding:14px 16px; text-align:center; animation:tilePop .45s ease both; transition:transform .25s; }
+        .atile:hover { transform:translateY(-3px); }
+        .atile:nth-child(2) { animation-delay:.08s; } .atile:nth-child(3) { animation-delay:.16s; } .atile:nth-child(4) { animation-delay:.24s; }
+        .atile .tl { font-size:.64rem; font-weight:800; letter-spacing:.8px; text-transform:uppercase; opacity:.85; }
+        .atile .tv { font-size:1.18rem; font-weight:900; margin-top:3px; }
+        .atile.t-ind { background:linear-gradient(135deg,#e0e7ff,#c7d2fe); color:#3730a3; }
+        .atile.t-grn { background:linear-gradient(135deg,#d1fae5,#a7f3d0); color:#065f46; }
+        .atile.t-amb { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#92400e; }
+        .atile.t-vio { background:linear-gradient(135deg,#ede9fe,#ddd6fe); color:#5b21b6; }
+        .achart { display:flex; align-items:flex-end; gap:10px; height:170px; padding:6px 4px 0; }
+        .acol { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
+        .abar { width:100%; max-width:44px; border-radius:9px 9px 4px 4px; background:linear-gradient(180deg,var(--pri),var(--vio)); min-height:5px; transition:height .8s cubic-bezier(.2,.8,.3,1); box-shadow:0 4px 10px rgba(79,70,229,.25); position:relative; }
+        .abar:hover { filter:brightness(1.15); }
+        .abar .av { position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-size:.62rem; font-weight:800; color:var(--pri); white-space:nowrap; opacity:0; transition:opacity .3s; }
+        .acol:hover .av { opacity:1; }
+        .abar.zero { background:#e2e8f0; box-shadow:none; }
+        .abar.zero .av { color:#94a3b8; }
+        .alab { font-size:.64rem; font-weight:800; color:var(--gray); }
+        .duo { display:grid; grid-template-columns:1.6fr 1fr; gap:20px; align-items:start; }
+
+        .card { background:white; border-radius:20px; box-shadow:0 4px 16px rgba(15,23,42,.05); border:1px solid #eef2f7; margin-bottom:20px; overflow:hidden; animation:dashUp .55s .5s ease both; }
+        .card-header { padding:15px 20px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; }
+        .card-header h4 { font-size:0.95rem; font-weight:800; }
+        .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+        .data-table { width:100%; border-collapse:collapse; min-width:600px; }
+        .data-table th { text-align:left; padding:11px 18px; background:#f8fafc; font-weight:700; font-size:0.68rem; color:var(--gray); text-transform:uppercase; white-space:nowrap; }
+        .data-table td { padding:12px 18px; border-bottom:1px solid #f4f6fb; font-size:0.84rem; }
+        .data-table tr:hover { background:#f8faff; }
+        .badge { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; white-space:nowrap; }
+        .b-delivered { background:#d1fae5; color:#065f46; }
+        .b-shipped { background:#e0e7ff; color:#4338ca; }
+        .b-processing { background:#e0f2fe; color:#0369a1; }
+        .b-cancelled { background:#fee2e2; color:#991b1b; }
+        .b-new { background:#fef3c7; color:#92400e; }
+        .b-pending { background:#fef3c7; color:#92400e; }
+        .b-confirmed { background:#dbeafe; color:#1e40af; }
+        .b-packaging { background:#ede9fe; color:#6d28d9; }
+        .b-shipping { background:#e0e7ff; color:#4338ca; }
+        .b-wfr { background:#fef9c3; color:#854d0e; }
+        .b-returned { background:#ffe4e6; color:#9f1239; }
+        .btn { padding:6px 12px; border:none; border-radius:8px; font-size:0.8rem; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:5px; transition:all .22s; }
+        .btn-primary { background:linear-gradient(135deg,var(--pri),var(--prid)); color:white; }
+        .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 14px rgba(79,70,229,.35); }
+        .empty { text-align:center; padding:38px 16px; color:var(--gray); }
+        .empty i { font-size:2.2rem; margin-bottom:8px; opacity:0.4; }
+        .empty a { color:var(--pri); font-weight:700; }
+
+        .notif-item { padding:12px 18px; border-bottom:1px solid #f4f6fb; display:flex; gap:11px; align-items:flex-start; font-size:0.86rem; transition:background .2s; }
+        .notif-item:hover { background:#f8faff; }
+        .notif-item:last-child { border-bottom:none; }
+        .notif-item i { color:var(--pri); margin-top:3px; }
+
+        /* ===== MOBILE BOTTOM NAV ===== */
+        .bottom-nav { display:none; position:fixed; bottom:10px; left:12px; right:12px; background:rgba(255,255,255,.92); backdrop-filter:blur(14px); border:1px solid #eef2f7; box-shadow:0 10px 30px rgba(15,23,42,.16); z-index:400; padding:7px 6px calc(7px + env(safe-area-inset-bottom)); border-radius:20px; }
+        .bottom-nav a { display:flex; flex-direction:column; align-items:center; gap:2px; text-decoration:none; color:#94a3b8; font-size:0.62rem; font-weight:700; padding:6px 6px; border-radius:12px; flex:1; transition:all .2s; }
+        .bottom-nav a i { font-size:1.12rem; }
+        .bottom-nav a.active { color:var(--pri); background:#eef2ff; }
+        .bn-menu { background:linear-gradient(135deg,var(--pri),var(--vio)); color:#fff; border-radius:14px; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .bn-menu i { color:#fff; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width:1024px) { .stats-grid { grid-template-columns:repeat(2,1fr); } .quick-row { grid-template-columns:repeat(4,1fr); } .duo { grid-template-columns:1fr; } .atile-row { grid-template-columns:1fr 1fr; } }
+        @media (max-width:768px) {
+            body { padding-bottom:86px; }
+            .sidebar { transform:translateX(-100%); width:272px; }
+            .sidebar.open { transform:translateX(0); }
+            .side-overlay.show { display:block; }
+            .sidebar-close-m { display:block; }
+            .main { margin-left:0; }
+            .hamburger { display:block; }
+            .topbar-user span { max-width:78px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+            .stats-grid { grid-template-columns:1fr 1fr; gap:10px; }
+            .stat-card { padding:14px 12px; flex-direction:column; text-align:center; gap:8px; }
+            .stat-card .value { font-size:1.12rem; }
+            .quick-row { grid-template-columns:repeat(2,1fr); gap:10px; }
+            .welcome { flex-direction:column; text-align:center; padding:24px 18px; }
+            .btn-welcome { width:100%; }
+            .bottom-nav { display:flex; }
+            .content { padding:14px; }
+            .topbar { padding:11px 14px; }
+            /* 2026-09-16 — MOBILE FIX (this request). The topbar measured about 440px
+               across on a 390px phone, so the logout button was pushed past the right
+               edge and looked cut off. These rules tighten the SAME header so it fits a
+               narrow screen. Nothing is hidden and nothing outside this media query is
+               touched, so the desktop layout is unchanged. */
+            .topbar { padding:10px 12px; }
+            .topbar-left { gap:8px; }
+            .topbar h2 { font-size:.98rem; }
+            .topbar-right { gap:6px; }
+            .topbar-balance { padding:6px 10px; font-size:.78rem; }
+            .topbar-user { padding:5px 10px; font-size:.78rem; }
+            .topbar-user span { max-width:52px; }
+
+            .atile-row { grid-template-columns:1fr 1fr; gap:9px; }
+            .achart { gap:5px; height:130px; }
+            .analytics { padding:16px 14px; }
+        }
+        @media (max-width:400px) { .quick-row { grid-template-columns:1fr 1fr; } .stats-grid { grid-template-columns:1fr 1fr; } }
+
+</style>
+
+<style id="lx-nav-force">
+@media(max-width:768px){
+    .bottom-nav{display:flex !important;position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;opacity:1 !important;visibility:visible !important;transform:none !important}
+    body{padding-bottom:86px !important}
+}
+</style>
+
+<style id="lx-bnav">
+/* ===== Complete bottom-nav styling ===== */
+.bottom-nav{position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;display:flex !important;align-items:stretch;background:rgba(255,255,255,.97) !important;backdrop-filter:blur(14px);border:1px solid #e8ecf4 !important;border-radius:18px !important;box-shadow:0 -4px 24px rgba(15,23,42,.14) !important;padding:7px 6px calc(7px + env(safe-area-inset-bottom)) !important}
+.bottom-nav a,.bottom-nav button{flex:1 !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;gap:3px !important;padding:7px 2px !important;border:none !important;background:none !important;color:#7b879c !important;font-size:.62rem !important;font-weight:700 !important;text-decoration:none !important;cursor:pointer !important;border-radius:12px !important;font-family:inherit !important;line-height:1.2 !important}
+.bottom-nav a i,.bottom-nav button i{font-size:1.18rem !important;line-height:1 !important}
+.bottom-nav a span,.bottom-nav button span{display:block !important}
+.bottom-nav a:hover,.bottom-nav button:hover{color:#4f46e5 !important;background:#eef2ff !important;transform:translateY(-2px)}
+.bottom-nav a.active{color:#4f46e5 !important;background:#eef2ff !important}
+.bottom-nav .bn-menu{color:#4f46e5 !important;background:#eef2ff !important;box-shadow:none !important;border-radius:12px !important}
+.bottom-nav .bn-menu:hover{background:#e0e7ff !important}
+.bottom-nav .bn-menu i,.bottom-nav .bn-menu span{color:#4f46e5 !important}
+body{padding-bottom:86px !important}
+@media(min-width:769px){
+    .bottom-nav{display:none !important}
+    body{padding-bottom:0 !important}
+}
+</style>
+
+<style>
+@media(max-width:768px){
+    .sidebar{transform:translateX(-100%) !important;transition:transform .32s cubic-bezier(.2,.8,.3,1) !important;display:block !important}
+    .sidebar.open{transform:translateX(0) !important;box-shadow:24px 0 60px rgba(11,16,41,.45) !important}
+}
+</style>
+
+<style id="lx-logout-fix">
+/* Logout fix: the open sidebar must paint ABOVE the fixed mobile bottom-nav,
+   otherwise the last menu item (Logout) is covered and un-tappable. */
+.sidebar{ z-index:900 !important; }
+.side-overlay{ z-index:880 !important; }
+.sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+@supports selector(:has(*)){
+  body:has(.sidebar.open) .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+}
+@media(min-width:769px){ .sidebar-menu{ padding-bottom:12px !important; } }
+</style>
+
+<style id="lx-sidebar-fix">
+/* ===== Reseller sidebar — canonical & stable (do not mutate at runtime) ===== */
+/* 1) Labels and section headings are ALWAYS visible. The old template hid
+      .sidebar-menu a span and .sidebar-divider under 768px, which made menu
+      text disappear and the "Account" heading vanish on some pages. */
+.sidebar .sidebar-menu a span{ display:inline !important; }
+.sidebar .sidebar-menu .sidebar-divider,
+.sidebar .sidebar-divider{ display:block !important; }
+.sidebar .sidebar-logo h3{ display:block !important; }
+.sidebar .sidebar-logo small{ display:block !important; }
+
+/* 2) Fixed geometry — the sidebar is never collapsed to a 70px icon rail. */
+.sidebar{ width:248px !important; z-index:900 !important; overflow-y:auto !important; }
+.side-overlay{ z-index:880 !important; }
+@media(min-width:769px){
+    .main{ margin-left:248px !important; }
+    .sidebar{ transform:none !important; }
+}
+@media(max-width:768px){
+    .main{ margin-left:0 !important; }
+    .sidebar{ transform:translateX(-100%) !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; display:block !important; }
+    .sidebar.open{ transform:translateX(0) !important; box-shadow:24px 0 60px rgba(11,16,41,.45) !important; }
+}
+
+/* 3) Row geometry is locked: the "All Orders" counter is absolutely positioned
+      so a changing number can never push the rows below it up or down. */
+.sidebar .sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.sidebar .sidebar-menu li{ position:relative; display:block; margin:3px 0; }
+.sidebar .sidebar-menu a{ display:flex !important; align-items:center; gap:12px; padding:11px 15px; }
+.sidebar .menu-badge{ position:absolute; right:12px; top:50%; transform:translateY(-50%); margin-left:0 !important; }
+
+/* 4) Mobile: hide the bottom nav while the drawer is open so the last item
+      (Logout) is never covered. */
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+
+/* 5) Close button inside the drawer on mobile. */
+.sidebar .sidebar-close-m{ display:none; }
+@media(max-width:768px){ .sidebar .sidebar-close-m{ display:block !important; } }
+</style>
+
+<style id="reseller-hamburger-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   Every reseller page hides the hamburger with ".hamburger{display:none}", but most
+   pages never turn it back ON at mobile width — only products.html did. So on a phone
+   there was no way to open the sidebar on Products, Orders, Wallet, Withdrawals,
+   Courier, Messages, Support, Profile, Referral or Website Integration.
+   This shows the SAME existing button (onclick="menuToggle()") at mobile width only.
+   It is an ADDED block and lives entirely inside a max-width query, so the DESKTOP
+   LAYOUT IS UNCHANGED. */
+@media (max-width:768px){
+  .hamburger { display:block !important; }
+}
+</style>
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon"><i class="fas fa-store"></i></div>
+            <div><h3>ResellerHub</h3><small>Reseller Panel</small></div>
+        </div>
+        
+        <button class="sidebar-close-m" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+        <ul class="sidebar-menu">
+        <li class="sidebar-divider">Main</li>
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+        <li><a href="products.html"><i class="fas fa-box"></i> <span>Products</span></a></li>
+        <li><a href="my-shop.html"><i class="fas fa-store"></i> <span>My Shop</span></a></li>
+        <li><a href="transactions.html"><i class="fas fa-right-left"></i> <span>Transactions</span></a></li>
+        <li class="sidebar-divider">Orders</li>
+        <li><a href="my-orders.html"><i class="fas fa-list"></i> <span>All Orders<span class="menu-badge-n" id="ordersBadgeLabel"></span></span></a> <span class="menu-badge" id="ordersBadge" style="display:none">0</span></li>
+        <li><a href="order.html"><i class="fas fa-cart-plus"></i> <span>Add New Order</span></a></li>
+        <li><a href="offers.html"><i class="fas fa-gift"></i> <span>Offers</span></a></li>
+        <li><a href="shop-categories.html"><i class="fas fa-sitemap"></i> <span>Shop Categories</span></a></li>
+        <li class="sidebar-divider">My Shop</li>
+        <li><a href="my-shop-settings.html"><i class="fas fa-sliders"></i> <span>Shop Settings</span></a></li>
+        <li><a href="my-products.html"><i class="fas fa-box-open"></i> <span>My Products</span></a></li>
+        <li><a href="my-shop-orders.html"><i class="fas fa-bag-shopping"></i> <span>My Shop Orders</span></a></li>
+        <li><a href="customer-messages.html"><i class="fas fa-comment-dots"></i> <span>Customer Messages<span class="menu-badge-n" id="cmsgBadgeLabel"></span></span></a></li>
+        <li class="sidebar-divider">Account</li>
+        <li><a href="wallet.html"><i class="fas fa-wallet"></i> <span>Wallet</span></a></li>
+        <li><a href="withdrawals.html"><i class="fas fa-money-bill-wave"></i> <span>Withdrawals</span></a></li>
+        <li><a href="courier.html"><i class="fas fa-truck"></i> <span>Courier</span></a></li>
+        <li><a href="messages.html"><i class="fas fa-comments"></i> <span>Messages<span class="menu-badge-n" id="msgBadgeLabel"></span></span></a></li>
+        <li><a href="support.html"><i class="fas fa-headset"></i> <span>Support</span></a></li>
+        <li><a href="profile.html"><i class="fas fa-user-cog"></i> <span>Profile</span></a></li>
+        <li><a href="referral.html"><i class="fas fa-user-plus"></i> <span>Referral</span></a></li>
+        <li><a href="website-integration.html"><i class="fas fa-plug"></i> <span>Website Integration</span></a></li>
+        <li><a href="../index.html"><i class="fas fa-globe"></i> <span>Visit Site</span></a></li>
+        <li><a href="javascript:void(0)" onclick="resellerLogout()" style="color:#dc2626"><i class="fas fa-right-from-bracket"></i> <span>Logout</span></a></li>
+    </ul>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+        <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h2><i class="fas fa-address-book"></i> Customer Information</h2>
+        <div class="topbar-user"><i class="fas fa-user"></i> <span id="userName">User</span></div>
+    </div>
+    <div class="content">
+        <!-- ==========================================================================
+             CUSTOMER INFORMATION  (2026-09-18, this request)
+             --------------------------------------------------------------------------
+             The reseller's own address book, filled in automatically. Two SEPARATE
+             groups, as asked for:
+                · My Shop Customers — registered, logged in or messaged the shop
+                · Order Customers   — an order was placed, from My Shop or the panel
+             One person can appear in both; that is deliberate, so nothing is lost.
+
+             Page-specific CSS ONLY lives in this block. The panel shell (sidebar,
+             topbar, cards, buttons) comes from the SHARED style blocks in <head>,
+             which were copied verbatim from a real panel page — never retyped.
+             ========================================================================== -->
+        <style id="ci-css">
+        /* ===================================================================
+           CUSTOMER INFORMATION — page styling
+           -------------------------------------------------------------------
+           Every rule is namespaced under .ci-* and lives in this block, so it
+           cannot reach any other page or any other part of this one. The panel
+           shell (sidebar, topbar) is styled by the SHARED blocks in <head> and
+           is deliberately not touched here.
+
+           ANIMATION POLICY — a premium FEEL, not a show:
+             · one entrance, one lift, one press. Nothing distracts.
+             · the only looping motion is a slow float on the empty-state icon,
+               which sits on an otherwise static screen.
+             · a phone has no hover, so every hover state is mirrored by an
+               :active state; tap highlight is removed and touch-action is
+               manipulation so the press feels immediate.
+             · the whole set is disabled under prefers-reduced-motion.
+             · the grid only re-renders when its content actually changed, so the
+               entrance never replays on the 8-second refresh.
+           =================================================================== */
+        @keyframes ciRise{from{opacity:0;transform:translateY(15px) scale(.985)}to{opacity:1;transform:none}}
+        @keyframes ciFade{from{opacity:0}to{opacity:1}}
+        @keyframes ciPop{from{opacity:0;transform:translateY(18px) scale(.965)}to{opacity:1;transform:none}}
+        @keyframes ciFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+
+        /* --- THE PAGE ENTRANCE (this request) ---------------------------------
+           The same one the products page uses, verbatim from reseller/products.html:
+           the whole content block rises 20px and fades in, and the grid arrives a
+           beat later so the page assembles rather than appearing all at once.
+           The per-card stagger in .ci-card still runs on top of it, so the cards
+           settle one after another. */
+        @keyframes lxPgUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+        .content > *{animation:lxPgUp .5s ease both}
+        .ci-grid{animation:lxPgUp .5s .2s ease both}
+
+        /* ---------- note bar ---------- */
+        .ci-note{position:relative;overflow:hidden;background:linear-gradient(135deg,#eef2ff,#f5f3ff 55%,#fdf4ff);border:1px solid #ddd6fe;border-radius:16px;padding:14px 18px;font-size:.78rem;color:#3730a3;line-height:1.85;margin-bottom:16px;animation:ciFade .45s ease both}
+        .ci-note::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,#4f46e5,#a855f7)}
+        .ci-note b{color:#312e81}
+
+        /* ---------- tabs + search ---------- */
+        .ci-top{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+        .ci-tab{display:inline-flex;align-items:center;gap:9px;background:#fff;border:1.5px solid #e6ebf3;border-radius:15px;padding:11px 17px;font-size:.84rem;font-weight:800;color:#64748b;cursor:pointer;box-shadow:0 2px 10px rgba(15,23,42,.05);
+            transition:transform .28s cubic-bezier(.22,.9,.32,1),box-shadow .28s,background .28s,color .28s,border-color .28s;
+            -webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+        .ci-tab:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(15,23,42,.1);border-color:#dbe2ee}
+        .ci-tab:active{transform:translateY(0) scale(.97)}
+        .ci-tab i{transition:transform .3s cubic-bezier(.22,.9,.32,1)}
+        .ci-tab:hover i{transform:scale(1.12)}
+        .ci-tab .n{background:#eef2ff;color:#4f46e5;border-radius:20px;padding:1px 9px;font-size:.7rem;font-weight:900;transition:background .28s,color .28s}
+        .ci-tab.on{background:linear-gradient(135deg,#4f46e5,#7c3aed);border-color:transparent;color:#fff;box-shadow:0 10px 24px rgba(79,70,229,.34)}
+        .ci-tab.on:hover{box-shadow:0 14px 30px rgba(79,70,229,.42)}
+        .ci-tab.on .n{background:rgba(255,255,255,.25);color:#fff}
+        .ci-search{flex:1;min-width:220px;display:flex;align-items:center;gap:9px;background:#fff;border:1.5px solid #e6ebf3;border-radius:15px;padding:11px 15px;box-shadow:0 2px 10px rgba(15,23,42,.05);transition:border-color .28s,box-shadow .28s}
+        .ci-search i{color:#94a3b8;transition:color .28s}
+        .ci-search:focus-within{border-color:#a5b4fc;box-shadow:0 0 0 4px rgba(99,102,241,.12),0 6px 18px rgba(15,23,42,.07)}
+        .ci-search:focus-within i{color:#4f46e5}
+        .ci-search input{border:none;outline:none;flex:1;font-size:.86rem;font-family:inherit;background:transparent}
+
+        /* ---------- the grid ---------- */
+        .ci-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+        .ci-card{position:relative;overflow:hidden;background:#fff;border:1px solid #eef2f7;border-radius:17px;padding:16px;box-shadow:0 3px 14px rgba(15,23,42,.05);display:flex;flex-direction:column;gap:12px;
+            animation:ciRise .5s cubic-bezier(.22,.9,.32,1) both;
+            transition:transform .3s cubic-bezier(.22,.9,.32,1),box-shadow .3s,border-color .3s;
+            -webkit-tap-highlight-color:transparent}
+        /* a hairline of brand colour that fades in on hover / press */
+        .ci-card::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,#4f46e5,#a855f7);opacity:0;transition:opacity .3s}
+        .ci-card:hover{transform:translateY(-4px);box-shadow:0 18px 36px rgba(15,23,42,.11);border-color:#e6e9f5}
+        .ci-card:hover::before{opacity:1}
+        .ci-card:active{transform:translateY(-1px) scale(.995)}
+        .ci-hd{display:flex;gap:11px;align-items:center}
+        .ci-av{width:46px;height:46px;border-radius:15px;background:linear-gradient(135deg,#4f46e5,#7c3aed 60%,#a855f7);background-size:180% 180%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.05rem;flex:none;box-shadow:0 6px 16px rgba(79,70,229,.28);transition:background-position .55s ease,transform .35s cubic-bezier(.22,.9,.32,1)}
+        .ci-card:hover .ci-av{background-position:100% 0;transform:scale(1.05)}
+        .ci-who{min-width:0;flex:1}
+        .ci-nm{font-size:.9rem;font-weight:900;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .ci-ph{font-size:.78rem;font-weight:700;color:#475569;margin-top:3px;letter-spacing:.2px}
+        .ci-ad{font-size:.74rem;color:#94a3b8;line-height:1.55;display:flex;gap:7px;align-items:flex-start}
+        .ci-sep{color:#cbd5e1;margin:0 2px}
+        .ci-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        @media(max-width:520px){ .ci-2col{grid-template-columns:1fr} }
+        /* ---- the My Shop ORDERS cards (this request) ---- */
+        .ci-ord-card{gap:9px}
+        .ci-ord-h{display:flex;align-items:center;justify-content:space-between;gap:10px}
+        .ci-ord-h b{font-size:.86rem;font-weight:900;color:#0f172a}
+        .ci-ord-st{font-size:.6rem;font-weight:900;padding:2px 10px;border-radius:20px;background:#f1f5f9;color:#475569;text-transform:capitalize;white-space:nowrap}
+        .ci-ord-st.delivered,.ci-ord-st.confirmed,.ci-ord-st.completed{background:#dcfce7;color:#15803d}
+        .ci-ord-st.cancelled,.ci-ord-st.returned,.ci-ord-st.failed_delivery,.ci-ord-st.rejected{background:#fee2e2;color:#b91c1c}
+        .ci-ord-st.pending,.ci-ord-st.new,.ci-ord-st.packaging{background:#fef3c7;color:#b45309}
+        .ci-ord-st.shipped,.ci-ord-st.shipping{background:#e0e7ff;color:#4338ca}
+        .ci-ord-c{font-size:.76rem;color:#475569;font-weight:700}
+        .ci-ord-c i{color:#94a3b8;font-size:.7rem;margin-right:3px}
+        .ci-ord-a{font-size:.72rem;color:#94a3b8;line-height:1.5}
+        .ci-ord-a i{color:#cbd5e1;margin-right:4px}
+        .ci-ord-i{font-size:.78rem;color:#334155;background:#f8fafc;border:1px solid #eef2f7;border-radius:10px;padding:8px 11px;line-height:1.5}
+        .ci-ord-f{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:2px}
+        .ci-ord-f span{font-size:.72rem;font-weight:800;color:#94a3b8}
+        .ci-ord-f b{font-size:.9rem;font-weight:900;color:#0f172a}
+        /* ---- the full-profile modal (this request) ---- */
+        .ci-tap{cursor:pointer;border-radius:12px;transition:background .2s}
+        .ci-tap:hover{background:#f8faff}
+        .ci-more{color:#c7d2e4;font-size:.8rem;flex:none;transition:transform .22s,color .22s}
+        .ci-tap:hover .ci-more{transform:translateX(3px);color:#4f46e5}
+        .ci-ov .box.cp{max-width:560px}
+        .ci-ov .box.cp .bd{max-height:70vh;overflow-y:auto}
+        .cp-id{display:flex;gap:13px;align-items:center;margin-bottom:16px}
+        .cp-av{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.2rem;flex:none;box-shadow:0 6px 16px rgba(79,70,229,.28)}
+        .cp-who{min-width:0;flex:1}
+        .cp-who b{font-size:1.02rem;font-weight:900;color:#0f172a;display:block}
+        .cp-ph{font-size:.82rem;font-weight:700;color:#475569;margin-top:3px}
+        .cp-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+        .cp-tag{display:inline-flex;align-items:center;gap:5px;font-size:.62rem;font-weight:900;padding:3px 10px;border-radius:20px;background:#f1f5f9;color:#475569}
+        .cp-tag.on{background:#dcfce7;color:#15803d}
+        .cp-tag.off{background:#f1f5f9;color:#94a3b8}
+        .cp-tag.acc{background:#eef2ff;color:#4338ca}
+        .cp-tag.on i{font-size:.5rem}
+        .cp-sec{margin-bottom:16px}
+        .cp-sec h5{font-size:.72rem;font-weight:900;color:#64748b;letter-spacing:.4px;text-transform:uppercase;margin-bottom:9px;display:flex;align-items:center;gap:7px}
+        .cp-sec h5 i{color:#4f46e5}
+        .cp-addr{font-size:.82rem;color:#334155;line-height:1.75;background:#f8fafc;border:1px solid #eef2f7;border-radius:12px;padding:11px 14px}
+        .cp-none{font-size:.8rem;color:#94a3b8;padding:10px 2px}
+        .cp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+        .cp-stat{background:linear-gradient(135deg,#eef2ff,#f5f3ff);border:1px solid #e0e7ff;border-radius:13px;padding:12px 8px;text-align:center}
+        .cp-stat .v{display:block;font-size:1rem;font-weight:900;color:#4338ca;line-height:1.3}
+        .cp-stat .l{display:block;font-size:.66rem;font-weight:800;color:#6366f1;margin-top:3px}
+        .cp-dates{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+        .cp-dates div{background:#f8fafc;border:1px solid #eef2f7;border-radius:11px;padding:9px 12px}
+        .cp-dates span{display:block;font-size:.66rem;font-weight:800;color:#94a3b8}
+        .cp-dates b{display:block;font-size:.8rem;font-weight:800;color:#334155;margin-top:2px}
+        .cp-orders{display:flex;flex-direction:column;gap:8px}
+        .cp-ord{background:#fff;border:1px solid #eef2f7;border-radius:12px;padding:11px 13px;box-shadow:0 2px 8px rgba(15,23,42,.04)}
+        .cp-ord-h{display:flex;justify-content:space-between;gap:10px;font-size:.78rem;font-weight:900;color:#0f172a}
+        .cp-ord-h span{font-weight:700;color:#94a3b8;font-size:.72rem}
+        .cp-ord-i{font-size:.76rem;color:#475569;margin-top:5px;line-height:1.5}
+        .cp-ord-f{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:7px}
+        .cp-ord-f b{font-size:.84rem;font-weight:900;color:#0f172a}
+        .cp-ord-f .st{font-size:.6rem;font-weight:900;padding:2px 9px;border-radius:20px;background:#f1f5f9;color:#475569;text-transform:capitalize}
+        .cp-ord-f .st.delivered,.cp-ord-f .st.confirmed{background:#dcfce7;color:#15803d}
+        .cp-ord-f .st.cancelled,.cp-ord-f .st.returned,.cp-ord-f .st.failed_delivery{background:#fee2e2;color:#b91c1c}
+        .cp-ord-f .st.pending,.cp-ord-f .st.new{background:#fef3c7;color:#b45309}
+        @media(max-width:520px){ .cp-stats{grid-template-columns:1fr 1fr} .cp-dates{grid-template-columns:1fr} }
+        .ci-src{display:inline-flex;align-items:center;gap:6px;font-size:.62rem;font-weight:900;padding:3px 10px;border-radius:20px;background:#f1f5f9;color:#475569;width:fit-content}
+        .ci-src.m{background:#dcfce7;color:#166534}
+        .ci-src.o{background:#eef2ff;color:#4338ca}
+
+        /* ---------- actions ---------- */
+        .ci-ops{display:flex;gap:7px;margin-top:auto}
+        .ci-ops button{border:none;border-radius:12px;padding:10px 8px;font-size:.75rem;font-weight:800;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+            transition:transform .22s cubic-bezier(.22,.9,.32,1),box-shadow .22s,filter .22s;
+            -webkit-tap-highlight-color:transparent;touch-action:manipulation}
+        .ci-ops button:hover{transform:translateY(-2px)}
+        .ci-ops button:active{transform:translateY(0) scale(.94)}
+        .ci-ops .ord{flex:1;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;box-shadow:0 5px 14px rgba(79,70,229,.3)}
+        .ci-ops .ord:hover{box-shadow:0 10px 22px rgba(79,70,229,.42);filter:brightness(1.05)}
+        .ci-ops .ed{background:#eef2ff;color:#4f46e5;padding:10px 13px}
+        .ci-ops .ed:hover{background:#e0e7ff}
+        .ci-ops .del{background:#fee2e2;color:#dc2626;padding:10px 13px}
+        .ci-ops .del:hover{background:#fecaca}
+
+        /* ---------- empty state ---------- */
+        .ci-empty{grid-column:1/-1;background:#fff;border:1px dashed #dbe3ee;border-radius:20px;padding:56px 22px;text-align:center;color:#94a3b8;font-size:.86rem;line-height:1.85;animation:ciFade .5s ease both}
+        .ci-empty i{font-size:2.6rem;display:block;margin-bottom:14px;opacity:.35;animation:ciFloat 3.6s ease-in-out infinite}
+        .ci-empty b{display:block;color:#475569;font-size:.95rem;margin-bottom:7px}
+
+        /* ---------- edit modal ---------- */
+        .ci-ov{position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:1200;display:flex;align-items:center;justify-content:center;padding:16px;animation:ciFade .2s ease both}
+        .ci-ov .box{background:#fff;border-radius:20px;max-width:470px;width:100%;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.4);animation:ciPop .34s cubic-bezier(.22,.9,.32,1.1) both}
+        .ci-ov .hd{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #eef2f7;background:#f8fafc}
+        .ci-ov .hd b{font-size:.96rem;font-weight:900;display:flex;align-items:center;gap:8px}
+        .ci-ov .hd b i{color:#4f46e5}
+        .ci-ov .hd button{border:none;background:none;font-size:1.6rem;line-height:1;color:#94a3b8;cursor:pointer;transition:color .2s,transform .2s;-webkit-tap-highlight-color:transparent}
+        .ci-ov .hd button:hover{color:#dc2626;transform:rotate(90deg)}
+        .ci-ov .bd{padding:19px 20px}
+        .ci-ov .f{margin-bottom:15px}
+        .ci-ov .f label{display:block;font-size:.78rem;font-weight:900;color:#334155;margin-bottom:7px}
+        .ci-ov .f input,.ci-ov .f textarea{width:100%;padding:11px 13px;border:1.5px solid #e2e8f0;border-radius:12px;font-size:.86rem;font-family:inherit;transition:border-color .22s,box-shadow .22s}
+        .ci-ov .f input:focus,.ci-ov .f textarea:focus{outline:none;border-color:#4f46e5;box-shadow:0 0 0 4px rgba(79,70,229,.12)}
+        .ci-ov .ft{display:flex;gap:9px;justify-content:flex-end;padding:15px 20px;border-top:1px solid #eef2f7;background:#f8fafc}
+        .ci-ov .ft button{border:none;border-radius:12px;padding:11px 20px;font-size:.83rem;font-weight:800;cursor:pointer;font-family:inherit;transition:transform .2s,box-shadow .2s,filter .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+        .ci-ov .ft button:hover{transform:translateY(-1px)}
+        .ci-ov .ft button:active{transform:translateY(0) scale(.96)}
+        .ci-ov .ft .gh{background:#e2e8f0;color:#334155}
+        .ci-ov .ft .pri{background:linear-gradient(135deg,#4f46e5,#4338ca);color:#fff;box-shadow:0 6px 16px rgba(79,70,229,.3)}
+        .ci-ov .ft .pri:hover{box-shadow:0 10px 22px rgba(79,70,229,.42);filter:brightness(1.05)}
+
+        /* ---------- phone ----------
+           A phone has no hover, so the press states carry the whole feel: a
+           shorter entrance (less waiting), a real :active response, and no tap
+           highlight or double-tap delay. */
+        @media(max-width:560px){
+            .ci-grid{grid-template-columns:1fr}
+            .ci-search{min-width:100%}
+            .ci-card{animation-duration:.36s}
+            .ci-card:hover{transform:none;box-shadow:0 3px 14px rgba(15,23,42,.05)}
+            .ci-card:active{transform:scale(.985);box-shadow:0 10px 22px rgba(15,23,42,.1)}
+            .ci-card:active::before{opacity:1}
+            .ci-tab{flex:1;justify-content:center}
+            .ci-tab:hover{transform:none}
+        }
+        /* somebody who asked their device to calm down gets a calm page */
+        @media(prefers-reduced-motion:reduce){
+            .ci-note,.ci-card,.ci-empty,.ci-ov,.ci-ov .box,.content > *,.ci-grid{animation:none !important}
+            .ci-empty i{animation:none !important}
+            .ci-tab,.ci-card,.ci-av,.ci-ops button,.ci-ov .ft button,.ci-ov .hd button{transition:none !important}
+        }
+        </style>
+
+        <div class="ci-note">
+            <b><i class="fas fa-wand-magic-sparkles"></i> এই লিস্টটা নিজে থেকেই ভরে যায়।</b>
+            আপনার My Shop-এ কেউ <b>রেজিস্টার</b> বা <b>লগইন</b> করলে, <b>মেসেজ</b> দিলে — তারা
+            <b>My Shop Customers</b>-এ যোগ হয়। আর কেউ <b>অর্ডার</b> দিলে (আপনার My Shop থেকে, বা আপনি নিজে
+            প্যানেল থেকে) — তারা <b>Order Customers</b>-এ যোগ হয়।<br>
+            <b>Order</b> বাটনে চাপলে সরাসরি Add New Order পেজে যাবে, আর নাম, নাম্বার, ঠিকানা
+            <b>নিজে থেকেই বসে যাবে</b> — শুধু প্রোডাক্ট বেছে অর্ডার করে দিলেই হবে।
+        </div>
+
+        <div class="ci-top">
+            <div class="ci-tab on" id="ciTabMy" onclick="ciTab('my')">
+                <i class="fas fa-user-check"></i> My Shop Customers <span class="n" id="ciNMy">0</span>
+            </div>
+            <div class="ci-tab" id="ciTabOrd" onclick="ciTab('ord')">
+                <i class="fas fa-bag-shopping"></i> Order Customers <span class="n" id="ciNOrd">0</span>
+            </div>
+            <div class="ci-tab" id="ciTabShop" onclick="ciTab('shop')">
+                <i class="fas fa-store"></i> My Shop Orders <span class="n" id="ciNShop">0</span>
+            </div>
+            <div class="ci-search">
+                <i class="fas fa-magnifying-glass"></i>
+                <input type="text" id="ciQ" placeholder="নাম বা ফোন নাম্বার দিয়ে খুঁজুন…" oninput="ciPaint()">
+            </div>
+        </div>
+
+        <div class="ci-grid" id="ciGrid"></div>
+    </div>
+</main>
+<div class="toast" id="toast"></div>
+<script src="../app.js"></script>
+<script>
+/* ===========================================================================
+   Customer Information  (2026-09-18, this request)
+   ---------------------------------------------------------------------------
+   Two SEPARATE groups, both read from the data layer so the page can never
+   disagree with what was actually captured:
+       ciMyShopCustomers(rid) — registered / logged in / messaged the shop
+       ciOrderCustomers(rid)  — placed an order, from My Shop or from the panel
+   Both are keyed by THIS reseller's id first, so another shop's customer can
+   never appear here.
+
+   The "Order" button hands the customer to order.html through sessionStorage —
+   never the URL, because an address is long and a customer's details do not
+   belong in browser history.
+   =========================================================================== */
+(function(){
+    var uid = sessionStorage.getItem('user_id');
+    if (!uid || sessionStorage.getItem('user_type') !== 'reseller') { window.location.replace('login.html'); return; }
+
+    /* The mobile sidebar drawer toggle. This lives in the trailing script of the
+       page this one was built from, and replacing that script dropped it — so the
+       hamburger AND the bottom nav's "Menu" button both threw
+       "toggleSidebar is not defined" and the drawer never opened.
+       Same implementation as every other reseller page. */
+    window.toggleSidebar = function (open) {
+        var sb = document.getElementById('sidebar');
+        var ov = document.getElementById('sideOverlay');
+        if (sb && open === undefined) open = !sb.classList.contains('open');
+        if (sb) sb.classList.toggle('open', open);
+        if (ov) ov.classList.toggle('show', !!open);
+        /* app.js's shared version marks the body so the mobile bottom nav slides
+           away while the drawer is open. Do the same here, so both pages behave
+           identically and without relying on :has(). */
+        document.body.classList.toggle('sb-open', !!open);
+    };
+
+    var RID = String(uid);
+    var tab = 'my';
+    /* the last HTML written into the grid — see the guard in ciPaint() */
+    var lastHTML = null;
+
+    var SRC = {
+        register:       { t: 'My Shop রেজিস্ট্রেশন', c: 'm' },
+        login:          { t: 'My Shop লগইন',        c: 'm' },
+        chat:           { t: 'My Shop মেসেজ',       c: 'm' },
+        'myshop-order': { t: 'My Shop অর্ডার',      c: 'o' },
+        'panel-order':  { t: 'প্যানেল অর্ডার',       c: 'o' }
+    };
+
+    function txt(s){ return String(s === undefined || s === null ? '' : s); }
+    function e2(s){ return (typeof esc === 'function') ? esc(txt(s)) : txt(s); }
+    function jsId(v){ return txt(v).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+    function initial(n){
+        var t = txt(n).trim();
+        return t ? e2(t.charAt(0).toUpperCase()) : '<i class="fas fa-user"></i>';
+    }
+    function srcChip(x){
+        var s = SRC[txt(x.source)];
+        if (!s) return '';
+        return '<span class="ci-src ' + s.c + '"><i class="fas ' +
+               (s.c === 'm' ? 'fa-user-check' : 'fa-bag-shopping') + '"></i> ' + e2(s.t) + '</span>';
+    }
+    /* The full address line: street address AND the thana / district the order
+       form keeps in its own dropdowns. Showing them together is the whole point —
+       they are what the reseller would otherwise retype on every order. */
+    function addrLine(x){
+        var parts = [];
+        if (txt(x.address)) parts.push(e2(x.address));
+        var dt = [txt(x.thana), txt(x.district)].filter(function (v) { return v; }).map(e2).join(', ');
+        if (dt) parts.push(dt);
+        if (!parts.length) return '';
+        return '<div class="ci-ad"><i class="fas fa-location-dot" style="margin-top:3px"></i><span>' +
+               parts.join(' <span class="ci-sep">•</span> ') + '</span></div>';
+    }
+    function groupList(){
+        try {
+            if (tab === 'ord') return (typeof ciOrderCustomers === 'function') ? ciOrderCustomers(RID) : [];
+            if (tab === 'shop') return (typeof ciShopOrderCustomers === 'function') ? ciShopOrderCustomers(RID) : [];
+            return (typeof ciMyShopCustomers === 'function') ? ciMyShopCustomers(RID) : [];
+        } catch (e) { return []; }
+    }
+
+    window.ciTab = function(t){
+        tab = (t === 'ord') ? 'ord' : (t === 'shop' ? 'shop' : 'my');
+        var a = document.getElementById('ciTabMy'), b = document.getElementById('ciTabOrd'), c = document.getElementById('ciTabShop');
+        if (a) a.classList.toggle('on', tab === 'my');
+        if (b) b.classList.toggle('on', tab === 'ord');
+        if (c) c.classList.toggle('on', tab === 'shop');
+        lastHTML = null;                 /* a tab change always re-renders */
+        ciPaint();
+    };
+
+    window.ciPaint = function(){
+        var mine = [], ord = [];
+        try { mine = (typeof ciMyShopCustomers === 'function') ? ciMyShopCustomers(RID) : []; } catch (e) {}
+        try { ord  = (typeof ciOrderCustomers === 'function') ? ciOrderCustomers(RID) : []; } catch (e) {}
+
+        var nMy = document.getElementById('ciNMy'), nOrd = document.getElementById('ciNOrd'), nSh = document.getElementById('ciNShop');
+        if (nMy) nMy.textContent = mine.length;
+        if (nOrd) nOrd.textContent = ord.length;
+        /* the THIRD group — the people who ordered FROM the shop, with or without
+           registering. Same CONTACT RECORDS as the other two, so the Order button
+           works exactly the same way. */
+        var shopCust = [];
+        try { shopCust = (typeof ciShopOrderCustomers === 'function') ? ciShopOrderCustomers(RID) : []; } catch (e) { shopCust = []; }
+        if (nSh) nSh.textContent = shopCust.length;
+
+        var list = groupList();
+        var qEl = document.getElementById('ciQ');
+        var q = qEl ? txt(qEl.value).trim().toLowerCase() : '';
+        var digits = q.replace(/\D/g, '');
+        if (q) {
+            list = list.filter(function(c){
+                if (txt(c.name).toLowerCase().indexOf(q) !== -1) return true;
+                return !!(digits && txt(c.phone).indexOf(digits) !== -1);
+            });
+        }
+
+        var grid = document.getElementById('ciGrid');
+        if (!grid) return;
+
+        var html;
+        if (!list.length) {
+            var msg = q
+                ? '<b>কিছু পাওয়া যায়নি</b>এই নামে বা নাম্বারে কোনো কাস্টমার নেই।'
+                : (tab === 'ord'
+                    ? '<b>এখনো কোনো অর্ডার-কাস্টমার নেই</b>কেউ আপনার My Shop থেকে অর্ডার দিলে, অথবা আপনি প্যানেল থেকে অর্ডার দিলে — তারা এখানে যোগ হবে।'
+                    : (tab === 'shop'
+                        ? '<b>এখনো My Shop থেকে কেউ অর্ডার করেনি</b>কেউ আপনার My Shop থেকে অর্ডার করলে তার নাম, নাম্বার ও ঠিকানা এখানে সেভ হবে — পরের অর্ডার এক ক্লিকে।'
+                        : '<b>এখনো কোনো My Shop কাস্টমার নেই</b>আপনার My Shop-এ কেউ লগইন / রেজিস্ট্রেশন করলে বা মেসেজ দিলে — তারা এখানে যোগ হবে।'));
+            html = '<div class="ci-empty"><i class="fas fa-address-book"></i>' + msg + '</div>';
+        } else {
+            var h = '';
+            for (var i = 0; i < list.length; i++) {
+                var x = list[i];
+                /* a short stagger so the cards arrive one after another. Capped at
+                   8 so a long list never feels like it is loading slowly. */
+                var delay = Math.min(i, 8) * 0.045;
+                h += '<div class="ci-card" style="animation-delay:' + delay.toFixed(3) + 's">' +
+                    '<div class="ci-hd ci-tap" onclick="ciProfile(\'' + jsId(x.id) + '\')" title="পুরো বিস্তারিত দেখুন">' +
+                      '<span class="ci-av">' + initial(x.name) + '</span>' +
+                      '<span class="ci-who">' +
+                        '<div class="ci-nm">' + (e2(x.name) || '(নাম নেই)') + '</div>' +
+                        '<div class="ci-ph"><i class="fas fa-phone" style="opacity:.55"></i> ' + e2(x.phone) + '</div>' +
+                      '</span>' +
+                      '<i class="fas fa-chevron-right ci-more"></i>' +
+                    '</div>' +
+                    addrLine(x) +
+                    srcChip(x) +
+                    '<div class="ci-ops">' +
+                      '<button class="ord" onclick="ciOrder(\'' + jsId(x.id) + '\')"><i class="fas fa-cart-plus"></i> Order</button>' +
+                      '<button class="ed" title="সম্পাদনা" onclick="ciEdit(\'' + jsId(x.id) + '\')"><i class="fas fa-pen"></i></button>' +
+                      '<button class="del" title="মুছুন" onclick="ciDelete(\'' + jsId(x.id) + '\')"><i class="fas fa-trash"></i></button>' +
+                    '</div></div>';
+            }
+            html = h;
+        }
+
+        /* Only touch the DOM when the content actually changed. The 8-second
+           refresh used to rewrite the grid every time, which would replay the
+           entrance animation on a list nobody changed. */
+        if (html === lastHTML) return;
+        lastHTML = html;
+        grid.innerHTML = html;
+    };
+
+    /* The whole point of the feature: hand the customer to order.html so the name,
+       number and address are already filled in. */
+    window.ciOrder = function(id){
+        var c = null;
+        try { c = ciFind(RID, id); } catch (e) {}
+        if (!c) { showToast('কাস্টমারটি পাওয়া যায়নি।','error'); return; }
+        try { if (typeof ciSetOrderPrefill === 'function') ciSetOrderPrefill(c); } catch (e) {}
+        window.location.href = 'order.html?from=customer';
+    };
+
+    window.ciEdit = function(id){
+        var c = null;
+        try { c = ciFind(RID, id); } catch (e) {}
+        if (!c) { showToast('কাস্টমারটি পাওয়া যায়নি।','error'); return; }
+        var ov = document.createElement('div');
+        ov.className = 'ci-ov'; ov.id = 'ciOv';
+        ov.innerHTML =
+          '<div class="box">' +
+            '<div class="hd"><b><i class="fas fa-pen"></i> কাস্টমার সম্পাদনা</b>' +
+            '<button type="button" onclick="ciClose()">&times;</button></div>' +
+            '<div class="bd">' +
+              '<div class="f"><label>নাম</label><input id="ciEName" value="' + e2(c.name) + '"></div>' +
+              '<div class="f"><label>ফোন নাম্বার</label><input id="ciEPhone" value="' + e2(c.phone) + '" maxlength="14"></div>' +
+              '<div class="f"><label>ঠিকানা</label><textarea id="ciEAddr" rows="2">' + e2(c.address) + '</textarea></div>' +
+              '<div class="ci-2col">' +
+                '<div class="f"><label>জেলা (District)</label><input id="ciEDist" value="' + e2(c.district) + '"></div>' +
+                '<div class="f"><label>থানা / উপজেলা</label><input id="ciEThana" value="' + e2(c.thana) + '"></div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="ft"><button type="button" class="gh" onclick="ciClose()">বাতিল</button>' +
+            '<button type="button" class="pri" onclick="ciSave(\'' + jsId(c.id) + '\')"><i class="fas fa-check"></i> সেভ করুন</button></div>' +
+          '</div>';
+        ov.onclick = function(ev){ if (ev.target === ov) ciClose(); };
+        document.body.appendChild(ov);
+        try { document.getElementById('ciEName').focus(); } catch (e) {}
+    };
+    window.ciClose = function(){
+        var ov = document.getElementById('ciOv');
+        if (ov && ov.parentNode) ov.parentNode.removeChild(ov);
+    };
+    window.ciSave = function(id){
+        function v(el){ var e = document.getElementById(el); return e ? String(e.value || '') : ''; }
+        var r = null;
+        try { r = ciUpdate(RID, id, { name: v('ciEName'), phone: v('ciEPhone'), address: v('ciEAddr'),
+                                      district: v('ciEDist'), thana: v('ciEThana') }); }
+        catch (e) { r = { ok:false, message:'সেভ করা যায়নি।' }; }
+        if (!r || !r.ok) { showToast((r && r.message) || 'সেভ করা যায়নি।','error'); return; }
+        ciClose(); ciPaint();
+        showToast('কাস্টমারের তথ্য সেভ হয়েছে ✓','success');
+    };
+    window.ciDelete = function(id){
+        var c = null;
+        try { c = ciFind(RID, id); } catch (e) {}
+        if (!c) return;
+        if (!confirm('"' + (c.name || c.phone) + '" কে Customer Information থেকে মুছে ফেলবেন?\n\n(তার অর্ডার বা My Shop অ্যাকাউন্ট মুছবে না — শুধু এই লিস্ট থেকে সরে যাবে।)')) return;
+        var ok = false;
+        try { ok = ciRemove(RID, id); } catch (e) {}
+        if (!ok) { showToast('মুছে ফেলা যায়নি।','error'); return; }
+        ciPaint();
+        showToast('কাস্টমার মুছে ফেলা হয়েছে ✓','success');
+    };
+
+    /* ---- the full profile (this request) -----------------------------------
+       Everything about one customer: full address, how many orders, how many
+       products, what they bought and when, when they joined, and whether they
+       are online right now. Assembled by customerProfile() in app.js so the
+       admin's page shows exactly the same facts. */
+    window.ciProfile = function(id){
+        var c = null;
+        try { c = ciFind(RID, id); } catch (e) {}
+        if (!c) { showToast('কাস্টমারটি পাওয়া যায়নি।','error'); return; }
+        var prof = null;
+        try { prof = customerProfile(RID, c.phone, c); } catch (e) { prof = null; }
+        if (!prof) { showToast('তথ্য লোড করা যায়নি।','error'); return; }
+        var ov = document.createElement('div');
+        ov.className = 'ci-ov'; ov.id = 'ciProfOv';
+        ov.innerHTML = '<div class="box cp">' +
+            '<div class="hd"><b><i class="fas fa-id-card"></i> কাস্টমারের বিস্তারিত</b>' +
+            '<button type="button" onclick="ciProfileClose()">&times;</button></div>' +
+            '<div class="bd">' + customerProfileHtml(prof) + '</div>' +
+            '<div class="ft">' +
+              '<button type="button" class="gh" onclick="ciProfileClose()">বন্ধ করুন</button>' +
+              '<button type="button" class="pri" onclick="ciProfileClose();ciOrder(\'' + jsId(c.id) + '\')">' +
+              '<i class="fas fa-cart-plus"></i> এই কাস্টমারের অর্ডার</button>' +
+            '</div></div>';
+        ov.onclick = function (ev) { if (ev.target === ov) window.ciProfileClose(); };
+        document.body.appendChild(ov);
+    };
+    window.ciProfileClose = function(){
+        var o = document.getElementById('ciProfOv');
+        if (o && o.parentNode) o.parentNode.removeChild(o);
+    };
+
+    /* Open on the tab that actually has something. The page used to always open on
+       "My Shop Customers"; a reseller who only ever places PANEL orders therefore
+       landed on an empty list and reasonably concluded their whole address book had
+       been wiped. Nothing was ever deleted — the wrong tab was showing. */
+    try {
+        var _n0 = (typeof ciMyShopCustomers === 'function') ? ciMyShopCustomers(RID).length : 0;
+        var _o0 = (typeof ciOrderCustomers === 'function') ? ciOrderCustomers(RID).length : 0;
+        if (!_n0 && _o0) tab = 'ord';
+        else if (!_n0 && !_o0) {
+            /* no customers at all — but if the shop HAS taken orders, open on those
+               rather than on an empty customer list */
+            var _s0 = (typeof ciShopOrders === 'function') ? ciShopOrders(RID).length : 0;
+            if (_s0) tab = 'shop';
+        }
+    } catch (e) { }
+    ciTab(tab);
+    ciPaint();
+    setInterval(ciPaint, 8000);
+})();
+</script>
+</body>
+</html>

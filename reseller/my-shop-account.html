@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>My Account - My Shop</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%); padding: 20px; overflow-x:hidden; }
+    .login-card { background: white; border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); width: 100%; max-width: 420px; padding: 45px 35px; }
+    .icon-circle { width: 80px; height: 80px; background: linear-gradient(135deg, #2563eb, #1e40af); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 2rem; box-shadow: 0 10px 25px rgba(37,99,235,0.3); }
+    h1 { text-align: center; font-size: 1.7rem; margin-bottom: 8px; color: #1e293b; }
+    .subtitle { text-align: center; color: #64748b; margin-bottom: 30px; font-size: 0.95rem; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 7px; font-size: 0.9rem; color: #334155; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 13px 15px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 0.95rem; box-sizing: border-box; font-family: inherit; }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: #2563eb; }
+    .btn { width: 100%; padding: 14px; border-radius: 10px; font-weight: 700; font-size: 1rem; cursor: pointer; border: none; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; }
+    .btn-primary { background: linear-gradient(135deg, #2563eb, #1e40af); color: white; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(37,99,235,0.3); }
+    .btn-ghost { background: #f1f5f9; color: #475569; }
+    .back-link { text-align: center; margin-top: 20px; }
+    .back-link a { color: #2563eb; text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+    .error-msg { background: #fee2e2; color: #dc2626; padding: 10px 14px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9rem; display: none; text-align: center; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 22px; }
+    .tabs button { flex: 1; padding: 10px; border: 2px solid #e2e8f0; background: #fff; border-radius: 10px; font-weight: 700; font-size: .85rem; cursor: pointer; font-family: inherit; color: #475569; }
+    .tabs button.on { background: linear-gradient(135deg,#2563eb,#1e40af); color: #fff; border-color: transparent; }
+    /* logged-in view needs more room than the login card */
+    .wide { max-width: 760px; padding: 35px 30px; }
+    .kv { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px dashed #eef2f6; font-size: .88rem; }
+    .kv:last-child { border-bottom: none; }
+    .kv .k { color: #64748b; font-weight: 600; }
+    .kv .v { font-weight: 700; text-align: right; word-break: break-word; }
+    .badge { padding: 3px 11px; border-radius: 20px; font-size: .68rem; font-weight: 900; text-transform: uppercase; }
+    .b-ap { background: #dcfce7; color: #15803d; }
+    .b-pe { background: #fef3c7; color: #b45309; }
+    .b-da { background: #fee2e2; color: #b91c1c; }
+    .ord { border: 1px solid #eef2f6; border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+    .ord-h { padding: 10px 13px; background: #f8fafc; display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap; cursor: pointer; font-size: .85rem; }
+    .ord-b { padding: 10px 13px; border-top: 1px solid #f1f5f9; display: none; font-size: .82rem; }
+    .ord-b.on { display: block; }
+    .nav-tabs { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 16px; }
+    .nav-tabs button { border: 2px solid #e2e8f0; background: #fff; border-radius: 10px; padding: 8px 14px; font-size: .82rem; font-weight: 700; cursor: pointer; font-family: inherit; color: #475569; }
+    .nav-tabs button.on { background: linear-gradient(135deg,#2563eb,#1e40af); color: #fff; border-color: transparent; }
+</style>
+<style>
+/* same polish animation as the reseller login page */
+@keyframes lxUp{from{opacity:0;transform:translateY(30px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes lxBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@keyframes lxField{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.login-card{animation:lxUp .65s cubic-bezier(.2,.8,.3,1) both}
+.icon-circle{animation:lxBob 4.5s ease-in-out infinite}
+/* Part 5 — the FULL polish layer from reseller/login.html, so the customer
+   screens animate and respond exactly like the reseller ones (staggered field
+   reveal, focus lift, button hover). Visual only — no behaviour change. */
+.form-group{animation:lxField .5s ease both}
+.form-group:nth-of-type(1){animation-delay:.15s}
+.form-group:nth-of-type(2){animation-delay:.25s}
+.form-group:nth-of-type(3){animation-delay:.35s}
+.form-group:nth-of-type(4){animation-delay:.45s}
+.form-group:nth-of-type(5){animation-delay:.55s}
+input:focus,select:focus,textarea:focus{transform:translateY(-1px);transition:all .25s !important}
+.btn-primary{transition:all .28s !important;position:relative;overflow:hidden}
+.btn-primary:hover{transform:translateY(-2px) !important;filter:brightness(1.08);box-shadow:0 12px 26px rgba(15,23,42,.22) !important}
+</style>
+<style>
+/* ===== Part 5 — REGISTER tab styled after reseller/register.html =====
+   The reseller registration page has its own visual language: a GREEN icon
+   circle, a section title, and labels that mark required / optional fields.
+   The customer Register tab now uses that same language, while keeping ONLY
+   customer fields (name / phone / email / password / address). Login is
+   unchanged and still matches reseller/login.html. */
+.login-card.reg .icon-circle{background:#d1fae5;color:#10b981;box-shadow:0 10px 25px rgba(16,185,129,.28)}
+.login-card.reg h1{color:#1e293b}
+.step-title{font-size:1.05rem;margin:0 0 16px;color:#1e293b;font-weight:800;display:flex;align-items:center;gap:8px}
+.step-title i{color:#10b981}
+.form-group label .req{color:#ef4444;margin-left:2px}
+.form-group label .opt{color:#94a3b8;font-weight:400;font-size:.78rem;margin-left:4px}
+/* the register card uses the slightly tighter input metrics of the register page */
+.login-card.reg .form-group{margin-bottom:14px}
+.login-card.reg .form-group label{margin-bottom:5px;font-size:.88rem}
+.login-card.reg .form-group input,.login-card.reg .form-group textarea{padding:11px 14px;border-radius:8px;font-size:.92rem}
+</style>
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH (same design as the Reseller Login page) ============ -->
+<div class="login-card" id="cardAuth">
+    <div class="icon-circle"><i class="fas fa-user-circle"></i></div>
+    <h1 id="authTitle">Customer Login</h1>
+    <p class="subtitle" id="authSub">আপনার একাউন্টে লগিন করুন</p>
+
+    <div class="tabs">
+        <button class="on" id="tbLogin" onclick="setAuthTab('login')">Login</button>
+        <button id="tbReg" onclick="setAuthTab('reg')">Register</button>
+    </div>
+
+    <div class="error-msg" id="authErr"></div>
+
+    <div id="formLogin">
+        <div class="form-group"><label>Phone</label><input id="lgPhone" placeholder="01XXXXXXXXX" autocomplete="off"></div>
+        <div class="form-group"><label>Password</label><input id="lgPass" type="password" placeholder="Password"></div>
+        <button class="btn btn-primary" onclick="doLogin()"><i class="fas fa-right-to-bracket"></i> Login</button>
+        <!-- 2026-09-17 — FORGOT PASSWORD (this request). Same three-step flow the
+             reseller, supplier and admin logins already use: verify the account,
+             get a code by Gmail draft, then set a new password. This page is the
+             only panel that was missing it. -->
+        <div style="text-align:right;margin-top:10px">
+            <a href="#" onclick="fpShowCust();return false;" style="color:#2563eb;font-size:.82rem;font-weight:700;text-decoration:none">Forgot password?</a>
+        </div>
+        <div id="fpCustBox" style="display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:14px;margin-top:14px;font-size:.85rem">
+            <div style="font-weight:800;color:#1e40af;margin-bottom:10px"><i class="fas fa-key"></i> Reset Password (Email Verification)</div>
+
+            <div id="fpCStep1">
+                <div class="form-group"><label>আপনার ফোন নম্বর বা ইমেইল</label><input id="fpCId" placeholder="01XXXXXXXXX / your@email.com"></div>
+                <button class="btn btn-primary" onclick="fpSendCust()"><i class="fas fa-paper-plane"></i> Send code</button>
+            </div>
+
+            <div id="fpCStep2" style="display:none">
+                <div class="form-group"><label>৬-সংখ্যার কোড</label><input id="fpCCode" placeholder="123456" maxlength="6"></div>
+                <button class="btn btn-primary" onclick="fpVerifyCust()"><i class="fas fa-check"></i> Verify</button>
+                <button class="btn" style="background:#e2e8f0;color:#334155" onclick="fpSendCust()">Resend</button>
+            </div>
+
+            <div id="fpCStep3" style="display:none">
+                <div class="form-group"><label>নতুন পাসওয়ার্ড (অন্তত ৪ অক্ষর)</label><input id="fpCNew" type="password" placeholder="New password"></div>
+                <button class="btn btn-primary" onclick="fpSetCust()"><i class="fas fa-floppy-disk"></i> Set new password</button>
+            </div>
+
+            <div id="fpCMsg" style="display:none;margin-top:10px;padding:9px;border-radius:8px;font-weight:700"></div>
+        </div>
+    </div>
+
+    <div id="formReg" style="display:none">
+        <!-- Part 5 — register-page styling: a section title plus required (*) and
+             optional markers, exactly like reseller/register.html. The fields
+             themselves stay customer-only. -->
+        <div class="step-title"><i class="fas fa-user-plus"></i> আপনার তথ্য দিন</div>
+        <div class="form-group"><label>নাম <span class="req">*</span></label><input id="rgName" placeholder="আপনার নাম"></div>
+        <div class="form-group"><label>মোবাইল নম্বর <span class="req">*</span></label><input id="rgPhone" placeholder="01XXXXXXXXX" autocomplete="off"></div>
+        <div class="form-group"><label>ইমেইল <span class="opt">(optional)</span></label><input id="rgEmail" placeholder="your@gmail.com"></div>
+        <div class="form-group"><label>পাসওয়ার্ড <span class="req">*</span></label><input id="rgPass" type="password" placeholder="অন্তত ৪ অক্ষর"></div>
+        <div class="form-group"><label>ঠিকানা <span class="opt">(optional)</span></label><textarea id="rgAddr" rows="2" placeholder="বাসা/রোড/এলাকা/শহর"></textarea></div>
+        <button class="btn btn-primary" onclick="doRegister()"><i class="fas fa-user-plus"></i> Create Account</button>
+    </div>
+
+    <div class="back-link"><a href="javascript:void(0)" onclick="goShop()"><i class="fas fa-arrow-left"></i> Back to shop</a></div>
+</div>
+
+<!-- ============ MY ACCOUNT (same card style, wider) ============ -->
+<div class="login-card wide" id="cardAcc" style="display:none">
+    <div class="icon-circle"><i class="fas fa-user-circle"></i></div>
+    <h1>My Account</h1>
+    <p class="subtitle" id="accShop">Shop</p>
+
+    <div class="nav-tabs">
+        <button class="on" id="tbProf" onclick="setAccTab('prof')">Profile</button>
+        <button id="tbOrd" onclick="setAccTab('ord')">My Orders</button>
+        <button id="tbMsg" onclick="setAccTab('msg')">Messages</button>
+        <button id="tbSet" onclick="setAccTab('set')">Settings</button>
+    </div>
+
+    <div id="tabProf"><div id="profView"></div></div>
+
+    <div id="tabOrd" style="display:none">
+        <p class="subtitle" style="text-align:left;margin-bottom:12px">এই দোকানে আপনার অর্ডার — স্ট্যাটাস ও ট্র্যাকিং সহ।</p>
+        <div id="ordList"></div>
+    </div>
+
+    <div id="tabMsg" style="display:none">
+        <p class="subtitle" style="text-align:left;margin-bottom:12px">এই দোকানের সাথে আপনার কথোপকথন — অর্ডার সম্পর্কে প্রশ্ন করতে পারবেন।</p>
+        <div id="accMsgWrap"></div>
+        <div class="form-group"><label>Attach an order (ঐচ্ছিক)</label><select id="accMsgOrd"></select></div>
+        <div class="form-group"><label>Message</label><textarea id="accMsgText" rows="3" placeholder="আপনার মেসেজ লিখুন..."></textarea></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input type="file" id="accMsgFile" accept="image/*" style="display:none" onchange="accMsgPick(this)">
+            <button class="btn btn-ghost" style="width:auto" onclick="document.getElementById('accMsgFile').click()"><i class="fas fa-image"></i></button>
+            <button class="btn btn-primary" style="width:auto;flex:1" onclick="accMsgSend()"><i class="fas fa-paper-plane"></i> Send</button>
+        </div>
+    </div>
+
+    <div id="tabSet" style="display:none">
+        <div class="error-msg" id="setErr"></div>
+        <div class="form-group"><label>Name</label><input id="edName"></div>
+        <div class="form-group"><label>Phone</label><input id="edPhone"></div>
+        <div class="form-group"><label>Email</label><input id="edEmail"></div>
+        <div class="form-group"><label>New Password (খালি রাখলে অপরিবর্তিত)</label><input id="edPass" type="password"></div>
+        <div class="form-group"><label>Address</label><textarea id="edAddr" rows="2"></textarea></div>
+        <button class="btn btn-primary" onclick="saveProfile()"><i class="fas fa-floppy-disk"></i> Save Changes</button>
+    </div>
+
+    <div style="display:flex;gap:9px;margin-top:18px">
+        <button class="btn btn-ghost" onclick="goShop()"><i class="fas fa-store"></i> Continue shopping</button>
+        <button class="btn btn-ghost" onclick="doLogout()" style="color:#dc2626"><i class="fas fa-right-from-bracket"></i> Logout</button>
+    </div>
+</div>
+
+<div class="error-msg" id="toast" style="position:fixed;bottom:22px;left:50%;transform:translateX(-50%);display:none;max-width:90%"></div>
+
+<script src="../app.js"></script>
+<script>
+(function(){
+  var ps=new URLSearchParams(location.search);
+  var RID=ps.get('rid')||'';
+  window.RID=RID;
+  function esc(s){return String(s===undefined||s===null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
+  window.goShop=function(){ location.href='my-shop.html?rid='+encodeURIComponent(RID); };
+  window.goCart=function(){ location.href='my-shop-checkout.html?rid='+encodeURIComponent(RID); };
+  function toast(m){var t=document.getElementById('toast');if(!t)return;t.textContent=m;t.classList.add('on');t.style.display='block';setTimeout(function(){t.style.display='none';t.classList.remove('on')},2200)}
+  function err(m){var e=document.getElementById('authErr');if(e){e.textContent=m;e.style.display='block'}}
+
+  var shop=null;
+  try{ shop=findResellerById(RID)||findResellerById(parseInt(RID))||null; }catch(e){}
+  /* No rid in the URL: a logged-in reseller must still reach THEIR OWN account
+     page. sessionStorage is per-tab, so also try the shared Remember-Login token
+     (localStorage). The id can only ever come from the visitor's own session or
+     own token — it never borrows another reseller's shop. */
+  if(!RID){
+    try{
+      var _ut=sessionStorage.getItem('user_type'), _uid=sessionStorage.getItem('user_id');
+      if(_ut==='reseller'&&_uid){ var _r=findResellerById(_uid); if(_r){ shop=_r; RID=String(_uid); window.RID=RID; } }
+    }catch(e){}
+    if(!shop){
+      try{
+        if(typeof restorePersistentSession==='function'){
+          var _ru=restorePersistentSession('reseller');
+          if(_ru&&_ru.id){ var _r2=findResellerById(_ru.id); if(_r2){ shop=_r2; RID=String(_ru.id); window.RID=RID; } }
+        }
+      }catch(e){}
+    }
+  }
+  if(!RID||!shop){
+    document.body.innerHTML='<div class="login-card"><div class="icon-circle"><i class="fas fa-store-slash"></i></div><h1>Shop not found</h1><div class="back-link"><a href="../index.html">Back to Home</a></div></div>';
+    return;
+  }
+  /* Part 2 — delegate to the ONE canonical resolver in app.js. */
+  function bname(){try{return resellerBusinessName(shop)}catch(e){return (shop&&(shop.shop_name||shop.businessName||shop.name))||'My Shop'}}
+  var lg=(shop.shop_logo||shop.shopLogo||shop.logo)||'';
+  var ic=document.querySelector('#cardAuth .icon-circle');
+  if(ic) ic.innerHTML = lg ? '<img src="'+esc(lg)+'" style="width:100%;height:100%;object-fit:contain;border-radius:50%;background:#fff;padding:6px">' : '<i class="fas fa-user-circle"></i>';
+  document.getElementById('authSub').textContent=bname()+' — কাস্টমার একাউন্ট';
+  document.getElementById('accShop').textContent=bname();
+
+  window.setAuthTab=function(t){
+    document.getElementById('tbLogin').classList.toggle('on',t==='login');
+    document.getElementById('tbReg').classList.toggle('on',t==='reg');
+    document.getElementById('formLogin').style.display=t==='login'?'block':'none';
+    document.getElementById('formReg').style.display=t==='reg'?'block':'none';
+    /* Part 5 — switch the card to the register look (green icon circle + the
+       register input metrics) while the Register tab is open. */
+    var card=document.getElementById('cardAuth');
+    if(card)card.classList.toggle('reg',t==='reg');
+    var sub=document.getElementById('authSub');
+    if(sub)sub.textContent=(t==='reg')?'নতুন একাউন্ট খুলুন':'আপনার একাউন্টে লগিন করুন';
+    var ttl=document.getElementById('authTitle');
+    if(ttl)ttl.textContent=(t==='reg')?'Customer Registration':'Customer Login';
+    var e=document.getElementById('authErr'); if(e)e.style.display='none';
+  };
+  /* 2026-09-17 — customer forgot-password, same three-step shape as the
+     reseller / supplier / admin flows. Identity is checked against THIS shop's
+     customer list only (rh_shop_customers keyed by rid), so one shop can never
+     reset another shop's customer. */
+  window.fpCMsg=function(t, ok){
+      var m = document.getElementById('fpCMsg'); if(!m) return;
+      m.textContent = t; m.style.display = 'block';
+      m.style.background = ok ? '#d1fae5' : '#fee2e2';
+      m.style.color = ok ? '#065f46' : '#dc2626';
+  }
+  window.fpShowCust=function(){
+      var b = document.getElementById('fpCustBox'); if(!b) return;
+      b.style.display = (b.style.display === 'none' || !b.style.display) ? 'block' : 'none';
+  }
+  window.fpCustFind=function(id){
+      id = String(id||'').trim().toLowerCase();
+      if(!id) return null;
+      var all = {}; try { all = getData(DB_KEYS.SHOP_CUSTOMERS) || {}; } catch(e) { all = {}; }
+      var list = all[String(RID)] || [];
+      for(var i=0;i<list.length;i++){
+          var c = list[i] || {};
+          var ph = String(c.phone||'').trim().toLowerCase();
+          var em = String(c.email||'').trim().toLowerCase();
+          if(ph === id || (em && em === id)) return c;
+      }
+      return null;
+  }
+  window.fpSendCust=function(){
+      var id = (document.getElementById('fpCId').value||'').trim();
+      if(!id){ fpCMsg('ফোন নম্বর বা ইমেইল দিন!', false); return; }
+      var c = fpCustFind(id);
+      if(!c){ fpCMsg('এই নম্বর/ইমেইলে এই দোকানে কোনো account নেই!', false); return; }
+      if(!c.email){ fpCMsg('এই account-এ ইমেইল নেই — দোকানে যোগাযোগ করুন।', false); return; }
+      var code = String(Math.floor(100000 + Math.random()*900000));
+      try { sessionStorage.setItem('fp_code_cust', JSON.stringify({ id: String(c.phone||c.email), code: code, exp: Date.now()+600000 })); } catch(e){}
+      var gm = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(c.email) +
+               '&su=' + encodeURIComponent('ResellerHub BD — Password Reset Code') +
+               '&body=' + encodeURIComponent('Your password reset code is: ' + code + '\n\nThis code expires in 10 minutes.');
+      try { window.open(gm, '_blank'); } catch(e){}
+      document.getElementById('fpCStep1').style.display='none';
+      document.getElementById('fpCStep2').style.display='block';
+      fpCMsg('Gmail draft খুলেছে — Send চেপে কোডটি আপনার inbox-এ নিন, তারপর এখানে লিখুন।', true);
+  }
+  window.fpVerifyCust=function(){
+      var c = (document.getElementById('fpCCode').value||'').trim();
+      var st = null;
+      try { st = JSON.parse(sessionStorage.getItem('fp_code_cust')||'null'); } catch(e){}
+      if(!st){ fpCMsg('আগে কোড পাঠান।', false); return; }
+      if(Date.now() > st.exp){ fpCMsg('কোডের সময় শেষ — আবার পাঠান।', false); return; }
+      if(c !== st.code){ fpCMsg('কোড মেলেনি!', false); return; }
+      document.getElementById('fpCStep2').style.display='none';
+      document.getElementById('fpCStep3').style.display='block';
+      fpCMsg('কোড ঠিক আছে — এখন নতুন পাসওয়ার্ড দিন।', true);
+  }
+  window.fpSetCust=function(){
+      var np = (document.getElementById('fpCNew').value||'').trim();
+      if(np.length < 4){ fpCMsg('পাসওয়ার্ড অন্তত ৪ অক্ষরের হতে হবে।', false); return; }
+      var st = null;
+      try { st = JSON.parse(sessionStorage.getItem('fp_code_cust')||'null'); } catch(e){}
+      if(!st){ fpCMsg('আগে কোড যাচাই করুন।', false); return; }
+      var c = fpCustFind(st.id);
+      if(!c){ fpCMsg('account পাওয়া যায়নি।', false); return; }
+      var all = getData(DB_KEYS.SHOP_CUSTOMERS) || {};
+      var list = all[String(RID)] || [];
+      var done = false;
+      for(var i=0;i<list.length;i++){
+          if(String(list[i].phone) === String(c.phone)){ list[i].password = np; done = true; break; }
+      }
+      if(!done){ fpCMsg('পাসওয়ার্ড বদলানো যায়নি।', false); return; }
+      all[String(RID)] = list;
+      if(!setData(DB_KEYS.SHOP_CUSTOMERS, all)){ fpCMsg('সেভ করা যায়নি (storage ভর্তি)।', false); return; }
+      try { sessionStorage.removeItem('fp_code_cust'); } catch(e){}
+      try { logActivity('customer_password_reset', 'My Shop customer #' + c.phone + ' reset via email code'); } catch(e){}
+      document.getElementById('fpCStep3').style.display='none';
+      fpCMsg('✅ পাসওয়ার্ড বদলানো হয়েছে — এখন Login করুন।', true);
+      var lp = document.getElementById('lgPhone'); if(lp) lp.value = String(c.phone||'');
+      var lw = document.getElementById('lgPass'); if(lw) lw.value = '';
+  }
+  window.doLogin=function(){
+    var r=shopLoginCustomer(RID,document.getElementById('lgPhone').value,document.getElementById('lgPass').value);
+    if(!r.ok){err(r.message);return}
+    shopSetCurrentCustomer(RID,r.customer);
+    toast('Welcome back, '+r.customer.name+'!');
+    paint();
+  };
+  window.doRegister=function(){
+    var d={name:document.getElementById('rgName').value,phone:document.getElementById('rgPhone').value,
+      email:document.getElementById('rgEmail').value,password:document.getElementById('rgPass').value,
+      address:document.getElementById('rgAddr').value};
+    var r=shopRegisterCustomer(RID,d);
+    if(!r.ok){err(r.message);return}
+    shopSetCurrentCustomer(RID,r.customer);
+    toast('Account created — welcome!');
+    paint();
+  };
+  window.doLogout=function(){ shopLogoutCustomer(RID); toast('Logged out.'); paint(); };
+
+  window.setAccTab=function(t){
+    ['tbProf','tbOrd','tbMsg','tbSet'].forEach(function(x,i){var e=document.getElementById(x);if(e)e.classList.toggle('on',['prof','ord','msg','set'][i]===t)});
+    ['tabProf','tabOrd','tabMsg','tabSet'].forEach(function(x,i){var e=document.getElementById(x);if(e)e.style.display=(['prof','ord','msg','set'][i]===t)?'block':'none';});
+    if(t==='msg')accRenderMessages();
+  };
+  function stB(s){
+    s=String(s||'');
+    if(s==='delivered')return '<span class="badge b-ap">'+esc(s)+'</span>';
+    if(s==='cancel'||s==='cancelled'||s==='returned')return '<span class="badge b-da">'+esc(s)+'</span>';
+    return '<span class="badge b-pe">'+esc(s||'pending')+'</span>';
+  }
+  function renderProfile(c){
+    document.getElementById('profView').innerHTML=
+      '<div class="kv"><span class="k">Name</span><span class="v">'+esc(c.name||'-')+'</span></div>'+
+      '<div class="kv"><span class="k">Phone</span><span class="v">'+esc(c.phone||'-')+'</span></div>'+
+      '<div class="kv"><span class="k">Email</span><span class="v">'+esc(c.email||'-')+'</span></div>'+
+      '<div class="kv"><span class="k">Address</span><span class="v">'+esc(c.address||'-')+'</span></div>'+
+      '<div class="kv"><span class="k">Member since</span><span class="v">'+esc(String(c.createdAt||'').slice(0,10)||'-')+'</span></div>'+
+      '<div class="kv"><span class="k">Shop</span><span class="v">'+esc(bname())+'</span></div>';
+    document.getElementById('edName').value=c.name||'';
+    document.getElementById('edPhone').value=c.phone||'';
+    document.getElementById('edEmail').value=c.email||'';
+    document.getElementById('edAddr').value=c.address||'';
+    document.getElementById('edPass').value='';
+  }
+  function renderOrders(c){
+    var list=shopCustomerOrders(RID,c), el=document.getElementById('ordList');
+    if(!list.length){el.innerHTML='<p class="subtitle" style="text-align:left">এখনো কোনো অর্ডার নেই।</p>';return}
+    var h='';
+    for(var i=0;i<list.length;i++){
+      var o=list[i], items=[]; try{items=orderLineItems(o)}catch(e){items=[]}
+      var qty=0; for(var q=0;q<items.length;q++)qty+=Number(items[q].qty)||1;
+      h+='<div class="ord"><div class="ord-h" onclick="this.nextElementSibling.classList.toggle(\'on\')">'+
+         '<div><b>Order #'+esc(o.id)+'</b> <span style="color:#64748b;font-size:.75rem">· '+esc(o.date||'')+' · '+qty+' pcs</span></div>'+
+         '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'+stB(o.status)+
+         '<b style="font-size:.82rem">'+(function(){try{return formatCurrency(Number(o.amount)||0)}catch(e){return '৳'+(Number(o.amount)||0)}})()+'</b>'+
+         '<i class="fas fa-chevron-down" style="color:#94a3b8"></i></div></div><div class="ord-b">';
+      for(var j=0;j<items.length;j++){
+        var it=items[j]||{};
+        var vr=(it.size||it.color)?(' · '+[it.size,it.color].filter(function(x){return !!x}).join(' / ')):'';
+        /* 2026-09-18 (this request) — each ordered line now shows the PRODUCT
+           IMAGE, so a customer can see at a glance what they bought. The image
+           comes from the order line first (it is the historical record) and only
+           falls back to the product record when the line carries none. */
+        var _im='';
+        try{
+          if(it.image) _im=prodImgSrc(it.image)||'';
+          if(!_im&&it.productId!==undefined&&it.productId!==null){
+            var _p=(typeof findProductById==='function')?findProductById(it.productId):null;
+            if(_p) _im=prodImgSrc(_p.image||'')||'';
+          }
+        }catch(e){ _im=''; }
+        h+='<div style="display:flex;align-items:center;gap:10px;padding:5px 0">'+
+           (_im
+             ?'<img src="'+esc(_im)+'" alt="" style="width:44px;height:44px;border-radius:9px;object-fit:cover;border:1px solid #e2e8f0;flex:none;background:#f8fafc">'
+             :'<span style="width:44px;height:44px;border-radius:9px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#cbd5e1;flex:none"><i class="fas fa-box"></i></span>')+
+           '<span style="flex:1;min-width:0">'+esc(it.name||'Product')+
+           '<small style="color:#94a3b8;display:block">'+esc(vr)+'</small></span>'+
+           '<b style="white-space:nowrap">'+esc(it.qty||1)+' pcs</b></div>';
+      }
+      h+='<div class="kv"><span class="k">Status</span><span class="v">'+esc(o.status||'-')+'</span></div>'+
+         '<div class="kv"><span class="k">Address</span><span class="v">'+esc(o.address||'-')+'</span></div></div></div>';
+    }
+    el.innerHTML=h;
+  }
+  window.saveProfile=function(){
+    var c=shopCurrentCustomer(RID); if(!c){toast('Session expired.');paint();return}
+    var patch={name:document.getElementById('edName').value,phone:document.getElementById('edPhone').value,
+      email:document.getElementById('edEmail').value,address:document.getElementById('edAddr').value};
+    var np=document.getElementById('edPass').value; if(np)patch.password=np;
+    var r=shopUpdateCustomer(RID,c.id,patch);
+    var e=document.getElementById('setErr');
+    if(!r.ok){ if(e){e.textContent=r.message;e.style.display='block'} return; }
+    if(e)e.style.display='none';
+    toast('Profile updated.'); paint();
+  };
+/* ===== #16/#17 — Messages inside My Account =====
+   Uses the SAME rh_shop_chats bucket (scoped by rid) and the same guest
+   identity as the storefront widget, so this is not a second system. */
+function accIdentity(){
+  var c=shopCurrentCustomer(String(RID));
+  if(c) return {id:c.id,name:c.name,phone:c.phone};
+  try{
+    var raw=localStorage.getItem('rh_shop_guest_'+String(RID));
+    if(raw){ var g=JSON.parse(raw); if(g&&g.name&&g.phone) return {id:shopGuestId(String(RID),g.phone),name:g.name,phone:g.phone}; }
+  }catch(e){}
+  return null;
+}
+function accConv(){
+  var idn=accIdentity(); if(!idn)return null;
+  return shopChatStart(String(RID),{id:idn.id,name:idn.name,phone:idn.phone});
+}
+function accRenderMessages(){
+  var wrap=document.getElementById('accMsgWrap'); if(!wrap)return;
+  var c=accConv();
+  if(!c){ wrap.innerHTML='<p class="subtitle" style="text-align:left">মেসেজ পাঠাতে লগিন করুন।</p>'; return; }
+  var view=null; try{view=shopChatCustomerView(c)}catch(e){}
+  var msgs=(view&&view.messages)?view.messages:(c.messages||[]);
+  var h='';
+  for(var i=0;i<msgs.length;i++){
+    var m=msgs[i], mine=(m.from==='customer');
+    h+='<div style="max-width:82%;padding:9px 12px;border-radius:12px;margin-bottom:8px;font-size:.85rem;line-height:1.5;word-break:break-word;'+
+       (mine?'background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;margin-left:auto;':'background:#f1f5f9;border:1px solid #e2e8f0;')+'">'+
+       (m.text?esc(m.text):'')+(m.image?'<img src="'+esc(m.image)+'" style="max-width:100%;border-radius:9px;display:block;margin-top:6px">':'')+
+       (m.orderId?'<div style="margin-top:5px;font-size:.7rem;font-weight:800"><i class="fas fa-receipt"></i> Order #'+esc(m.orderId)+'</div>':'')+
+       '<div style="font-size:.62rem;opacity:.75;margin-top:4px">'+esc(String(m.at||'').slice(11,16))+'</div></div>';
+  }
+  wrap.innerHTML=h||'<p class="subtitle" style="text-align:left">কোনো মেসেজ নেই।</p>';
+  var sel=document.getElementById('accMsgOrd'); if(!sel)return;
+  var list=[]; try{list=shopCustomerOrders(String(RID),accIdentity())}catch(e){list=[]}
+  var o='<option value="">কোনো অর্ডার নয়</option>';
+  for(var j=0;j<list.length;j++) o+='<option value="'+esc(list[j].id)+'">Order #'+esc(list[j].id)+' — '+esc(list[j].status||'')+'</option>';
+  sel.innerHTML=o;
+}
+window.accMsgPick=function(inp){
+  var f=inp&&inp.files&&inp.files[0]; if(!f)return;
+  if(f.size>2*1024*1024){ toast('ছবির সাইজ ২MB এর কম হতে হবে।'); inp.value=''; return; }
+  var r=new FileReader();
+  r.onload=function(){ window._accImg=r.result; accMsgSend(); inp.value=''; };
+  r.readAsDataURL(f);
+};
+window.accMsgSend=function(){
+  var c=accConv(); if(!c){ toast('মেসেজ পাঠাতে লগিন করুন।'); return; }
+  var ta=document.getElementById('accMsgText');
+  var txt=ta?String(ta.value||'').trim():'';
+  var sel=document.getElementById('accMsgOrd');
+  var oid=sel?String(sel.value||''):'';
+  if(!txt&&!window._accImg&&!oid){ toast('মেসেজ লিখুন।'); return; }
+  var r=shopChatSend(String(RID),c.id,'customer',txt,window._accImg||'',oid);
+  if(!r.ok){ toast(r.message||'পাঠানো যায়নি।'); return; }
+  if(ta)ta.value=''; window._accImg='';
+  accRenderMessages();
+  toast('মেসেজ পাঠানো হয়েছে।');
+};
+  function paint(){
+    var c=shopCurrentCustomer(RID);
+    if(!c){ document.getElementById('cardAuth').style.display='block'; document.getElementById('cardAcc').style.display='none';
+            document.getElementById('lgPass').value=''; return; }
+    document.getElementById('cardAuth').style.display='none';
+    document.getElementById('cardAcc').style.display='block';
+    renderProfile(c); renderOrders(c); accRenderMessages();
+  }
+  paint();
+})();
+</script>
+</body>
+</html>

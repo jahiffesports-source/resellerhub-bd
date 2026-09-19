@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moderators - Admin - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#f1f5f9; color:#1e293b; }
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:240px; background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%); color:#cbd5e1; z-index:100; overflow-y:auto; }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid #334155; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:38px; height:38px; background:linear-gradient(135deg,#dc2626,#b91c1c); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; }
+        .sidebar-logo h3 { color:white; font-size:1rem; }
+        .sidebar-logo small { color:#94a3b8; font-size:0.7rem; display:block; }
+        .sidebar-menu { list-style:none; padding:12px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:10px 20px; color:#cbd5e1; text-decoration:none; font-size:0.88rem; }
+        .sidebar-menu a:hover { background:rgba(255,255,255,0.05); color:white; }
+        .sidebar-menu a.active { background:#dc2626; color:white; }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 20px 5px; color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+        .main { margin-left:240px; min-height:100vh; }
+        .topbar { background:white; padding:14px 25px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:sticky; top:0; z-index:50; }
+        .topbar h2 { font-size:1.2rem; font-weight:600; }
+        .topbar h2 i { color:#dc2626; margin-right:8px; }
+        .user-pill { display:flex; align-items:center; gap:8px; padding:6px 14px; background:#fee2e2; border-radius:30px; font-size:0.85rem; color:#991b1b; font-weight:600; }
+        .btn-logout { background:#dc2626; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:500; }
+        .content { padding:25px; }
+        .card { background:white; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:20px; overflow:hidden; }
+        .card-header { padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+        .card-header h4 { font-size:0.95rem; font-weight:600; }
+        .card-header h4 i { color:#dc2626; margin-right:6px; }
+        .data-table { width:100%; border-collapse:collapse; }
+        .data-table th { text-align:left; padding:11px 20px; background:#f8fafc; font-weight:600; font-size:0.72rem; color:#64748b; text-transform:uppercase; }
+        .data-table td { padding:12px 20px; border-bottom:1px solid #f1f5f9; font-size:0.85rem; }
+        .data-table tr:hover { background:#f8fafc; }
+        .badge { padding:3px 9px; border-radius:20px; font-size:0.7rem; font-weight:600; }
+        .badge-success { background:#d1fae5; color:#065f46; }
+        .badge-warning { background:#fef3c7; color:#92400e; }
+        .badge-danger { background:#fee2e2; color:#991b1b; }
+        .btn { padding:6px 12px; border:none; border-radius:7px; font-size:0.78rem; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+        .btn-success { background:#10b981; color:white; }
+        .btn-danger { background:#dc2626; color:white; }
+        .btn-sm { padding:4px 9px; font-size:0.72rem; }
+        .empty { text-align:center; padding:40px; color:#94a3b8; }
+        .stat-row { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px; }
+        .stat { background:white; border-radius:12px; padding:16px 18px; border:1px solid #e2e8f0; }
+        .stat .big { font-size:1.4rem; font-weight:900; }
+        .stat .lbl { font-size:.76rem; color:#64748b; margin-top:2px; }
+        @media (max-width:768px) { .main { margin-left:240px; } .stat-row { grid-template-columns:1fr; } }
+    </style>
+
+
+
+
+<style id="lx-sb-final">
+/* ===== ADMIN SIDEBAR v4 — fresh premium design (authoritative) ===== */
+body .lx-sidebar { position:fixed !important; left:0 !important; top:0 !important; bottom:0 !important; width:264px !important; background:linear-gradient(180deg,#0d1226 0%,#171233 100%) !important; border-right:1px solid rgba(129,140,248,.14) !important; z-index:600 !important; overflow-y:auto !important; overflow-x:hidden !important; display:flex !important; flex-direction:column !important; transform:none !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; font-family:'Inter','Hind Siliguri',sans-serif !important; }
+body .lx-sidebar::before { content:'' !important; position:absolute !important; top:-80px !important; right:-60px !important; width:260px !important; height:260px !important; background:radial-gradient(circle,rgba(99,102,241,.18),transparent 70%) !important; pointer-events:none !important; }
+body .lx-brand { display:flex !important; align-items:center !important; gap:12px !important; padding:20px 18px !important; border-bottom:1px solid rgba(129,140,248,.14) !important; position:relative !important; }
+body .lx-brand-ic { width:42px !important; height:42px !important; border-radius:13px !important; background:linear-gradient(135deg,#6366f1,#a855f7) !important; display:flex !important; align-items:center !important; justify-content:center !important; color:#fff !important; font-size:1.05rem !important; box-shadow:0 8px 20px rgba(99,102,241,.4) !important; flex-shrink:0 !important; }
+body .lx-brand-tx b { color:#fff !important; font-size:1.02rem !important; font-weight:900 !important; display:block !important; line-height:1.2 !important; }
+body .lx-brand-tx small { color:#818cf8 !important; font-size:.6rem !important; font-weight:800 !important; letter-spacing:2px !important; }
+body .lx-close { margin-left:auto !important; background:rgba(255,255,255,.06) !important; border:none !important; color:#94a3b8 !important; width:30px !important; height:30px !important; border-radius:9px !important; cursor:pointer !important; font-size:1rem !important; display:none !important; align-items:center !important; justify-content:center !important; }
+body .lx-close:hover { background:#fee2e2 !important; color:#dc2626 !important; }
+body .lx-menu { padding:14px 12px !important; flex:1 !important; }
+body .sec-label { font-size:.6rem !important; font-weight:900 !important; letter-spacing:2.2px !important; color:#6b7280 !important; text-transform:uppercase !important; padding:14px 12px 6px !important; display:flex !important; align-items:center !important; gap:8px !important; }
+body .sec-label::before { content:'' !important; width:14px !important; height:2px !important; background:linear-gradient(90deg,#6366f1,#a855f7) !important; border-radius:2px !important; }
+body .sb-item { position:relative !important; display:flex !important; align-items:center !important; gap:11px !important; padding:9px 12px !important; margin:3px 0 !important; border-radius:12px !important; color:#b6c2e2 !important; text-decoration:none !important; font-size:.86rem !important; font-weight:600 !important; transition:all .2s !important; border:1px solid transparent !important; background:transparent !important; opacity:1 !important; visibility:visible !important; pointer-events:auto !important; box-shadow:none !important; transform:none !important; }
+body .sb-item .sb-ico { width:30px !important; height:30px !important; border-radius:9px !important; background:rgba(255,255,255,.05) !important; display:flex !important; align-items:center !important; justify-content:center !important; font-size:.82rem !important; flex-shrink:0 !important; transition:all .2s !important; }
+body .sb-item .sb-txt { flex:1 !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; display:block !important; }
+body .sb-item:hover { background:rgba(99,102,241,.13) !important; color:#fff !important; }
+body .sb-item:hover .sb-ico { background:rgba(99,102,241,.3) !important; }
+body .sb-item.on { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; border-color:rgba(129,140,248,.35) !important; }
+body .sb-item.on::before { content:'' !important; position:absolute !important; left:-12px !important; top:50% !important; transform:translateY(-50%) !important; width:3.5px !important; height:60% !important; background:linear-gradient(180deg,#818cf8,#c084fc) !important; border-radius:3px !important; }
+body .sb-item.on .sb-ico { background:linear-gradient(135deg,#6366f1,#a855f7) !important; color:#fff !important; }
+/* page-এর নিচের inline-highlight script সবসময় হারাবে */
+body .sb-item[style] { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; }
+body .sb-badge { background:#fbbf24 !important; color:#1e293b !important; font-size:.62rem !important; padding:1px 8px !important; border-radius:10px !important; font-weight:800 !important; margin-left:auto !important; }
+body .main { margin-left:264px !important; min-height:100vh !important; }
+body .side-overlay { display:none !important; position:fixed !important; inset:0 !important; background:rgba(7,10,26,.6) !important; z-index:590 !important; backdrop-filter:blur(2px) !important; }
+body .side-overlay.show { display:block !important; pointer-events:auto !important; }
+body .hamburger { display:none !important; }
+/* ===== মোবাইল/ট্যাবলেট: slide drawer ===== */
+@media (max-width:1024px) {
+    body .main { margin-left:0 !important; }
+    body .lx-sidebar { transform:translateX(-100%) !important; box-shadow:none !important; }
+    body .lx-sidebar.open { transform:none !important; box-shadow:30px 0 70px rgba(7,10,26,.6) !important; }
+    body .lx-close { display:flex !important; }
+    body .hamburger { display:inline-flex !important; }
+    body { overflow-x:hidden !important; }
+}
+</style>
+
+
+
+
+
+<style id="lx-ovf-fix">
+@media(max-width:768px){ body{overflow-x:hidden !important} }
+</style>
+<style id="lx-orders-badge-n">.orders-badge-n{color:#fbbf24;font-weight:900;font-size:.72rem}.orders-badge-n:empty{display:none}</style>
+<style id="admin-mobile-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   The admin topbar measured about 474px across on a 390px phone (25px padding, an
+   h2 at 1.2rem, 12px gaps, a wide user pill), so the logout button was pushed past
+   the right edge. Several admin tables are also built by JS with NO .table-scroll
+   wrapper, so they widened the whole page instead of scrolling.
+   EVERY rule below sits inside a max-width query, so the DESKTOP LAYOUT IS
+   UNCHANGED. This is an ADDED block — no existing rule is modified or removed. */
+@media (max-width:768px){
+  .topbar { padding:10px 12px; gap:8px; }
+  .topbar h2 { font-size:.92rem; }
+  .topbar h2 i { margin-right:4px; }
+  .topbar-right { gap:6px; }
+  .user-pill { padding:5px 9px; font-size:.72rem; }
+  .btn-logout { padding:7px 10px; }
+  /* a table without a scroll wrapper would otherwise push the page wide */
+  .data-table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%; }
+}
+</style>
+<style id="panel-fullwidth-fix">
+/* 2026-09-16 — FULL-WIDTH FIX for the admin and supplier panels (this request).
+   The whole page sat in a narrow column with empty space on the right, because the
+   base rule reserves the sidebar with `margin-left`, and a block element with
+   margin-left and width:auto is only (100% - that) wide. A LATER rule in the same
+   file re-asserted the margin with !important, so the earlier mobile override lost.
+   This block is the LAST thing in the document, so it wins, and it resets width as
+   well as margin. Desktop is untouched — everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<aside class="lx-sidebar sidebar" id="sidebar">
+    <div class="lx-brand">
+        <span class="lx-brand-ic"><i class="fas fa-user-shield"></i></span>
+        <div class="lx-brand-tx"><b>AdminHub</b><small>CONTROL PANEL</small></div>
+        <button class="lx-close" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+    <nav class="lx-menu">
+        <div class="sec-label">Main</div>
+        <a href="dashboard.html" class="sb-item"><span class="sb-ico"><i class="fas fa-chart-line"></i></span><span class="sb-txt">Dashboard</span></a>
+        <a href="orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-shopping-cart"></i></span><span class="sb-txt">All Orders<span class="orders-badge-n" id="ordersBadgeN"></span></span><span class="orders-badge" style="display:none;margin-left:auto;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:.62rem;font-weight:800"></span></a>
+        <a href="multi-supplier-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-people-arrows"></i></span><span class="sb-txt">Multi-Supplier Orders<span class="orders-badge-n" id="msCount"></span></span></a>
+        <a href="products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box"></i></span><span class="sb-txt">Products</span></a>
+        <div class="sec-label">Users</div>
+        <a href="resellers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-users"></i></span><span class="sb-txt">Resellers</span></a>
+        <a href="suppliers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-warehouse"></i></span><span class="sb-txt">Suppliers</span></a>
+        <a href="supplier-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-boxes-stacked"></i></span><span class="sb-txt">Supplier Products</span></a>
+        <a href="add-reseller.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Add Reseller</span></a>
+        <a href="add-supplier.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck"></i></span><span class="sb-txt">Add Supplier</span></a>
+        <a href="approvals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-check"></i></span><span class="sb-txt">Approvals</span></a>
+        <a href="withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-money-bill-wave"></i></span><span class="sb-txt">Withdrawals</span></a>
+        <a href="supplier-withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-hand-holding-dollar"></i></span><span class="sb-txt">Supplier Withdraw</span></a>
+        <a href="transactions.html" class="sb-item"><span class="sb-ico"><i class="fas fa-receipt"></i></span><span class="sb-txt">Transaction History</span></a>
+        <a href="moderators.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-shield"></i></span><span class="sb-txt">Moderators</span></a>
+        <div class="sec-label">Referral</div>
+        <a href="referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Reseller Referral</span></a>
+        <a href="supplier-referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck-arrow-right"></i></span><span class="sb-txt">Supplier Referral</span></a>
+                <a href="myshop-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-bag-shopping"></i></span><span class="sb-txt">My Shop Orders</span></a>
+        <a href="myshop-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box-open"></i></span><span class="sb-txt">My Shop Products</span></a>
+        <div class="sec-label">Offers &amp; Banners</div>
+        <a href="add-offer.html" class="sb-item"><span class="sb-ico"><i class="fas fa-plus-circle"></i></span><span class="sb-txt">Add Offers</span></a>
+        <a href="manage-offers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-gift"></i></span><span class="sb-txt">Manage Offers</span></a>
+        <a href="add-banner.html" class="sb-item"><span class="sb-ico"><i class="fas fa-image"></i></span><span class="sb-txt">Add Banners</span></a>
+        <a href="manage-banners.html" class="sb-item"><span class="sb-ico"><i class="fas fa-images"></i></span><span class="sb-txt">Manage Banners</span></a>
+        <div class="sec-label">System</div>
+        <a href="messages.html" class="sb-item"><span class="sb-ico"><i class="fas fa-comments"></i></span><span class="sb-txt">Messages<span class="orders-badge-n" id="msgBadgeN"></span></span></a>
+        <a href="settings.html" class="sb-item"><span class="sb-ico"><i class="fas fa-cog"></i></span><span class="sb-txt">Settings</span></a>
+        <a href="../index.html" class="sb-item"><span class="sb-ico"><i class="fas fa-globe"></i></span><span class="sb-txt">Visit Site</span></a>
+    </nav>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+            <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h2><i class="fas fa-user-shield"></i> Moderators</h2>
+        <div class="topbar-right">
+            <div class="user-pill"><i class="fas fa-user-shield"></i> Admin</div>
+            <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content">
+        <style>
+            .md-in{padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:.82rem;width:100%;box-sizing:border-box;}
+            .md-lb{font-size:.72rem;font-weight:800;color:#475569;display:block;margin-bottom:4px;}
+            .md-st{display:inline-block;padding:3px 10px;border-radius:10px;font-size:.68rem;font-weight:800;}
+            .md-st.on{background:#d1fae5;color:#047857;}
+            .md-st.off{background:#fee2e2;color:#b91c1c;}
+            .md-pill{display:inline-block;padding:2px 8px;border-radius:9px;font-size:.64rem;font-weight:800;background:#f1f5f9;color:#475569;}
+            .md-pill.in{background:#d1fae5;color:#047857;}
+            .md-pill.out{background:#fee2e2;color:#b91c1c;}
+            .md-warn{background:#fffbeb;border:1.5px solid #fde68a;color:#92400e;padding:11px 14px;border-radius:10px;font-size:.78rem;line-height:1.7;margin-bottom:14px;}
+        </style>
+
+        <div class="stat-row">
+            <div class="stat"><div class="big" id="mdTotal">0</div><div class="lbl">Total Moderators</div></div>
+            <div class="stat"><div class="big" style="color:#059669;" id="mdActive">0</div><div class="lbl">Active</div></div>
+            <div class="stat"><div class="big" style="color:#d97706;" id="mdPend">0</div><div class="lbl">Pending Requests</div></div>
+        </div>
+
+        <div class="md-warn">
+            <b>Moderator যা করতে পারবে না:</b> অন্য কাউকে moderator বানানো · প্রোডাক্ট ডিলিট (Out of Stock করা যাবে) ·
+            কোনো অর্ডার ডিলিট · সরাসরি ব্যালেন্স যোগ/কর্তন (এর জন্য Admin-এর অনুমোদন লাগবে)।
+            <br><b>মনে রাখবেন:</b> এই অ্যাপ পুরোটাই browser-এ চলে — কোনো সার্ভার নেই। তাই এই নিয়মগুলো UI-তে কঠোরভাবে মানা হয়,
+            কিন্তু কেউ browser-এর devtools দিয়ে session বদলে ফেললে সেটা আটকানোর ক্ষমতা এই প্রোটোটাইপে নেই।
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-clipboard-check"></i> Balance Change Requests (<span id="mdReqCount">0</span>)</h4>
+                <small style="color:#64748b;">Approve করলে টাকা যোগ/কাটা হবে · Reject করলে কোনো ব্যালেন্সই বদলাবে না</small>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Date</th><th>Requested by</th><th>Party</th><th>Type</th><th style="text-align:right;">Amount</th><th>Reason</th><th>Action</th></tr></thead>
+                    <tbody id="mdReqBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-user-plus"></i> Add Moderator</h4>
+                <small style="color:#64748b;">একজন বা একাধিক moderator বানাতে পারবেন — যেকোনো সময় বন্ধ বা মুছে ফেলতেও পারবেন</small>
+            </div>
+            <div style="padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+                <div><label class="md-lb">Name *</label><input id="mdName" class="md-in" placeholder="Moderator-এর নাম"></div>
+                <div><label class="md-lb">Email *</label><input id="mdEmail" class="md-in" type="email" placeholder="moderator@email.com"></div>
+                <div><label class="md-lb">Password *</label><input id="mdPass" class="md-in" type="text" placeholder="লগইন পাসওয়ার্ড"></div>
+                <div><label class="md-lb">Phone</label><input id="mdPhone" class="md-in" placeholder="01XXXXXXXXX"></div>
+                <div style="grid-column:1/-1;">
+                    <button class="btn btn-primary" onclick="mdAdd()" style="padding:11px 24px;font-weight:800;"><i class="fas fa-plus"></i> Create Moderator</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h4><i class="fas fa-user-shield"></i> Moderators (<span id="mdListCount">0</span>)</h4></div>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Created</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="mdBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h4><i class="fas fa-clock-rotate-left"></i> Handled Requests</h4></div>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Handled</th><th>Party</th><th>Type</th><th style="text-align:right;">Amount</th><th>Result</th></tr></thead>
+                    <tbody id="mdHistBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="../app.js"></script><script>(function(){function paint(){try{var n=(typeof adminNewOrderCount==="function")?adminNewOrderCount():(typeof adminOrderBadgeCount==="function"?adminOrderBadgeCount():0);var els=document.querySelectorAll(".orders-badge");for(var i=0;i<els.length;i++){els[i].textContent=n;els[i].style.display=n>0?"inline-block":"none";}}catch(e){}var lb=document.getElementById("ordersBadgeN");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+/* ===========================================================================
+   Admin — Moderators (this request, 2026-09-14)
+   Create / disable / remove moderator accounts and handle the balance-change
+   requests they raise. This page is ADMIN ONLY: a moderator who lands here is
+   bounced straight back to the dashboard, so they can never recruit peers.
+   =========================================================================== */
+(function() {
+    var uid = sessionStorage.getItem('user_id');
+    var ut = sessionStorage.getItem('user_type');
+    if (!uid || (ut !== 'admin' && ut !== 'moderator')) { sessionStorage.clear(); window.location.replace('login.html'); return; }
+    /* A moderator has no business on this page — it is the one screen that
+       would let them create another moderator. */
+    if (ut !== 'admin') { window.location.replace('dashboard.html'); return; }
+
+    function txt(s) { return String(s === undefined || s === null ? '' : s); }
+    function money(n) { return '৳' + (Number(n) || 0).toLocaleString('en-IN'); }
+    function dt(d) {
+        if (typeof formatDate === 'function') { try { return formatDate(d); } catch (e) {} }
+        return txt(d).slice(0, 10);
+    }
+    function esc2(s) { return (typeof esc === 'function') ? esc(s) : txt(s); }
+    function today() { return new Date().toISOString().slice(0, 10); }
+
+    window.mdAdd = function() {
+        var name = txt((document.getElementById('mdName') || {}).value).trim();
+        var email = txt((document.getElementById('mdEmail') || {}).value).trim();
+        var pass = txt((document.getElementById('mdPass') || {}).value);
+        var phone = txt((document.getElementById('mdPhone') || {}).value).trim();
+        if (!name || !email || !pass) { showToast('Name, Email ও Password দিতে হবে!', 'error'); return; }
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { showToast('সঠিক email দিন!', 'error'); return; }
+        var list = moderators();
+        for (var i = 0; i < list.length; i++) {
+            if (String(list[i].email || '').toLowerCase() === email.toLowerCase()) { showToast('এই email দিয়ে আগেই moderator আছে!', 'error'); return; }
+        }
+        list.push({ id: 'MOD' + Date.now(), name: name, email: email, password: pass, phone: phone,
+                    active: true, createdAt: new Date().toISOString(), createdBy: uid });
+        setData(DB_KEYS.MODERATORS, list);
+        try { logActivity('moderator_added', 'Moderator created: ' + name + ' <' + email + '>'); } catch (e) {}
+        document.getElementById('mdName').value = '';
+        document.getElementById('mdEmail').value = '';
+        document.getElementById('mdPass').value = '';
+        document.getElementById('mdPhone').value = '';
+        showToast('Moderator তৈরি হয়েছে — এখন সে admin login পেজ থেকে লগইন করতে পারবে।', 'success');
+        render();
+    };
+    window.mdToggle = function(id) {
+        var list = moderators();
+        for (var i = 0; i < list.length; i++) {
+            if (String(list[i].id) === String(id)) {
+                list[i].active = (list[i].active === false);
+                try { logActivity('moderator_toggled', 'Moderator ' + (list[i].name || id) + ' -> ' + (list[i].active ? 'active' : 'disabled')); } catch (e) {}
+                break;
+            }
+        }
+        setData(DB_KEYS.MODERATORS, list);
+        render();
+    };
+    window.mdDel = function(id) {
+        if (!confirm('এই moderator-কে মুছে ফেলবেন?')) return;
+        var list = moderators(), out = [];
+        for (var i = 0; i < list.length; i++) if (String(list[i].id) !== String(id)) out.push(list[i]);
+        setData(DB_KEYS.MODERATORS, out);
+        try { logActivity('moderator_removed', 'Moderator removed: ' + id); } catch (e) {}
+        showToast('Moderator মুছে ফেলা হয়েছে।', 'success');
+        render();
+    };
+    window.mdApprove = function(id) {
+        var r = approveModRequest(id);
+        showToast(r.message, r.ok ? 'success' : 'error');
+        render();
+    };
+    window.mdReject = function(id) {
+        if (!confirm('এই অনুরোধটি বাতিল করবেন? কোনো ব্যালেন্স বদলাবে না।')) return;
+        var r = rejectModRequest(id, 'Rejected by admin');
+        showToast(r.message, r.ok ? 'success' : 'error');
+        render();
+    };
+
+    function render() {
+        var list = moderators();
+        var reqs = modRequests();
+        var pending = [], handled = [];
+        for (var i = 0; i < reqs.length; i++) {
+            if (String(reqs[i].status) === 'pending') pending.push(reqs[i]); else handled.push(reqs[i]);
+        }
+        var act = 0;
+        for (var a = 0; a < list.length; a++) if (list[a].active !== false) act++;
+
+        document.getElementById('mdTotal').textContent = list.length;
+        document.getElementById('mdActive').textContent = act;
+        document.getElementById('mdPend').textContent = pending.length;
+        document.getElementById('mdReqCount').textContent = pending.length;
+        document.getElementById('mdListCount').textContent = list.length;
+
+        var rh = '';
+        for (var j = 0; j < pending.length; j++) {
+            var r = pending[j];
+            var isOut = Number(r.sign) < 0;
+            rh += '<tr>' +
+                '<td style="white-space:nowrap;font-size:.76rem;">' + esc2(dt(r.date)) + '</td>' +
+                '<td style="font-size:.78rem;">' + esc2(r.requestedByName || 'Moderator') + '</td>' +
+                '<td><span class="md-pill">' + (r.party === 'supplier' ? 'Supplier' : 'Reseller') + '</span> <strong>' + esc2(r.partyName) + '</strong></td>' +
+                '<td><span class="md-pill ' + (isOut ? 'out' : 'in') + '">' + (isOut ? 'Deduct' : 'Add') + '</span></td>' +
+                '<td style="text-align:right;font-weight:800;color:' + (isOut ? '#dc2626' : '#059669') + ';">' + (isOut ? '−' : '+') + money(r.amount) + '</td>' +
+                '<td style="font-size:.76rem;color:#475569;">' + (esc2(r.note) || '—') + '</td>' +
+                '<td style="white-space:nowrap;"><button class="btn btn-success btn-sm" onclick="mdApprove(\'' + esc2(r.id) + '\')"><i class="fas fa-check"></i> Approve</button> ' +
+                '<button class="btn btn-danger btn-sm" onclick="mdReject(\'' + esc2(r.id) + '\')"><i class="fas fa-times"></i></button></td>' +
+                '</tr>';
+        }
+        document.getElementById('mdReqBody').innerHTML = rh || '<tr><td colspan="7" class="empty">কোনো pending অনুরোধ নেই</td></tr>';
+
+        var hh = '';
+        for (var k = 0; k < handled.length && k < 40; k++) {
+            var q = handled[k];
+            var out2 = Number(q.sign) < 0;
+            hh += '<tr>' +
+                '<td style="white-space:nowrap;font-size:.76rem;">' + esc2(dt(q.handledAt || q.date)) + '</td>' +
+                '<td><span class="md-pill">' + (q.party === 'supplier' ? 'Supplier' : 'Reseller') + '</span> ' + esc2(q.partyName) + '</td>' +
+                '<td>' + (out2 ? 'Deduct' : 'Add') + '</td>' +
+                '<td style="text-align:right;">' + money(q.amount) + '</td>' +
+                '<td><span class="md-st ' + (q.status === 'approved' ? 'on' : 'off') + '">' + esc2(q.status) + '</span></td>' +
+                '</tr>';
+        }
+        document.getElementById('mdHistBody').innerHTML = hh || '<tr><td colspan="5" class="empty">এখনো কিছু নেই</td></tr>';
+
+        var lh = '';
+        for (var m = 0; m < list.length; m++) {
+            var x = list[m];
+            var on = x.active !== false;
+            lh += '<tr>' +
+                '<td><strong>' + esc2(x.name) + '</strong></td>' +
+                '<td style="font-size:.8rem;">' + esc2(x.email) + '</td>' +
+                '<td style="font-size:.8rem;">' + (esc2(x.phone) || '—') + '</td>' +
+                '<td style="font-size:.76rem;">' + esc2(dt(x.createdAt)) + '</td>' +
+                '<td><span class="md-st ' + (on ? 'on' : 'off') + '">' + (on ? 'Active' : 'Disabled') + '</span></td>' +
+                '<td style="white-space:nowrap;">' +
+                '<button class="btn btn-sm" style="background:' + (on ? '#f59e0b' : '#059669') + ';color:#fff;" onclick="mdToggle(\'' + esc2(x.id) + '\')">' + (on ? 'Disable' : 'Enable') + '</button> ' +
+                '<button class="btn btn-danger btn-sm" onclick="mdDel(\'' + esc2(x.id) + '\')"><i class="fas fa-trash-can"></i></button>' +
+                '</td></tr>';
+        }
+        document.getElementById('mdBody').innerHTML = lh || '<tr><td colspan="6" class="empty">এখনো কোনো moderator নেই</td></tr>';
+    }
+
+    window.doLogout = function() { sessionStorage.clear(); window.location.href = 'login.html'; };
+
+    /* Exposed so the page can be refreshed after an action, and by a harness.
+       A moderator files a request from the RESELLERS or SUPPLIERS page, which is
+       a different document — so also re-render when another tab writes, rather
+       than making the admin wait for the polling tick. */
+    window.mdRender = render;
+    window.addEventListener('storage', function(e) {
+        if (!e.key) return;
+        if (e.key.indexOf('rh_') === 0) render();
+    });
+
+    render();
+    setInterval(render, 8000);
+})();
+</script>
+
+<script>
+/* Admin sidebar toggle (additive) */
+if (!window.toggleSidebar) {
+    window.toggleSidebar = function(open) {
+        var sb = document.querySelector('.sidebar');
+        if (!sb) return;
+        if (open === undefined) open = !sb.classList.contains('open');
+        sb.classList.toggle('open', open);
+        var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+        if (ov) ov.classList.toggle('show', open);
+    };
+}
+</script>
+
+
+<script id="lx-auto-active">
+(function() {
+    var page = location.pathname.split('/').pop();
+    document.querySelectorAll('.sb-item').forEach(function(a) {
+        var href = (a.getAttribute('href') || '').split('?')[0];
+        if (href === page) a.classList.add('on');
+    });
+    /* ADMIN ONLY (this request) — a moderator must not see the Moderators page,
+       which is the one screen that could let them recruit another moderator.
+       The page itself also bounces a moderator; this hides the door as well. */
+    try {
+        if (sessionStorage.getItem('user_type') !== 'admin') {
+            document.querySelectorAll('.sb-item[href="moderators.html"]').forEach(function (a) { a.style.display = 'none'; });
+        }
+    } catch (e) {}
+})();
+</script>
+</body>
+</html>

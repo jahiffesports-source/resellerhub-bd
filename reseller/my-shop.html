@@ -1,0 +1,2157 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Shop - ResellerHub BD</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--ac:#e91e63;--acd:#ad1457}
+/* The old fixed bottom bar was removed; its 60px reserve showed up as a blank
+   white strip under the footer. The footer now occupies the bottom properly. */
+/* Part 7 — the footer must sit at the very bottom of the page even when a
+   category has 0 products. `body` is a full-height flex COLUMN and `.wrap`
+   (the only flexible content block) absorbs the leftover space with `flex:1`.
+   The footer is therefore pushed down by layout, NOT pinned with
+   `position:fixed` — nothing overlaps the content, and the sticky `.hdr`
+   continues to work. `min-height` uses 100vh with a dvh fallback for mobile
+   browser chrome. */
+html{height:100%}
+body{font-family:'Inter',sans-serif;background:#f5f6fa;color:#111;display:flex;flex-direction:column;min-height:100vh;min-height:100dvh; overflow-x:hidden; }
+a{text-decoration:none;color:inherit}button{font-family:inherit;cursor:pointer}
+img{max-width:100%;display:block}
+@keyframes fup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes shine{from{background-position:200% 0}to{background-position:-200% 0}}
+@keyframes slide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+
+/* ===== Marquee ===== */
+.mq{background:#0a0a0a;color:#fff;overflow:hidden;white-space:nowrap;font-size:.72rem;font-weight:700;padding:9px 0;letter-spacing:.5px}
+.mq-in{display:inline-block;animation:slide 30s linear infinite;padding-left:100%}
+.mq-in span{margin:0 28px;display:inline-block}
+.mq-in i{color:#fbbf24;margin-right:7px}
+
+/* ===== Header (Robe/HAYA black bar) ===== */
+.hdr{background:#0a0a0a;position:sticky;top:0;z-index:200;box-shadow:0 4px 18px rgba(0,0,0,.3)}
+.hdr-in{width:80%;max-width:2400px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;gap:18px}
+.brand{display:flex;align-items:center;gap:11px;cursor:pointer;flex:none}
+.brand .bimg{width:48px;height:48px;padding:3px;border-radius:9px;background:#fff;color:#0a0a0a;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.15rem;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+/* 2026-09-18 (this request) - with a logo, show the reseller's OWN upload exactly
+   as it is: its own size, its own colours. The slot adds nothing (no padding, no
+   white, no shadow, no border) and never scales the image. max-width:100% only
+   stops it overflowing the bar. */
+.brand .bimg.hasimg{width:auto;min-width:0;max-width:none;height:auto;padding:0;background:transparent;box-shadow:none;border-radius:0;overflow:visible}
+.brand .bimg.hasimg img{width:auto;height:auto;max-width:38px;max-height:38px;display:block;padding:0;background:transparent}
+/* Logo (#2) — the container has a controlled, fixed size and the image always
+   uses `contain`, so a wide / tall / square / transparent logo all fit nicely:
+   never stretched, never cropped, always centred. */
+.brand .bimg img{height:auto;width:auto;max-width:38px;max-height:38px;object-fit:contain;background:transparent;display:block;padding:0}
+.brand .btxt{font-weight:900;font-size:1.1rem;letter-spacing:.4px;color:#fff;line-height:1.1}
+.brand .bsub{font-size:.58rem;opacity:.8;font-weight:700;letter-spacing:2.5px;color:#fbbf24}
+.srch{flex:1;max-width:580px;margin:0 auto;display:flex;background:#1d1d1d;border-radius:30px;padding:5px 6px 5px 20px;align-items:center;border:1.5px solid #2a2a2a;transition:border-color .2s}
+.srch:focus-within{border-color:var(--ac)}
+/* 2026-09-17 — the small search icon was grey (#8a8a8a) on the dark bar.
+   The user asked for it white on every page that has this bar. */
+.srch i{color:#fff;margin-right:10px;font-size:.9rem}
+.srch input{flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:.88rem}
+.srch input::placeholder{color:#7a7a7a}
+/* 2026-09-17 — the round search button was pink (var(--ac)) with a white
+   icon. The user asked for a WHITE button with a BLACK icon. The small
+   icon inside the input (`.srch i`) stays white, as requested earlier. */
+.srch button{width:38px;height:38px;border:none;border-radius:50%;background:#fff;color:#fff;font-size:.88rem;cursor:pointer}
+.srch button i{color:#000;margin-right:0}
+.srch button:hover{background:#f1f5f9}
+.hcta{display:flex;align-items:center;gap:11px}
+.chip{display:flex;align-items:center;gap:9px;border:1.5px solid #fff;border-radius:12px;padding:9px 14px;color:#fff;font-weight:800;font-size:.82rem;cursor:pointer;background:transparent;flex:none;transition:background .15s}
+/* Customer Account chip, matching the Cart chip styling */
+.chip.acc{gap:7px}
+.chip.acc .acc-t{font-size:.78rem}
+.chip.acc.on{background:rgba(255,255,255,.18)}
+@media(max-width:600px){ .chip.acc .acc-t{display:none} .chip.acc{padding:9px 11px} }
+.chip:hover{background:rgba(255,255,255,.1)}
+.chip .cb{background:#fff;color:#0a0a0a;width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.72rem;position:relative}
+.chip .cb .ct{position:absolute;top:-8px;right:-8px;background:#e11d48;color:#fff;font-size:.55rem;font-weight:800;min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;border:1.5px solid #0a0a0a}
+
+/* ===== Part 1 — header 10% LARGER (DESKTOP ONLY) =====
+   Every value below is the existing desktop metric scaled by ~10%
+   (padding 14/22→15/24, gap 18→20, logo 48→53, title 1.1→1.21rem,
+   search 580→638 + button 38→42, chips 9/14→10/15 + 24→26).
+   Scoped to min-width:769px so the mobile AND tablet header keep their own
+   design exactly as before (Parts 6/21 — the mobile header must not change). */
+@media(min-width:769px){
+  /* THIS REQUEST — the header must span exactly the same left/right edges as
+     the footer. The footer is `width:80%` with 22px side padding, so the header
+     is now 80% with 22px side padding too (it was 70% / 24px, which left the
+     two bars visibly out of alignment). The vertical metric stays 15px. */
+  .hdr-in{padding:15px 22px;gap:20px}
+  .brand .bimg{width:53px;height:53px;font-size:1.26rem}
+  .brand .btxt{font-size:1.21rem}
+  .brand .bsub{font-size:.64rem}
+  .srch{max-width:638px;padding:6px 7px 6px 22px}
+  .srch input{font-size:.97rem}
+  .srch button{width:42px;height:42px;font-size:.97rem}
+  .chip{padding:10px 15px;font-size:.9rem}
+  .chip .cb{width:26px;height:26px;font-size:.79rem}
+  /* footer logo follows the header logo onto its desktop size, so the two stay
+     identical at every breakpoint */
+  .foot .fbimg{width:53px;height:53px;font-size:1.26rem}
+  /* 2026-09-18 — uploaded-logo desktop cap: 72px, i.e. ~77% smaller than the
+     320px logo the settings page stores. Header and footer stay identical. */
+  .brand .bimg.hasimg img,.brand .bimg img,.foot .fbimg.hasimg img,.foot .fbimg img{max-width:43px;max-height:43px}
+}
+
+/* ===== Nav (white category bar) ===== */
+.nav{background:#fff;border-bottom:1px solid #eee;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+/* Part 2 — the MAIN CATEGORY row is centred in the middle 70% of the screen
+   (15% empty left + 70% categories + 15% empty right). `width:70%;margin:0 auto`
+   already produced that geometry; what did not fit was the type scale — the old
+   .52rem label was too small to read once the row owned 70% of the width. The
+   links now sit at a comfortable size with real spacing, and the row scrolls
+   horizontally instead of wrapping when a shop has many categories.
+
+   THIS REQUEST (Part 2) — the row is ~20% larger again AND spread wider:
+     label  .68rem → .82rem          (+21%)
+     gap    26px   → 34px            (+31% horizontal distribution)
+     pad    11px 3px → 13px 5px      (bigger clickable area)
+   `justify-content:center` is kept, so the row stays centred and simply breathes
+   more; the ≤600px rule still hides `.nav` entirely, so mobile is unchanged. */
+.nav-in{width:70%;max-width:2400px;margin:0 auto;padding:0 22px;display:flex;justify-content:center;gap:34px;overflow-x:auto;flex-wrap:nowrap;position:relative}
+/* `--navc-ink` is set on .nav by applyTheme() so the category links stay legible
+   on any Category Color (dark strip -> white links). Falls back to the old ink. */
+.nav-in a{font-size:.82rem;font-weight:800;letter-spacing:.8px;color:var(--navc-ink,#222);padding:13px 5px;white-space:nowrap;border-bottom:1.8px solid transparent;cursor:pointer;transition:color .15s}
+.nav-in a:hover{color:var(--ac)}
+.nav-in a.on{color:var(--navc-ink,#0a0a0a);border-color:var(--navc-ink,#0a0a0a)}
+.nav-in a.off{color:#e11d48}
+
+/* ===== Layout ===== */
+/* Part 7 — `flex:1` makes the content column absorb any leftover height, so
+   the footer is always pushed to the bottom (0 products or 1000). Declared on
+   its own line to override the shared width rule below. */
+.wrap{flex:1 0 auto}
+.wrap{width:80%;max-width:2400px;margin:0 auto;padding:18px 22px 30px}@media(max-width:1100px){.wrap,.hdr-in,.nav-in,.foot-main,.foot-bot{width:94%}}@media(max-width:560px){.wrap,.hdr-in,.nav-in,.foot-main,.foot-bot{width:100%}}
+/* Part 6 — the containers were capped at `max-width:1680px`. On a 2560px screen
+   that made the 80% content resolve to only 1680px = 66% of the viewport (and
+   49% on a 3440px ultrawide) — exactly the "content only uses ~60% of the page"
+   complaint. The 80% / 70% widths were always right; the CAP was what broke them
+   on wide monitors. Raised to 2400px, which no longer binds at 2560px (80% =
+   2048px) and still keeps a sane maximum for readability on very wide screens.
+   The 70% header + 80% content split is unchanged. */
+
+/* ===== Section heading ===== */
+.sh{display:flex;align-items:center;justify-content:space-between;margin:24px 0 14px;flex-wrap:wrap;gap:8px}
+.sh h2{font-size:1.1rem;font-weight:800;position:relative;padding-left:14px;letter-spacing:-.2px}
+.sh h2 small{display:block;font-size:.6rem;color:#9a9a9a;font-weight:700;letter-spacing:1.5px;margin-top:3px}
+.sh h2:before{content:'';position:absolute;left:0;top:4px;bottom:4px;width:5px;border-radius:3px;background:linear-gradient(180deg,var(--ac),var(--acd))}
+.sh a{font-size:.74rem;color:#2563eb;font-weight:800;display:flex;align-items:center;gap:4px;cursor:pointer}
+
+/* ===== Parts 3/4 — homepage category sections =====
+   Reuses the existing `.sh` heading + `.pgrid`/`.pc` product card styles, so a
+   section looks exactly like the rest of the shop and inherits the same
+   responsive breakpoints (5 → 4 → 2 columns) for free. Only the spacing between
+   consecutive sections is new. */
+.cs-sh{margin-top:30px}
+.cs-sh h2{text-transform:capitalize}
+.cs-grid{margin-bottom:4px}
+/* ITEM 20 — the hierarchy reads at a glance: main, then sub, then sub-sub.
+   Pure indentation + a hairline rail; it changes no spacing outside the
+   section headings and no layout at all. */
+.cs-d2{margin-top:22px;padding-left:14px;border-left:2px solid #eef0f6}
+.cs-d3{margin-top:18px;padding-left:30px;border-left:2px solid #eef0f6}
+.cs-d2 h2{font-size:1rem}
+.cs-d3 h2{font-size:.94rem}
+
+/* ===== Hero ===== */
+.hero{position:relative;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,#fff1f2,#fdf2f8);padding:38px 36px;margin-bottom:8px;display:grid;grid-template-columns:1.2fr 1fr;gap:24px;align-items:center;min-height:280px}
+/* Part 9b (2026-09-18 request) — a reseller's OWN banners fill this exact slot.
+   NO fixed height and NO object-fit:cover: the image keeps its OWN aspect
+   ratio (height:auto), so nothing is ever cropped top or bottom — a small
+   image shows small, a big one shows big, and the band grows with it.
+   With more than one banner they slide, one after another, every 2 seconds. */
+.hero.hasimg{display:block;padding:0;background:transparent;min-height:0}
+.hero.hasimg .msbanner{display:none;width:100%;height:auto}
+.hero.hasimg .msbanner.on{display:block}
+.hero h1{font-size:2.4rem;font-weight:900;line-height:1.1;letter-spacing:-.5px;margin-bottom:10px;color:#1a1a1a}
+.hero h1 .acc{background:linear-gradient(135deg,var(--ac),#c084fc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:#555;font-size:.95rem;margin-bottom:18px;line-height:1.55}
+.hero .cta{display:flex;gap:10px;flex-wrap:wrap}
+.hero .cta a{padding:12px 22px;border-radius:30px;font-weight:800;font-size:.85rem}
+.hero .cta .p{background:linear-gradient(135deg,var(--ac),var(--acd));color:#fff;box-shadow:0 8px 20px rgba(233,30,99,.3)}
+.hero .cta .s{background:#fff;color:#0a0a0a;border:2px solid #0a0a0a}
+.hero-img{position:relative;height:260px;display:flex;align-items:center;justify-content:center}
+.hero-img .b1{position:absolute;width:200px;height:200px;border-radius:50%;background:linear-gradient(135deg,#fbcfe8,#f9a8d4);right:-30px;top:30px;opacity:.6;animation:pulse 4s ease-in-out infinite}
+.hero-img .b2{position:absolute;width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#fcd34d,#fbbf24);left:20px;bottom:10px;opacity:.5;animation:pulse 5s ease-in-out infinite}
+.hero-img .pc{position:relative;width:200px;height:240px;background:linear-gradient(135deg,#f9a8d4,#a855f7);border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:4rem;box-shadow:0 18px 38px rgba(168,85,247,.4);transform:rotate(-4deg);z-index:2}
+.hero-img .badge{position:absolute;top:14px;left:14px;background:#fff;color:var(--acd);font-size:.62rem;font-weight:900;padding:5px 11px;border-radius:14px;z-index:3;animation:pulse 2s ease-in-out infinite;letter-spacing:1px}
+
+/* ===== Category circles (10 main) ===== */
+.cats{display:grid;grid-template-columns:repeat(10,1fr);gap:14px}
+.cct{text-align:center;cursor:pointer;transition:transform .2s}
+.cct:hover{transform:translateY(-4px)}
+.cct .cc{width:78px;height:78px;border-radius:50%;background:#fdf2f8;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:1.55rem;overflow:hidden;transition:transform .25s;border:2.5px solid #f9a8d4}
+.cct:hover .cc{transform:rotate(-6deg) scale(1.05);box-shadow:0 10px 22px rgba(233,30,99,.2);border-color:var(--ac)}
+.cct.on .cc{border-color:var(--ac);background:linear-gradient(135deg,var(--ac),var(--acd));color:#fff}
+.cct.on p{color:var(--acd)}
+.cct .cc img{width:100%;height:100%;object-fit:cover}
+.cct p{font-size:.66rem;font-weight:800;color:#1e293b;line-height:1.3}
+
+/* ===== Campaign banners ===== */
+.camps{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:6px 0 18px}
+.cmp{border-radius:16px;color:#fff;padding:36px 28px;position:relative;overflow:hidden;cursor:pointer;min-height:140px;transition:transform .2s}
+.cmp:hover{transform:translateY(-3px)}
+.cmp h3{font-size:1.5rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;position:relative;z-index:2;line-height:1.1}
+.cmp small{display:block;opacity:.95;margin:6px 0 14px;font-size:.76rem;position:relative;z-index:2}
+.cmp span{background:#fff;color:#111;padding:7px 18px;border-radius:22px;font-weight:800;font-size:.74rem;display:inline-block;position:relative;z-index:2}
+.cmp:before{content:'';position:absolute;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.12);right:-70px;top:-70px}
+
+/* ===== Flash deals ===== */
+.deals{display:grid;grid-template-columns:repeat(5,1fr);gap:13px}
+.dl{background:#fff;border:1px solid #f1f5f9;border-radius:14px;overflow:hidden;cursor:pointer;position:relative;transition:transform .2s,box-shadow .2s}
+.dl:hover{transform:translateY(-5px);box-shadow:0 12px 24px rgba(15,23,42,.13)}
+.dl .di{height:140px;background:#f8fafc;display:flex;align-items:center;justify-content:center;color:#fff;font-size:2.5rem;overflow:hidden}
+/* Part 3 — flash-deal cards carry a real product photo, so they get the same
+   show-the-whole-product treatment as the main grid. `.cct .cc` (round category
+   avatars) deliberately stays `cover`: a circular mask needs a filled square,
+   and `contain` would letterbox inside the circle. */
+.dl .di img{width:100%;height:100%;object-fit:contain;background:#f8fafc}
+.dl .off{position:absolute;top:8px;left:8px;background:linear-gradient(135deg,var(--ac),var(--acd));color:#fff;font-size:.6rem;font-weight:900;padding:4px 9px;border-radius:6px;box-shadow:0 3px 8px rgba(233,30,99,.3)}
+.dl .dn{font-size:.72rem;font-weight:800;padding:9px 10px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dl .dp{font-size:.78rem;padding:0 10px 11px;color:#0f172a;font-weight:800}
+.dl .dp s{color:#94a3b8;font-size:.64rem;font-weight:600;margin-left:5px}
+
+/* Affordable — REMOVED */
+
+/* ===== Tabs ===== */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab{padding:9px 18px;border-radius:20px;font-size:.76rem;font-weight:800;background:#fff;border:1.5px solid #e2e8f0;color:#475569;cursor:pointer;transition:all .15s}
+.tab:hover{border-color:var(--ac);color:var(--ac)}
+.tab.on{background:linear-gradient(135deg,var(--ac),var(--acd));border-color:transparent;color:#fff;box-shadow:0 5px 14px rgba(233,30,99,.3)}
+
+/* ===== Sub-chips ===== */
+.subchips{display:none;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.subchips.on{display:flex}
+.subchip{padding:6px 14px;border-radius:16px;font-size:.72rem;font-weight:800;background:#fef9c3;color:#a16207;border:1.5px solid #fde68a;cursor:pointer}
+.subchip.on{background:#f59e0b;color:#fff;border-color:#f59e0b}
+
+/* ===== Product grid ===== */
+.hblk-none{display:flex;flex-direction:column;align-items:center;gap:7px;padding:44px 20px;color:#94a3b8;text-align:center}
+.hblk-none i{font-size:1.8rem;color:#cbd5e1}
+.hblk-none b{font-size:.92rem;font-weight:900;color:#64748b}
+.hblk-none span{font-size:.78rem;font-weight:600}
+.pol-ov{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px}
+.pol-box{background:#fff;border-radius:16px;max-width:640px;width:100%;max-height:84vh;display:flex;flex-direction:column;box-shadow:0 30px 70px rgba(0,0,0,.4)}
+.pol-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #eef2f7}
+.pol-hd b{font-size:1.05rem;font-weight:900;color:#0f172a}
+.pol-hd button{border:none;background:none;font-size:1.6rem;line-height:1;color:#94a3b8;cursor:pointer}
+.pol-bd{padding:18px 20px;overflow-y:auto;font-size:.88rem;line-height:1.85;color:#334155;white-space:normal}
+.hblk{margin:0 0 26px}
+.hblk-hd{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.hblk-ic{width:36px;height:36px;flex:0 0 36px;border-radius:10px;background:#eef2ff;color:#4f46e5;display:flex;align-items:center;justify-content:center;font-size:1rem}
+.hblk-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.hblk-tx b{font-size:.98rem;font-weight:900;color:#0f172a;line-height:1.15}
+.hblk-tx small{font-size:.6rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px}
+.hblk-all{font-size:.76rem;font-weight:800;color:#2563eb;cursor:pointer;text-decoration:none;white-space:nowrap}
+.hblk-all:hover{text-decoration:underline}
+.hblk-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.hblk-c{background:#fff;border:1px solid #eef2f7;border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s}
+.hblk-c:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(15,23,42,.12)}
+.hblk-im{position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;background:#f8fafc}
+.hblk-im img{width:100%;height:100%;object-fit:cover;display:block}
+.hblk-off{position:absolute;top:7px;left:7px;background:#dc2626;color:#fff;font-size:.6rem;font-weight:900;border-radius:6px;padding:2px 6px}
+.hblk-nm{font-size:.76rem;font-weight:700;color:#1e293b;padding:7px 9px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hblk-pr{font-size:.84rem;font-weight:900;color:#dc2626;padding:2px 9px 7px}
+.hblk-pr s{font-size:.66rem;font-weight:700;color:#94a3b8;margin-left:3px}
+.hblk-ob{width:calc(100% - 18px);margin:0 9px 9px;border:none;border-radius:8px;background:#16a34a;color:#fff;font-size:.7rem;font-weight:800;padding:7px;cursor:pointer}
+@media(max-width:1100px){.hblk-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:600px){.hblk-grid{grid-template-columns:repeat(2,1fr);gap:9px}}
+.pgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.pc{background:#fff;border:1px solid #f1f5f9;border-radius:14px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;animation:fup .4s ease both}
+.pc:hover{transform:translateY(-5px);box-shadow:0 14px 28px rgba(15,23,42,.14)}
+.pc .im{height:170px;background:#f8fafc;display:flex;align-items:center;justify-content:center;color:#fff;font-size:3rem;overflow:hidden;position:relative}
+/* Item 3 / Part 3 — the WHOLE product must be visible.
+   The rule used to say object-fit:cover while the comment claimed "no crop";
+   `cover` does the opposite — it scales the photo up until it fills the 170px
+   box and then crops the overflow (a square photo lost ~35% of its height).
+   That was the reported "excessively zoomed" look. `contain` shows the whole
+   product; the light `#f8fafc` backdrop keeps a portrait photo from looking
+   like it floats in a big white void. */
+.pc .im img{width:100%;height:100%;object-fit:contain;object-position:center;background:#f8fafc;transition:transform .4s}
+.pc:hover .im img{transform:scale(1.07)}
+.pc .im .off{position:absolute;top:8px;left:8px;background:linear-gradient(135deg,var(--ac),var(--acd));color:#fff;font-size:.6rem;font-weight:900;padding:4px 9px;border-radius:6px}
+.pc .nm{font-size:.76rem;font-weight:800;padding:9px 10px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc .pr{font-size:.86rem;font-weight:900;color:var(--ac);padding:0 10px}
+.pc .pr s{color:#94a3b8;font-weight:600;font-size:.66rem;margin-left:5px}
+.pc .ob{margin:9px 10px 11px;width:calc(100% - 20px);background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;border-radius:9px;padding:8px;font-size:.72rem;font-weight:800;cursor:pointer;transition:filter .15s}
+.pc .ob:hover{filter:brightness(1.1)}
+
+/* Contact — REMOVED */
+
+/* ===== Footer (Robe) ===== */
+/* Part 7 — footer never shrinks, so the flex column can never squeeze it. */
+.foot{background:#0a0a0a;color:#b5b5b5;margin-top:36px;position:relative;overflow:hidden;flex:0 0 auto}
+.foot .wm{position:absolute;left:0;right:0;bottom:-50px;text-align:center;font-size:11rem;font-weight:900;color:rgba(255,255,255,.025);letter-spacing:14px;pointer-events:none;white-space:nowrap;line-height:.8}
+.foot-main{width:80%;max-width:2400px;margin:0 auto;padding:48px 22px 30px;display:grid;grid-template-columns:1.2fr 1.3fr 1fr 1fr;gap:34px;font-size:.78rem;position:relative;z-index:2}
+/* THIS REQUEST — the footer logo is now the SAME size as the header logo
+   (.brand .bimg: 48px, 53px on desktop) and the same 8px corner radius, so the
+   header mark and the footer mark read as one brand. It was 90x68 with a 6px
+   radius. Nothing else in the footer was touched. */
+.foot .fbimg{width:48px;height:48px;padding:7px;background:#fff;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.15rem;color:#111;overflow:hidden;margin-bottom:18px;box-shadow:0 4px 10px rgba(255,255,255,.08)}
+.foot .fbimg.hasimg{width:auto;min-width:0;max-width:none;height:auto;padding:0;background:transparent;box-shadow:none;border-radius:0;overflow:visible}
+.foot .fbimg.hasimg img{width:auto;height:auto;max-width:38px;max-height:38px;display:block;padding:0;background:transparent}
+/* Footer logo (#4) — the SAME saved reseller logo as the header, no second
+   upload. Same controlled box + `contain` fitting. */
+.foot .fbimg img{height:auto;width:auto;max-width:38px;max-height:38px;object-fit:contain;background:transparent;display:block;padding:0}
+.foot h6{color:#fff;font-size:.78rem;font-weight:800;margin:0 0 12px;display:flex;align-items:center;gap:8px;letter-spacing:.3px}
+.foot h6 i{color:var(--ac);font-size:.8rem}
+.foot p,.foot a.fl{display:block;color:#9a9a9a;margin:0 0 9px;line-height:1.7}
+.foot a.fl:hover{color:#fff;cursor:pointer}
+.foot-bot{width:80%;max-width:2400px;margin:0 auto;padding:18px 22px;border-top:1px solid #1f1f1f;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-size:.72rem;position:relative;z-index:2}
+.foot-bot b{color:#fff}
+.wap{display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;font-weight:800;font-size:.74rem;padding:9px 20px;border-radius:22px;box-shadow:0 4px 10px rgba(37,211,102,.3);transition:transform .15s;cursor:pointer}
+.wap:hover{transform:translateY(-2px)}
+.soc{display:flex;gap:9px}
+.soc a{width:34px;height:34px;border-radius:50%;background:#1d1d1d;border:1px solid #333;display:flex;align-items:center;justify-content:center;color:#fff;transition:all .15s}
+.soc a:hover{background:var(--ac);border-color:var(--ac);transform:translateY(-2px)}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0a0a0a;color:#fff;padding:13px 28px;border-radius:12px;font-size:.85rem;font-weight:700;display:none;z-index:500;box-shadow:0 10px 30px rgba(0,0,0,.35);max-width:90%;text-align:center}
+.toast.on{display:block}
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;box-shadow:0 -3px 14px rgba(0,0,0,.08);z-index:300;padding:8px 4px}
+.mob-nav a{flex:1;text-align:center;color:#94a3b8;font-size:.6rem;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 8px}
+.mob-nav a i{font-size:1.1rem}
+.mob-nav a.on{color:var(--ac)}
+.mob-nav.on{display:flex}
+/* ---------- #5-#8 My Shop mobile bottom navigation ----------
+   Home | Product | Cart | WhatsApp. MOBILE ONLY (<=600px): a tablet (768px+)
+   is deliberately NOT treated as mobile, so the bar stays hidden there. */
+.ms-bnav{display:none;position:fixed;left:0;right:0;bottom:0;z-index:400;
+  background:rgba(255,255,255,.97);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  box-shadow:0 -4px 18px rgba(15,23,42,.14);padding:7px 4px calc(7px + env(safe-area-inset-bottom))}
+.ms-bnav a{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  text-decoration:none;color:#64748b;font-size:.62rem;font-weight:800;padding:6px 2px;min-height:52px;cursor:pointer}
+.ms-bnav a i{font-size:1.15rem;line-height:1}
+.ms-bnav a:active{background:#f1f5f9;border-radius:10px}
+.ms-bnav a.bn-wa{color:#25d366}
+.ms-bnav .bn-ct{position:absolute;top:2px;right:calc(50% - 22px);min-width:17px;height:17px;padding:0 4px;border-radius:9px;
+  background:#ef4444;color:#fff;font-size:.6rem;font-weight:900;display:flex;align-items:center;justify-content:center}
+@media(max-width:600px){
+  .ms-bnav{display:flex}
+  /* ITEM 20 — the clearance for the fixed bottom bar is carried by the FOOTER
+     itself, not by the body. Padding on `body` painted a strip of page
+     background BELOW the black footer, which read as dead height under it.
+     Padding the footer instead keeps the footer's own colour running right to
+     the bottom edge, with the bar resting on top of it. */
+  .foot{padding-bottom:calc(74px + env(safe-area-inset-bottom))}
+}
+.empty{text-align:center;padding:50px 12px;color:#9a9a9a;font-size:.88rem}
+.empty i{font-size:2.4rem;margin-bottom:10px;display:block;opacity:.6}
+
+@media(max-width:1100px){.cats{grid-template-columns:repeat(6,1fr)}.pgrid{grid-template-columns:repeat(4,1fr)}.deals{grid-template-columns:repeat(3,1fr)}}
+/* ===== Tabs (Robe-style pink pill) ===== */
+.tabs{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px;padding:0 2px}
+.tab{padding:10px 20px;border-radius:24px;font-size:.78rem;font-weight:800;background:#fff;border:1.5px solid #e2e8f0;color:#475569;cursor:pointer;transition:all .2s;letter-spacing:.2px;white-space:nowrap}
+.tab:hover{border-color:var(--ac);color:var(--ac);transform:translateY(-1px)}
+.tab.on{background:linear-gradient(135deg,var(--ac),var(--acd));border-color:transparent;color:#fff;box-shadow:0 6px 16px rgba(233,30,99,.35);transform:translateY(-1px)}
+
+/* ===== Sub-chips (yellow warm pill) ===== */
+.subchips{display:none;gap:9px;flex-wrap:wrap;margin:0 0 12px;padding:14px 16px;background:linear-gradient(135deg,#fffbeb,#fef9c3);border-radius:14px;border:1px solid #fde68a;box-shadow:inset 0 1px 2px rgba(217,119,6,.05)}
+.subchips.on{display:flex;animation:fup .3s ease both}
+.subchip{padding:8px 16px;border-radius:18px;font-size:.74rem;font-weight:800;background:#fff;color:#a16207;border:1.5px solid #fcd34d;cursor:pointer;transition:all .2s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.subchip:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(217,119,6,.18);border-color:#f59e0b}
+.subchip.on{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border-color:#f59e0b;box-shadow:0 4px 12px rgba(245,158,11,.4)}
+.subchip .x{opacity:.7;font-size:.7rem}
+
+/* ===== Sub-Sub chips (blue pill) ===== */
+#subSubChips{background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #93c5fd;box-shadow:inset 0 1px 2px rgba(59,130,246,.05)}
+#subSubChips .subchip{background:#fff;color:#1e40af;border:1.5px solid #93c5fd}
+#subSubChips .subchip:hover{border-color:#2563eb;color:#1e40af;box-shadow:0 4px 10px rgba(59,130,246,.18)}
+#subSubChips .subchip.on{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border-color:#1d4ed8;box-shadow:0 4px 12px rgba(37,99,235,.4)}
+
+@media(max-width:768px){
+  .hdr-in{gap:10px;padding:10px 14px;flex-wrap:wrap}
+  .srch{order:3;max-width:100%;margin:0;flex:1 1 100%}
+  .cats{grid-template-columns:repeat(4,1fr)}
+  .pgrid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .deals{grid-template-columns:repeat(2,1fr)}
+  .affs{grid-template-columns:repeat(2,1fr)}
+  .camps{grid-template-columns:1fr}
+  .hero{grid-template-columns:1fr;padding:24px}
+  .hero.hasimg{padding:0}
+  /* 2026-09-18 (this request) — on a PHONE only, the banner is made a bit
+     bigger VERTICALLY. The width stays exactly the screen (never wider), and
+     `min-height` only ever GROWS the band: an image that is already taller than
+     200px keeps its natural height, so nothing is ever cut top or bottom. Below
+     200px the image fills the taller band with `cover`, which crops the SIDES —
+     that is the trade for a taller banner at the same width. Desktop is
+     untouched. */
+  .hero.hasimg .msbanner{min-height:200px;object-fit:cover}
+  .foot-main{grid-template-columns:1fr 1fr}
+  .brand .btxt,.brand .bsub{display:none}
+  .hero h1{font-size:1.6rem}
+  .mob-nav.on{display:flex}
+  .cct .cc{width:72px;height:72px;font-size:1.4rem}
+}
+
+/* ===== Part 4/5 Mobile header (MOBILE ONLY — desktop untouched) =====
+   Required layout:  [Hamburger/Menu]   [Business Name]   [Account]
+   · the reseller LOGO is HIDDEN on mobile (the centred business name replaces it)
+   · the business name is centred and only exists on mobile (`.hdr-mid` has a
+     base `display:none`, so desktop never shows this mobile-specific element)
+   · Account sits at the FAR RIGHT — `margin-left:auto` keeps it pinned there
+     even when the cart chip is hidden, and the whole row is a 3-part flex. */
+@media(max-width:600px){
+  .hdr-in{padding:10px 12px;gap:8px}
+  /* logo hidden on mobile — the brand block collapses away entirely */
+  .brand .bimg{display:none}
+  .brand .btxt,.brand .bsub{display:none}
+  .brand{display:none}
+  .srch{display:none}
+  /* the hamburger (shown by the drawer block below) is pinned first in the row */
+  .hdr-in > #msBurger{order:0;flex:none}
+  .hdr-mid{display:block;flex:1;min-width:0;text-align:center;overflow:hidden;order:1}
+  .hdr-mid .bname{display:block;font-size:.9rem;font-weight:900;color:#fff;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* right side: cart (when it has items) then Account, always pinned right */
+  .hcta{gap:8px;order:2;margin-left:auto;flex:none}
+  .hcta .chip.acc .acc-t{display:none}
+  .ms-cart-empty{display:none!important}
+  .hcta .chip.acc{width:40px;height:40px;justify-content:center;padding:0}
+  .hcta .chip.acc i{font-size:1.05rem}
+}
+/* Part 6/7 — the centred name is MOBILE ONLY. Declared inside a min-width query
+   rather than as a bare rule placed after the mobile block: a later
+   `display:none` at equal specificity would otherwise win over the
+   `display:block` inside the max-width query and hide the name on mobile. */
+@media(min-width:601px){ .hdr-mid{display:none} }
+
+/* ===== #4 mobile floating cart (MOBILE ONLY) =====
+   Desktop keeps the cart in the header and ALWAYS shows it.
+   On mobile the header cart is hidden and this floating button is used; it is
+   driven by the REAL cart (rh_mycart_<rid>), so Buy Now never triggers it. */
+#msFloatCart{display:none;position:fixed;right:16px;bottom:150px;z-index:895;
+  width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#2563eb,#1e40af);color:#fff;
+  box-shadow:0 10px 26px rgba(37,99,235,.42);align-items:center;justify-content:center;font-size:1.25rem}
+#msFloatCart .n{position:absolute;top:-2px;right:-2px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;
+  background:#ef4444;color:#fff;font-size:.64rem;font-weight:900;display:flex;align-items:center;justify-content:center}
+@media(max-width:600px){
+  #msFloatCart.on{display:flex}
+  #msFloatCart{bottom:164px}
+}
+@media(min-width:601px){ #msFloatCart{display:none!important} }
+
+/* ===== #7/#8/#10/#11 Mobile hamburger + hierarchical categories (MOBILE ONLY) ===== */
+/* 2026-09-15 — a REAL tap target. The icon is a Font Awesome glyph; when the font
+   has not loaded (e.g. the page opened from file://, where the CDN may not
+   resolve) the button collapsed to a ~12px blank square. A tap then missed it
+   entirely and fell through to whatever was behind — which is why tapping "the
+   menu" appeared to do nothing, or opened a product card instead. The button now
+   has a fixed 44px hit area regardless of whether the glyph renders. */
+#msBurger{display:none;background:none;border:none;color:#fff;font-size:1.25rem;cursor:pointer;padding:6px;flex:none;
+  min-width:44px;min-height:44px;align-items:center;justify-content:center}
+#msDrawer{display:none;position:fixed;inset:0;z-index:940;background:rgba(15,23,42,.45)}
+#msDrawer.on{display:block}
+#msPanel{position:absolute;left:0;top:0;bottom:0;width:86%;max-width:330px;background:#fff;display:flex;flex-direction:column;
+  box-shadow:6px 0 26px rgba(15,23,42,.25)}
+#msPanel .ph{background:linear-gradient(135deg,#2563eb,#1e3a8a);color:#fff;padding:13px 14px;display:flex;align-items:center;gap:10px}
+#msPanel .ph b{font-size:.92rem}
+#msPanel .pb{flex:1;overflow-y:auto;padding:8px}
+/* a CLASS, not an id — one drawer row per category, so an id would be duplicated
+   on every row (invalid, and getElementById would return only the first). */
+.msRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #f1f5f9;
+  font-size:.88rem;font-weight:700;color:#0f172a;cursor:pointer}
+.msRow:hover{background:#f8fafc}
+#msBack{display:none;background:none;border:none;color:#fff;font-size:.82rem;font-weight:800;cursor:pointer;padding:0}
+@media(max-width:600px){
+  #msBurger{display:flex}   /* flex so the 44px hit area is centred, not collapsed */
+  .nav{display:none!important}          /* #11 — no line-by-line menu on mobile */
+  .hcta .chip#msCartChip{display:none!important}  /* #4 — cart never in the mobile header */
+  /* 2026-09-15 — ONE category level at a time on a phone. The inline main-category
+     tab row and the sub / sub-sub chip rows would otherwise stack on top of each
+     other, so a visitor deep in a category saw all three levels at once. The
+     drawer (#msPanel) already does one-level-at-a-time with a Back button, so on
+     phones the inline rows are redundant. Desktop and tablet are untouched. */
+  #tabRow,.subchips{display:none!important}
+}
+@media(min-width:601px){
+  #msBurger,#msDrawer{display:none!important}
+}
+
+/* ===== #13 / Parts 8-16 — RESELLER-UPLOADED hero =====
+   The hero is now driven entirely by the reseller's own uploaded images
+   (`shopHeroes(rid)`). When the reseller has uploaded artwork we show ONLY
+   that artwork — no generated branding overlay, no category text, no "Order
+   Now" button, no promo copy (Part 12).
+
+   The block is full-bleed and sits OUTSIDE `.wrap`, so it is not clipped by
+   the 80% content width. `object-fit:contain` + a neutral backdrop shows the
+   WHOLE image at any aspect ratio with no crop and no distortion (Parts 11,
+   13); `cover` would silently cut the edges.
+
+   Height: an aspect-ratio box scales cleanly from phone to ultrawide without
+   ever distorting or blurring the source (Part 22). */
+.ms-hero{position:relative;width:100%;margin:0;background:#0f172a;overflow:hidden}
+.ms-hero.has-img{aspect-ratio:1600/560}
+.ms-hero .sl{position:absolute;inset:0;opacity:0;transition:opacity .8s ease}
+.ms-hero .sl.on{opacity:1}
+/* the uploaded artwork itself — never scaled up beyond its own pixels */
+.ms-hero .sl img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;
+  background:#0f172a;display:block}
+/* single fixed image: no animation at all (Part 9 — 1 image never slides) */
+.ms-hero .dots{position:absolute;left:50%;transform:translateX(-50%);bottom:12px;z-index:3;display:flex;gap:7px}
+.ms-hero .dots i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.45);cursor:pointer}
+.ms-hero .dots i.on{background:#fff;width:22px;border-radius:6px}
+@media(max-width:600px){ .ms-hero.has-img{aspect-ratio:4/3} }
+</style>
+
+<style id="lx-theme-myshop">
+@keyframes lxPgUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+.pgrid .pc { transition:all .25s !important; animation:lxPgUp .45s ease both; }
+.pgrid .pc:hover { transform:translateY(-4px); box-shadow:0 16px 34px rgba(15,23,42,.14) !important; }
+.deals .dl { transition:all .25s !important; }
+.deals .dl:hover { transform:translateY(-3px); }
+.tabs .tab, .subchips .subchip { transition:all .2s !important; }
+.card, .kcard { border-radius:16px !important; }
+</style>
+
+<style id="lx-myshop-v2">
+/* ===== Category landing page (#16 - #19, #43) ===== */
+.crumb{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.72rem;font-weight:700;color:#64748b;margin-bottom:6px}
+.crumb a{cursor:pointer;color:var(--ac);font-weight:800}
+.crumb a:hover{text-decoration:underline}
+.crumb i{font-size:.6rem;opacity:.6}
+.catpage{background:#fff;border-radius:16px;padding:20px 22px;margin:10px 0 16px;box-shadow:0 2px 12px rgba(15,23,42,.06)}
+/* 2026-09-15 — the category chips and the product cards were touching.
+   The grid is rendered INSIDE .catpage (see renderCatPage), directly after the
+   chips row, and neither the chips (.sublist) nor the grid carried any vertical
+   margin — so the cards began the instant the pills ended.
+   One rule fixes it: a top margin on the grid inside the card. It works whether
+   or not the chips row is present (it is omitted once a sub-category is chosen,
+   in which case this margin simply collapses with the paragraph above it), so the
+   spacing stays even in both states. Nothing outside .catpage is affected. */
+.catpage .pgrid{margin-top:22px}
+.catpage h1{font-size:1.35rem;font-weight:900;color:#0f172a;margin:4px 0 6px;line-height:1.2}
+.catpage p{font-size:.78rem;color:#64748b;margin-bottom:12px}
+.catpage .sublist{display:flex;gap:8px;flex-wrap:wrap}
+.catpage .sublist a{background:#f8fafc;border:1px solid #eef2f7;border-radius:20px;padding:7px 14px;font-size:.74rem;font-weight:800;color:#334155;cursor:pointer}
+.catpage .sublist a:hover{border-color:var(--ac);color:var(--ac)}
+.catpage .sublist a.on{background:var(--ac);color:#fff;border-color:transparent}
+.shopoff{background:#fff;border-radius:20px;padding:60px 28px;text-align:center;max-width:520px;margin:60px auto;box-shadow:0 10px 40px rgba(15,23,42,.12)}
+.shopoff i{font-size:3.4rem;color:#cbd5e1;margin-bottom:16px;display:block}
+.shopoff h2{font-size:1.35rem;font-weight:900;margin-bottom:8px}
+.shopoff p{font-size:.85rem;color:#64748b;line-height:1.7}
+@media(max-width:560px){
+ .catpage{padding:15px 14px}
+ .catpage h1{font-size:1.1rem}
+}
+</style>
+
+<style id="reseller-hamburger-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   Every reseller page hides the hamburger with ".hamburger{display:none}", but most
+   pages never turn it back ON at mobile width — only products.html did. So on a phone
+   there was no way to open the sidebar on Products, Orders, Wallet, Withdrawals,
+   Courier, Messages, Support, Profile, Referral or Website Integration.
+   This shows the SAME existing button (onclick="menuToggle()") at mobile width only.
+   It is an ADDED block and lives entirely inside a max-width query, so the DESKTOP
+   LAYOUT IS UNCHANGED. */
+@media (max-width:768px){
+  .hamburger { display:block !important; }
+}
+</style>
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+
+<div class="mq"><div class="mq-in" id="marq"></div></div>
+
+<div class="hdr">
+    <div class="hdr-in">
+        <div class="brand" onclick="setCat('')">
+            <div class="bimg" id="hLogo">S</div>
+            <div><div class="btxt" id="hName">MY SHOP</div><div class="bsub">ONLINE MALL</div></div>
+        </div>
+        <div class="srch">
+            <i class="fas fa-search"></i>
+            <input id="q" placeholder="Search products, brands, categories..." oninput="renderGrid()">
+            <button onclick="renderGrid()"><i class="fas fa-search"></i></button>
+        </div>
+        <div class="hcta">
+            <div onclick="goCart()" class="chip" id="msCartChip"><span>TK <b id="chipTot">0</b></span><span class="cb"><i class="fas fa-bag-shopping"></i><span class="ct" id="cartCt">0</span></span></div>
+            <!-- Customer Account — this shop only -->
+            <div onclick="goAccount()" class="chip acc" title="My Account"><i class="fas fa-user"></i><span class="acc-t" id="accLbl">Account</span></div>
+        </div>
+    </div>
+</div>
+
+<nav class="nav"><div class="nav-in" id="hdrNav"></div></nav>
+
+<div class="wrap">
+    <div id="catPage"></div>
+    <div id="homeWrap">
+    <!-- Hero / "Shop Smart Lifestyles" promo banner.
+         Part 9 — this is the block the reseller can switch ON/OFF from
+         My Shop Settings → Shop Smart Lifestyles Banner. `id="msPromo"` is the
+         single stable handle the renderer toggles; nothing else about the
+         existing hero markup changes. -->
+    <div class="hero" id="msPromo">
+        <div>
+            <h1>SHOP <span class="acc">SMART</span><br>LIVE <span class="acc">STYLISH</span></h1>
+            <p>Quality products at the best price — delivered to your door. Cash on Delivery all over Bangladesh.</p>
+            <div class="cta">
+                <a class="p" href="javascript:void(0)" onclick="window.scrollTo({top:200,behavior:'smooth'})"><i class="fas fa-bag-shopping"></i> Shop Now</a>
+                <a class="s" id="heroWa" target="_blank" style="display:none"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+            </div>
+        </div>
+        <div class="hero-img">
+            <div class="b1"></div><div class="b2"></div>
+            <div class="pc"><i class="fas fa-store"></i></div>
+            <div class="badge">ONLINE MALL</div>
+        </div>
+    </div>
+
+    <div class="tabs" id="tabRow"></div>
+    
+
+    <!-- Parts 3/4 — one section per MAIN category of THIS shop, built at render
+         time from the shop's own visible products. Never a hardcoded list, and
+         never another reseller's product (the query is rid-scoped). -->
+    <div id="catSections"></div>
+
+    </div>
+    <!-- 2026-09-15 — the mixed "all products" block. Hidden unless the reseller
+         turns it on in Shop Settings → Homepage Sections. The homepage should
+         read category-wise; a pile of uncategorised products is not useful. -->
+    <div id="allProdBlock" style="display:none">
+    <div class="subchips" id="subChips"></div>
+    <div class="subchips" id="subSubChips"></div>
+    <div class="pgrid" id="pgrid"></div>
+    </div>
+</div>
+
+<!-- Robe Footer -->
+<div class="foot">
+    <div class="wm" id="fwm">MY SHOP</div>
+    <div class="foot-main">
+        <div>
+            <div class="fbimg" id="fLogo">S</div>
+            <h6><i class="fas fa-phone"></i> Phone Number</h6><p id="fPhone2"></p>
+            <h6><i class="fas fa-envelope"></i> Email Address</h6><p id="fEmailH"></p>
+        </div>
+        <div>
+            <h6><i class="fas fa-location-dot"></i> OUR SHOWROOM</h6>
+            <p style="margin:0 0 14px"><b style="color:#fff" id="fShopN">My Shop</b><br><span id="fAddr2"></span></p>
+            <h6 style="margin-top:14px"><i class="fas fa-clock"></i> ORDER TIME</h6>
+            <p style="margin:0">Everyday 9:00 AM — 10:00 PM<br>Cash on Delivery all over Bangladesh</p>
+        </div>
+        <div>
+            <h6><i class="fas fa-link"></i> QUICK LINKS</h6>
+            <a class="fl" href="javascript:void(0)" onclick="scrollToSec('prodSec')">All Products</a>
+            
+            <a class="fl" href="javascript:void(0)" onclick="scrollToSec('contactSec')">Contact Us</a>
+            <a class="fl" href="javascript:void(0)" onclick="goCart()">Checkout</a>
+        </div>
+        <div>
+            <h6><i class="fas fa-shield-heart"></i> POLICY</h6>
+            <a class="fl" onclick="shopPolicyOpen('delivery')">DELIVERY POLICY</a>
+            <a class="fl" onclick="shopPolicyOpen('return')">RETURN POLICY</a>
+            <a class="fl" onclick="shopPolicyOpen('privacy')">PRIVACY POLICY</a>
+            <a class="fl" onclick="shopPolicyOpen('about')">ABOUT US</a>
+        </div>
+    </div>
+    <div class="foot-bot">
+        <span>© 2026 <b style="color:#fff" id="fName2">My Shop</b> All rights reserved</span>
+        <span>Powered by <b style="color:var(--ac)">ResellerHub BD</b> | resellerhubbd.com | 01997904792</span>
+        <span style="display:flex;gap:10px;align-items:center">
+            <a class="wap" id="fwa2" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+            <span class="soc"><a id="fFb2" target="_blank"><i class="fab fa-facebook-f"></i></a><a id="fIg" target="_blank"><i class="fab fa-instagram"></i></a><a id="msTk" target="_blank" style="display:none"><i class="fab fa-tiktok"></i></a><a id="fWa3" target="_blank"><i class="fab fa-whatsapp"></i></a></span>
+        </span>
+    </div>
+</div>
+
+<!-- REMOVED: a legacy duplicate bottom bar used to live here.
+     `<nav class="mob-nav on">` carried the same Home / Products / Cart /
+     WhatsApp buttons, but `.mob-nav.on{display:flex}` was NOT inside any media
+     query — so those four buttons rendered on tablet and desktop too. It is
+     replaced by the single mobile-only bar (#msBnav) further down, which is
+     `display:none` by default and only shown under `@media(max-width:600px)`. -->
+
+<div class="toast" id="toast"></div>
+
+<script src="../app.js"></script><script>(function(){function paint(){try{var b=document.getElementById("ordersBadge");var uid=sessionStorage.getItem("user_id");if(!uid)return;if(sessionStorage.getItem("user_type")!=="reseller")return;var n=(typeof resellerNewOrderCount==="function")?resellerNewOrderCount(uid):0;if(b){b.textContent=n;b.style.display=n>0?"inline-block":"none";}var lb=document.getElementById("ordersBadgeLabel");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+var QP=new URLSearchParams(location.search);
+var rid=QP.get('rid');
+var ridDomain=QP.get('domain');
+var shop=null,newLogo='';
+var activeCat='',activeSub='',activeSubSub='',priceMax=0;
+window._av=[];window._deal=[];
+
+// items 17-22 — the main-category nav is built from the admin's live tree via
+// shopMainCategories(); this page keeps NO category list of its own.
+// 10 demo products (one per category)
+var DEFAULT_PRODUCTS = [
+    { id: 'dp1', name: 'Premium Drop Shoulder T-Shirt', category: "Men's Fashion", price: 450, customer_price: 890, image: '', stock: 25, discount: 25, supplierName: 'Maxx BD' },
+    { id: 'dp2', name: 'Classic Designer Panjabi', category: "Men's Fashion", price: 650, customer_price: 1190, image: '', stock: 12, discount: 20, supplierName: 'Maxx BD' },
+    { id: 'dp3', name: 'Designer Saree', category: "Women's Fashion", price: 850, customer_price: 1690, image: '', stock: 14, discount: 30, supplierName: 'FemaleBD' },
+    { id: 'dp4', name: 'Wireless BT Earbuds Pro', category: 'Electronics', price: 750, customer_price: 1490, image: '', stock: 18, discount: 30, supplierName: 'GadgetBD' },
+    { id: 'dp5', name: 'Smart Watch Series 8', category: 'Electronics', price: 1200, customer_price: 2290, image: '', stock: 8, discount: 25, supplierName: 'GadgetBD' },
+    { id: 'dp6', name: 'Anti-Aging Skincare Set', category: 'Beauty & Care', price: 380, customer_price: 990, image: '', stock: 30, discount: 35, supplierName: 'GlowBD' },
+    { id: 'dp7', name: 'Casual Sneakers', category: 'Footwear', price: 820, customer_price: 1590, image: '', stock: 15, discount: 20, supplierName: 'ShoeBD' },
+    { id: 'dp8', name: 'Stylish Backpack', category: 'Bags & Luggage', price: 580, customer_price: 1090, image: '', stock: 22, discount: 25, supplierName: 'BagBD' },
+    { id: 'dp9', name: 'Bedsheet Set 3-Piece', category: 'Home & Living', price: 950, customer_price: 1790, image: '', stock: 10, discount: 30, supplierName: 'HomeBD' },
+    { id: 'dp10', name: 'Designer Sunglasses', category: 'Accessories', price: 280, customer_price: 590, image: '', stock: 35, discount: 40, supplierName: 'StyleBD' }
+];
+
+function findShop(){
+    var list=getData(DB_KEYS.RESELLERS)||[];
+    /* (#11) custom domain resolves to exactly ONE shop */
+    if(ridDomain){
+        try{
+            var mapped=findShopByDomain(ridDomain);
+            if(mapped){
+                for(var d=0;d<list.length;d++){if(String(list[d].id)===String(mapped)){shop=list[d];rid=String(mapped);return}}
+            }
+        }catch(e){}
+    }
+    if(!list.length){try{var seed=(typeof STYLEX_ACCOUNT!=='undefined')?STYLEX_ACCOUNT:{id:1,name:'Stylex Shopping',email:'stylexshopping@gmail.com',password:'Stylexshopping@26',isPermanent:true,role:'owner',balance:15000,shop_name:'Stylex Shopping',shop_phone:'01997904792',shop_address:'Dhaka, Bangladesh',shop_color:'#e91e63',shop_logo:''};list=[seed];setData(DB_KEYS.RESELLERS,list)}catch(e){}}
+    if(!list.length)return;
+    /* An explicit ?rid= is AUTHORITATIVE. If it does not resolve we must NOT
+       fall through to another reseller's shop — that silently turned every
+       storefront into the first reseller in the list (Stylex). */
+    if(rid){
+        var hitRid=false;
+        for(var i=0;i<list.length;i++){if(String(list[i].id)===String(rid)){shop=list[i];hitRid=true;break}}
+        if(!hitRid){shop=null;return}                 /* -> "Shop not found" */
+        return;
+    }
+    /* No rid in the URL: a logged-in reseller always sees THEIR OWN shop. This
+       must win over the stale "last visited" id, otherwise opening My Shop from
+       the panel showed whichever shop was opened first (Stylex). */
+    try{var ut=sessionStorage.getItem('user_type');var uid=sessionStorage.getItem('user_id');if(ut==='reseller'&&uid){for(var k=0;k<list.length;k++){if(String(list[k].id)===String(uid)){shop=list[k];return}}}}catch(e){}
+    /* NEW TAB (2026-09-15) — sessionStorage is per-tab, so a link opened in a new
+       tab has no session even while the reseller is logged in elsewhere. The
+       signed "Remember Login" token lives in localStorage, which IS shared across
+       tabs, so restore from it before giving up. This can only resolve to the id
+       inside the visitor's OWN token — it never borrows another shop's identity. */
+    try{
+        if(typeof restorePersistentSession==='function'){
+            var ru=restorePersistentSession('reseller');
+            if(ru&&ru.id){
+                for(var m=0;m<list.length;m++){if(String(list[m].id)===String(ru.id)){shop=list[m];rid=String(ru.id);return}}
+            }
+        }
+    }catch(e){}
+    /* NO silent fallback any more.
+       A bare my-shop.html with no rid and no session used to fall through to
+       `rh_last_myshop_rid` and then to "the first approved reseller" — and
+       ensureStylexAccount() keeps Stylex (id 1) at index 0, so every
+       unrecognised visitor was shown STYLEX'S shop under STYLEX'S name even
+       though the reseller was logged in on another tab. sessionStorage is
+       per-tab, so opening My Shop in a new tab had no session at all and
+       landed straight on Stylex.
+       An unknown storefront now shows "Shop not found" — it must never borrow
+       another reseller's identity. */
+}
+/* Part 2 — delegate to the ONE canonical resolver in app.js. This local copy
+   used to omit `business_name`, so a record storing that alias fell through to
+   the owner's personal name and the header showed "Rahim"/"Zahid". */
+/* 2026-09-17 — the shop's business name, available IMMEDIATELY.
+   bname() depends on `shop`, which findShop() fills during boot; until then it fell
+   back to the literal string 'My Shop', so the header and footer read "My Shop"
+   while the page was still loading. This reads the reseller record straight from
+   localStorage by the id in the URL, so the real business name is there from the
+   very first paint. Returns '' rather than a placeholder when nothing is found. */
+function bnameNow(rid){
+    try{
+        var list=getData(DB_KEYS.RESELLERS)||[];
+        var id=String(rid||'');
+        for(var i=0;i<list.length;i++){
+            if(String(list[i].id)===id){
+                try{ var n=resellerBusinessName(list[i]); if(n) return n; }catch(e){}
+                return list[i].shop_name||list[i].shopName||list[i].businessName||list[i].name||'';
+            }
+        }
+    }catch(e){}
+    return '';
+}
+function bname(){try{return resellerBusinessName(shop)}catch(e){return(shop&&(shop.shop_name||shop.businessName||shop.name))||bnameNow(rid)||''}}
+function blogo(){return newLogo||(shop&&(shop.shop_logo||shop.shopLogo||shop.logo))||''}
+function acolor(){return(shop&&shop.shop_color)||'#e91e63'}
+function shade(hex,amt){var n=parseInt(hex.slice(1),16);var r=Math.min(255,Math.max(0,(n>>16)+amt)),g=Math.min(255,Math.max(0,((n>>8)&255)+amt)),b=Math.min(255,Math.max(0,(n&255)+amt));return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1)}
+function retail(p){return p.customer_price||Math.round(p.price*1.8)}
+function goCart(){location.href='my-shop-checkout.html?rid='+rid}
+/* Customer Account — always carries THIS shop's rid, so the account opened is
+   the one belonging to the shop being viewed. */
+function goAccount(){location.href='my-shop-account.html?rid='+rid}
+function renderAccountChip(){
+  var el=document.getElementById('accLbl'),chip=el?el.parentNode:null;
+  if(!el||!chip)return;
+  var c=null; try{c=shopCurrentCustomer(rid)}catch(e){}
+  if(c){ el.textContent=(String(c.name||'').split(' ')[0])||'Account'; chip.classList.add('on'); chip.title='My Account — '+String(c.name||''); }
+  else { el.textContent='Account'; chip.classList.remove('on'); chip.title='Login / Register'; }
+}
+function scrollToSec(id){var e=document.getElementById(id);if(e)window.scrollTo({top:e.offsetTop-110,behavior:'smooth'})}
+/* (#2) Seven-colour theme — read from THIS reseller's settings only. */
+function applyTheme(){
+    var t=null;
+    try{t=getShopSettings(shop?shop.id:rid).theme}catch(e){}
+    if(!t)t=DEFAULT_SHOP_THEME;
+    var root=document.documentElement;
+    root.style.setProperty('--ac',t.primary);
+    root.style.setProperty('--acd',shade(t.primary,-45));
+    root.style.setProperty('--ac2',t.secondary);
+    root.style.setProperty('--btn',t.button);
+    root.style.setProperty('--tx',t.text);
+    root.style.setProperty('--bg',t.background);
+    root.style.setProperty('--hd',t.header);
+    root.style.setProperty('--ft',t.footer);
+    try{
+        document.body.style.background=t.background;
+        document.body.style.color=t.text;
+        var h=document.querySelector('.hdr');if(h)h.style.background=t.header;
+        /* MAIN CATEGORY STRIP — its own colour now. `.nav` is the full-bleed
+           100%-wide band; `.nav-in` (70%, centred) only holds the links, so
+           painting `.nav` recolours the whole strip edge to edge. It used to
+           borrow t.header, which forced the bar dark whenever the header was. */
+        var n=document.querySelector('.nav');
+        if(n){
+            var cc=(typeof shopCategoryColor==='function')?shopCategoryColor(shop?shop.id:rid):(t.category||DEFAULT_SHOP_THEME.category);
+            if(!cc)cc=DEFAULT_SHOP_THEME.category;
+            n.style.background=cc;
+            /* keep the category links readable on whatever colour was picked */
+            n.style.setProperty('--navc-ink',(typeof rhTextOnColor==='function')?rhTextOnColor(cc):'#222');
+        }
+        var f=document.querySelector('.foot');if(f)f.style.background=t.footer;
+    }catch(e){}
+}
+/* 2026-09-15 — the "all products" block is OFF by default; the homepage is
+   category-wise. When the reseller switches it on, cap it at 30 products and
+   lay it out at their chosen 4–10 per row. */
+function applyHomepageBlock(){
+    try{
+        var hp=(typeof shopHomepage==='function')?shopHomepage(shop?shop.id:rid):{showAll:false,perRow:6};
+        var box=document.getElementById('allProdBlock');
+        if(box)box.style.display=hp.showAll?'':'none';
+        var pg=document.getElementById('pgrid');
+        if(pg){
+            var n=parseInt(hp.perRow,10);
+            if(isNaN(n)||n<4)n=4; if(n>10)n=10;
+            /* wide screens get one extra column, exactly as the old 5-col layout
+               paired with its 4-col tablet rule */
+            pg.style.gridTemplateColumns='repeat('+n+',1fr)';
+        }
+    }catch(e){}
+}
+/* (#49) SEO — dynamic title, description, Open Graph, canonical */
+function applySeo(){
+    try{
+        var bn=bname();
+        var title=bn+(activeCat?(' — '+activeCat):'')+(activeSub?(' — '+activeSub):'')+' | My Shop';
+        document.title=title;
+        var origin=location.origin+location.pathname;
+        var canon=(ridDomain?('https://'+normaliseDomain(ridDomain)+'/'):(origin+'?rid='+rid));
+        var desc=bn+' — quality products at the best price. Cash on Delivery all over Bangladesh.';
+        var lg=blogo();
+        function setMeta(sel,attr,val){
+            var el=document.querySelector(sel);
+            if(!el){el=document.createElement('meta');if(attr==='property')el.setAttribute('property',val.p);else el.setAttribute('name',val.n);document.head.appendChild(el);}
+            el.setAttribute('content',val.v);
+        }
+        var d=document.querySelector('meta[name="description"]');
+        if(!d){d=document.createElement('meta');d.setAttribute('name','description');document.head.appendChild(d)}
+        d.setAttribute('content',desc);
+        var og=['og:title','og:description','og:image','og:url','og:type'];
+        var ogv=[title,desc,lg||'',canon,'website'];
+        for(var i=0;i<og.length;i++){
+            var el=document.querySelector('meta[property="'+og[i]+'"]');
+            if(!el){el=document.createElement('meta');el.setAttribute('property',og[i]);document.head.appendChild(el)}
+            el.setAttribute('content',ogv[i]);
+        }
+        var cl=document.querySelector('link[rel="canonical"]');
+        if(!cl){cl=document.createElement('link');cl.setAttribute('rel','canonical');document.head.appendChild(cl)}
+        cl.setAttribute('href',canon);
+    }catch(e){}
+}
+function digits(ph){var d=String(ph||'').replace(/\D/g,'');if(d.charAt(0)==='0')d='88'+d;return d}
+/* items 17-22 — the shop header shows the ADMIN's live category tree only.
+   The old 10-item demo list that used to live here silently overwrote the shared
+   rh_categories key whenever it looked empty, which is why the header showed
+   categories the admin had never created. The storefront must never invent
+   categories: it reads shopMainCategories() (admin/global tree, filtered by the
+   admin's ON/OFF visibility) and nothing else. */
+function ensureData(){
+    try{
+        /* if the database genuinely has no categories yet, seed the SAME six that
+           app.js seeds — never a separate shop-only list */
+        var cs=getData(DB_KEYS.CATEGORIES)||[];
+        if(!cs.length && typeof defaultCategoryTree==='function'){
+            var seeded=defaultCategoryTree();
+            setData(DB_KEYS.CATEGORIES,seeded);
+            cs=seeded;
+        }
+        var ps=getData(DB_KEYS.PRODUCTS)||[];
+        if(!ps.length){setData(DB_KEYS.PRODUCTS,DEFAULT_PRODUCTS);ps=DEFAULT_PRODUCTS}
+    }catch(e){}
+}
+/* BUG FIX — terminal states were rendered with `document.body.innerHTML = ...`,
+   which blanks the whole page while later inline script blocks are still
+   executing (the reported WHITE SCREEN, with raw JS leaking into the visible
+   text). Render them IN PLACE instead, leaving the page and its scripts intact. */
+function shopMsgHtml(title, body, ctaHref, ctaText){
+    return '<div class="shopoff" style="display:flex;align-items:center;justify-content:center;min-height:70vh;padding:40px">'+
+        '<div style="background:#fff;border-radius:18px;padding:50px 30px;box-shadow:0 8px 30px rgba(15,23,42,.1);text-align:center;max-width:480px">'+
+        '<i class="fas fa-store-slash" style="font-size:3.4rem;color:#cbd5e1"></i>'+
+        '<h2 style="margin:16px 0 8px;font-size:1.4rem">'+title+'</h2>'+
+        '<p style="color:#64748b;font-size:.88rem">'+body+'</p>'+
+        '<a href="'+ctaHref+'" style="display:inline-block;margin-top:22px;background:#e91e63;color:#fff;padding:13px 32px;border-radius:12px;font-weight:800;text-decoration:none">'+ctaText+'</a>'+
+        '</div></div>';
+}
+function showShopMsg(title, body, ctaHref, ctaText){
+    try{
+        var box=document.getElementById('shopMsg');
+        if(!box){ box=document.createElement('div'); box.id='shopMsg'; document.body.appendChild(box); }
+        box.innerHTML=shopMsgHtml(title, body, ctaHref, ctaText);
+        box.style.display='block';
+        ['msNav','msContent','msHome','homeWrap','shopWrap','msHero'].forEach(function(id){
+            var el=document.getElementById(id); if(el&&el.style)el.style.display='none';
+        });
+    }catch(e){}
+}
+function render(){
+    if(!shop){ showShopMsg('Shop not found','এই My Shop খুঁজে পাওয়া যায়নি।','dashboard.html','Open My Dashboard'); return }
+    try{if(rid)localStorage.setItem('rh_last_myshop_rid',String(rid))}catch(e){}
+    if(!rid&&shop){rid=String(shop.id);try{history.replaceState(null,'',location.pathname+'?rid='+rid)}catch(e){}}
+    applyTheme();
+    applyHomepageBlock();
+    /* Part 9 — the reseller's ON/OFF switch for the "Shop Smart Lifestyles"
+       promo banner. Read from THIS shop's settings (default ON), so switching it
+       OFF only ever affects this shop and survives refresh / logout / login. */
+    var promoEl=document.getElementById('msPromo');
+    if(promoEl)promoEl.style.display=shopBannerOn(rid)?'':'none';
+    /* Part 9b (2026-09-18 request) — the banners for this SAME slot.
+       shopBannerDisplayImages() gives the reseller's OWN banners when they have
+       uploaded any, and otherwise the ADMIN's default three (set on the admin
+       Settings page). With more than one they slide, one after another, every 2
+       seconds. The demo markup is not removed — it is simply not drawn, so a shop
+       with neither its own nor an admin default still shows the built-in design. */
+    if(promoEl){
+        var _bimgs=shopBannerDisplayImages(rid);
+        if(_bimgs.length){
+            promoEl.classList.add('hasimg');
+            var _bh='';
+            for(var _bi=0;_bi<_bimgs.length;_bi++){
+                _bh+='<img class="msbanner'+(_bi===0?' on':'')+'" src="'+_bimgs[_bi]+'" alt="'+bname()+'">';
+            }
+            promoEl.innerHTML=_bh;
+            if(_bimgs.length>1&&!promoEl.__msbTimer){
+                promoEl.__msbTimer=setInterval(function(){
+                    var ims=promoEl.querySelectorAll('.msbanner');
+                    if(ims.length<2)return;
+                    var cur=0;
+                    for(var k=0;k<ims.length;k++){ if(ims[k].classList.contains('on')){cur=k;break} }
+                    var nx=(cur+1)%ims.length;
+                    ims[cur].classList.remove('on');
+                    ims[nx].classList.add('on');
+                },2000);
+            }
+        }
+    }
+    /* (#47) Admin disabled this storefront — products/orders are untouched. */
+    if(!isShopEnabled(shop.id)){
+        showShopMsg('Shop Unavailable','এই My Shop বর্তমানে বন্ধ আছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।','../index.html','Back to Home');
+        return;
+    }
+    ensureData();
+    /* (#4) PageView for this shop only */
+    try{shopPixelInit(shop.id)}catch(e){}
+    var lg=blogo();
+    rhSetLogo(document.getElementById('hLogo'),lg,bname().charAt(0));
+    rhSetLogo(document.getElementById('fLogo'),lg,bname().charAt(0));
+    renderAccountChip();
+    var bn=bname();
+    var hn=document.getElementById('hName');if(hn)hn.textContent=bn;
+    var fn2=document.getElementById('fName2');if(fn2)fn2.textContent=bn;
+    var wm=document.getElementById('fwm');if(wm)wm.textContent=bn.toUpperCase();
+    var ph=(shop.shop_phone||shop.phone||'01997904792');
+    var fp2=document.getElementById('fPhone2');if(fp2)fp2.textContent=ph;
+    var fe=document.getElementById('fEmailH');if(fe)fe.textContent=shop.email||'resellerhubbd@gmail.com';
+    var fsn=document.getElementById('fShopN');if(fsn)fsn.textContent=bn;
+    var fa2=document.getElementById('fAddr2');if(fa2)fa2.textContent=shop.shop_address||shop.address||'Bangladesh';
+    var wa='https://wa.me/'+digits(ph);
+    var fwa=document.getElementById('fwa2');if(fwa)fwa.href=wa;
+    var fw3=document.getElementById('fWa3');if(fw3)fw3.href=wa;
+    var ffb=document.getElementById('fFb2');if(ffb)ffb.href=shop.shop_fb||shop.facebook||'#';
+    var fig=document.getElementById('fIg');if(fig)fig.href=shop.shop_fb||shop.facebook||'#';
+    var hw=document.getElementById('heroWa');if(hw){hw.href=wa;hw.innerHTML='<i class="fab fa-whatsapp"></i> WhatsApp'}
+    var mb=document.getElementById('mbWa');if(mb)mb.href=wa;
+    var cc=0,ct=0;
+    try{var cl=JSON.parse(localStorage.getItem('rh_mycart_'+rid)||'[]');for(var i=0;i<cl.length;i++){cc+=cl[i].qty;ct+=cl[i].resale*cl[i].qty}}catch(e){}
+    var ctEl=document.getElementById('cartCt');if(ctEl)ctEl.textContent=cc;
+    var cpEl=document.getElementById('chipTot');if(cpEl)cpEl.textContent=ct;
+    /* PART 40 — the header shows MAIN categories only (global visible + this
+       reseller's own). Sub/sub-sub are reached by navigating into a category. */
+    /* 2026-09-17 — fixed header order, and OFFER is back at the end.
+       The user asked for: HOME · MEN'S FASHION · WOMEN'S FASHION ·
+       GADGET & ELECTRONICS · SPECIAL PRODUCT · KIDS · OFFER
+       orderShopNav() puts the categories in that sequence and supplies the exact
+       label for each; a category not on the list keeps its place after them. */
+    /* 2026-09-17 — SEO (this request): the shop's own title/description/keywords. */
+    try { applyShopSeo(shop, rid); } catch (e) { }
+    var navC=orderShopNav(shopMainCategories(rid));
+    var nh='<a class="on" onclick="goHome()">HOME</a>';
+    for(var n1=0;n1<navC.length;n1++){
+        var _lbl = navC[n1].label ? navC[n1].label : String(navC[n1].name).toUpperCase();
+        nh+='<a onclick="setCat(\''+String(navC[n1].name).replace(/'/g,"\\'")+'\')">'+_lbl+'</a>';
+    }
+    /* OFFER — restored. It used to be a hard-coded link that a later spec removed;
+       the user wants it back as the LAST item in the header. */
+    nh+='<a class="off" onclick="setPrice(1500)">OFFER</a>';
+    /* ITEM 7 (spec, 2026-09-14) — "হেডারে একেবারে লাস্টে অফার যে ক্যাটাগরিটা আছে
+       এই ক্যাটাগরিটা রিমুভ করে দাও". The hard-coded OFFER link that used to be
+       appended here (`<a class="off" onclick="setPrice(1500)">OFFER</a>`) is gone,
+       so the header now ends with the reseller's own main categories.
+       setPrice()/priceMax are left in place untouched: with no caller they simply
+       stay at 0, and the grid's own guard `if(priceMax)` then never fires. */
+    var hn2=document.getElementById('hdrNav');if(hn2)hn2.innerHTML=nh;
+    /* 2026-09-15 — the old "free delivery over ৳2000" promise was not something
+       the shop actually honours; free delivery is offered on special days (and
+       per-product by the reseller). Say what is true. */
+    var mqH='<span><i class="fas fa-bolt"></i>Free delivery on special days!</span><span><i class="fas fa-truck"></i>Cash on Delivery all over Bangladesh!</span><span><i class="fas fa-shield-heart"></i>100% Authentic guarantee</span>';
+    var mq=document.getElementById('marq');if(mq)mq.innerHTML=mqH+mqH;
+    applySeo();
+    renderTabs();renderSubChips();renderSubSubChips();
+    routeFromHash();          /* applies #/category/... and renders */
+    scrollToProducts();
+}
+/* The mobile "Product" button links to #pgrid. routeFromHash() only understands
+   #/category/..., so a bare #pgrid would otherwise be swallowed and the button
+   would land on the home view instead of the product listing. */
+function scrollToProducts(){
+    try{
+        if(String(location.hash||'')!=='#pgrid')return;
+        setTimeout(function(){
+            var gEl=document.getElementById('pgrid');
+            if(gEl&&gEl.scrollIntoView)try{gEl.scrollIntoView({block:'start'})}catch(e){}
+        },60);
+    }catch(e){}
+}
+/* ===== Category routing (#16 - #19) =====
+   Clean, shareable URLs:  my-shop.html?rid=5#/category/women/burqa/abaya  */
+function slug(s){return String(s||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
+function catHash(c,s,ss){
+    var h='#/category/'+encodeURIComponent(c||'');
+    if(s)h+='/'+encodeURIComponent(s);
+    if(ss)h+='/'+encodeURIComponent(ss);
+    return h;
+}
+function goHome(){activeCat='';activeSub='';activeSubSub='';priceMax=0;try{location.hash=''}catch(e){refreshView()}}
+/* 2026-09-17 — remember which category THIS visitor just opened, newest first.
+   A block with no hand-picked products uses this to decide what to show.
+   Kept in sessionStorage, keyed by shop, so it is per-visitor and never shared. */
+function rememberViewed(name){
+    try{
+        var k='rh_viewed_'+rid, raw=sessionStorage.getItem(k);
+        var a=raw?JSON.parse(raw):[];
+        if(Object.prototype.toString.call(a)!=='[object Array]') a=[];
+        var v=String(name||'').trim();
+        if(!v) return;
+        var out=[v];
+        for(var i=0;i<a.length;i++) if(String(a[i])!==v && out.length<8) out.push(a[i]);
+        sessionStorage.setItem(k,JSON.stringify(out));
+    }catch(e){}
+}
+function setCat(n){
+    try{ rememberViewed(n); }catch(e){}
+    activeCat=n;activeSub='';activeSubSub='';priceMax=0;
+    if(n){try{location.hash=catHash(n);return}catch(e){}}
+    refreshView();
+}
+function setSub(s){
+    try{ rememberViewed(n); }catch(e){}
+    activeSub=s;activeSubSub='';
+    if(activeCat&&s){try{location.hash=catHash(activeCat,s);return}catch(e){}}
+    refreshView();
+}
+function setSubSub(s){
+    try{ rememberViewed(n); }catch(e){}
+    activeSubSub=s;
+    if(activeCat&&activeSub&&s){try{location.hash=catHash(activeCat,activeSub,s);return}catch(e){}}
+    refreshView();
+}
+function setPrice(mx){priceMax=mx;activeCat='';activeSub='';activeSubSub='';renderTabs();renderSubChips();renderSubSubChips();renderGrid();window.scrollTo({top:200,behavior:'smooth'})}
+function refreshView(){applySeo();renderTabs();renderSubChips();renderSubSubChips();renderCatPage();renderGrid();renderCatSections()}
+/* Parse #/category/a/b/c and apply it as the active 3-level selection. */
+function routeFromHash(){
+    var h=String(location.hash||'').replace(/^#\/?/,'');
+    var m=h.match(/^category\/(.+)$/i);
+    if(!m){activeCat='';activeSub='';activeSubSub='';refreshView();return}
+    var parts=m[1].split('/').map(function(x){try{return decodeURIComponent(x)}catch(e){return x}});
+    var cats=getData(DB_KEYS.CATEGORIES)||[];
+    function findIn(list,name){
+        for(var i=0;i<list.length;i++){if(slug(list[i])===slug(name))return list[i]}
+        return null;
+    }
+    var names=[];
+    for(var i=0;i<cats.length;i++)names.push(String(cats[i].name));
+    var c=findIn(names,parts[0]);
+    if(!c){activeCat='';activeSub='';activeSubSub='';refreshView();return}
+    activeCat=c;
+    activeSub=parts[1]||'';
+    activeSubSub=parts[2]||'';
+    refreshView();
+}
+/* Dedicated category / subcategory / sub-subcategory landing page (#16 - #18) */
+function renderCatPage(){
+    var box=document.getElementById('catPage');
+    var homeWrap=document.getElementById('homeWrap');
+    if(!box)return;
+    if(!activeCat){
+        box.innerHTML='';box.style.display='none';
+        if(homeWrap)homeWrap.style.display='';
+        /* Part 14/15 — back on the homepage: the hero may show again */
+        if(window.msHeroRender){ try{window.msHeroRender();}catch(e){} }
+        return;
+    }
+    if(homeWrap)homeWrap.style.display='none';
+    /* Part 14/15 — a category / sub / sub-sub view NEVER shows the hero.
+       Remove it here as well as via the observer, so the very first paint is
+       already correct (no flash of hero on a category page). */
+    if(window.msHeroRemove){ try{window.msHeroRemove();}catch(e){} }
+    box.style.display='';
+    /* PART 41 — sub / sub-sub for THIS shop only (global visible + own) */
+    var subObjs=shopSubCategories(rid,activeCat);
+    var subs=[];
+    for(var i=0;i<subObjs.length;i++)subs.push(subObjs[i].name);
+    var subSubs=[];
+    if(activeSub){
+        var ssObjs=shopSubSubCategories(rid,activeCat,activeSub);
+        for(var j=0;j<ssObjs.length;j++)subSubs.push(ssObjs[j].name);
+    }
+    var label=activeSubSub||activeSub||activeCat;
+    var crumb='<div class="crumb"><a onclick="goHome()">Home</a><i class="fas fa-chevron-right"></i>'+
+        (activeSub?'<a onclick="setCat(\''+String(activeCat).replace(/'/g,"\\'")+'\')">'+String(activeCat)+'</a>':'<b>'+String(activeCat)+'</b>');
+    if(activeSub)crumb+='<i class="fas fa-chevron-right"></i>'+(activeSubSub?'<a onclick="setSub(\''+String(activeSub).replace(/'/g,"\\'")+'\')">'+String(activeSub)+'</a>':'<b>'+String(activeSub)+'</b>');
+    if(activeSubSub)crumb+='<i class="fas fa-chevron-right"></i><b>'+String(activeSubSub)+'</b>';
+    crumb+='</div>';
+
+    var listHtml='';
+    if(!activeSub){
+        var vis=[];
+        for(var s1=0;s1<subs.length;s1++){if(isCategoryVisible(rid,'subs',shopCatKey(activeCat,subs[s1])))vis.push(subs[s1])}
+        if(vis.length){
+            listHtml='<div class="sublist"><a class="'+(activeSub?'':'on')+'" onclick="setSub(\'\')">All '+String(activeCat)+'</a>';
+            for(var s2=0;s2<vis.length;s2++)listHtml+='<a class="'+(activeSub===vis[s2]?'on':'')+'" onclick="setSub(\''+String(vis[s2]).replace(/'/g,"\\'")+'\')">'+String(vis[s2])+'</a>';
+            listHtml+='</div>';
+        }
+    }else if(subSubs.length){
+        var vis2=[];
+        for(var s3=0;s3<subSubs.length;s3++){if(isCategoryVisible(rid,'subsubs',shopCatKey(activeCat,activeSub,subSubs[s3])))vis2.push(subSubs[s3])}
+        if(vis2.length){
+            listHtml='<div class="sublist"><a class="'+(activeSubSub?'':'on')+'" onclick="setSubSub(\'\')">All '+String(activeSub)+'</a>';
+            for(var s4=0;s4<vis2.length;s4++)listHtml+='<a class="'+(activeSubSub===vis2[s4]?'on':'')+'" onclick="setSubSub(\''+String(vis2[s4]).replace(/'/g,"\\'")+'\')">'+String(vis2[s4])+'</a>';
+            listHtml+='</div>';
+        }
+    }
+    /* 2026-09-15 — the category page used to render ONLY a heading, a COUNT and
+       the sub-category chips. The products themselves were never drawn, so
+       clicking "Gadget & Electronics" (or any level) looked empty even though
+       the count said otherwise. Draw the grid with the SAME filter the count
+       uses, so the number and the listing can never disagree.
+       shopFilter() already does the right thing at every level:
+         main     -> every product under it, including sub and sub-sub
+         sub      -> every product under that sub
+         sub-sub  -> only that sub-sub's products. */
+    var prods=shopFilter(shopVisibleProducts(rid),activeCat,activeSub,activeSubSub);
+    var cnt=prods.length;
+    /* A SEPARATE array, not window._cs: refreshView() calls renderCatSections()
+       AFTER this, and that function resets window._cs for the homepage
+       sections — which would make every card here open the wrong product. */
+    window._catProds=prods;
+    var gridHtml='';
+    for(var z=0;z<prods.length;z++)gridHtml+=catCardHTML(prods[z],z);
+    box.innerHTML='<div class="catpage">'+crumb+'<h1>'+String(label)+'</h1>'+
+        '<p>'+cnt+' product(s) available in '+String(label)+'</p>'+listHtml+
+        (cnt
+            ? '<div class="pgrid">'+gridHtml+'</div>'
+            : '<div class="empty"><i class="fas fa-box-open"></i>No products in this category yet.</div>')+
+        '</div>';
+}
+
+function renderDeals(){
+    var ps=shopVisibleProducts(rid);var av=[];
+    for(var i=0;i<ps.length;i++){if((ps[i].stock||0)>0)av.push(ps[i])}
+    av.sort(function(a,b){return (b.discount||0)-(a.discount||0)});
+    av=av.slice(0,5);window._deal=av;
+    var h='';
+    for(var j=0;j<av.length;j++){
+        var p=av[j];var off=p.discount||25;var r=retail(p);
+        h+='<div class="dl" onclick="goProdView('+j+')">'+(prodImgSrc(p.image)?'<div class="di"><img src="'+prodImgSrc(p.image)+'"></div>':'<div class="di" style="background:linear-gradient(135deg,#f9a8d4,#a855f7);color:#fff;font-size:2.5rem"><i class="fas fa-box"></i></div>')+
+           '<span class="off">'+off+'% OFF</span><div class="dn">'+p.name+'</div><div class="dp">৳'+r+'<s>৳'+Math.round(r*1.3)+'</s></div></div>';
+    }
+    var dr=document.getElementById('dealRow');if(dr)dr.innerHTML=h||'<div class="empty">Deals coming soon</div>';
+}
+function goProdView(i){var p=window._deal[i];if(!p)return;try{rememberViewed(p.subSub||p.section||p.subSection||p.category);}catch(e){}location.href='my-shop-product.html?id='+p.id+'&rid='+rid}
+
+/* ===== Parts 3/4 — HOMEPAGE CATEGORY SECTIONS (below Flash Deals) =====
+   One section per MAIN category of THIS shop, in the shop's own category order
+   (`shopMainCategories(rid)` — the same source the header nav uses, so the nav
+   and these sections can never disagree).
+
+   Products come from `shopVisibleProducts(rid)`, the ONE canonical query that
+   already applies ownership + visibility + stock rules, so:
+     · only THIS reseller's allowed products can appear,
+     · another shop's product can never leak in (the query is rid-scoped),
+     · nothing is hardcoded — add a category in Admin and a section appears.
+   "View All" (Part 4) reuses the EXISTING category page via setCat(name), which
+   opens exactly that one category and nothing else. */
+/* ===== ITEM 20 (spec, 2026-09-14) — HOMEPAGE SECTIONS, main → sub → sub-sub =====
+   Supersedes the earlier "one section per MAIN category" version.
+
+   Order, per main category of THIS shop:
+       1. the main-category products
+       2. that category's SUB-category products
+       3. that category's SUB-SUB-category products
+   ...and then NOTHING — the footer follows straight after.
+
+   Every product appears in exactly ONE section: the deepest one that matches.
+   A product with category+sub+subSub is in the sub-sub section only, never
+   three times. A product with no sub is in the main section.
+
+   Products still come from `shopVisibleProducts(rid)` — the ONE canonical
+   query applying ownership + visibility + stock rules — so another shop's
+   product can never leak in and nothing is hardcoded. On top of that the
+   reseller (and the admin) may PIN products into a section by hand from
+   Shop Settings; a pinned product MOVES there. `shopHomepageSections(rid)`
+   in app.js is the single resolver that applies both. */
+window._cs=[];
+function goCs(i){var p=window._cs[i];if(!p)return;try{rememberViewed(p.subSub||p.section||p.subSection||p.category);}catch(e){}location.href='my-shop-product.html?id='+encodeURIComponent(p.id)+'&rid='+rid}
+/* 2026-09-15 — the category page's own card + click target. Kept separate from
+   csCardHTML/goCs because refreshView() repaints the homepage sections (and
+   resets window._cs) after the category page, which would misroute clicks. */
+function goCatProd(i){var p=window._catProds[i];if(!p)return;try{rememberViewed(p.subSub||p.section||p.subSection||p.category);}catch(e){}location.href='my-shop-product.html?id='+encodeURIComponent(p.id)+'&rid='+rid}
+function catCardHTML(p,idx){
+    var r=retail(p),old=Math.round(r*1.25),off=p.discount||20;
+    var img=prodImgSrc(p.image)?'<img src="'+prodImgSrc(p.image)+'">':'<div style="background:linear-gradient(135deg,#f9a8d4,#a855f7);width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff"><i class="fas fa-image"></i></div>';
+    return '<div class="pc" onclick="goCatProd('+idx+')">'+
+        '<div class="im">'+img+'<span class="off">-'+off+'%</span></div>'+
+        '<div class="nm">'+p.name+'</div>'+
+        '<div class="pr">৳'+r+'<s>৳'+old+'</s></div>'+
+        '<button class="ob" onclick="event.stopPropagation();goCatProd('+idx+')"><i class="fas fa-bag-shopping"></i> Order Now</button></div>';
+}
+function csCardHTML(p,idx){
+    var r=retail(p),old=Math.round(r*1.25),off=p.discount||20;
+    var img=prodImgSrc(p.image)?'<img src="'+prodImgSrc(p.image)+'">':'<div style="background:linear-gradient(135deg,#f9a8d4,#a855f7);width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:3rem"><i class="fas fa-box"></i></div>';
+    return '<div class="pc" onclick="goCs('+idx+')">'+
+        '<div class="im">'+img+'<span class="off">-'+off+'%</span></div>'+
+        '<div class="nm">'+p.name+'</div>'+
+        '<div class="pr">৳'+r+'<s>৳'+old+'</s></div>'+
+        '<button class="ob" onclick="event.stopPropagation();goCs('+idx+')"><i class="fas fa-bag-shopping"></i> Order Now</button></div>';
+}
+/* single-quote safe for an inline onclick attribute */
+function csJs(v){return String(v===undefined||v===null?'':v).replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+/* "View All" for ANY level: sets all three of cat/sub/sub-sub and routes
+   through the SAME hash router the category chips use. */
+function goSection(c,s,ss){
+    activeCat=c||'';activeSub=s||'';activeSubSub=ss||'';priceMax=0;
+    if(activeCat){try{location.hash=catHash(activeCat,activeSub,activeSubSub);return}catch(e){}}
+    refreshView();
+}
+/* ===========================================================================
+   2026-09-17 — HOMEPAGE BLOCKS (this request). The reseller's own rows, drawn
+   ABOVE the older category sections. Each block is: icon + title + subtitle +
+   up to 6 cards + an optional "View All".
+     * a CATEGORY block links "View All" to its category page
+     * a MIXED block has no category, so it shows no "View All"
+   When the reseller hand-picked products those show; otherwise the block fills
+   itself from what THIS customer has been browsing (shopBlockResolve).
+   =========================================================================== */
+function homeBlockViewed(){
+    /* the customer's recent category trail, newest first — read from session so
+       it is per-visitor and never shared between shops */
+    try{
+        var raw=sessionStorage.getItem('rh_viewed_'+rid);
+        var a=raw?JSON.parse(raw):[];
+        return Object.prototype.toString.call(a).match(/Array/)?a:[];
+    }catch(e){ return []; }
+}
+/* ===========================================================================
+   2026-09-17 — SMART ORDER (this request).
+   The user's rule: a customer who has been looking at pants should see a bit
+   MORE pants — but NOT all pants, or the page feels repetitive and they switch
+   off. So: give the viewed categories a boost, then INTERLEAVE so the page still
+   reads as a varied shop.
+     1. score every product — +2 for the newest viewed sub, +1 for the next few
+     2. sort by score, newest first inside a score
+     3. walk the sorted list, taking roughly 2 from the boosted group for every 1
+        from the rest, so no run of the same thing is longer than two
+   With no trail at all it falls back to the shop's natural order.
+   =========================================================================== */
+function smartProductOrder(prods, viewed){
+    var list = asArray(prods);
+    if (!list.length) return list;
+    var trail = asArray(viewed).map(String).filter(function(x){ return x; });
+    if (!trail.length) return list.slice();
+
+    function score(p){
+        var s = 0;
+        var sub = String((p.section || p.subSection || '')).trim();
+        var ss  = String(p.subSub || '').trim();
+        var cat = String(p.category || '').trim();
+        for (var i = 0; i < trail.length; i++) {
+            var w = trail[i], weight = (i === 0 ? 4 : (i < 3 ? 2 : 1));
+            if (ss && catKeyMatch(ss, w)) { s += weight * 2; continue; }
+            if (sub && catKeyMatch(sub, w)) { s += weight * 2; continue; }
+            if (cat && catKeyMatch(cat, w)) { s += weight; continue; }
+        }
+        return s;
+    }
+    var hot = [], rest = [];
+    for (var k = 0; k < list.length; k++) {
+        if (score(list[k]) > 0) hot.push(list[k]); else rest.push(list[k]);
+    }
+    if (!hot.length || !rest.length) return list.slice();
+
+    /* interleave: 2 hot, then 1 rest — so it never becomes a wall of one thing */
+    var out = [], hi = 0, ri = 0;
+    while (hi < hot.length || ri < rest.length) {
+        for (var a = 0; a < 2 && hi < hot.length; a++) out.push(hot[hi++]);
+        if (ri < rest.length) out.push(rest[ri++]);
+    }
+    return out;
+}
+function renderHomeBlocks(){
+    /* 2026-09-18 — the STOREFRONT reader: the reseller's own blocks, else the
+       admin's default set, and the premium gate applies here (a shop whose
+       premium has run out shows the free look). The management page reads the
+       raw saved list instead, so a delete is never silently reverted. */
+    var list=(typeof shopBlocksStorefront==='function')?shopBlocksStorefront(rid):[];
+    var viewed=homeBlockViewed();
+    var h='';
+    /* 2026-09-17 — NO BLOCKS: never leave the homepage empty. Show the whole shop
+       as one "All Products" row, ordered by what THIS customer has been browsing.
+       It is written in the shop's own voice — no internal wording, ever. */
+    if(!list.length){
+        var allp = smartProductOrder(asArray(shopVisibleProducts(rid)), viewed);
+        if(!allp.length) return '';
+        var shownAll = allp.slice(0, 12);
+        h += '<div class="hblk"><div class="hblk-hd">' +
+             '<span class="hblk-ic"><i class="fas fa-bag-shopping"></i></span>' +
+             '<span class="hblk-tx"><b>All Products</b><small>PICKED FOR YOU</small></span>' +
+             '<a class="hblk-all" onclick="scrollToSec(\'prodSec\')">View All <i class="fas fa-arrow-right"></i></a>' +
+             '</div><div class="hblk-grid">';
+        for(var z=0; z<shownAll.length; z++){
+            var q=shownAll[z], qr=retail(q), qold=Math.round(qr*1.25), qoff=q.discount||20;
+            var qs=prodImgSrc(q.image);
+            var qimg=qs?'<img src="'+qs+'">':'<div style="background:linear-gradient(135deg,#f9a8d4,#a855f7);width:100%;height:100%"></div>';
+            h+='<div class="hblk-c" onclick="try{rememberViewed(q.subSub||q.section||q.subSection||q.category);}catch(e){};location.href=\'my-shop-product.html?id='+q.id+'&rid='+rid+'\'">'+
+               '<div class="hblk-im">'+qimg+'<span class="hblk-off">-'+qoff+'%</span></div>'+
+               '<div class="hblk-nm">'+esc(String(q.name||''))+'</div>'+
+               '<div class="hblk-pr">৳'+qr+' <s>৳'+qold+'</s></div>'+
+               '<button class="hblk-ob" onclick="event.stopPropagation();location.href=\'my-shop-product.html?id='+q.id+'&rid='+rid+'\'"><i class="fas fa-bag-shopping"></i> Order Now</button>'+
+               '</div>';
+        }
+        h += '</div></div>';
+        return h;
+    }
+    for(var i=0;i<list.length;i++){
+        var b=list[i];
+        var prods=shopBlockResolve(rid,b,viewed);
+        if(!prods.length) continue;
+        var shown=prods.slice(0,6);
+        var title=String(b.title||'');
+        var sub=String(b.subtitle||'');
+        var ic=String(b.icon||'fa-bolt');
+        h+='<div class="hblk">'+
+           '<div class="hblk-hd"><span class="hblk-ic"><i class="fas '+ic+'"></i></span>'+
+           '<span class="hblk-tx"><b>'+esc(title)+'</b>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</span>'+
+           (b.cat?'<a class="hblk-all" onclick="goSection(\''+csJs(b.cat)+'\',\''+csJs(b.sub)+'\',\''+csJs(b.subsub)+'\')">View All <i class="fas fa-arrow-right"></i></a>':'')+
+           '</div><div class="hblk-grid">';
+        for(var k=0;k<shown.length;k++){
+            var pp=shown[k], r=retail(pp), old=Math.round(r*1.25), off=pp.discount||20;
+            var ps=prodImgSrc(pp.image);
+            var img=ps?'<img src="'+ps+'">':'<div style="background:linear-gradient(135deg,#f9a8d4,#a855f7);width:100%;height:100%"></div>';
+            h+='<div class="hblk-c" onclick="try{rememberViewed(pp.subSub||pp.section||pp.subSection||pp.category);}catch(e){};location.href=\'my-shop-product.html?id='+pp.id+'&rid='+rid+'\'">'+
+               '<div class="hblk-im">'+img+'<span class="hblk-off">-'+off+'%</span></div>'+
+               '<div class="hblk-nm">'+esc(String(pp.name||''))+'</div>'+
+               '<div class="hblk-pr">৳'+r+' <s>৳'+old+'</s></div>'+
+               '<button class="hblk-ob" onclick="event.stopPropagation();location.href=\'my-shop-product.html?id='+pp.id+'&rid='+rid+'\'"><i class="fas fa-bag-shopping"></i> Order Now</button>'+
+               '</div>';
+        }
+        h+='</div></div>';
+    }
+    return h;
+}
+function renderCatSections(){
+    var box=document.getElementById('catSections');
+    if(!box)return;
+    /* 2026-09-17 — ONLY THE RESELLER'S BLOCKS. The older category-driven sections
+       (Men Fashion, Gadget, …) were removed at the user's request: the homepage is
+       now built entirely from the blocks the reseller creates. shopHomepageSections()
+       is still called so nothing that reads window._cs can break, but its output is
+       no longer drawn. */
+    var secs=shopHomepageSections(rid);
+    window._cs=[];
+    var h=renderHomeBlocks();
+    /* 2026-09-17 — NOTHING AT ALL when the shop has no blocks yet.
+       This page is what a CUSTOMER sees. An earlier version printed
+       "Shop Settings → Homepage Sections থেকে নতুন ব্লক বানান", which told the
+       customer this is a reseller platform — that would end the reseller's
+       business. The customer-facing shop must never show an internal message. */
+    box.innerHTML=h;   /* empty string when there are no blocks */
+    return;
+    /* ---- everything below is the OLD category-section renderer, now unused ---- */
+    for(var i=0;i<secs.length;i++){
+        var s=secs[i];
+        var shown=shopSectionShown(s);
+        if(!shown.length)continue;
+        var title=shopSectionTitle(s);
+        var cnt=s.total+' PRODUCT'+(s.total===1?'':'S');
+        /* a deeper section is visually indented, so the hierarchy reads at a
+           glance: main → sub → sub-sub */
+        h+='<div class="sh cs-sh cs-d'+s.depth+'" data-sec="'+esc(s.key)+'">'+
+             '<h2>'+esc(title)+'<small>'+cnt+'</small></h2>'+
+             '<a onclick="goSection(\''+csJs(s.cat)+'\',\''+csJs(s.sub)+'\',\''+csJs(s.subsub)+'\')">View All <i class="fas fa-arrow-right"></i></a></div>';
+        h+='<div class="pgrid cs-grid">';
+        for(var k=0;k<shown.length;k++){window._cs.push(shown[k]);h+=csCardHTML(shown[k],window._cs.length-1)}
+        h+='</div>';
+    }
+    box.innerHTML=h;
+}
+/* Section ORDER only. The shop's main categories are read from the database
+   (never hardcoded), but the DATABASE ARRAY ORDER is an artefact of how the
+   records were migrated — it happens to put Gadget first. The intended display
+   order is the key order of app.js's canonical structure constant, so that is
+   used as the rank table; any category not in the structure keeps its relative
+   database position and is placed after the ranked ones. Pure ordering — it
+   selects nothing and hides nothing. */
+function catSectionOrder(cats){
+    var rank={},i,keys=[];
+    try{
+        if(typeof RH_CATEGORY_STRUCTURE!=='undefined'&&RH_CATEGORY_STRUCTURE)keys=Object.keys(RH_CATEGORY_STRUCTURE);
+    }catch(e){keys=[]}
+    for(i=0;i<keys.length;i++)rank[String(keys[i]).trim().toLowerCase()]=i;
+    return cats.map(function(c,idx){
+        var nm=String((c&&c.name)||'').trim().toLowerCase();
+        return {c:c,r:(rank[nm]!==undefined?rank[nm]:1000+idx)};
+    }).sort(function(a,b){return a.r-b.r}).map(function(x){return x.c});
+}
+
+
+function renderTabs(){
+    var cats=shopMainCategories(rid);
+    var h='';
+    if(priceMax)h+='<div class="tab on" onclick="setPrice(0)">Under ৳'+priceMax+' <i class="fas fa-xmark"></i></div>';
+    h+='<div class="tab'+(activeCat===''&&!priceMax?' on':'')+'" onclick="goHome()">For You</div>';
+    /* PART 40 — main categories only */
+    for(var i=0;i<cats.length;i++){
+        h+='<div class="tab'+(activeCat===cats[i].name?' on':'')+'" onclick="setCat(\''+String(cats[i].name).replace(/'/g,"\\'")+'\')">'+cats[i].name+'</div>';
+    }
+    var tr=document.getElementById('tabRow');if(tr)tr.innerHTML=h;
+    var pt=document.getElementById('prodTitle');if(pt){pt.style.display='none'}
+}
+
+function renderSubChips(){
+    var el=document.getElementById('subChips');if(!el)return;
+    if(!activeCat||priceMax){el.classList.remove('on');el.innerHTML='';return}
+    /* PART 41 — sub categories for THIS shop (global visible + own) */
+    var subObjs=shopSubCategories(rid,activeCat);
+    var subs=[];
+    for(var j=0;j<subObjs.length;j++)subs.push(subObjs[j].name);
+    if(!subs.length){el.classList.remove('on');el.innerHTML='';return}
+    el.classList.add('on');
+    var sh='<div class="subchip'+(activeSub?'':' on')+'" onclick="setSub(\'\')"><i class="fas fa-th-large"></i> All '+activeCat+'</div>';
+    for(var k=0;k<subs.length;k++){
+        if(!isCategoryVisible(rid,'subs',shopCatKey(activeCat,subs[k])))continue;
+        sh+='<div class="subchip'+(activeSub===subs[k]?' on':'')+'" onclick="setSub(\''+String(subs[k]).replace(/'/g,"\\'")+'\')">'+subs[k]+(activeSub===subs[k]?'<i class="fas fa-times x"></i>':'')+'</div>';
+    }
+    el.innerHTML=sh;
+}
+
+function renderSubSubChips(){
+    var el=document.getElementById('subSubChips');if(!el)return;
+    if(!activeCat||!activeSub||priceMax){el.classList.remove('on');el.innerHTML='';return}
+    /* PART 41 — sub-sub categories for THIS shop (global visible + own) */
+    var ssObjs=shopSubSubCategories(rid,activeCat,activeSub);
+    var subSubs=[];
+    for(var j=0;j<ssObjs.length;j++)subSubs.push(ssObjs[j].name);
+    if(!subSubs.length){el.classList.remove('on');el.innerHTML='';return}
+    el.classList.add('on');
+    var h='<div class="subchip on" style="cursor:default"><i class="fas fa-chevron-right"></i> '+activeSub+'</div>';
+    h+='<div class="subchip" onclick="setSubSub(\'\')"><i class="fas fa-th"></i> All</div>';
+    for(var k=0;k<subSubs.length;k++){
+        if(!isCategoryVisible(rid,'subsubs',shopCatKey(activeCat,activeSub,subSubs[k])))continue;
+        h+='<div class="subchip'+(activeSubSub===subSubs[k]?' on':'')+'" onclick="setSubSub(\''+String(subSubs[k]).replace(/'/g,"\\'")+'\')">'+subSubs[k]+(activeSubSub===subSubs[k]?'<i class="fas fa-times x"></i>':'')+'</div>';
+    }
+    el.innerHTML=h;
+}
+
+function renderGrid(){
+    var q=(document.getElementById('q').value||'').toLowerCase().trim();
+    /* search-reveals-grid (2026-09-17, this request).
+       #pgrid lives INSIDE #allProdBlock, which is hidden unless the reseller turned
+       on "show all products". So typing in the search box filled a HIDDEN grid and
+       the customer saw nothing at all. While there is a query, reveal the block and
+       hide the category sections so the results are actually on screen. */
+    try{
+        var _blk=document.getElementById('allProdBlock');
+        var _searching=!!q;
+        if(_blk){
+            var _hp=(typeof shopHomepage==='function')?shopHomepage(shop?shop.id:rid):{showAll:false};
+            _blk.style.display=(_searching||_hp.showAll)?'':'none';
+        }
+        if(_searching){
+            var _ids=['catSections','homeDeals','deals','heroBox','catGrid'];
+            for(var _i=0;_i<_ids.length;_i++){
+                var _e=document.getElementById(_ids[_i]);
+                if(_e) _e.style.display='none';
+            }
+        }else{
+            try{ renderCatSections(); }catch(e){}
+        }
+    }catch(e){}
+    if(!q){ /* nothing to filter; the normal homepage view takes over */ }
+    /* (#40, #41, #43) only THIS shop's allowed products are ever searched */
+    var av=shopSearch(rid,q);
+    av=shopFilter(av,activeCat,activeSub,activeSubSub);
+    if(priceMax){var tmp=[];for(var z=0;z<av.length;z++){if(retail(av[z])<=priceMax)tmp.push(av[z])}av=tmp}
+    /* (#4) Search event */
+    if(q&&shop){try{shopPixelTrack(shop.id,'Search',{search_string:q,content_category:activeCat||''})}catch(e){}}
+    av.reverse();window._av=av;
+    var h='';
+    for(var j=0;j<av.length&&j<30;j++){
+        var pp=av[j];var r=retail(pp);var old=Math.round(r*1.25);var off=pp.discount||20;
+        /* prodImgSrc() resolves an @img: reference and returns '' when it cannot
+           be resolved, so an unreachable image shows the placeholder instead of
+           firing ERR_FILE_NOT_FOUND for a file named "@img:i...". */
+        var _ps=prodImgSrc(pp.image);
+        var imgHTML=_ps?'<img src="'+_ps+'">':'<div style="background:linear-gradient(135deg,#f9a8d4,#a855f7);width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:3rem"><i class="fas fa-box"></i></div>';
+        h+='<div class="pc" style="animation-delay:'+(j*0.04)+'s" onclick="goAv('+j+')">'+
+           '<div class="im">'+imgHTML+'<span class="off">-'+off+'%</span></div>'+
+           '<div class="nm">'+pp.name+'</div>'+
+           '<div class="pr">৳'+r+'<s>৳'+old+'</s></div>'+
+           '<button class="ob" onclick="event.stopPropagation();goAv('+j+')"><i class="fas fa-bag-shopping"></i> Order Now</button></div>';
+    }
+    var pg=document.getElementById('pgrid');if(pg)pg.innerHTML=h||'<div class="empty"><i class="fas fa-box-open"></i>No products in this category. Try another!</div>';
+}
+function goAv(i){var p=window._av[i];if(!p)return;try{rememberViewed(p.subSub||p.section||p.subSection||p.category);}catch(e){}location.href='my-shop-product.html?id='+p.id+'&rid='+rid}
+function renderContact(){} /* REMOVED */
+
+/* ---------- #5-#8 My Shop mobile bottom navigation ----------
+   Shown on mobile only (CSS <=600px) on BOTH the shop home and the product
+   page. Routes reuse the existing pages: my-shop.html (home), #pgrid (product
+   listing), goCart() (cart) and the shop's existing WhatsApp link (#fwa2). */
+function msBnavInit(){
+  var home='my-shop.html?rid='+rid, prod='my-shop.html?rid='+rid+'#pgrid';
+  var h=document.getElementById('bnHome'); if(h)h.href=home;
+  var p=document.getElementById('bnProd'); if(p)p.href=prod;
+  var w=document.getElementById('bnWa');
+  if(w){
+    var href='';
+    try{ var src=document.getElementById('fwa2'); var h1=src&&src.getAttribute('href'); if(h1&&h1!=='#')href=h1; }catch(e){}
+    /* fall back to the shop's own phone so the button works even if the footer
+       has not been rendered yet */
+    if(!href){
+      try{ var ph=(shop&&(shop.shop_phone||shop.phone))||''; var d=String(ph).replace(/\D/g,''); if(d.charAt(0)==='0')d='88'+d; if(d)href='https://wa.me/'+d; }catch(e){}
+    }
+    if(href)w.href=href;
+  }
+  msBnavCart();
+}
+function msBnavCart(){
+  var el=document.getElementById('bnCartCt'); if(!el)return;
+  var n=0;
+  try{ var cl=JSON.parse(localStorage.getItem('rh_mycart_'+rid)||'[]'); for(var i=0;i<cl.length;i++)n+=Number(cl[i].qty)||0; }catch(e){}
+  el.textContent=n; el.style.display=n>0?'flex':'none';
+}
+findShop();
+render();
+/* 2026-09-16 — FIX: a product image that is big lives in IndexedDB, not in the
+   product record (see RH_IMG_SPILL_MIN in app.js). That cache loads
+   ASYNCHRONOUSLY, so this first render can run before it is ready — and at that
+   moment prodImgSrc() correctly returns '' (it must never put an "@img:" marker
+   into the DOM), so the tile paints its placeholder and NOTHING ever goes back
+   to replace it. That is why the product appeared on My Products (whose
+   resolver can repair an <img>) but showed no picture here.
+   Repaint once the cache is ready. rhResolveImgTags() handles <img> tags that
+   already exist; this covers the case where no <img> was emitted at all. */
+try {
+    if (typeof rhImgLoadAll === 'function') {
+        rhImgLoadAll(function () { try { refreshView(); } catch (e) {} });
+    }
+} catch (e) {}
+/* the <nav> sits after this <script>, so wait for the DOM before wiring it */
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', msBnavInit);
+else msBnavInit();
+/* (#19) hash routes keep the category URL clean & shareable */
+window.addEventListener('hashchange', function () { applySeo(); routeFromHash(); scrollToProducts(); });
+</script>
+
+<!-- #5/#6 — mobile-only bottom navigation: Home | Product | Cart | WhatsApp -->
+<nav class="ms-bnav" id="msBnav" aria-label="Shop navigation">
+    <a href="my-shop.html" id="bnHome"><i class="fas fa-house"></i><span>Home</span></a>
+    <a href="my-shop.html#pgrid" id="bnProd"><i class="fas fa-box"></i><span>Product</span></a>
+    <a href="javascript:void(0)" onclick="goCart()"><i class="fas fa-bag-shopping"></i><span>Cart</span><b class="bn-ct" id="bnCartCt" style="display:none">0</b></a>
+    <a href="#" id="bnWa" class="bn-wa" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></a>
+</nav>
+<script>
+/* My Shop customer chat — shop context for the widget */
+var RID_MS=(typeof rid!=='undefined'&&rid)?String(rid):(new URLSearchParams(location.search).get('rid')||'');
+function shopNameMs(){try{return resellerBusinessName((typeof shop!=='undefined')?shop:null)}catch(e){return 'Shop'}}
+</script>
+<script>
+/* ==== My Shop — Customer Chat widget (injected into my-shop.html + my-shop-product.html) ====
+   - floating message button on the right, always visible while browsing
+   - chat window with text + IMAGE attachment + optional ORDER selection
+   - every conversation is scoped to THIS shop (rid) in the data layer
+   ============================================================================ */
+function msChatEsc(s){return String(s===undefined||s===null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
+function msChatBox(){
+  var b=document.getElementById('msChat');
+  if(b)return b;
+  b=document.createElement('div'); b.id='msChat';
+  b.innerHTML=
+   '<style>'+
+   '.msc-btn{position:fixed;right:18px;bottom:18px;z-index:900;width:58px;height:58px;border-radius:50%;'+
+     'background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;cursor:pointer;'+
+     'box-shadow:0 8px 24px rgba(18,140,126,.4);display:flex;align-items:center;justify-content:center;font-size:1.5rem}'+
+   '.msc-btn:hover{transform:translateY(-2px)}'+
+   '.msc-btn .dot{position:absolute;top:2px;right:2px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;'+
+     'background:#ef4444;color:#fff;font-size:.62rem;font-weight:900;display:none;align-items:center;justify-content:center}'+
+   '.msc-win{position:fixed;right:18px;bottom:86px;z-index:901;width:340px;max-width:calc(100vw - 28px);'+
+     'background:#fff;border-radius:16px;box-shadow:0 18px 46px rgba(15,23,42,.28);overflow:hidden;display:none;'+
+     'flex-direction:column;max-height:min(560px,78vh)}'+
+   '.msc-win.on{display:flex}'+
+   '.msc-h{background:linear-gradient(135deg,#128c7e,#0d9488);color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}'+
+   /* #2 — Call | WhatsApp sit at the TOP of the existing popup */
+   '.msc-top{display:flex;gap:8px;padding:9px 10px;background:#f8fafc;border-bottom:1px solid #eef2f6}'+
+   '.msc-top a{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 6px;border-radius:10px;'+
+     'text-decoration:none;font-size:.76rem;font-weight:800;color:#fff}'+
+   '.msc-top a.call{background:linear-gradient(135deg,#2563eb,#1e40af)}'+
+   '.msc-top a.wa{background:linear-gradient(135deg,#25d366,#128c7e)}'+
+   '.msc-h b{font-size:.9rem}'+
+   '.msc-h button{background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;line-height:1}'+
+   '.msc-b{flex:1;overflow-y:auto;padding:12px;background:#f1f5f9;min-height:170px}'+
+   '.msc-m{max-width:82%;padding:8px 11px;border-radius:12px;margin-bottom:8px;font-size:.83rem;line-height:1.5;word-break:break-word}'+
+   '.msc-m.me{background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;margin-left:auto;border-bottom-right-radius:4px}'+
+   '.msc-m.you{background:#fff;border:1px solid #e2e8f0;border-bottom-left-radius:4px}'+
+   '.msc-m img{max-width:100%;border-radius:9px;display:block;margin-top:5px}'+
+   '.msc-m .t{display:block;font-size:.62rem;opacity:.75;margin-top:4px}'+
+   '.msc-m .ord{display:inline-block;margin-top:5px;background:rgba(255,255,255,.22);border-radius:7px;padding:2px 8px;font-size:.68rem;font-weight:800}'+
+   '.msc-f{border-top:1px solid #eef2f6;padding:9px;display:flex;gap:7px;align-items:center;background:#fff}'+
+   '.msc-f textarea{flex:1;min-height:40px;max-height:96px;padding:8px 11px;border:1.5px solid #e2e8f0;border-radius:10px;'+
+     'font-size:.83rem;font-family:inherit;resize:vertical}'+
+   '.msc-f textarea:focus{outline:none;border-color:#128c7e}'+
+   '.msc-ic{border:none;background:#f1f5f9;color:#475569;border-radius:10px;width:40px;height:40px;cursor:pointer;font-size:1rem;flex:none}'+
+   '.msc-send{border:none;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border-radius:10px;'+
+     'padding:9px 14px;cursor:pointer;font-weight:800;font-size:.8rem;flex:none}'+
+   '.msc-ord{margin:0 9px 9px;font-size:.72rem;color:#64748b}'+
+   '.msc-ord select{width:100%;padding:7px 9px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:.75rem;font-family:inherit}'+
+   /* Part 8 — MOBILE ONLY placement. The bar (#msBnav) is Home | Product | Cart |
+      WhatsApp and is ~66px tall (+ safe area). Item 20 moved that clearance from
+      `body{padding-bottom:74px}` onto `.foot{padding-bottom:…}` so the black
+      footer reaches the bottom edge instead of leaving dead space under it.
+      The Message button used to sit at bottom:14px — i.e. ON TOP of
+      the bar, overlapping the WhatsApp item. It now floats in the empty space
+      ABOVE the bar (80px + safe area), so it never overlaps WhatsApp, and it
+      remains a separate floating button rather than a 5th bar item.
+      Desktop (>600px) keeps its original bottom:18px / right:18px exactly. */
+   '@media(max-width:600px){ .msc-btn{right:12px;bottom:calc(80px + env(safe-area-inset-bottom));width:52px;height:52px;font-size:1.3rem} .msc-win{right:10px;left:10px;width:auto;bottom:calc(140px + env(safe-area-inset-bottom))} }'+
+   '</style>'+
+   '<button class="msc-btn" id="mscBtn" onclick="msChatToggle()" title="Message"><i class="fas fa-comment-dots"></i><span class="dot" id="mscDot">0</span></button>'+
+   '<div class="msc-win" id="mscWin">'+
+     '<div class="msc-h"><b><i class="fas fa-headset"></i> <span id="mscTitle">Chat</span></b><button onclick="msChatToggle()">&times;</button></div>'+
+     '<div class="msc-top"><a class="call" id="mscCall" href="#"><i class="fas fa-phone"></i> Call</a>'+
+     '<a class="wa" id="mscWa" href="#" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a></div>'+
+     '<div class="msc-b" id="mscBody"></div>'+
+     '<div class="msc-ord" id="mscOrdWrap"></div>'+
+     '<div class="msc-f">'+
+       '<input type="file" id="mscFile" accept="image/*" style="display:none" onchange="msChatPick(this)">'+
+       '<button class="msc-ic" onclick="document.getElementById(\'mscFile\').click()" title="ছবি পাঠান"><i class="fas fa-image"></i></button>'+
+       '<textarea id="mscText" placeholder="আপনার মেসেজ লিখুন..."></textarea>'+
+       '<button class="msc-send" onclick="msChatSend()"><i class="fas fa-paper-plane"></i></button>'+
+     '</div>'+
+   '</div>';
+  document.body.appendChild(b);
+  return b;
+}
+var msConv=null, msPendingImg='';
+/* Guest identity is remembered per shop so the thread continues after a reload,
+   but it is still scoped to THIS shop (rid is part of the id). */
+function msGuestKey(){ return 'rh_shop_guest_'+String(RID_MS); }
+function msGuestGet(){
+  try{ var raw=localStorage.getItem(msGuestKey()); return raw?JSON.parse(raw):null; }catch(e){return null}
+}
+function msGuestSet(o){
+  try{ if(o) localStorage.setItem(msGuestKey(), JSON.stringify(o)); else localStorage.removeItem(msGuestKey()); }catch(e){}
+}
+function msChatIdentity(){
+  var c=null;
+  try{ c=shopCurrentCustomer(String(RID_MS)); }catch(e){}
+  if(c) return {id:c.id,name:c.name,phone:c.phone,guest:false,cust:c};
+  var g=msGuestGet();
+  if(g&&g.name&&g.phone) return {id:shopGuestId(String(RID_MS),g.phone),name:g.name,phone:g.phone,guest:true};
+  return null;
+}
+function msChatConv(){
+  try{
+    var idn=msChatIdentity();
+    if(!idn)return null;
+    msConv=shopChatStart(String(RID_MS),{id:idn.id,name:idn.name,phone:idn.phone});
+    return msConv;
+  }catch(e){return null}
+}
+function msChatToggle(){
+  var w=document.getElementById('mscWin'); if(!w)return;
+  w.classList.toggle('on');
+  if(w.classList.contains('on')){ msChatRender(); try{shopChatMarkRead(String(RID_MS),msConv?msConv.id:'','customer')}catch(e){} }
+}
+/* #15 — NO login required. A guest just gives name + phone + message. */
+function msChatGuestForm(){
+  var g=msGuestGet()||{};
+  return '<div style="padding:10px 2px 4px">'+
+    '<div style="font-size:.78rem;color:#475569;font-weight:700;margin-bottom:8px">আপনার নাম ও ফোন দিয়ে মেসেজ পাঠান — লগিন লাগবে না।</div>'+
+    '<input id="mscGName" placeholder="আপনার নাম" value="'+msChatEsc(g.name||'')+'" style="width:100%;padding:8px 11px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:.82rem;font-family:inherit;margin-bottom:7px">'+
+    '<input id="mscGPhone" placeholder="01XXXXXXXXX" value="'+msChatEsc(g.phone||'')+'" style="width:100%;padding:8px 11px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:.82rem;font-family:inherit;margin-bottom:7px">'+
+    '<a href="my-shop-account.html?rid='+encodeURIComponent(String(RID_MS))+'" style="font-size:.72rem;color:#128c7e;font-weight:700">অ্যাকাউন্ট থাকলে লগিন করুন</a>'+
+    '</div>';
+}
+function msChatRender(){
+  var body=document.getElementById('mscBody'); if(!body)return;
+  var c=msChatConv();
+  var t=document.getElementById('mscTitle');
+  if(t)t.textContent=(shopNameMs()||'Shop')+' — Chat';
+  if(!c){ body.innerHTML=msChatGuestForm(); msChatOrderOptions(null); return; }
+  /* #18 — the customer sees only what was sent AFTER the last End Chat; the
+     stored conversation (Admin/Reseller side) is never destroyed. */
+  var view=null; try{ view=shopChatCustomerView(c); }catch(e){}
+  var msgs=(view&&view.messages)?view.messages:(c.messages||[]);
+  var h='';
+  for(var i=0;i<msgs.length;i++){
+    var m=msgs[i];
+    var mine=m.from==='customer';
+    h+='<div class="msc-m '+(mine?'me':'you')+'">'+
+        (m.text?msChatEsc(m.text):'')+
+        (m.image?'<img src="'+msChatEsc(m.image)+'" alt="attachment">':'')+
+        (m.orderId?'<span class="ord"><i class="fas fa-receipt"></i> Order #'+msChatEsc(m.orderId)+'</span>':'')+
+        '<span class="t">'+msChatEsc(String(m.at||'').slice(11,16))+'</span></div>';
+  }
+  body.innerHTML=h||'<div style="text-align:center;color:#94a3b8;font-size:.82rem;padding:24px 10px">কোনো মেসেজ নেই। প্রশ্ন লিখে পাঠান — দোকানি উত্তর দেবে।</div>';
+  body.scrollTop=body.scrollHeight;
+  msChatOrderOptions(c);
+}
+/* #10 — the customer may attach one of their own orders */
+function msChatOrderOptions(c){
+  var wrap=document.getElementById('mscOrdWrap'); if(!wrap)return;
+  if(!c){ wrap.innerHTML=''; return; }
+  var list=[]; try{list=shopCustomerOrders(String(RID_MS),c)}catch(e){list=[]}
+  if(!list.length){ wrap.innerHTML=''; return; }
+  var s='<select id="mscOrd"><option value="">অর্ডার সিলেক্ট (ঐচ্ছিক)</option>';
+  for(var i=0;i<list.length;i++){
+    var sel=(c.orderId&&String(c.orderId)===String(list[i].id))?' selected':'';
+    s+='<option value="'+msChatEsc(list[i].id)+'"'+sel+'>Order #'+msChatEsc(list[i].id)+' — '+msChatEsc(list[i].status||'')+'</option>';
+  }
+  s+='</select>';
+  wrap.innerHTML=s;
+}
+window.msChatPick=function(inp){
+  var f=inp&&inp.files&&inp.files[0]; if(!f)return;
+  if(f.size>2*1024*1024){ msChatToast('ছবির সাইজ ২MB এর কম হতে হবে।'); inp.value=''; return; }
+  var r=new FileReader();
+  r.onload=function(){ msPendingImg=r.result; msChatSend(); inp.value=''; };
+  r.readAsDataURL(f);
+};
+window.msChatSend=function(){
+  var ta=document.getElementById('mscText');
+  var txt=ta?String(ta.value||'').trim():'';
+  var c=msChatConv();
+  /* guest path: name + phone are required, no account needed */
+  if(!c){
+    var gn=document.getElementById('mscGName'), gp=document.getElementById('mscGPhone');
+    var name=gn?String(gn.value||'').trim():'';
+    var phone=gp?String(gp.value||'').trim():'';
+    if(!name){ msChatToast('আপনার নাম দিন।'); if(gn)gn.focus(); return; }
+    if(!shopGuestPhone(phone)){ msChatToast('সঠিক ফোন নম্বর দিন।'); if(gp)gp.focus(); return; }
+    if(!txt&&!msPendingImg){ msChatToast('মেসেজ লিখুন।'); return; }
+    var g=shopChatStartGuest(String(RID_MS),name,phone);
+    if(!g.ok){ msChatToast(g.message||'পাঠানো যায়নি।'); return; }
+    msGuestSet({name:name,phone:shopGuestPhone(phone)});
+    /* Remember the phone for THIS shop so the cart can be filed under the right
+       customer, then share the current cart — the customer has just chosen to
+       contact the reseller, so this is the natural point to let the reseller
+       see what is in the cart. Nothing is shared without a phone. */
+    try{ localStorage.setItem('rh_shop_chat_phone_'+String(RID_MS), shopGuestPhone(phone)); }catch(e){}
+    msPublishMyCart(shopGuestPhone(phone));
+    c=g.conversation; msConv=c;
+  }
+  var os=document.getElementById('mscOrd');
+  var oid=os?String(os.value||''):'';
+  if(!txt&&!msPendingImg&&!oid){ return; }
+  var r=shopChatSend(String(RID_MS),c.id,'customer',txt,msPendingImg,oid);
+  if(!r.ok){ msChatToast(r.message||'পাঠানো যায়নি।'); return; }
+  /* keep the shared cart fresh on every send */
+  try{
+    var _cp=localStorage.getItem('rh_shop_chat_phone_'+String(RID_MS));
+    if(_cp) msPublishMyCart(_cp);
+  }catch(e){}
+  if(ta)ta.value='';
+  msPendingImg='';
+  msChatRender();
+};
+/* Mirror THIS browser's real cart into the shop+phone bucket app.js owns. */
+function msPublishMyCart(phone){
+  try{
+    if(typeof shopPublishCart!=='function')return;
+    var list=[]; try{ list=JSON.parse(localStorage.getItem('rh_mycart_'+String(RID_MS))||'[]'); }catch(e){ list=[]; }
+    shopPublishCart(String(RID_MS), phone, list);
+  }catch(e){}
+}
+function msChatToast(m){
+  var t=document.getElementById('toast');
+  if(t){ t.textContent=m; t.classList.add('on'); setTimeout(function(){t.classList.remove('on')},2200); }
+}
+/* #3/#4 — Call + WhatsApp reuse the SHOP's existing configured phone number
+   (the same one the footer/contact buttons use). Nothing is hardcoded. */
+function shopPhoneMs(){return (typeof shop!=='undefined'&&shop&&(shop.shop_phone||shop.phone))||''}
+function msChatFillContact(){
+  var ph=String(shopPhoneMs()||'');
+  var d=ph.replace(/\D/g,''); if(d.charAt(0)==='0')d='88'+d;
+  var c=document.getElementById('mscCall'), w=document.getElementById('mscWa');
+  if(c){ c.href = d ? ('tel:+'+d) : '#'; c.style.display = d?'flex':'none'; }
+  if(w){ w.href = d ? ('https://wa.me/'+d) : '#'; w.style.display = d?'flex':'none'; }
+}
+function msChatInit(){
+  msChatBox();
+  msChatFillContact();
+  var ta=document.getElementById('mscText');
+  if(ta)ta.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); msChatSend(); }});
+  /* unread badge from the reseller's replies */
+  setInterval(function(){
+    var c=null; try{c=shopCurrentCustomer(String(RID_MS))}catch(e){}
+    var dot=document.getElementById('mscDot'); if(!dot)return;
+    var n=0;
+    if(c){ var cv=shopChatFind(String(RID_MS),c.id);
+      if(cv){ for(var i=0;i<cv.messages.length;i++) if(cv.messages[i].from==='reseller'&&!cv.messages[i].read) n++; } }
+    dot.textContent=n; dot.style.display=n>0?'flex':'none';
+  },4000);
+}
+if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',msChatInit); else msChatInit();
+
+</script>
+<script>
+/* #30/#31 — footer social buttons open THIS shop's saved links.
+   Stored per reseller in the shop settings (never global). */
+function msSocialFill(){
+  var soc={facebook:'',instagram:'',tiktok:''};
+  try{ soc=shopSocial(String((typeof rid!=='undefined'&&rid)?rid:(new URLSearchParams(location.search).get('rid')||''))); }catch(e){}
+  function set(id,url){ var a=document.getElementById(id); if(!a)return;
+    if(url){ a.setAttribute('href',url); a.setAttribute('target','_blank'); a.setAttribute('rel','noopener'); a.style.display=''; }
+    else { a.setAttribute('href','#'); a.style.display='none'; } }
+  set('fFb2',soc.facebook); set('fIg',soc.instagram); set('msTk',soc.tiktok);
+}
+if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',msSocialFill); else msSocialFill();
+</script>
+<script>
+/* ===== #40-#48 mobile header (MOBILE ONLY) =====
+   - centred Brand/Business Name (dynamic, per reseller)
+   - cart chip visibility driven by the REAL cart:
+     Add to Cart -> rh_mycart_<rid> has items  -> SHOW
+     Buy Now     -> only rh_myshop_buynow      -> HIDE
+   Desktop markup/CSS is untouched by this script. */
+(function(){
+  var RIDH=(typeof rid!=='undefined'&&rid)?String(rid):(new URLSearchParams(location.search).get('rid')||'');
+  function escH(s){return String(s===undefined||s===null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
+  function bizName(){
+    var sh=(typeof shop!=='undefined')?shop:null;
+    try{ return resellerBusinessName(sh); }catch(e){ return (sh&&(sh.shop_name||sh.businessName||sh.name))||bnameNow(rid)||''; }
+  }
+  function ensureMid(){
+    if(document.querySelector('.hdr-mid'))return document.querySelector('.hdr-mid');
+    var brand=document.querySelector('.hdr-in .brand');
+    if(!brand)return null;
+    /* on mobile the brand text itself is redundant next to the centred name */
+    var txt=brand.querySelector('.btxt');
+    var d=document.createElement('div'); d.className='hdr-mid';
+    d.innerHTML='<span class="bname">'+escH(bizName())+'</span>';
+    if(brand.nextSibling) brand.parentNode.insertBefore(d,brand.nextSibling);
+    else brand.parentNode.appendChild(d);
+    return d;
+  }
+  function cartCount(){
+    var n=0;
+    try{ var cl=JSON.parse(localStorage.getItem('rh_mycart_'+RIDH)||'[]');
+         for(var i=0;i<cl.length;i++) n+=Number(cl[i].qty)||0; }catch(e){}
+    return n;
+  }
+  function ensureFloatCart(){
+    var b=document.getElementById('msFloatCart');
+    if(b)return b;
+    b=document.createElement('button');
+    b.id='msFloatCart'; b.type='button'; b.title='Cart';
+    b.setAttribute('aria-label','Cart');
+    b.innerHTML='<i class="fas fa-bag-shopping"></i><span class="n">0</span>';
+    b.onclick=function(){ location.href='my-shop-checkout.html?rid='+encodeURIComponent(RIDH); };
+    document.body.appendChild(b);
+    return b;
+  }
+  function syncCart(){
+    var n=cartCount();
+    /* #3 — the DESKTOP cart stays in the header and is ALWAYS visible.
+       Only on mobile is it hidden while empty (class is display:none <=600px). */
+    var chip=document.getElementById('msCartChip');
+    if(chip){ if(n>0) chip.classList.remove('ms-cart-empty'); else chip.classList.add('ms-cart-empty'); }
+    /* #4 — floating cart, mobile only, real-cart driven */
+    var fb=ensureFloatCart();
+    if(n>0){ fb.classList.add('on'); } else { fb.classList.remove('on'); }
+    var badge=fb.querySelector('.n'); if(badge)badge.textContent=n;
+    var ct=document.getElementById('cartCt'); if(ct)ct.textContent=n;
+    var cp=document.getElementById('chipTot');
+    if(cp){ var t=0; try{ var cl2=JSON.parse(localStorage.getItem('rh_mycart_'+RIDH)||'[]');
+             for(var j=0;j<cl2.length;j++) t+=(Number(cl2[j].resale)||0)*(Number(cl2[j].qty)||0); }catch(e){}
+      cp.textContent=t; }
+  }
+  function init(){ ensureMid(); syncCart(); }
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+  window.addEventListener('storage', function(e){ if(!e.key||e.key.indexOf('rh_mycart_')===0) syncCart(); });
+  setInterval(syncCart, 3000);
+})();
+</script>
+<script>
+/* #7/#8/#10/#11 — MOBILE ONLY hierarchical category drawer.
+   Main -> Sub -> Sub-Sub -> Products, with Back at every level.
+   Desktop keeps its existing category bar (`.nav` is untouched above 600px). */
+(function(){
+  var RIDC=(typeof rid!=='undefined'&&rid)?String(rid):(new URLSearchParams(location.search).get('rid')||'');
+  function escS(x){return String(x===undefined||x===null?'':x).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
+  function mkEl(tag,cls,txt){var e=document.createElement(tag); if(cls)e.className=cls; if(txt!==undefined)e.textContent=txt; return e;}
+
+  function build(){
+    if(document.getElementById('msDrawer'))return;
+    var burger=document.createElement('button');
+    burger.id='msBurger'; burger.type='button'; burger.setAttribute('aria-label','Menu');
+    burger.innerHTML='<i class="fas fa-bars"></i>';
+    burger.onclick=openDrawer;
+    var hdr=document.querySelector('.hdr-in');
+    if(hdr && hdr.firstChild) hdr.insertBefore(burger, hdr.firstChild); else if(hdr) hdr.appendChild(burger); else document.body.appendChild(burger);
+
+    var ov=document.createElement('div'); ov.id='msDrawer';
+    ov.innerHTML='<div id="msPanel">'+
+      '<div class="ph"><button id="msBack" type="button"><i class="fas fa-arrow-left"></i> Back</button><b id="msPTitle">Categories</b>'+
+      '<button type="button" onclick="msCloseDrawer()" style="margin-left:auto;background:none;border:none;color:#fff;font-size:1.3rem;line-height:1">&times;</button></div>'+
+      '<div class="pb" id="msPB"></div></div>';
+    ov.addEventListener('click',function(e){ if(e.target===ov) msCloseDrawer(); });
+    document.body.appendChild(ov);
+    document.getElementById('msBack').onclick=function(){ msLevelUp(); };
+    renderMain();
+  }
+  var stack=[];  /* [{type:'main'|'sub'|'subsub', name, parent}] */
+
+  /* 2026-09-15 — BUG: "after choosing a sub-sub category the menu will not open".
+     `render()` does not merely display — when the stack top is a sub-sub it calls
+     goProducts(), which NAVIGATES and then closes the drawer. Picking a sub-sub
+     leaves that entry on the stack, and because choosing it is a same-page hash
+     change the page never reloads, so the stack survives. The next tap on the
+     burger therefore ran render() -> goProducts() -> close, and the drawer shut
+     itself before it could be seen.
+     Opening the menu must only ever SHOW the list, never navigate — so the stack
+     is cleared first and the drawer always opens at the top level. */
+  function openDrawer(){
+    var d=document.getElementById('msDrawer');
+    if(!d) return;
+    stack=[];
+    d.classList.add('on');
+    render();
+  }
+  window.msCloseDrawer=function(){ var d=document.getElementById('msDrawer'); if(d) d.classList.remove('on'); };
+
+  function title(){ var t=document.getElementById('msPTitle'); var b=document.getElementById('msBack');
+    var top=stack[stack.length-1];
+    if(t) t.textContent = top ? (top.name||'Categories') : 'Categories';
+    if(b) b.style.display = stack.length? 'block':'none';
+  }
+  function render(){
+    var top=stack[stack.length-1];
+    if(!top) return renderMain();
+    if(top.type==='main') return renderSubs(top.name);
+    if(top.type==='sub') return renderSubSubs(top.parent, top.name);
+    if(top.type==='subsub') return goProducts(top.parentMain, top.parent, top.name);
+  }
+  function renderMain(){
+    stack=[]; title();
+    var box=document.getElementById('msPB'); if(!box)return;
+    var cats=[]; try{cats=shopMainCategories(RIDC)}catch(e){cats=[]}
+    box.innerHTML='';
+    box.appendChild(rowEl('All Products', function(){ location.href='my-shop.html?rid='+encodeURIComponent(RIDC); }));
+    for(var i=0;i<cats.length;i++){
+      (function(nm){
+        box.appendChild(rowEl(nm, function(){ stack.push({type:'main',name:nm}); render(); }));
+      })(String(cats[i].name));
+    }
+  }
+  function renderSubs(main){
+    title();
+    var box=document.getElementById('msPB'); if(!box)return;
+    var subs=[]; try{subs=shopSubCategories(RIDC,main)}catch(e){subs=[]}
+    box.innerHTML='';
+    box.appendChild(rowEl('All '+main, function(){ goProducts(main,'',''); }));
+    for(var i=0;i<subs.length;i++){
+      (function(nm){
+        box.appendChild(rowEl(nm, function(){ stack.push({type:'sub',name:nm,parent:main}); render(); }));
+      })(String(subs[i].name||subs[i]));
+    }
+  }
+  function renderSubSubs(main, sub){
+    title();
+    var box=document.getElementById('msPB'); if(!box)return;
+    var ss=[]; try{ss=shopSubSubCategories(RIDC,main,sub)}catch(e){ss=[]}
+    box.innerHTML='';
+    box.appendChild(rowEl('All '+sub, function(){ goProducts(main,sub,''); }));
+    for(var i=0;i<ss.length;i++){
+      (function(nm){
+        box.appendChild(rowEl(nm, function(){ stack.push({type:'subsub',name:nm,parent:sub,parentMain:main}); render(); }));
+      })(String(ss[i].name||ss[i]));
+    }
+  }
+  function goProducts(main, sub, subsub){
+    var h='my-shop.html?rid='+encodeURIComponent(RIDC)+'#/category/'+encodeURIComponent(main);
+    if(sub) h+='/'+encodeURIComponent(sub);
+    if(subsub) h+='/'+encodeURIComponent(subsub);
+    location.href=h;
+    msCloseDrawer();
+  }
+  function rowEl(label, onClick){
+    /* a CLASS, not an id: every row used to get id="msRow", so the document had
+       one duplicate id per row. CSS happened to still match, but an id must be
+       unique and getElementById('msRow') returned only the first row. */
+    var r=mkEl('div'); r.className='msRow';
+    r.appendChild(mkEl('span',null,label));
+    r.appendChild(mkEl('i','fas fa-chevron-right'));
+    r.onclick=onClick; return r;
+  }
+  function msLevelUp(){ stack.pop(); render(); }
+  window.msLevelUp=msLevelUp;
+
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',build); else build();
+})();
+</script>
+<script>
+/* #13 — three hero slides, reseller-specific (name + logo are injected from
+   THIS shop's data — no Stylex/default hardcoding). Full-bleed, ~40vh, auto
+   advancing every 5s. The old .hero block is left alone; this sits above it. */
+(function(){
+  var RIDH=(typeof rid!=='undefined'&&rid)?String(rid):(new URLSearchParams(location.search).get('rid')||'');
+  function escH(x){return String(x===undefined||x===null?'':x).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
+  function biz(){
+    var sh=(typeof shop!=='undefined')?shop:null;
+    try{ return resellerBusinessName(sh); }catch(e){ return (sh&&(sh.shop_name||sh.businessName||sh.name))||bnameNow(rid)||''; }
+  }
+  function logo(){ var sh=(typeof shop!=='undefined')?shop:null; return (sh&&(sh.shop_logo||sh.shopLogo||sh.logo))||''; }
+
+  /* ===== Parts 8-16 — reseller-uploaded hero =====
+     Renders ONLY the images this reseller uploaded via My Shop Settings.
+     • 0 images  -> no hero element at all (nothing is generated)
+     • 1 image   -> a single fixed image, no timer, no dots (never slides)
+     • 2-3 images-> auto slider, cycling only the uploaded images
+     The images come from `shopHeroes(RIDH)` (the ONE reader), so Reseller A's
+     artwork can never render in Reseller B's shop.
+
+     Visibility (Parts 14-15): the element lives OUTSIDE `#homeWrap`, which is
+     the block `renderCatPage()` hides on a category page — so this function
+     re-checks the live category state on every refresh and removes the hero
+     whenever a category / sub / sub-sub view is active. */
+  var msHeroTimer=null, msHeroIdx=0;
+  function msHeroShouldShow(){
+    /* homepage only: no active category filter */
+    try { if (typeof activeCat !== 'undefined' && activeCat) return false; } catch(e){}
+    var hs=document.getElementById('homeWrap');
+    if(hs && hs.style.display==='none') return false;
+    return true;
+  }
+  function msHeroRemove(){
+    if(msHeroTimer){clearInterval(msHeroTimer);msHeroTimer=null;}
+    var el=document.getElementById('msHero'); if(el&&el.parentNode) el.parentNode.removeChild(el);
+  }
+  function msHeroRender(){
+    var imgs=[]; try{ imgs=shopHeroes(RIDH)||[]; }catch(e){ imgs=[]; }
+    /* Part 14/15 — category page never shows the hero */
+    if(!msHeroShouldShow() || !imgs.length){ msHeroRemove(); return; }
+    var wrap=document.getElementById('msHero');
+    if(!wrap){
+      wrap=document.createElement('div'); wrap.id='msHero'; wrap.className='ms-hero has-img';
+      /* place it directly under the category header, above the content wrap */
+      var nav=document.querySelector('.nav');
+      var target=(nav&&nav.parentNode)?nav:(document.querySelector('.hdr')||null);
+      if(target&&target.parentNode) target.parentNode.insertBefore(wrap, target.nextSibling);
+      else document.body.insertBefore(wrap, document.body.firstChild);
+    }
+    wrap.className='ms-hero has-img';
+    /* rebuild the slides — only the uploaded images, and nothing else (Part 12) */
+    var h='';
+    for(var i=0;i<imgs.length;i++){
+      h+='<div class="sl'+(i===0?' on':'')+'" data-i="'+i+'"><img src="'+escH(imgs[i])+'" alt=""></div>';
+    }
+    if(imgs.length>1) h+='<div class="dots"></div>';
+    wrap.innerHTML=h;
+
+    var sls=wrap.querySelectorAll('.sl');
+    var dots=wrap.querySelector('.dots');
+    var cur=0;
+    function show(n){
+      if(!sls.length) return;
+      cur=((n%sls.length)+sls.length)%sls.length;
+      for(var i=0;i<sls.length;i++) sls[i].classList.toggle('on', i===cur);
+      if(dots){ var ds=dots.querySelectorAll('i'); for(var j=0;j<ds.length;j++) ds[j].classList.toggle('on', j===cur); }
+    }
+    if(msHeroTimer){clearInterval(msHeroTimer);msHeroTimer=null;}
+    /* Part 9/10 — a SINGLE image is fixed: no dots and above all no timer.
+       Two or three images auto-advance every 5s (the existing interval). */
+    if(imgs.length>1 && dots){
+      for(var d=0;d<imgs.length;d++){
+        (function(idx){ var el=document.createElement('i'); if(idx===0)el.className='on';
+          el.onclick=function(){ show(idx); if(msHeroTimer){clearInterval(msHeroTimer);} msHeroTimer=setInterval(function(){show(cur+1);},5000); };
+          dots.appendChild(el); })(d);
+      }
+      msHeroTimer=setInterval(function(){ show(cur+1); },5000);
+    }
+  }
+  window.msHeroRender=msHeroRender;
+  window.msHeroRemove=msHeroRemove;
+  /* expose the real hero list on window for tests / debugging */
+  window.msHeroState=function(){ var e=document.getElementById('msHero'); return { present:!!e, slides:e?e.querySelectorAll('.sl').length:0, dots:e?e.querySelectorAll('.dots i').length:0, timer:!!msHeroTimer }; };
+
+  function msBootHero(){
+    try{ msHeroRender(); }catch(e){}
+    /* the category renderer toggles #homeWrap; mirror that onto the hero */
+    try{
+      var cp=document.getElementById('catPage');
+      if(cp && window.MutationObserver){
+        new MutationObserver(function(){ try{ msHeroRender(); }catch(e){} })
+          .observe(cp,{attributes:true,attributeFilter:['style']});
+      }
+    }catch(e){}
+    window.addEventListener('hashchange', function(){ setTimeout(function(){ try{msHeroRender();}catch(e){} },60); });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',msBootHero); else msBootHero();
+})();
+/* 2026-09-17 — images now arrive ASYNCHRONOUSLY (app.js rhLoadImagesAsync), so the
+   first render can draw placeholders. Redraw once the image cache is usable. */
+try { onRhImagesReady(function(){ render(); try{renderGrid();}catch(e){} }); } catch (e) { }
+</script>
+</body>
+</html>
+

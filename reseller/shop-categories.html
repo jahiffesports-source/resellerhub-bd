@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Categories - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root { --pri:#4f46e5; --prid:#4338ca; --vio:#7c3aed; --grn:#10b981; --gold:#fbbf24; --dark:#0f172a; --gray:#64748b; }
+        body { font-family:'Inter','Hind Siliguri',sans-serif; background:#eef1f9; color:#1e293b; padding-bottom:70px; overflow-x:hidden; }
+
+        /* ===== Animations ===== */
+        @keyframes dashUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:none} }
+        @keyframes dashSide { from{opacity:0;transform:translateX(-24px)} to{opacity:1;transform:none} }
+        @keyframes iconBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        @keyframes drift { 0%,100%{transform:translate(0,0) rotate(0)} 33%{transform:translate(24px,-18px) rotate(3deg)} 66%{transform:translate(-16px,14px) rotate(-2deg)} }
+        @keyframes welcomeShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        @keyframes barGrow { from{height:0 !important} }
+        @keyframes tilePop { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:none} }
+        .sidebar-header, .sidebar-menu a { animation:dashSide .4s ease both; }
+        .welcome { animation:dashUp .55s .1s ease both; }
+        .quick-row .quick-btn:nth-child(1) { animation:dashUp .5s .18s ease both; }
+        .quick-row .quick-btn:nth-child(2) { animation:dashUp .5s .24s ease both; }
+        .quick-row .quick-btn:nth-child(3) { animation:dashUp .5s .3s ease both; }
+        .quick-row .quick-btn:nth-child(4) { animation:dashUp .5s .36s ease both; }
+        .stats-grid .stat-card:nth-child(1) { animation:dashUp .5s .3s ease both; }
+        .stats-grid .stat-card:nth-child(2) { animation:dashUp .5s .38s ease both; }
+        .stats-grid .stat-card:nth-child(3) { animation:dashUp .5s .46s ease both; }
+        .stats-grid .stat-card:nth-child(4) { animation:dashUp .5s .54s ease both; }
+        .card { animation:dashUp .55s .5s ease both; }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:248px; background:linear-gradient(180deg,#0b1029 0%,#151a3a 100%); color:#c7d2fe; z-index:200; overflow-y:auto; transition:transform 0.3s; box-shadow:4px 0 24px rgba(11,16,41,.35); }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; justify-content:space-between; align-items:center; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:40px; height:40px; background:linear-gradient(135deg,var(--pri),var(--vio)); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .sidebar-logo h3 { color:white; font-size:1rem; font-weight:900; }
+        .sidebar-logo small { color:#818cf8; font-size:0.66rem; display:block; font-weight:700; letter-spacing:1px; }
+        .sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; }
+        .sidebar-menu { list-style:none; padding:12px 10px; }
+        .sidebar-menu li { margin:3px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:11px 15px; color:#c7d2fe; text-decoration:none; font-size:0.88rem; font-weight:600; border-radius:11px; transition:all .22s; }
+        .sidebar-menu a:hover { background:rgba(129,140,248,.14); color:white; transform:translateX(4px); }
+        .sidebar-menu a.active { background:linear-gradient(135deg,var(--pri),var(--vio)); color:white; box-shadow:0 8px 20px rgba(79,70,229,.4); }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 15px 5px; color:#6366f1; font-size:0.66rem; text-transform:uppercase; letter-spacing:1.4px; font-weight:800; }
+        .menu-badge { background:var(--gold); color:#1e293b; font-size:0.68rem; padding:1px 8px; border-radius:10px; font-weight:800; margin-left:auto; }
+        .menu-badge-n { color:var(--gold); font-weight:900; }
+
+        .side-overlay { display:none; position:fixed; inset:0; background:rgba(11,16,41,.55); z-index:150; backdrop-filter:blur(2px); }
+
+        /* ===== MAIN ===== */
+        .main { margin-left:248px; min-height:100vh; }
+        .topbar { background:rgba(255,255,255,.88); backdrop-filter:blur(12px); padding:12px 22px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 14px rgba(15,23,42,.06); position:sticky; top:0; z-index:100; }
+        .topbar-left { display:flex; align-items:center; gap:12px; }
+        .hamburger { display:none; background:none; border:none; font-size:1.3rem; color:#1e293b; cursor:pointer; padding:4px; }
+        .topbar h2 { font-size:1.12rem; font-weight:800; }
+        .topbar-right { display:flex; align-items:center; gap:8px; }
+        .topbar-balance { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#7c2d12; padding:7px 15px; border-radius:22px; font-weight:800; font-size:0.84rem; white-space:nowrap; box-shadow:0 4px 12px rgba(245,158,11,.35); }
+        .topbar-user { display:flex; align-items:center; gap:7px; padding:6px 14px; background:#eef2ff; color:var(--pri); border-radius:22px; font-size:0.84rem; font-weight:700; }
+        .btn-logout { background:#fee2e2; color:#dc2626; border:none; padding:8px 12px; border-radius:10px; cursor:pointer; font-size:0.85rem; transition:all .25s; }
+        .btn-logout:hover { background:#dc2626; color:#fff; transform:translateY(-1px); }
+
+        .content { padding:22px 28px; width:100%; }
+
+        /* ===== Welcome — index hero style (dark + orbit) ===== */
+        .welcome { background:radial-gradient(700px 400px at 80% 10%, #312e81 0%, transparent 55%), radial-gradient(500px 320px at 8% 90%, #1e1b4b 0%, transparent 55%), linear-gradient(150deg,#0b1029,#12102e 60%,#181436); color:white; padding:30px 32px; border-radius:26px; margin-bottom:22px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; position:relative; overflow:hidden; box-shadow:0 22px 50px rgba(11,16,41,.4); animation:dashUp .55s .1s ease both; }
+        .w-orbit { position:absolute; border:1px solid rgba(129,140,248,.22); border-radius:50%; pointer-events:none; }
+        .w-orbit.o1 { width:340px; height:340px; top:-140px; right:-80px; animation:drift 14s ease-in-out infinite; }
+        .w-orbit.o2 { width:240px; height:240px; bottom:-110px; left:-60px; animation:drift 18s ease-in-out infinite reverse; }
+        .w-kicker { display:inline-flex; align-items:center; gap:7px; background:rgba(129,140,248,.18); border:1px solid rgba(129,140,248,.45); color:#c7d2fe; font-size:.66rem; font-weight:900; letter-spacing:1.6px; padding:5px 14px; border-radius:18px; margin-bottom:12px; position:relative; }
+        .welcome h3 { font-size:1.5rem; font-weight:900; margin-bottom:4px; position:relative; }
+        .w-grad { background:linear-gradient(90deg,#a5b4fc,#f0abfc,#67e8f9); background-size:200% auto; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; animation:welcomeShift 5s linear infinite; }
+        .welcome p { opacity:0.92; font-size:0.9rem; position:relative; }
+        .welcome .ref-code { background:rgba(129,140,248,.25); border:1px solid rgba(129,140,248,.4); padding:3px 12px; border-radius:14px; font-weight:800; font-size:0.76rem; position:relative; }
+        .btn-welcome { background:linear-gradient(135deg,var(--grn),#059669); color:white; padding:14px 26px; border-radius:14px; border:none; font-weight:800; cursor:pointer; font-size:0.92rem; white-space:nowrap; position:relative; transition:all .28s; box-shadow:0 12px 28px rgba(16,185,129,.4); }
+        .btn-welcome:hover { transform:translateY(-3px); box-shadow:0 18px 36px rgba(16,185,129,.5); }
+
+        /* Pending banner */
+        .pending-banner { background:linear-gradient(135deg,#fef3c7,#fde68a); border-left:5px solid #f59e0b; padding:15px 19px; border-radius:14px; margin-bottom:18px; }
+        .pending-banner h4 { color:#92400e; font-size:0.95rem; margin-bottom:3px; }
+        .pending-banner p { color:#78350f; font-size:0.85rem; }
+
+        /* ===== Kickers (index-style section badges) ===== */
+        .kick { display:inline-flex; align-items:center; font-size:.6rem; font-weight:900; letter-spacing:1.6px; color:var(--pri); background:#eef2ff; padding:4px 12px; border-radius:16px; margin-right:9px; vertical-align:2px; }
+
+        /* Stats */
+        .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:15px; margin-bottom:20px; }
+        .stat-card { background:white; padding:19px; border-radius:18px; box-shadow:0 3px 14px rgba(15,23,42,.05); border:1px solid #eef2f7; display:flex; align-items:center; gap:14px; transition:all .28s; }
+        .stat-card:hover { transform:translateY(-4px); box-shadow:0 16px 32px rgba(15,23,42,.11); }
+        .stat-icon { width:52px; height:52px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:1.35rem; flex-shrink:0; }
+        .stat-icon.green { background:linear-gradient(135deg,#d1fae5,#a7f3d0); color:#059669; }
+        .stat-icon.blue { background:linear-gradient(135deg,#e0e7ff,#c7d2fe); color:var(--pri); }
+        .stat-icon.orange { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#d97706; }
+        .stat-icon.purple { background:linear-gradient(135deg,#ede9fe,#ddd6fe); color:#7c3aed; }
+        .stat-card .label { font-size:0.74rem; color:var(--gray); margin-bottom:3px; font-weight:700; }
+        .stat-card .value { font-size:1.32rem; font-weight:900; }
+
+        /* Quick actions */
+        .quick-row { display:grid; grid-template-columns:repeat(4,1fr); gap:13px; margin-bottom:20px; }
+        .quick-btn { background:white; border:1px solid #eef2f7; border-radius:18px; padding:17px 10px; cursor:pointer; text-align:center; box-shadow:0 3px 12px rgba(15,23,42,.05); transition:all .25s; text-decoration:none; }
+        .quick-btn:hover { transform:translateY(-4px); box-shadow:0 14px 30px rgba(79,70,229,.14); border-color:#c7d2fe; }
+        .quick-btn .qi { width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin:0 auto 9px; transition:transform .3s; }
+        .quick-btn:hover .qi { transform:scale(1.12) rotate(-6deg); }
+        .quick-btn p { font-size:0.8rem; font-weight:700; color:#334155; }
+
+        /* ===== SALES ANALYTICS ===== */
+        .analytics { background:white; border-radius:20px; border:1px solid #eef2f7; box-shadow:0 4px 16px rgba(15,23,42,.05); padding:20px 22px; margin-bottom:20px; animation:dashUp .55s .48s ease both; }
+        .analytics-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:8px; }
+        .analytics-head h4 { font-size:0.95rem; font-weight:800; }
+        .analytics-head small { color:var(--gray); font-size:.72rem; font-weight:700; }
+        .atile-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+        .atile { border-radius:16px; padding:14px 16px; text-align:center; animation:tilePop .45s ease both; transition:transform .25s; }
+        .atile:hover { transform:translateY(-3px); }
+        .atile:nth-child(2) { animation-delay:.08s; } .atile:nth-child(3) { animation-delay:.16s; } .atile:nth-child(4) { animation-delay:.24s; }
+        .atile .tl { font-size:.64rem; font-weight:800; letter-spacing:.8px; text-transform:uppercase; opacity:.85; }
+        .atile .tv { font-size:1.18rem; font-weight:900; margin-top:3px; }
+        .atile.t-ind { background:linear-gradient(135deg,#e0e7ff,#c7d2fe); color:#3730a3; }
+        .atile.t-grn { background:linear-gradient(135deg,#d1fae5,#a7f3d0); color:#065f46; }
+        .atile.t-amb { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#92400e; }
+        .atile.t-vio { background:linear-gradient(135deg,#ede9fe,#ddd6fe); color:#5b21b6; }
+        .achart { display:flex; align-items:flex-end; gap:10px; height:170px; padding:6px 4px 0; }
+        .acol { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
+        .abar { width:100%; max-width:44px; border-radius:9px 9px 4px 4px; background:linear-gradient(180deg,var(--pri),var(--vio)); min-height:5px; transition:height .8s cubic-bezier(.2,.8,.3,1); box-shadow:0 4px 10px rgba(79,70,229,.25); position:relative; }
+        .abar:hover { filter:brightness(1.15); }
+        .abar .av { position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-size:.62rem; font-weight:800; color:var(--pri); white-space:nowrap; opacity:0; transition:opacity .3s; }
+        .acol:hover .av { opacity:1; }
+        .abar.zero { background:#e2e8f0; box-shadow:none; }
+        .abar.zero .av { color:#94a3b8; }
+        .alab { font-size:.64rem; font-weight:800; color:var(--gray); }
+        .duo { display:grid; grid-template-columns:1.6fr 1fr; gap:20px; align-items:start; }
+
+        .card { background:white; border-radius:20px; box-shadow:0 4px 16px rgba(15,23,42,.05); border:1px solid #eef2f7; margin-bottom:20px; overflow:hidden; animation:dashUp .55s .5s ease both; }
+        .card-header { padding:15px 20px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; }
+        .card-header h4 { font-size:0.95rem; font-weight:800; }
+        .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+        .data-table { width:100%; border-collapse:collapse; min-width:600px; }
+        .data-table th { text-align:left; padding:11px 18px; background:#f8fafc; font-weight:700; font-size:0.68rem; color:var(--gray); text-transform:uppercase; white-space:nowrap; }
+        .data-table td { padding:12px 18px; border-bottom:1px solid #f4f6fb; font-size:0.84rem; }
+        .data-table tr:hover { background:#f8faff; }
+        .badge { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; white-space:nowrap; }
+        .b-delivered { background:#d1fae5; color:#065f46; }
+        .b-shipped { background:#e0e7ff; color:#4338ca; }
+        .b-processing { background:#e0f2fe; color:#0369a1; }
+        .b-cancelled { background:#fee2e2; color:#991b1b; }
+        .b-new { background:#fef3c7; color:#92400e; }
+        .b-pending { background:#fef3c7; color:#92400e; }
+        .b-confirmed { background:#dbeafe; color:#1e40af; }
+        .b-packaging { background:#ede9fe; color:#6d28d9; }
+        .b-shipping { background:#e0e7ff; color:#4338ca; }
+        .b-wfr { background:#fef9c3; color:#854d0e; }
+        .b-returned { background:#ffe4e6; color:#9f1239; }
+        .btn { padding:6px 12px; border:none; border-radius:8px; font-size:0.8rem; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:5px; transition:all .22s; }
+        .btn-primary { background:linear-gradient(135deg,var(--pri),var(--prid)); color:white; }
+        .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 14px rgba(79,70,229,.35); }
+        .empty { text-align:center; padding:38px 16px; color:var(--gray); }
+        .empty i { font-size:2.2rem; margin-bottom:8px; opacity:0.4; }
+        .empty a { color:var(--pri); font-weight:700; }
+
+        .notif-item { padding:12px 18px; border-bottom:1px solid #f4f6fb; display:flex; gap:11px; align-items:flex-start; font-size:0.86rem; transition:background .2s; }
+        .notif-item:hover { background:#f8faff; }
+        .notif-item:last-child { border-bottom:none; }
+        .notif-item i { color:var(--pri); margin-top:3px; }
+
+        /* ===== MOBILE BOTTOM NAV ===== */
+        .bottom-nav { display:none; position:fixed; bottom:10px; left:12px; right:12px; background:rgba(255,255,255,.92); backdrop-filter:blur(14px); border:1px solid #eef2f7; box-shadow:0 10px 30px rgba(15,23,42,.16); z-index:400; padding:7px 6px calc(7px + env(safe-area-inset-bottom)); border-radius:20px; }
+        .bottom-nav a { display:flex; flex-direction:column; align-items:center; gap:2px; text-decoration:none; color:#94a3b8; font-size:0.62rem; font-weight:700; padding:6px 6px; border-radius:12px; flex:1; transition:all .2s; }
+        .bottom-nav a i { font-size:1.12rem; }
+        .bottom-nav a.active { color:var(--pri); background:#eef2ff; }
+        .bn-menu { background:linear-gradient(135deg,var(--pri),var(--vio)); color:#fff; border-radius:14px; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .bn-menu i { color:#fff; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width:1024px) { .stats-grid { grid-template-columns:repeat(2,1fr); } .quick-row { grid-template-columns:repeat(4,1fr); } .duo { grid-template-columns:1fr; } .atile-row { grid-template-columns:1fr 1fr; } }
+        @media (max-width:768px) {
+            body { padding-bottom:86px; }
+            .sidebar { transform:translateX(-100%); width:272px; }
+            .sidebar.open { transform:translateX(0); }
+            .side-overlay.show { display:block; }
+            .sidebar-close-m { display:block; }
+            .main { margin-left:0; }
+            .hamburger { display:block; }
+            .topbar-user span { max-width:78px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+            .stats-grid { grid-template-columns:1fr 1fr; gap:10px; }
+            .stat-card { padding:14px 12px; flex-direction:column; text-align:center; gap:8px; }
+            .stat-card .value { font-size:1.12rem; }
+            .quick-row { grid-template-columns:repeat(2,1fr); gap:10px; }
+            .welcome { flex-direction:column; text-align:center; padding:24px 18px; }
+            .btn-welcome { width:100%; }
+            .bottom-nav { display:flex; }
+            .content { padding:14px; }
+            .topbar { padding:11px 14px; }
+            /* 2026-09-16 — MOBILE FIX (this request). The topbar measured about 440px
+               across on a 390px phone, so the logout button was pushed past the right
+               edge and looked cut off. These rules tighten the SAME header so it fits a
+               narrow screen. Nothing is hidden and nothing outside this media query is
+               touched, so the desktop layout is unchanged. */
+            .topbar { padding:10px 12px; }
+            .topbar-left { gap:8px; }
+            .topbar h2 { font-size:.98rem; }
+            .topbar-right { gap:6px; }
+            .topbar-balance { padding:6px 10px; font-size:.78rem; }
+            .topbar-user { padding:5px 10px; font-size:.78rem; }
+            .topbar-user span { max-width:52px; }
+
+            .atile-row { grid-template-columns:1fr 1fr; gap:9px; }
+            .achart { gap:5px; height:130px; }
+            .analytics { padding:16px 14px; }
+        }
+        @media (max-width:400px) { .quick-row { grid-template-columns:1fr 1fr; } .stats-grid { grid-template-columns:1fr 1fr; } }
+
+</style>
+
+<style id="lx-nav-force">
+@media(max-width:768px){
+    .bottom-nav{display:flex !important;position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;opacity:1 !important;visibility:visible !important;transform:none !important}
+    body{padding-bottom:86px !important}
+}
+</style>
+
+<style id="lx-bnav">
+/* ===== Complete bottom-nav styling ===== */
+.bottom-nav{position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;display:flex !important;align-items:stretch;background:rgba(255,255,255,.97) !important;backdrop-filter:blur(14px);border:1px solid #e8ecf4 !important;border-radius:18px !important;box-shadow:0 -4px 24px rgba(15,23,42,.14) !important;padding:7px 6px calc(7px + env(safe-area-inset-bottom)) !important}
+.bottom-nav a,.bottom-nav button{flex:1 !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;gap:3px !important;padding:7px 2px !important;border:none !important;background:none !important;color:#7b879c !important;font-size:.62rem !important;font-weight:700 !important;text-decoration:none !important;cursor:pointer !important;border-radius:12px !important;font-family:inherit !important;line-height:1.2 !important}
+.bottom-nav a i,.bottom-nav button i{font-size:1.18rem !important;line-height:1 !important}
+.bottom-nav a span,.bottom-nav button span{display:block !important}
+.bottom-nav a:hover,.bottom-nav button:hover{color:#4f46e5 !important;background:#eef2ff !important;transform:translateY(-2px)}
+.bottom-nav a.active{color:#4f46e5 !important;background:#eef2ff !important}
+.bottom-nav .bn-menu{color:#4f46e5 !important;background:#eef2ff !important;box-shadow:none !important;border-radius:12px !important}
+.bottom-nav .bn-menu:hover{background:#e0e7ff !important}
+.bottom-nav .bn-menu i,.bottom-nav .bn-menu span{color:#4f46e5 !important}
+body{padding-bottom:86px !important}
+@media(min-width:769px){
+    .bottom-nav{display:none !important}
+    body{padding-bottom:0 !important}
+}
+</style>
+
+<style>
+@media(max-width:768px){
+    .sidebar{transform:translateX(-100%) !important;transition:transform .32s cubic-bezier(.2,.8,.3,1) !important;display:block !important}
+    .sidebar.open{transform:translateX(0) !important;box-shadow:24px 0 60px rgba(11,16,41,.45) !important}
+}
+</style>
+
+<style id="lx-offer-banners">
+/* ===== Offer banner strip — reseller dashboard only ===== */
+.ofb-area{margin:0 0 20px}
+.ofb-strip{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.ofb-strip::-webkit-scrollbar{height:6px}
+.ofb-strip::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:6px}
+.ofb-item{flex:0 0 auto;width:100%;max-width:640px;scroll-snap-align:start;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(15,23,42,.08);background:#f1f5f9;position:relative}
+.ofb-item.solo{width:100%;max-width:none}
+.ofb-strip.many .ofb-item{width:min(88%,520px)}
+.ofb-item img{display:block;width:100%;height:auto;max-height:220px;object-fit:cover}
+.ofb-item a,.ofb-item .ofb-plain{display:block}
+.ofb-item .ofb-plain{cursor:default}
+.ofb-item .ofb-cap{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(15,23,42,0),rgba(15,23,42,.82));color:#fff;padding:16px 16px 12px;pointer-events:none}
+.ofb-item .ofb-cap b{display:block;font-size:.86rem;font-weight:900;line-height:1.3;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.ofb-item .ofb-cap small{display:block;font-size:.68rem;opacity:.9;margin-top:2px}
+@media(max-width:768px){
+ .ofb-item{max-width:100%}
+ .ofb-item img{max-height:150px}
+ .ofb-strip.many .ofb-item{width:92%}
+ .ofb-item .ofb-cap b{font-size:.78rem}
+}
+</style>
+<style id="lx-logout-fix">
+/* Logout fix: the open sidebar must paint ABOVE the fixed mobile bottom-nav,
+   otherwise the last menu item (Logout) is covered and un-tappable. */
+.sidebar{ z-index:900 !important; }
+.side-overlay{ z-index:880 !important; }
+.sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+@supports selector(:has(*)){
+  body:has(.sidebar.open) .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+}
+@media(min-width:769px){ .sidebar-menu{ padding-bottom:12px !important; } }
+</style>
+
+<style id="lx-sidebar-fix">
+/* ===== Reseller sidebar — canonical & stable (do not mutate at runtime) ===== */
+/* 1) Labels and section headings are ALWAYS visible. The old template hid
+      .sidebar-menu a span and .sidebar-divider under 768px, which made menu
+      text disappear and the "Account" heading vanish on some pages. */
+.sidebar .sidebar-menu a span{ display:inline !important; }
+.sidebar .sidebar-menu .sidebar-divider,
+.sidebar .sidebar-divider{ display:block !important; }
+.sidebar .sidebar-logo h3{ display:block !important; }
+.sidebar .sidebar-logo small{ display:block !important; }
+
+/* 2) Fixed geometry — the sidebar is never collapsed to a 70px icon rail. */
+.sidebar{ width:248px !important; z-index:900 !important; overflow-y:auto !important; }
+.side-overlay{ z-index:880 !important; }
+@media(min-width:769px){
+    .main{ margin-left:248px !important; }
+    .sidebar{ transform:none !important; }
+}
+@media(max-width:768px){
+    .main{ margin-left:0 !important; }
+    .sidebar{ transform:translateX(-100%) !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; display:block !important; }
+    .sidebar.open{ transform:translateX(0) !important; box-shadow:24px 0 60px rgba(11,16,41,.45) !important; }
+}
+
+/* 3) Row geometry is locked: the "All Orders" counter is absolutely positioned
+      so a changing number can never push the rows below it up or down. */
+.sidebar .sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.sidebar .sidebar-menu li{ position:relative; display:block; margin:3px 0; }
+.sidebar .sidebar-menu a{ display:flex !important; align-items:center; gap:12px; padding:11px 15px; }
+.sidebar .menu-badge{ position:absolute; right:12px; top:50%; transform:translateY(-50%); margin-left:0 !important; }
+
+/* 4) Mobile: hide the bottom nav while the drawer is open so the last item
+      (Logout) is never covered. */
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+
+/* 5) Close button inside the drawer on mobile. */
+.sidebar .sidebar-close-m{ display:none; }
+@media(max-width:768px){ .sidebar .sidebar-close-m{ display:block !important; } }
+</style>
+
+<style id="reseller-hamburger-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   Every reseller page hides the hamburger with ".hamburger{display:none}", but most
+   pages never turn it back ON at mobile width — only products.html did. So on a phone
+   there was no way to open the sidebar on Products, Orders, Wallet, Withdrawals,
+   Courier, Messages, Support, Profile, Referral or Website Integration.
+   This shows the SAME existing button (onclick="menuToggle()") at mobile width only.
+   It is an ADDED block and lives entirely inside a max-width query, so the DESKTOP
+   LAYOUT IS UNCHANGED. */
+@media (max-width:768px){
+  .hamburger { display:block !important; }
+}
+</style>
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+
+<style id="lx-page-entrance">
+/* ============================================================================
+   2026-09-18 — THE PAGE ENTRANCE (this request)
+   ----------------------------------------------------------------------------
+   The same animation the products page uses, copied VERBATIM from
+   reseller/products.html: the content block rises 20px and fades in as the page
+   opens, and the tree arrives a beat later so the page assembles rather than
+   appearing all at once.
+   ============================================================================ */
+@keyframes lxPgUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+.content > * { animation:lxPgUp .5s ease both; }
+.sc-tree { animation:lxPgUp .5s .2s ease both; }
+
+/* somebody who asked their device to calm down gets a calm page */
+@media (prefers-reduced-motion: reduce){
+    .content > *, .sc-tree, .sc-ov, .sc-ov .box { animation:none !important; }
+    .sc-btn, .sc-l1, .sc-l2, .sc-l3, .sc-fchip, .sc-ov .hd button { transition:none !important; }
+}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon"><i class="fas fa-store"></i></div>
+            <div><h3>ResellerHub</h3><small>Reseller Panel</small></div>
+        </div>
+        
+        <button class="sidebar-close-m" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+        <ul class="sidebar-menu">
+        <li class="sidebar-divider">Main</li>
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+        <li><a href="products.html"><i class="fas fa-box"></i> <span>Products</span></a></li>
+        <li><a href="my-shop.html"><i class="fas fa-store"></i> <span>My Shop</span></a></li>
+        <li><a href="transactions.html"><i class="fas fa-right-left"></i> <span>Transactions</span></a></li>
+        <li class="sidebar-divider">Orders</li>
+        <li><a href="my-orders.html"><i class="fas fa-list"></i> <span>All Orders<span class="menu-badge-n" id="ordersBadgeLabel"></span></span></a> <span class="menu-badge" id="ordersBadge" style="display:none">0</span></li>
+        <li><a href="order.html"><i class="fas fa-cart-plus"></i> <span>Add New Order</span></a></li>
+        <li><a href="offers.html"><i class="fas fa-gift"></i> <span>Offers</span></a></li>
+        <li class="sidebar-divider">My Shop</li>
+        <li><a href="shop-categories.html" class="active"><i class="fas fa-sitemap"></i> <span>Shop Categories</span></a></li>
+        <li><a href="my-shop-settings.html"><i class="fas fa-sliders"></i> <span>Shop Settings</span></a></li>
+        <li><a href="my-products.html"><i class="fas fa-box-open"></i> <span>My Products</span></a></li>
+        <li><a href="my-shop-orders.html"><i class="fas fa-bag-shopping"></i> <span>My Shop Orders</span></a></li>
+        <li><a href="customer-messages.html"><i class="fas fa-comment-dots"></i> <span>Customer Messages<span class="menu-badge-n" id="cmsgBadgeLabel"></span></span></a></li>
+        <li class="sidebar-divider">Account</li>
+        <li><a href="wallet.html"><i class="fas fa-wallet"></i> <span>Wallet</span></a></li>
+        <li><a href="withdrawals.html"><i class="fas fa-money-bill-wave"></i> <span>Withdrawals</span></a></li>
+        <li><a href="courier.html"><i class="fas fa-truck"></i> <span>Courier</span></a></li>
+        <li><a href="messages.html"><i class="fas fa-comments"></i> <span>Messages<span class="menu-badge-n" id="msgBadgeLabel"></span></span></a></li>
+        <li><a href="support.html"><i class="fas fa-headset"></i> <span>Support</span></a></li>
+        <li><a href="profile.html"><i class="fas fa-user-cog"></i> <span>Profile</span></a></li>
+        <li><a href="referral.html"><i class="fas fa-user-plus"></i> <span>Referral</span></a></li>
+        <li><a href="website-integration.html"><i class="fas fa-plug"></i> <span>Website Integration</span></a></li>
+        <li><a href="../index.html"><i class="fas fa-globe"></i> <span>Visit Site</span></a></li>
+        <li><a href="javascript:void(0)" onclick="resellerLogout()" style="color:#dc2626"><i class="fas fa-right-from-bracket"></i> <span>Logout</span></a></li>
+    </ul>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+        <div class="topbar-left">
+            <button class="hamburger" onclick="toggleSidebar(true)"><i class="fas fa-bars"></i></button>
+            <h2><i class="fas fa-sitemap" style="color:#2563eb;margin-right:6px;"></i> Shop Categories</h2>
+        </div>
+        <div class="topbar-right">
+            <div class="topbar-balance"><i class="fas fa-coins"></i> <span id="topBalance">0</span></div>
+            <div class="topbar-user"><i class="fas fa-user" style="color:#2563eb;"></i> <span id="userName">User</span></div>
+            <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content">
+<style id="lx-shopcats">
+.sc-note{background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:13px;padding:13px 16px;font-size:.8rem;line-height:1.65;margin-bottom:16px}
+.sc-note b{font-weight:900}
+.sc-card{background:#fff;border-radius:15px;box-shadow:0 2px 12px rgba(15,23,42,.06);padding:20px 22px;margin-bottom:16px}
+.sc-card h3{font-size:.95rem;font-weight:900;margin-bottom:4px;display:flex;align-items:center;gap:9px}
+.sc-card h3 i{color:#4f46e5}
+.sc-card .hint{font-size:.76rem;color:#64748b;margin-bottom:14px;line-height:1.6}
+.sc-row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end}
+.sc-f label{display:block;font-size:.72rem;font-weight:800;color:#475569;margin-bottom:5px}
+.sc-inp,.sc-sel{width:100%;padding:10px 13px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.84rem;font-family:inherit;box-sizing:border-box;background:#fff}
+.sc-inp:focus,.sc-sel:focus{outline:none;border-color:#4f46e5;box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+.sc-btn{border:none;border-radius:10px;padding:11px 18px;font-weight:800;font-size:.78rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px}
+.sc-btn.pri{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff}
+.sc-btn.gh{background:#f1f5f9;color:#475569}
+.sc-btn.dn{background:#fee2e2;color:#dc2626}
+.sc-tree{margin-top:6px}
+.sc-l1{background:#fafbff;border:1px solid #eef2f7;border-radius:12px;padding:12px 14px;margin-bottom:9px}
+.sc-l2{margin-left:18px;background:#fff;border-color:#f1f5f9}
+.sc-l3{margin-left:36px;background:#fff;border-color:#f1f5f9}
+.sc-hd{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sc-hd b{font-size:.84rem}
+.sc-hd .mini{font-size:.68rem;color:#94a3b8;font-weight:700}
+.sc-empty{text-align:center;color:#94a3b8;padding:36px 18px;font-size:.82rem}
+.sc-empty i{font-size:2rem;display:block;margin-bottom:10px;opacity:.5}
+/* 2026-09-18 — the add form, redesigned (this request). The old one had TWO rows
+   and TWO buttons, with the name box on the second row and the "Add" button on the
+   first: typing a name and pressing Add did nothing unless a Main Category had
+   been picked first. Now there is one name box, one button, and a live line that
+   says exactly what will be created. */
+.sc-opt{font-weight:700;color:#94a3b8;font-size:.66rem}
+.sc-name{margin-bottom:12px}
+.sc-do{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
+.sc-preview{flex:1;min-width:200px;background:#f5f7ff;border:1px dashed #c7d2fe;border-radius:11px;padding:10px 14px;font-size:.78rem;color:#4338ca;font-weight:700;line-height:1.5}
+.sc-preview.empty{background:#f8fafc;border-color:#e2e8f0;color:#94a3b8}
+.sc-preview b{font-weight:900}
+.sc-preview .arrow{color:#a5b4fc;margin:0 5px}
+.sc-btn.ed{background:#eef2ff;color:#4f46e5}
+.sc-btn.ed:hover{background:#e0e7ff}
+.sc-btn.dn:hover{background:#fecaca}
+.sc-btn.pri:hover{filter:brightness(1.06);box-shadow:0 8px 20px rgba(79,70,229,.32)}
+.sc-btn{transition:transform .2s cubic-bezier(.22,.9,.32,1),box-shadow .2s,background .2s,filter .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.sc-btn:hover{transform:translateY(-2px)}
+.sc-btn:active{transform:translateY(0) scale(.95)}
+.sc-hd .ops{display:flex;gap:6px;flex-wrap:wrap}
+.sc-hd .ops .sc-btn{padding:8px 12px}
+.sc-l1,.sc-l2,.sc-l3{transition:transform .22s cubic-bezier(.22,.9,.32,1),box-shadow .22s,border-color .22s}
+.sc-l1:hover,.sc-l2:hover,.sc-l3:hover{transform:translateX(3px);border-color:#dbe2ee;box-shadow:0 6px 16px rgba(15,23,42,.06)}
+/* 2026-09-18 — the "সব / শুধু আমার" filter, the deactivate state, and the in-page
+   modal that replaces window.prompt / window.confirm (browsers can suppress those,
+   and then the button does nothing at all). */
+.sc-fchips{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.sc-fchip{padding:8px 16px;border-radius:20px;font-size:.76rem;font-weight:800;background:#fff;border:1.5px solid #e6ebf3;color:#64748b;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.sc-fchip:hover{transform:translateY(-2px);border-color:#dbe2ee}
+.sc-fchip:active{transform:scale(.96)}
+.sc-fchip.on{background:linear-gradient(135deg,#4f46e5,#7c3aed);border-color:transparent;color:#fff;box-shadow:0 8px 20px rgba(79,70,229,.3)}
+.sc-fchip .n{background:#eef2ff;color:#4f46e5;border-radius:20px;padding:1px 8px;font-size:.68rem;font-weight:900;margin-left:6px}
+.sc-fchip.on .n{background:rgba(255,255,255,.25);color:#fff}
+.sc-hd .mini.admin{background:#e0e7ff;color:#3730a3}
+.sc-hd .mini.mine{background:#dcfce7;color:#15803d}
+.sc-hd .mini.off{background:#fee2e2;color:#b91c1c}
+.sc-l1.hid,.sc-l2.hid,.sc-l3.hid{opacity:.6;background:#fbfcfe}
+.sc-l1.hid b,.sc-l2.hid b,.sc-l3.hid b{text-decoration:line-through;text-decoration-color:#fca5a5}
+.sc-btn.tg{background:#eef2ff;color:#4f46e5}
+.sc-btn.tg.off{background:#fee2e2;color:#dc2626}
+@keyframes scFade{from{opacity:0}to{opacity:1}}
+@keyframes scPop{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+.sc-ov{position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:1200;display:flex;align-items:center;justify-content:center;padding:16px;animation:scFade .2s ease both}
+.sc-ov .box{background:#fff;border-radius:18px;max-width:440px;width:100%;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.4);animation:scPop .32s cubic-bezier(.22,.9,.32,1.1) both}
+.sc-ov .hd{display:flex;align-items:center;justify-content:space-between;padding:15px 19px;border-bottom:1px solid #eef2f7;background:#f8fafc}
+.sc-ov .hd b{font-size:.94rem;font-weight:900;display:flex;align-items:center;gap:8px}
+.sc-ov .hd b i{color:#4f46e5}
+.sc-ov .hd button{border:none;background:none;font-size:1.55rem;line-height:1;color:#94a3b8;cursor:pointer;transition:color .2s,transform .2s}
+.sc-ov .hd button:hover{color:#dc2626;transform:rotate(90deg)}
+.sc-ov .bd{padding:18px 19px}
+.sc-ov .path{font-size:.74rem;color:#64748b;font-weight:800;margin-bottom:12px}
+.sc-ov .path .arrow{color:#a5b4fc;margin:0 4px}
+.sc-ov label{display:block;font-size:.76rem;font-weight:900;color:#334155;margin-bottom:7px}
+.sc-ov input{width:100%;padding:11px 13px;border:1.5px solid #e2e8f0;border-radius:11px;font-size:.86rem;font-family:inherit;box-sizing:border-box}
+.sc-ov input:focus{outline:none;border-color:#4f46e5;box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+.sc-ov .ask{font-size:.86rem;color:#334155;margin-bottom:9px}
+.sc-ov .warn{font-size:.76rem;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 12px;line-height:1.65}
+.sc-ov .ft{display:flex;gap:9px;justify-content:flex-end;padding:14px 19px;border-top:1px solid #eef2f7;background:#f8fafc}
+.sc-ov .ft button{border:none;border-radius:11px;padding:11px 19px;font-size:.82rem;font-weight:800;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.sc-ov .ft .gh{background:#e2e8f0;color:#334155}
+.sc-ov .ft .pri{background:linear-gradient(135deg,#4f46e5,#4338ca);color:#fff}
+.sc-ov .ft .dn{background:#dc2626;color:#fff}
+@media(max-width:860px){ .sc-row{grid-template-columns:1fr 1fr} }
+@media(max-width:560px){
+ .sc-card{padding:15px 14px}
+ .sc-row{grid-template-columns:1fr}
+ .sc-btn{width:100%;justify-content:center}
+ .sc-l2{margin-left:10px}.sc-l3{margin-left:20px}
+}
+</style>
+
+<div class="sc-note">
+    <b>শুধুমাত্র আপনার My Shop-এর জন্য</b> — এখানে তৈরি করা category/subcategory/sub-subcategory <b>আপনার shop ছাড়া কোথাও দেখা যাবে না</b>। Admin-এর global category system অপরিবর্তিত থাকে।
+</div>
+
+<div class="sc-card">
+    <h3><i class="fas fa-plus-circle"></i> নতুন Category যোগ করুন</h3>
+    <p class="hint">নাম লিখুন, তারপর বাছুন কোথায় বসবে। <b>কিছু না বাছলে</b> সেটা নতুন <b>Main Category</b> হবে — আলাদা কোনো বাটন লাগবে না।</p>
+    <div class="sc-f sc-name">
+        <label>নতুন নাম</label>
+        <input class="sc-inp" id="scName" placeholder="যেমন: Premium Hijab" oninput="scHint()">
+    </div>
+    <div class="sc-row">
+        <div class="sc-f"><label>Main Category <span class="sc-opt">— না বাছলে নতুন Main</span></label><select class="sc-sel" id="scCat" onchange="scFillSubs();scHint()"></select></div>
+        <div class="sc-f"><label>Subcategory <span class="sc-opt">— না বাছলে নতুন Sub</span></label><select class="sc-sel" id="scSub" onchange="scFillSubSubs();scHint()"></select></div>
+        <div class="sc-f"><label>Sub-subcategory <span class="sc-opt">— খালি রাখলেই নতুন</span></label><select class="sc-sel" id="scSubSub"></select></div>
+    </div>
+    <div class="sc-do">
+        <div class="sc-preview empty" id="scHint"></div>
+        <button class="sc-btn pri" onclick="scAdd()"><i class="fas fa-plus"></i> যোগ করুন</button>
+    </div>
+</div>
+
+<div class="sc-card">
+    <h3><i class="fas fa-sitemap"></i> আমার Shop Categories</h3>
+    <p class="hint">Admin-এর global category গুলো Shop Settings → Shop Categories থেকে ON/OFF করা যায়। নিচের <b>শুধু আমার</b> বাটনে চাপলে কেবল আপনার নিজের বানানো category দেখা যাবে — সেখানে <b>নাম বদলানো</b>, <b>বন্ধ করা</b> (লুকিয়ে দেওয়া) আর <b>মুছে ফেলা</b> যায়।</p>
+    <div class="sc-fchips">
+        <span class="sc-fchip on" data-f="all" onclick="scFilter('all')"><i class="fas fa-layer-group"></i> সব Category</span>
+        <span class="sc-fchip" data-f="mine" onclick="scFilter('mine')"><i class="fas fa-user-check"></i> শুধু আমার <span class="n" id="scMineCount">0</span></span>
+    </div>
+    <div class="sc-tree" id="scTree"></div>
+</div>
+
+    </div>
+</main>
+
+<script src="../app.js"></script><script>(function(){function paint(){try{var b=document.getElementById("ordersBadge");var uid=sessionStorage.getItem("user_id");if(!uid)return;if(sessionStorage.getItem("user_type")!=="reseller")return;var n=(typeof resellerNewOrderCount==="function")?resellerNewOrderCount(uid):0;if(b){b.textContent=n;b.style.display=n>0?"inline-block":"none";}var lb=document.getElementById("ordersBadgeLabel");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+var uid = sessionStorage.getItem('user_id');
+var utype = sessionStorage.getItem('user_type');
+if (!uid || utype !== 'reseller') { window.location.replace('login.html'); }
+var ME = null;
+function loadMe() {
+    var list = getData(DB_KEYS.RESELLERS) || [];
+    for (var i = 0; i < list.length; i++) { if (String(list[i].id) === String(uid)) { ME = list[i]; break; } }
+    return !!ME;
+}
+if (!loadMe()) { sessionStorage.clear(); window.location.replace('login.html'); }
+var RID = ME ? ME.id : null;
+/* "all" shows the merged tree, "mine" shows ONLY what this reseller created */
+var scFilterMode = 'all';
+function sEsc(v) {
+    return String(v === undefined || v === null ? '' : v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function sMoney(n) { return '\u09F3' + (Number(n) || 0).toLocaleString('en-IN'); }
+function sSet(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; }
+function sHtml(id, v) { var e = document.getElementById(id); if (e) e.innerHTML = v; }
+try {
+    sSet('userName', ME.businessName || ME.name || 'Reseller');
+    sSet('topBalance', (Number(ME.balance) || 0).toLocaleString('en-IN'));
+} catch (e) {}
+</script>
+<script>
+/* ================= My Shop — reseller's OWN categories (PART 7, 8, 42) ================= */
+function scOwn() { return getOwnCategories(RID); }
+/* how many nodes this reseller actually created, at every level — the number on
+   the "শুধু আমার" chip */
+function scOwnTotal() {
+    var n = 0, list = scOwn();
+    for (var i = 0; i < list.length; i++) {
+        if (!list[i] || list[i].shared) continue;
+        n++;
+        var subs = list[i].subs || [];
+        for (var j = 0; j < subs.length; j++) {
+            if (!subs[j] || subs[j].shared) continue;
+            n++;
+            n += (subs[j].subSubs || []).length;
+        }
+    }
+    return n;
+}
+
+/* PARTS 10-12 — one reader for the sub-sub list. The reseller's own tree writes
+   `sub.subSubs` (see ownCategoryAdd) while the admin tree writes `sub.subs`; read
+   BOTH so no shape can ever leak "[object Object]" or hide a level, and resolve
+   every entry to its real name via the app's canonical catEntryName(). */
+function scSubSubsOf(subEntry) {
+    var out = [], seen = {};
+    if (!subEntry || typeof subEntry !== 'object') return out;
+    var pools = [subEntry.subSubs, subEntry.subs];
+    for (var p = 0; p < pools.length; p++) {
+        var arr = Object.prototype.toString.call(pools[p]) === '[object Array]' ? pools[p] : [];
+        for (var i = 0; i < arr.length; i++) {
+            var nm = catEntryName(arr[i]);
+            if (!nm || seen[nm.toLowerCase()]) continue;
+            seen[nm.toLowerCase()] = 1; out.push(nm);
+        }
+    }
+    return out;
+}
+
+/* ITEM 8 (spec, 2026-09-14) — the tree now shows the ADMIN's categories
+   automatically alongside the reseller's own. A row is the admin's when it is
+   not in the reseller's own list (or is a `shared` node, i.e. an admin category
+   the reseller hung an extra child on): those get a "Admin" tag and NO delete
+   button, because a reseller must never be able to remove a category that other
+   shops depend on. Only their OWN rows are deletable. */
+function scOwnedSet() {
+    var set = {}, list = scOwn();
+    for (var i = 0; i < list.length; i++) {
+        if (!list[i] || !list[i].name) continue;
+        if (list[i].shared) continue;               /* the admin's, not theirs */
+        set[String(list[i].name).toLowerCase()] = 1;
+    }
+    return set;
+}
+function scOwnedSubSet(cat) {
+    var set = {}, list = scOwn();
+    for (var i = 0; i < list.length; i++) {
+        if (!list[i] || String(list[i].name) !== String(cat)) continue;
+        var subs = list[i].subs || [];
+        for (var j = 0; j < subs.length; j++) {
+            if (subs[j] && subs[j].shared) continue;
+            var nm = catEntryName(subs[j]);
+            if (nm) set[nm.toLowerCase()] = 1;
+        }
+    }
+    return set;
+}
+function scOwnedSubSubSet(cat, sub) {
+    var set = {}, list = scOwn();
+    for (var i = 0; i < list.length; i++) {
+        if (!list[i] || String(list[i].name) !== String(cat)) continue;
+        var subs = list[i].subs || [];
+        for (var j = 0; j < subs.length; j++) {
+            if (String(catEntryName(subs[j])) !== String(sub)) continue;
+            if (subs[j] && subs[j].shared) return set;   /* the sub itself is the admin's */
+            var ss = scSubSubsOf(subs[j]);
+            for (var k = 0; k < ss.length; k++) set[ss[k].toLowerCase()] = 1;
+        }
+    }
+    return set;
+}
+/* Safe JS argument for an onclick="" attribute. JS-escape FIRST, then HTML-escape:
+   the HTML parser decodes entities before the JS parser ever sees the string, so
+   this order is the one that survives a name containing a quote or a backslash. */
+function scArg(v) {
+    var s = String(v === undefined || v === null ? '' : v).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    return "'" + sEsc(s) + "'";
+}
+/* Edit / Deactivate / Delete — only ever rendered for a node the reseller OWNS.
+   An admin node's global entry is shared by every shop, so it gets no buttons. */
+function scOps(cat, sub, subSub, hidden) {
+    var a = scArg(cat) + (sub ? ',' + scArg(sub) : '') + (subSub ? ',' + scArg(subSub) : '');
+    return '<span class="ops">' +
+        '<button class="sc-btn ed" title="নাম বদলান" onclick="scEdit(' + a + ')"><i class="fas fa-pen"></i></button>' +
+        '<button class="sc-btn tg' + (hidden ? ' off' : '') + '" title="' +
+            (hidden ? 'আবার চালু করুন' : 'বন্ধ করুন — দোকানে দেখা যাবে না') + '" onclick="scToggleHidden(' + a + ')">' +
+            '<i class="fas fa-' + (hidden ? 'eye-slash' : 'eye') + '"></i></button>' +
+        '<button class="sc-btn dn" title="মুছুন" onclick="scRemove(' + a + ')"><i class="fas fa-trash"></i></button>' +
+        '</span>';
+}
+function scMini(own, hidden) {
+    if (!own) return '<span class="mini admin">Admin</span>';
+    return '<span class="mini mine">আপনার</span>' + (hidden ? '<span class="mini off">বন্ধ</span>' : '');
+}
+
+function scRender() {
+    var el = document.getElementById('scTree');
+    if (!el) return;
+    var onlyMine = (scFilterMode === 'mine');
+    /* includeHidden = true. A DEACTIVATED node MUST stay on this page or it could
+       never be switched back on; the shop and the product picker never see them. */
+    var mains = (typeof shopMainCategories === 'function') ? shopMainCategories(RID, true) : [];
+    var owned = scOwnedSet();
+    var h = '', shown = 0;
+    var mc = document.getElementById('scMineCount');
+    if (mc) mc.textContent = scOwnTotal();
+
+    for (var i = 0; i < mains.length; i++) {
+        var cname = String(mains[i].name);
+        var cIsOwn = !!owned[cname.toLowerCase()];
+        if (onlyMine && !cIsOwn) continue;
+        var cHid = mains[i].hidden === true;
+        var subs = (typeof shopSubCategories === 'function') ? shopSubCategories(RID, cname, true) : [];
+        var subOwned = scOwnedSubSet(cname);
+        var subHtml = '', subShown = 0;
+
+        for (var j = 0; j < subs.length; j++) {
+            var sname = String(subs[j].name);
+            var sIsOwn = !!subOwned[sname.toLowerCase()];
+            if (onlyMine && !sIsOwn) continue;
+            var sHid = subs[j].hidden === true;
+            var ss = (typeof shopSubSubCategories === 'function') ? shopSubSubCategories(RID, cname, sname, true) : [];
+            var ssOwned = scOwnedSubSubSet(cname, sname);
+            var ssHtml = '';
+
+            for (var k = 0; k < ss.length; k++) {
+                var ssname = String(ss[k].name);
+                var ssIsOwn = !!ssOwned[ssname.toLowerCase()];
+                if (onlyMine && !ssIsOwn) continue;
+                var ssHid = ss[k].hidden === true;
+                ssHtml += '<div class="sc-l3' + (ssHid ? ' hid' : '') + '"><div class="sc-hd"><div><b>' + sEsc(ssname) + '</b> ' +
+                    '<span class="mini">Sub-subcategory</span> ' + scMini(ssIsOwn, ssHid) +
+                    '</div>' + (ssIsOwn ? scOps(cname, sname, ssname, ssHid) : '') +
+                    '</div></div>';
+            }
+            subHtml += '<div class="sc-l2' + (sHid ? ' hid' : '') + '"><div class="sc-hd"><div><b>' + sEsc(sname) + '</b> ' +
+                '<span class="mini">Subcategory</span> ' + scMini(sIsOwn, sHid) +
+                '</div>' + (sIsOwn ? scOps(cname, sname, null, sHid) : '') +
+                '</div>' + ssHtml + '</div>';
+            subShown++;
+        }
+        /* in "শুধু আমার" a main with nothing of its own underneath is noise */
+        if (onlyMine && !subShown && !cIsOwn) continue;
+
+        h += '<div class="sc-l1' + (cHid ? ' hid' : '') + '"><div class="sc-hd"><div><b>' + sEsc(cname) + '</b> ' +
+            '<span class="mini">Main Category</span> ' + scMini(cIsOwn, cHid) +
+            '</div>' + (cIsOwn ? scOps(cname, null, null, cHid) : '') +
+            '</div>' + subHtml + '</div>';
+        shown++;
+    }
+
+    if (!shown) {
+        el.innerHTML = onlyMine
+            ? '<div class="sc-empty"><i class="fas fa-folder-plus"></i>আপনি এখনো নিজের কোনো category বানাননি।<br>উপরে নাম লিখে “যোগ করুন” চাপুন।</div>'
+            : '<div class="sc-empty"><i class="fas fa-folder-open"></i>এখনো কোনো category নেই।<br>উপরে নাম লিখে “যোগ করুন” চাপুন — Main Category বাছা না করলে ওটাই নতুন Main হবে।</div>';
+        return;
+    }
+    el.innerHTML = h;
+}
+
+function scFillCats() {
+    var el = document.getElementById('scCat');
+    if (!el) return;
+    /* ITEM 8 — every category the shop actually has, admin + own, so a reseller
+       can hang their own subcategory off an ADMIN category too. */
+    var list = (typeof shopMainCategories === 'function') ? shopMainCategories(RID) : [];
+    var h = '<option value="">— Main Category বাছুন —</option>';
+    for (var i = 0; i < list.length; i++) h += '<option value="' + sEsc(list[i].name) + '">' + sEsc(list[i].name) + '</option>';
+    el.innerHTML = h;
+    scFillSubs();
+    scHint();
+}
+function scFillSubs() {
+    var c = (document.getElementById('scCat') || {}).value || '';
+    var el = document.getElementById('scSub');
+    if (!el) return;
+    var subs = (c && typeof shopSubCategories === 'function') ? shopSubCategories(RID, c) : [];
+    var h = '<option value="">— Subcategory (নতুন বানাতে খালি রাখুন) —</option>';
+    for (var j = 0; j < subs.length; j++) { var nm = String(subs[j].name); if (!nm) continue; h += '<option value="' + sEsc(nm) + '">' + sEsc(nm) + '</option>'; }
+    el.innerHTML = h;
+    scFillSubSubs();
+}
+function scFillSubSubs() {
+    var c = (document.getElementById('scCat') || {}).value || '';
+    var s = (document.getElementById('scSub') || {}).value || '';
+    var el = document.getElementById('scSubSub');
+    if (!el) return;
+    var ss = (c && s && typeof shopSubSubCategories === 'function') ? shopSubSubCategories(RID, c, s) : [];
+    var h = '<option value="">— Sub-subcategory —</option>';
+    for (var k = 0; k < ss.length; k++) h += '<option value="' + sEsc(ss[k].name) + '">' + sEsc(ss[k].name) + '</option>';
+    el.innerHTML = h;
+}
+
+/* ONE button, and it works out the level from what was chosen:
+     nothing picked   -> a new MAIN category
+     a Main only      -> a new SUBCATEGORY under it
+     a Main + a Sub   -> a new SUB-SUBCATEGORY under them
+   The old form had two rows and two buttons, with the name box on the second row
+   and "Add" on the first: typing a name and pressing Add did nothing at all
+   unless a Main Category had already been picked, which is what made it look
+   like categories could not be added. */
+window.scAdd = function () {
+    var name = String((document.getElementById('scName') || {}).value || '').trim();
+    var cat = (document.getElementById('scCat') || {}).value || '';
+    var sub = (document.getElementById('scSub') || {}).value || '';
+    if (!name) { showToast('নতুন নাম লিখুন।', 'error'); return; }
+    var r = ownCategoryAdd(RID, name, cat ? { cat: cat, sub: sub || null } : null);
+    if (!r.ok) { showToast(r.message, 'error'); return; }
+    document.getElementById('scName').value = '';
+    showToast(!cat ? 'নতুন Main Category যোগ হয়েছে ✓'
+             : (sub ? 'Sub-subcategory যোগ হয়েছে ✓' : 'Subcategory যোগ হয়েছে ✓'), 'success');
+    scFillCats(); scRender();
+};
+/* kept so an older caller can never break — it is just "add with nothing chosen" */
+window.scAddTop = function () {
+    var c = document.getElementById('scCat'); if (c) c.value = '';
+    scFillSubs(); scAdd();
+};
+
+/* The live line under the form: says exactly what the next click will create. */
+window.scHint = function () {
+    var el = document.getElementById('scHint');
+    if (!el) return;
+    var name = String((document.getElementById('scName') || {}).value || '').trim();
+    var cat = (document.getElementById('scCat') || {}).value || '';
+    var sub = (document.getElementById('scSub') || {}).value || '';
+    if (!name) {
+        el.className = 'sc-preview empty';
+        el.innerHTML = 'নাম লিখলে এখানে দেখা যাবে ঠিক কোথায় যোগ হবে।';
+        return;
+    }
+    var where, label;
+    if (!cat) { label = 'নতুন Main Category'; where = ''; }
+    else if (!sub) { label = 'নতুন Subcategory'; where = sEsc(cat) + ' <span class="arrow">›</span> '; }
+    else { label = 'নতুন Sub-subcategory'; where = sEsc(cat) + ' <span class="arrow">›</span> ' + sEsc(sub) + ' <span class="arrow">›</span> '; }
+    el.className = 'sc-preview';
+    el.innerHTML = where + '<b>' + sEsc(name) + '</b> <span class="sc-opt">— ' + label + '</span>';
+};
+
+/* ===========================================================================
+   EDIT / DELETE / DEACTIVATE — all IN-PAGE, no browser modals.
+   ---------------------------------------------------------------------------
+   The old Edit used window.prompt() and Delete used window.confirm(). Both are
+   blocking browser dialogs and are frequently suppressed (embedded views, some
+   browser settings, kiosk/automation contexts) — when that happens the click does
+   absolutely nothing, which is exactly "the Edit and Delete buttons don't work".
+   Everything now happens in a modal this page owns, so it cannot be blocked.
+   =========================================================================== */
+window.scOvClose = function () {
+    var o = document.getElementById('scOv');
+    if (o && o.parentNode) o.parentNode.removeChild(o);
+};
+function scOvOpen(html) {
+    window.scOvClose();
+    var ov = document.createElement('div');
+    ov.className = 'sc-ov'; ov.id = 'scOv';
+    ov.innerHTML = html;
+    ov.onclick = function (ev) { if (ev.target === ov) window.scOvClose(); };
+    document.body.appendChild(ov);
+    return ov;
+}
+
+window.scEdit = function (cat, sub, subSub) {
+    var cur = String(subSub || sub || cat || '');
+    scOvOpen('<div class="box">' +
+        '<div class="hd"><b><i class="fas fa-pen"></i> নাম বদলান</b>' +
+        '<button type="button" onclick="scOvClose()">&times;</button></div>' +
+        '<div class="bd">' +
+          '<div class="path">' + sEsc(cat) + (sub ? ' <span class="arrow">›</span> ' + sEsc(sub) : '') +
+          (subSub ? ' <span class="arrow">›</span> ' + sEsc(subSub) : '') + '</div>' +
+          '<label for="scEditName">নতুন নাম</label>' +
+          '<input id="scEditName" value="' + sEsc(cur) + '">' +
+        '</div>' +
+        '<div class="ft"><button type="button" class="gh" onclick="scOvClose()">বাতিল</button>' +
+        '<button type="button" class="pri" onclick="scEditSave(\'' + sEsc(cat) + '\',\'' + sEsc(sub || '') + '\',\'' + sEsc(subSub || '') + '\')">' +
+        '<i class="fas fa-check"></i> সেভ করুন</button></div></div>');
+    var inp = document.getElementById('scEditName');
+    if (inp) { try { inp.focus(); inp.select(); } catch (e) {} }
+};
+window.scEditSave = function (cat, sub, subSub) {
+    var el = document.getElementById('scEditName');
+    var next = el ? String(el.value || '').trim() : '';
+    if (!next) { showToast('নতুন নাম লিখুন।', 'error'); return; }
+    var r = ownCategoryRename(RID, { cat: cat, sub: sub || null, subSub: subSub || null }, next);
+    if (!r || !r.ok) { showToast((r && r.message) || 'নাম বদলানো যায়নি।', 'error'); return; }
+    window.scOvClose();
+    showToast('নাম বদলানো হয়েছে ✓', 'success');
+    scFillCats(); scRender();
+};
+
+window.scRemove = function (cat, sub, subSub) {
+    var label = String(subSub || sub || cat || '');
+    scOvOpen('<div class="box">' +
+        '<div class="hd"><b><i class="fas fa-trash"></i> মুছে ফেলবেন?</b>' +
+        '<button type="button" onclick="scOvClose()">&times;</button></div>' +
+        '<div class="bd"><p class="ask"><b>' + sEsc(label) + '</b> মুছে ফেলা হবে।</p>' +
+        '<p class="warn">আপনার product গুলো ডিলিট হবে না — শুধু এই category-টা আপনার তালিকা থেকে সরে যাবে। ' +
+        'শুধু লুকাতে চাইলে বরং <b>বন্ধ</b> করে দিন।</p></div>' +
+        '<div class="ft"><button type="button" class="gh" onclick="scOvClose()">বাতিল</button>' +
+        '<button type="button" class="dn" onclick="scRemoveDo(\'' + sEsc(cat) + '\',\'' + sEsc(sub || '') + '\',\'' + sEsc(subSub || '') + '\')">' +
+        '<i class="fas fa-trash"></i> মুছে ফেলুন</button></div></div>');
+};
+window.scRemoveDo = function (cat, sub, subSub) {
+    ownCategoryRemove(RID, { cat: cat, sub: sub || null, subSub: subSub || null });
+    window.scOvClose();
+    showToast('Category সরানো হয়েছে।', 'success');
+    scFillCats(); scRender();
+};
+
+/* Deactivate = HIDE, never delete. The node and every product pointing at it stay
+   exactly where they are; it just stops appearing in the shop and the pickers. */
+window.scToggleHidden = function (cat, sub, subSub) {
+    var path = { cat: cat, sub: sub || null, subSub: subSub || null };
+    var wasHidden = false;
+    try { wasHidden = ownCategoryIsHidden(RID, path); } catch (e) {}
+    var r = ownCategorySetHidden(RID, path, !wasHidden);
+    if (!r || !r.ok) { showToast((r && r.message) || 'পরিবর্তন করা যায়নি।', 'error'); return; }
+    showToast(!wasHidden ? 'বন্ধ করে দেওয়া হয়েছে — দোকানে দেখা যাবে না ✓' : 'আবার চালু করা হয়েছে ✓', 'success');
+    scFillCats(); scRender();
+};
+
+/* "সব" / "শুধু আমার" — the reseller's own tree on its own. */
+window.scFilter = function (v) {
+    scFilterMode = (v === 'mine') ? 'mine' : 'all';
+    var chips = document.querySelectorAll('.sc-fchip');
+    for (var i = 0; i < chips.length; i++) {
+        chips[i].classList.toggle('on', chips[i].getAttribute('data-f') === scFilterMode);
+    }
+    scRender();
+};
+
+if (RID !== null) { scFillCats(); scRender(); }
+
+</script>
+</body>
+</html>

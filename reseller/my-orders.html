@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Orders - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#f1f5f9; color:#1e293b; overflow-x:hidden; }
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:240px; background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%); color:#cbd5e1; z-index:100; overflow-y:auto; }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid #334155; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:38px; height:38px; background:linear-gradient(135deg,#2563eb,#1e40af); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; }
+        .sidebar-logo h3 { color:white; font-size:1rem; }
+        .sidebar-logo small { color:#94a3b8; font-size:0.7rem; display:block; }
+        .sidebar-menu { list-style:none; padding:12px 0; }
+        .sidebar-menu li { margin:2px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:10px 20px; color:#cbd5e1; text-decoration:none; font-size:0.88rem; }
+        .sidebar-menu a:hover { background:rgba(255,255,255,0.05); color:white; }
+        .sidebar-menu a.active { background:#2563eb; color:white; }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 20px 5px; color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+        .main { margin-left:240px; min-height:100vh; }
+        .topbar { background:white; padding:14px 25px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:sticky; top:0; z-index:50; }
+        .topbar h2 { font-size:1.2rem; font-weight:600; }
+        .topbar-right { display:flex; align-items:center; gap:12px; }
+        .topbar-balance { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:white; padding:6px 16px; border-radius:20px; font-weight:600; font-size:0.9rem; }
+        .topbar-user { display:flex; align-items:center; gap:8px; padding:6px 14px; background:#f1f5f9; border-radius:20px; font-size:0.88rem; }
+        .btn-logout { background:#ef4444; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:500; }
+        .content { padding:25px; }
+
+        .status-cards { display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin-bottom:20px; }
+        .scard { background:white; border-radius:10px; padding:16px; box-shadow:0 1px 3px rgba(0,0,0,0.05); cursor:pointer; border-top:3px solid transparent; transition:all 0.2s; text-align:center; }
+        .scard:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,0.08); }
+        .scard.active { border-top-color:#2563eb; background:#f0f9ff; }
+        .scard .num { font-size:1.7rem; font-weight:800; }
+        .scard .lbl { font-size:0.8rem; color:#64748b; margin-top:2px; }
+        .scard i { font-size:1.1rem; margin-bottom:6px; }
+
+        .card { background:white; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:20px; }
+        .card-header { padding:14px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+        .card-header input, .card-header select { padding:8px 12px; border:1px solid #e2e8f0; border-radius:6px; font-size:0.85rem; }
+        .card-header input { min-width:220px; }
+
+        .data-table { width:100%; border-collapse:collapse; }
+        .data-table th { text-align:left; padding:11px 16px; background:#f8fafc; font-weight:600; font-size:0.7rem; color:#64748b; text-transform:uppercase; }
+        .data-table td { padding:12px 16px; border-bottom:1px solid #f1f5f9; font-size:0.84rem; }
+        .data-table tr:hover { background:#f8fafc; }
+
+        .badge { padding:3px 10px; border-radius:20px; font-size:0.7rem; font-weight:600; display:inline-block; }
+        .b-new { background:#e0f2fe; color:#0369a1; }
+        .b-pending { background:#fef3c7; color:#92400e; }
+        .b-confirmed { background:#dbeafe; color:#1e40af; }
+        .b-packaging { background:#ede9fe; color:#6d28d9; }
+        .b-shipping { background:#e0e7ff; color:#4338ca; }
+        .b-delivered { background:#d1fae5; color:#065f46; }
+        .b-wfr { background:#fef9c3; color:#854d0e; }
+        .b-returned { background:#ffe4e6; color:#9f1239; }
+        .b-cancelled { background:#fee2e2; color:#991b1b; }
+        .b-processing { background:#e0f2fe; color:#0369a1; }
+
+        .btn { padding:6px 12px; border:none; border-radius:6px; font-size:0.8rem; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:5px; }
+        .btn-primary { background:#2563eb; color:white; }
+        .btn-sm { padding:5px 10px; font-size:0.75rem; }
+        .empty { text-align:center; padding:50px 20px; color:#64748b; }
+        .empty i { font-size:3rem; margin-bottom:12px; opacity:0.4; }
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+        .modal-overlay.show { display:flex; }
+        .modal { background:white; border-radius:12px; width:100%; max-width:750px; max-height:92vh; overflow-y:auto; padding:24px; position:relative; }
+        .mclose { position:absolute; top:12px; right:16px; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b; }
+        .detail-row { display:flex; padding:7px 0; border-bottom:1px solid #f1f5f9; }
+        .detail-row strong { min-width:130px; color:#64748b; font-size:0.83rem; }
+        .detail-row span { font-size:0.87rem; }
+        .item-row { display:flex; gap:12px; padding:10px; background:#f8fafc; border-radius:8px; margin-bottom:8px; align-items:center; }
+        .item-row img { width:50px; height:50px; border-radius:6px; object-fit:cover; }
+        .timeline-item { padding:8px 12px; border-left:3px solid #2563eb; background:#f8fafc; border-radius:6px; margin-bottom:5px; font-size:0.85rem; }
+        @media (max-width:1024px) { .status-cards { grid-template-columns:repeat(3,1fr); } }
+        @media (max-width:768px) { .sidebar { width:70px; } .sidebar-logo h3, .sidebar-logo small, .sidebar-menu a span, .sidebar-divider { display:none; } .main { margin-left:70px; } .status-cards { grid-template-columns:repeat(2,1fr); } }
+    </style>
+<link rel="stylesheet" href="rstyle.css">
+<style id="lx-theme">
+/* ============ ResellerHub Premium Theme (visual-only overrides) ============ */
+:root { --lx-pri:#4f46e5; --lx-prid:#4338ca; --lx-vio:#7c3aed; --lx-grn:#10b981; }
+@keyframes lxPgUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+@keyframes lxPop { from{opacity:0;transform:scale(.94)} to{opacity:1;transform:none} }
+@keyframes lxRow { from{opacity:0;transform:translateX(-14px)} to{opacity:1;transform:none} }
+
+body { background:#eef1f9 !important; }
+
+/* ---- Sidebar + Topbar (synced with dashboard v3) ---- */
+/* ===== SIDEBAR ===== */
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:248px !important; background:linear-gradient(180deg,#0b1029 0%,#151a3a 100%); color:#c7d2fe; z-index:200; overflow-y:auto; transition:transform 0.3s; box-shadow:4px 0 24px rgba(11,16,41,.35); }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; justify-content:space-between; align-items:center; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:40px; height:40px; background:linear-gradient(135deg,var(--pri),var(--vio)); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .sidebar-logo h3 { color:white; font-size:1rem; font-weight:900; }
+        .sidebar-logo small { color:#818cf8; font-size:0.66rem; display:block; font-weight:700; letter-spacing:1px; }
+        .sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; }
+        .sidebar-menu { list-style:none; padding:12px 10px; }
+        .sidebar-menu li { margin:3px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:11px 15px; color:#c7d2fe; text-decoration:none; font-size:0.88rem; font-weight:600; border-radius:11px; transition:all .22s; }
+        .sidebar-menu a:hover { background:rgba(129,140,248,.14); color:white; transform:translateX(4px); }
+        .sidebar-menu a.active { background:linear-gradient(135deg,var(--pri),var(--vio)); color:white; box-shadow:0 8px 20px rgba(79,70,229,.4); }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 15px 5px; color:#6366f1; font-size:0.66rem; text-transform:uppercase; letter-spacing:1.4px; font-weight:800; }
+        .menu-badge { background:var(--gold); color:#1e293b; font-size:0.68rem; padding:1px 8px; border-radius:10px; font-weight:800; margin-left:auto; }
+        .menu-badge-n { color:var(--gold); font-weight:900; }
+
+        .side-overlay { display:none; position:fixed; inset:0; background:rgba(11,16,41,.55); z-index:150; backdrop-filter:blur(2px); }
+
+        /* ===== MAIN ===== */
+        .main { margin-left:248px !important; min-height:100vh; }
+@media(max-width:768px){
+    .main{margin-left:0 !important}
+    .sidebar{transform:translateX(-100%) !important;transition:transform .3s ease}
+    .sidebar.open{transform:translateX(0) !important;box-shadow:20px 0 60px rgba(11,16,41,.4)}
+    .sidebar-close-m{display:block !important}
+    .side-overlay{position:fixed;inset:0;background:rgba(11,16,41,.55);z-index:150;backdrop-filter:blur(2px)}
+    .side-overlay.show{display:block !important}
+    .status-cards{display:grid !important;grid-template-columns:1fr 1fr !important;gap:10px !important}
+}
+
+        .topbar { background:rgba(255,255,255,.88); backdrop-filter:blur(12px); padding:12px 22px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 14px rgba(15,23,42,.06); position:sticky; top:0; z-index:100; }
+            /* 2026-09-16 — MOBILE FIX (this request). The topbar measured about 440px
+               across on a 390px phone, so the logout button was pushed past the right
+               edge and looked cut off. These rules tighten the SAME header so it fits a
+               narrow screen. Nothing is hidden and nothing outside this media query is
+               touched, so the desktop layout is unchanged. */
+            .topbar { padding:10px 12px; }
+            .topbar-left { gap:8px; }
+            .topbar h2 { font-size:.98rem; }
+            .topbar-right { gap:6px; }
+            .topbar-balance { padding:6px 10px; font-size:.78rem; }
+            .topbar-user { padding:5px 10px; font-size:.78rem; }
+            .topbar-user span { max-width:52px; }
+
+        .topbar-left { display:flex; align-items:center; gap:12px; }
+        .hamburger { display:none; background:none; border:none; font-size:1.3rem; color:#1e293b; cursor:pointer; padding:4px; }
+        .topbar h2 { font-size:1.12rem; font-weight:800; }
+        .topbar-right { display:flex; align-items:center; gap:8px; }
+        .topbar-balance { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#7c2d12; padding:7px 15px; border-radius:22px; font-weight:800; font-size:0.84rem; white-space:nowrap; box-shadow:0 4px 12px rgba(245,158,11,.35); }
+        .topbar-user { display:flex; align-items:center; gap:7px; padding:6px 14px; background:#eef2ff; color:var(--pri); border-radius:22px; font-size:0.84rem; font-weight:700; }
+        .btn-logout { background:#fee2e2; color:#dc2626; border:none; padding:8px 12px; border-radius:10px; cursor:pointer; font-size:0.85rem; transition:all .25s; }
+        .btn-logout:hover { background:#dc2626; color:#fff; transform:translateY(-1px); }
+
+
+        /* ---- Stats / status cards ---- */
+.stat-card { border-radius:18px !important; border:1px solid #eef2f7 !important; box-shadow:0 3px 14px rgba(15,23,42,.05) !important; transition:all .28s !important; animation:lxPgUp .5s ease both; }
+.stat-card:hover { transform:translateY(-4px) !important; box-shadow:0 16px 32px rgba(15,23,42,.11) !important; }
+.status-cards .stat-card:nth-child(1), .stats-row .stat-card:nth-child(1) { animation-delay:.08s; }
+.status-cards .stat-card:nth-child(2), .stats-row .stat-card:nth-child(2) { animation-delay:.16s; }
+.status-cards .stat-card:nth-child(3), .stats-row .stat-card:nth-child(3) { animation-delay:.24s; }
+.status-cards .stat-card:nth-child(4), .stats-row .stat-card:nth-child(4) { animation-delay:.32s; }
+.stat-icon.green { background:linear-gradient(135deg,#d1fae5,#a7f3d0) !important; color:#059669 !important; }
+.stat-icon.blue { background:linear-gradient(135deg,#e0e7ff,#c7d2fe) !important; color:#4f46e5 !important; }
+.stat-icon.orange { background:linear-gradient(135deg,#fef3c7,#fde68a) !important; color:#d97706 !important; }
+.stat-icon.purple { background:linear-gradient(135deg,#ede9fe,#ddd6fe) !important; color:#7c3aed !important; }
+
+/* ---- Inputs ---- */
+input,select,textarea { border-radius:10px !important; transition:border-color .2s, box-shadow .2s !important; }
+input:focus,select:focus,textarea:focus { border-color:#4f46e5 !important; box-shadow:0 0 0 3px rgba(79,70,229,.12) !important; outline:none !important; }
+
+/* ---- Modals ---- */
+.modal-overlay.show .modal { animation:lxPop .32s cubic-bezier(.2,.9,.3,1.15) both; }
+
+/* ---- Content entrance ---- */
+.content > * { animation:lxPgUp .5s ease both; }
+.content > *:nth-child(2) { animation-delay:.08s; }
+.content > *:nth-child(3) { animation-delay:.16s; }
+.content > *:nth-child(4) { animation-delay:.24s; }
+.content > *:nth-child(5) { animation-delay:.32s; }
+
+/* ---- Floating bottom nav (products page) ---- */
+.bottom-nav { background:rgba(255,255,255,.92) !important; backdrop-filter:blur(14px); border:1px solid #eef2f7 !important; border-radius:20px !important; bottom:10px !important; left:12px !important; right:12px !important; box-shadow:0 10px 30px rgba(15,23,42,.16) !important; }
+.bottom-nav a.active { color:#4f46e5 !important; background:#eef2ff !important; }
+
+/* ---- Page-specific polish ---- */
+.products-grid { animation:lxPgUp .5s .2s ease both; }
+.section-head h2 { font-weight:900 !important; }
+.courier-card, .contact-card { border-radius:18px !important; transition:all .28s !important; }
+.courier-card:hover, .contact-card:hover { transform:translateY(-4px); box-shadow:0 16px 34px rgba(15,23,42,.12) !important; }
+.profile-header { border-radius:20px !important; overflow:hidden; }
+.panel { border-radius:20px !important; border:1px solid #eef2f7 !important; box-shadow:0 4px 16px rgba(15,23,42,.05) !important; }
+.balcard { border-radius:20px !important; }
+.fchip { transition:all .2s !important; }
+.fchip:hover { transform:translateY(-2px); }
+.tx { transition:background .2s !important; }
+.tx:hover { background:#f8faff !important; }
+.welcome { border-radius:22px !important; }
+</style>
+
+<style id="lx-theme-2">
+/* ---- Sidebar: text ALWAYS visible + full-width sidebar ---- */
+.sidebar-menu a span { display:inline !important; }
+.sidebar-divider { display:block !important; }
+.sidebar-logo h3, .sidebar-logo small { display:block !important; }
+.sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.25rem; cursor:pointer; }
+@media (min-width:769px) {
+    .sidebar { width:250px !important; }
+    .main { margin-left:250px !important; }
+    .sidebar-close-m { display:none !important; }
+}
+@media (max-width:768px) {
+    .sidebar { width:272px !important; transform:translateX(-100%); transition:transform .3s ease; }
+    .sidebar.open { transform:translateX(0) !important; box-shadow:20px 0 60px rgba(11,16,41,.4); }
+    .main { margin-left:0 !important; }
+    .sidebar-close-m { display:block !important; }
+    .side-overlay.show { display:block !important; }
+    .status-cards { display:grid !important; grid-template-columns:1fr 1fr !important; gap:10px !important; }
+}
+.bn-menu { background:linear-gradient(135deg,#4f46e5,#7c3aed) !important; color:#fff !important; border-radius:14px !important; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+.bn-menu i, .bn-menu span { color:#fff !important; }
+</style>
+<style id="lx-nav-force">
+@media(max-width:768px){
+    .bottom-nav{display:flex !important;position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;opacity:1 !important;visibility:visible !important;transform:none !important}
+    body{padding-bottom:86px !important}
+}
+</style>
+
+<style id="lx-bnav">
+/* ===== Complete bottom-nav styling ===== */
+.bottom-nav{position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;display:flex !important;align-items:stretch;background:rgba(255,255,255,.97) !important;backdrop-filter:blur(14px);border:1px solid #e8ecf4 !important;border-radius:18px !important;box-shadow:0 -4px 24px rgba(15,23,42,.14) !important;padding:7px 6px calc(7px + env(safe-area-inset-bottom)) !important}
+.bottom-nav a,.bottom-nav button{flex:1 !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;gap:3px !important;padding:7px 2px !important;border:none !important;background:none !important;color:#7b879c !important;font-size:.62rem !important;font-weight:700 !important;text-decoration:none !important;cursor:pointer !important;border-radius:12px !important;font-family:inherit !important;line-height:1.2 !important}
+.bottom-nav a i,.bottom-nav button i{font-size:1.18rem !important;line-height:1 !important}
+.bottom-nav a span,.bottom-nav button span{display:block !important}
+.bottom-nav a:hover,.bottom-nav button:hover{color:#4f46e5 !important;background:#eef2ff !important;transform:translateY(-2px)}
+.bottom-nav a.active{color:#4f46e5 !important;background:#eef2ff !important}
+.bottom-nav .bn-menu{color:#4f46e5 !important;background:#eef2ff !important;box-shadow:none !important;border-radius:12px !important}
+.bottom-nav .bn-menu:hover{background:#e0e7ff !important}
+.bottom-nav .bn-menu i,.bottom-nav .bn-menu span{color:#4f46e5 !important}
+body{padding-bottom:86px !important}
+@media(min-width:769px){
+    .bottom-nav{display:none !important}
+    body{padding-bottom:0 !important}
+}
+</style>
+
+<style>
+@media(max-width:768px){
+    .sidebar{transform:translateX(-100%) !important;transition:transform .32s cubic-bezier(.2,.8,.3,1) !important;display:block !important}
+    .sidebar.open{transform:translateX(0) !important;box-shadow:24px 0 60px rgba(11,16,41,.45) !important}
+}
+</style>
+
+<style id="lx-logout-fix">
+/* Logout fix: the open sidebar must paint ABOVE the fixed mobile bottom-nav,
+   otherwise the last menu item (Logout) is covered and un-tappable. */
+.sidebar{ z-index:900 !important; }
+.side-overlay{ z-index:880 !important; }
+.sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+@supports selector(:has(*)){
+  body:has(.sidebar.open) .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+}
+@media(min-width:769px){ .sidebar-menu{ padding-bottom:12px !important; } }
+</style>
+
+<style id="lx-sidebar-fix">
+/* ===== Reseller sidebar — canonical & stable (do not mutate at runtime) ===== */
+/* 1) Labels and section headings are ALWAYS visible. The old template hid
+      .sidebar-menu a span and .sidebar-divider under 768px, which made menu
+      text disappear and the "Account" heading vanish on some pages. */
+.sidebar .sidebar-menu a span{ display:inline !important; }
+.sidebar .sidebar-menu .sidebar-divider,
+.sidebar .sidebar-divider{ display:block !important; }
+.sidebar .sidebar-logo h3{ display:block !important; }
+.sidebar .sidebar-logo small{ display:block !important; }
+
+/* 2) Fixed geometry — the sidebar is never collapsed to a 70px icon rail. */
+.sidebar{ width:248px !important; z-index:900 !important; overflow-y:auto !important; }
+.side-overlay{ z-index:880 !important; }
+@media(min-width:769px){
+    .main{ margin-left:248px !important; }
+    .sidebar{ transform:none !important; }
+}
+@media(max-width:768px){
+    .main{ margin-left:0 !important; }
+    .sidebar{ transform:translateX(-100%) !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; display:block !important; }
+    .sidebar.open{ transform:translateX(0) !important; box-shadow:24px 0 60px rgba(11,16,41,.45) !important; }
+}
+
+/* 3) Row geometry is locked: the "All Orders" counter is absolutely positioned
+      so a changing number can never push the rows below it up or down. */
+.sidebar .sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.sidebar .sidebar-menu li{ position:relative; display:block; margin:3px 0; }
+.sidebar .sidebar-menu a{ display:flex !important; align-items:center; gap:12px; padding:11px 15px; }
+.sidebar .menu-badge{ position:absolute; right:12px; top:50%; transform:translateY(-50%); margin-left:0 !important; }
+
+/* 4) Mobile: hide the bottom nav while the drawer is open so the last item
+      (Logout) is never covered. */
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+
+/* 5) Close button inside the drawer on mobile. */
+.sidebar .sidebar-close-m{ display:none; }
+@media(max-width:768px){ .sidebar .sidebar-close-m{ display:block !important; } }
+</style>
+
+<style id="reseller-hamburger-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   Every reseller page hides the hamburger with ".hamburger{display:none}", but most
+   pages never turn it back ON at mobile width — only products.html did. So on a phone
+   there was no way to open the sidebar on Products, Orders, Wallet, Withdrawals,
+   Courier, Messages, Support, Profile, Referral or Website Integration.
+   This shows the SAME existing button (onclick="menuToggle()") at mobile width only.
+   It is an ADDED block and lives entirely inside a max-width query, so the DESKTOP
+   LAYOUT IS UNCHANGED. */
+@media (max-width:768px){
+  .hamburger { display:block !important; }
+}
+</style>
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<style id="lx-ostage">
+/* Which stage is the parcel at — the ADMIN sets it (Multi-Supplier Orders page)
+   and the reseller reads the SAME strip, so the buyer and the platform always
+   see one answer for the same order. */
+.ostage{display:flex;gap:5px;flex-wrap:wrap}
+.ostep{font-size:.62rem;font-weight:800;padding:3px 9px;border-radius:20px;background:#f1f5f9;color:#94a3b8;white-space:nowrap}
+.ostep.done{background:#dcfce7;color:#15803d}
+.ostep.cur{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff}
+.ostep.cur.bad{background:#fee2e2;color:#b91c1c}
+.ostage.off .ostep.done{background:#f1f5f9;color:#94a3b8}
+</style>
+<body>
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon"><i class="fas fa-store"></i></div>
+            <div><h3>ResellerHub</h3><small>Reseller Panel</small></div>
+        </div>
+        
+        <button class="sidebar-close-m" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+        <ul class="sidebar-menu">
+        <li class="sidebar-divider">Main</li>
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+        <li><a href="products.html"><i class="fas fa-box"></i> <span>Products</span></a></li>
+        <li><a href="my-shop.html"><i class="fas fa-store"></i> <span>My Shop</span></a></li>
+        <li><a href="transactions.html"><i class="fas fa-right-left"></i> <span>Transactions</span></a></li>
+        <li class="sidebar-divider">Orders</li>
+        <li><a href="my-orders.html" class="active"><i class="fas fa-list"></i> <span>All Orders<span class="menu-badge-n" id="ordersBadgeLabel"></span></span></a></li>
+        <li><a href="order.html"><i class="fas fa-cart-plus"></i> <span>Add New Order</span></a></li>
+        <li><a href="offers.html"><i class="fas fa-gift"></i> <span>Offers</span></a></li>
+        <li><a href="shop-categories.html"><i class="fas fa-sitemap"></i> <span>Shop Categories</span></a></li>
+        <li class="sidebar-divider">My Shop</li>
+        <li><a href="my-shop-settings.html"><i class="fas fa-sliders"></i> <span>Shop Settings</span></a></li>
+        <li><a href="my-products.html"><i class="fas fa-box-open"></i> <span>My Products</span></a></li>
+        <li><a href="my-shop-orders.html"><i class="fas fa-bag-shopping"></i> <span>My Shop Orders</span></a></li>
+        <li><a href="customer-messages.html"><i class="fas fa-comment-dots"></i> <span>Customer Messages<span class="menu-badge-n" id="cmsgBadgeLabel"></span></span></a></li>
+        <li class="sidebar-divider">Account</li>
+        <li><a href="wallet.html"><i class="fas fa-wallet"></i> <span>Wallet</span></a></li>
+        <li><a href="withdrawals.html"><i class="fas fa-money-bill-wave"></i> <span>Withdrawals</span></a></li>
+        <li><a href="courier.html"><i class="fas fa-truck"></i> <span>Courier</span></a></li>
+        <li><a href="messages.html"><i class="fas fa-comments"></i> <span>Messages<span class="menu-badge-n" id="msgBadgeLabel"></span></span></a></li>
+        <li><a href="support.html"><i class="fas fa-headset"></i> <span>Support</span></a></li>
+        <li><a href="profile.html"><i class="fas fa-user-cog"></i> <span>Profile</span></a></li>
+        <li><a href="referral.html"><i class="fas fa-user-plus"></i> <span>Referral</span></a></li>
+        <li><a href="website-integration.html"><i class="fas fa-plug"></i> <span>Website Integration</span></a></li>
+        <li><a href="../index.html"><i class="fas fa-globe"></i> <span>Visit Site</span></a></li>
+        <li><a href="javascript:void(0)" onclick="resellerLogout()" style="color:#dc2626"><i class="fas fa-right-from-bracket"></i> <span>Logout</span></a></li>
+    </ul>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+        <h2>All Orders</h2>
+        <div class="topbar-right">
+            <div class="topbar-balance"><i class="fas fa-coins"></i> <span id="topBalance">0</span></div>
+            <div class="topbar-user"><i class="fas fa-user"></i> <span id="userName">User</span></div>
+            <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="status-cards" id="statusCards"></div>
+
+        <div class="card">
+            <div class="card-header">
+                <input type="text" id="searchBox" placeholder="Enter Invoice, customer phone or name..." oninput="loadOrders()">
+                <a href="order.html" class="btn btn-primary"><i class="fas fa-cart-plus"></i> Add New Order</a>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>#</th><th>Customer</th><th>Product</th><th>Invoice</th><th>Date</th><th>Courier</th><th>Comment</th><th>Status</th><th>Action</th><th>View</th></tr></thead>
+                    <tbody id="ordersBody"></tbody>
+                </table>
+            </div>
+            <div id="emptyMsg"></div>
+        </div>
+    </div>
+</main>
+
+<!-- ORDER VIEW MODAL -->
+<div class="modal-overlay" id="viewModal">
+    <div class="modal">
+        <button class="mclose" onclick="closeModal('viewModal')">&times;</button>
+        <div id="viewBody"></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="editModal">
+    <div class="modal" style="max-width:560px;">
+        <button class="mclose" onclick="closeModal('editModal')">&times;</button>
+        <div id="editBody"></div>
+    </div>
+</div>
+
+
+<nav class="bottom-nav">
+    <a href="dashboard.html"><i class="fas fa-home"></i>Home</a>
+    <a href="products.html"><i class="fas fa-box"></i>Products</a>
+    <a href="order.html"><i class="fas fa-cart-plus"></i>Order</a>
+    <button class="bn-menu" onclick="menuToggle()"><i class="fas fa-bars"></i><span>Menu</span></button>
+    <a href="profile.html"><i class="fas fa-user"></i>Profile</a>
+</nav>
+<style>@media(max-width:768px){body{padding-bottom:86px !important}.bottom-nav{display:flex !important}.bn-menu{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.62rem;font-weight:700;padding:6px 6px;flex:1;border:none;cursor:pointer}.bn-menu i{font-size:1.12rem}}</style>
+<script src="../app.js"></script><script>(function(){
+/* item 14 — the sidebar badge shows how many NEW orders this reseller has.
+   resellerNewOrderCount() is ownership-scoped in app.js: it only ever counts orders
+   that belong to this reseller and are not own-product My Shop orders, so the number
+   matches the rows on this page and can never show another tenant's orders. */
+function paint(){try{var b=document.getElementById("ordersBadge");var uid=sessionStorage.getItem("user_id");if(!uid)return;if(sessionStorage.getItem("user_type")!=="reseller")return;
+var n=(typeof resellerNewOrderCount==="function")?resellerNewOrderCount(uid):0;
+if(b){b.textContent=n;b.style.display=n>0?"inline-block":"none";}
+var lb=document.getElementById("ordersBadgeLabel");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}catch(e){}}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();
+window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});
+setInterval(paint,4000);
+})();</script>
+<script>
+(function() {
+    var userId = sessionStorage.getItem('user_id');
+    if (!userId || sessionStorage.getItem('user_type') !== 'reseller') { window.location.replace('login.html'); return; }
+    var resellers = getData(DB_KEYS.RESELLERS);
+    var user = null;
+    for (var i = 0; i < resellers.length; i++) { if (resellers[i].id === parseInt(userId)) { user = resellers[i]; break; } }
+    if (!user) { sessionStorage.clear(); window.location.replace('login.html'); return; }
+
+    document.getElementById('userName').textContent = user.name;
+    document.getElementById('topBalance').textContent = formatCurrency(user.balance);
+
+    var STATUSES = [
+        { key: 'new', label: 'New', icon: 'fa-file', color: '#0369a1' },
+        { key: 'pending', label: 'Pending', icon: 'fa-clock', color: '#b45309' },
+        { key: 'confirmed', label: 'Confirmed', icon: 'fa-check-circle', color: '#1d4ed8' },
+        { key: 'packaging', label: 'Packaging', icon: 'fa-box', color: '#6d28d9' },
+        { key: 'shipping', label: 'Shipping', icon: 'fa-truck', color: '#4338ca' },
+        { key: 'delivered', label: 'Delivered', icon: 'fa-share-nodes', color: '#047857' },
+        { key: 'wfr', label: 'WFR', icon: 'fa-rotate', color: '#854d0e' },
+        { key: 'returned', label: 'Returned', icon: 'fa-reply', color: '#9f1239' },
+        { key: 'cancel', label: 'Cancel', icon: 'fa-times-circle', color: '#b91c1c' }
+    ];
+    var currentFilter = '';
+
+    function badge(status) {
+        var map = { 'new':'b-new', 'processing':'b-new', 'pending':'b-pending', 'confirmed':'b-confirmed', 'packaging':'b-packaging', 'shipping':'b-shipping', 'shipped':'b-shipping', 'delivered':'b-delivered', 'wfr':'b-wfr', 'returned':'b-returned', 'cancel':'b-cancelled', 'cancelled':'b-cancelled' };
+        var label = status === 'cancel' ? 'Cancel' : status.charAt(0).toUpperCase() + status.slice(1);
+        return '<span class="badge ' + (map[status] || 'b-pending') + '">' + label + '</span>';
+    }
+
+    window.zoomImg = function(src) {
+        var m = document.createElement('div');
+        m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:9999;cursor:pointer';
+        m.innerHTML = '<img src="' + src + '" style="max-width:90vw;max-height:90vh;border-radius:10px">';
+        m.onclick = function() { document.body.removeChild(m); };
+        document.body.appendChild(m);
+    };
+
+    function getMyOrders() {
+        /* PART 3, 51 — All Orders = admin + supplier product orders only.
+           This reseller's own My Shop product orders live in My Shop Orders. */
+        return resellerAllOrders(user.id);
+    }
+
+    function loadCards() {
+        var orders = getMyOrders();
+        var counts = {};
+        for (var i = 0; i < orders.length; i++) {
+            var s = orders[i].status;
+            counts[s] = (counts[s] || 0) + 1;
+        }
+        var html = '';
+        for (var s = 0; s < STATUSES.length; s++) {
+            var st = STATUSES[s];
+            var n = counts[st.key] || 0;
+            html += '<div class="scard' + (currentFilter === st.key ? ' active' : '') + '" onclick="filterBy(\'' + st.key + '\')">' +
+                '<i class="fas ' + st.icon + '" style="color:' + st.color + ';"></i>' +
+                '<div class="num" style="color:' + st.color + ';">' + n + '</div>' +
+                '<div class="lbl">' + st.label + '</div></div>';
+        }
+        html += '<div class="scard' + (currentFilter === '' ? ' active' : '') + '" onclick="filterBy(\'\')">' +
+            '<i class="fas fa-list" style="color:#1e293b;"></i>' +
+            '<div class="num">' + orders.length + '</div><div class="lbl">All</div></div>';
+        var PERS = [['7', 'Last 7 Days'], ['30', '1 Month'], ['90', '3 Months'], ['365', '1 Year'], ['all', 'All Time']];
+        if (!window._pfilter) window._pfilter = 'all';
+        var cut = 0;
+        if (window._pfilter === '7') cut = Date.now() - 7 * 86400000;
+        else if (window._pfilter === '30') cut = Date.now() - 30 * 86400000;
+        else if (window._pfilter === '90') cut = Date.now() - 90 * 86400000;
+        else if (window._pfilter === '365') cut = Date.now() - 365 * 86400000;
+        var dAmt = 0, rAmt = 0, tPft = 0;
+        for (var i2 = 0; i2 < orders.length; i2++) {
+            var o2 = orders[i2], s2 = o2.status || 'new';
+            if (cut && new Date(o2.date || Date.now()).getTime() < cut) continue;
+            if (s2 === 'delivered') { dAmt += (o2.amount || 0); tPft += (o2.profit || 0); }
+            if (s2 === 'returned' || s2 === 'wfr') rAmt += (o2.amount || 0);
+        }
+        html += '<div style="grid-column:1/-1;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:4px;">';
+        for (var p3 = 0; p3 < PERS.length; p3++) {
+            html += '<div onclick="setPf(\'' + PERS[p3][0] + '\')" style="padding:6px 16px;border-radius:16px;font-size:.7rem;font-weight:800;cursor:pointer;' + (window._pfilter === PERS[p3][0] ? 'background:#1e293b;color:#fff;' : 'background:#fff;color:#475569;border:1.5px solid #e2e8f0;') + '">' + PERS[p3][1] + '</div>';
+        }
+        html += '</div>';
+        html += '<div style="grid-column:1/-1;display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:8px;">';
+        html += '<div class="scard" style="min-width:190px;background:#ecfdf5;border:1px solid #a7f3d0;cursor:default;display:flex;align-items:center;gap:10px;padding:12px 16px;"><i class="fas fa-sack-dollar" style="font-size:1.2rem;color:#059669;"></i><div><div style="font-size:.62rem;font-weight:800;color:#64748b;letter-spacing:.5px;">DELIVERED SALES</div><div style="font-size:.95rem;font-weight:900;color:#059669;">' + formatCurrency(dAmt) + '</div></div></div>';
+        html += '<div class="scard" style="min-width:190px;background:#fef2f2;border:1px solid #fecaca;cursor:default;display:flex;align-items:center;gap:10px;padding:12px 16px;"><i class="fas fa-rotate-left" style="font-size:1.2rem;color:#dc2626;"></i><div><div style="font-size:.62rem;font-weight:800;color:#64748b;letter-spacing:.5px;">RETURNED</div><div style="font-size:.95rem;font-weight:900;color:#dc2626;">' + formatCurrency(rAmt) + '</div></div></div>';
+        html += '<div class="scard" style="min-width:190px;background:#eff6ff;border:1px solid #bfdbfe;cursor:default;display:flex;align-items:center;gap:10px;padding:12px 16px;"><i class="fas fa-chart-line" style="font-size:1.2rem;color:#2563eb;"></i><div><div style="font-size:.62rem;font-weight:800;color:#64748b;letter-spacing:.5px;">TOTAL PROFIT</div><div style="font-size:.95rem;font-weight:900;color:#2563eb;">' + formatCurrency(tPft) + '</div></div></div>';
+        html += '</div>';
+        document.getElementById('statusCards').innerHTML = html;
+    }
+    window.setPf = function(p) { window._pfilter = p; loadCards(); };
+
+    function filterBy(status) {
+        currentFilter = (currentFilter === status) ? '' : status;
+        loadCards();
+        loadOrders();
+    }
+
+    /* 2026-09-15 — the markup calls this from an inline handler (an on* attribute), and an
+       inline handler runs in GLOBAL scope. It was declared inside this page IIFE, so the
+       call threw "loadOrders is not defined" and the control did nothing. Function declarations
+       hoist, so exposing it here is safe. */
+    window.loadOrders = loadOrders;
+    function loadOrders() {
+        loadCards();
+        var orders = getMyOrders();
+        var search = (document.getElementById('searchBox').value || '').toLowerCase();
+        var list = [];
+        for (var i = 0; i < orders.length; i++) {
+            var o = orders[i];
+            var match = true;
+            if (currentFilter && o.status !== currentFilter) match = false;
+            if (search && o.id.toLowerCase().indexOf(search) === -1 && o.customer.toLowerCase().indexOf(search) === -1 && o.phone.indexOf(search) === -1) match = false;
+            if (match) list.push(o);
+        }
+        /* BUG FIX — `list.reverse()` only flips the STORAGE order; it is not a
+           date sort, so an order whose array position does not match its date
+           was listed in the wrong place (reproduced: the NEWEST order appeared
+           LAST). Sort by date, newest first — the same 4 levels the other order
+           lists use: date -> createdAt -> trailing id digits -> original order. */
+        list.sort(function (a, b) {
+            var ta = a.date || a.createdAt || a.created_at || a.time || a.orderedAt;
+            var tb = b.date || b.createdAt || b.created_at || b.time || b.orderedAt;
+            ta = ta ? new Date(ta).getTime() : -Infinity; if (isNaN(ta)) ta = -Infinity;
+            tb = tb ? new Date(tb).getTime() : -Infinity; if (isNaN(tb)) tb = -Infinity;
+            if (ta !== tb) return tb - ta;
+            var ma = String(a.id || '').match(/(\d+)\s*$/), mb = String(b.id || '').match(/(\d+)\s*$/);
+            return (mb ? parseInt(mb[1], 10) : -1) - (ma ? parseInt(ma[1], 10) : -1);
+        });
+
+        if (!list.length) {
+            document.getElementById('ordersBody').innerHTML = '';
+            document.getElementById('emptyMsg').innerHTML = '<div class="empty"><i class="fas fa-shopping-cart"></i><br>No orders found. <a href="order.html" style="color:#2563eb;font-weight:600;">Place your first order →</a></div>';
+            return;
+        }
+        document.getElementById('emptyMsg').innerHTML = '';
+
+        var html = '';
+        for (var j = 0; j < list.length; j++) {
+            var o = list[j];
+            var oimg = (o.items && o.items.length && o.items[0].image) ? o.items[0].image : (o.image || '');
+            if (!oimg && o.productId) { var _pps = getData(DB_KEYS.PRODUCTS) || []; for (var _q = 0; _q < _pps.length; _q++) { if (String(_pps[_q].id) === String(o.productId)) { oimg = _pps[_q].image || (_pps[_q].images && _pps[_q].images[0]) || ''; break; } } }
+            var oimgHtml = oimg ? '<img src="' + oimg + '" style="width:42px;height:42px;border-radius:8px;object-fit:cover;border:1px solid #e2e8f0;flex:none;cursor:pointer;" onclick="zoomImg(this.src)">' : '<div style="width:42px;height:42px;border-radius:8px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#cbd5e1;flex:none;"><i class="fas fa-box"></i></div>';
+            html += '<tr data-order-id="' + o.id + '">' +
+                '<td>' + (j + 1) + '</td>' +
+                '<td><strong>' + o.customer + '</strong><br><small style="color:#64748b;">' + o.phone + '</small><br><small style="color:#94a3b8;font-size:.68rem;max-width:150px;display:inline-block;">' + (o.address || '') + '</small></td>' +
+                '<td style="max-width:220px;"><div style="display:flex;gap:9px;align-items:center;">' + oimgHtml + '<div>' + (o.productName || '-') + '<br><small style="color:#64748b;">Qty: ' + (o.qty || 1) + '</small></div></div></td>' +
+                '<td><strong style="color:#2563eb;">' + o.id + '</strong></td>' +
+                '<td>' + formatDate(o.date) + '</td>' +
+                '<td>' + (o.courier || '-') + '</td>' +
+                '<td style="max-width:150px;font-size:0.78rem;color:#64748b;">' + (o.adminNote || '—') + '</td>' +
+                '<td>' + badge(o.status) + '</td>' +
+                /* PART 22 — per-order customer invoice print */
+                '<td><button class="btn btn-primary btn-sm" onclick="viewOrder(\'' + o.id + '\')"><i class="fas fa-truck"></i> Track</button> ' +
+                '<button class="btn btn-sm" style="background:#0d9488;color:#fff" title="Print Invoice" onclick="openResellerInvoice(\'' + o.id + '\')"><i class="fas fa-print"></i></button></td>' +
+                '<td><button class="btn btn-sm" style="background:#f1f5f9;color:#1e293b;" onclick="viewOrder(\'' + o.id + '\')"><i class="fas fa-eye"></i></button>' + (o.status === 'delivered' ? ' <button class="btn btn-sm" style="background:#fbbf24;color:#1e293b" title="Write Review" onclick="writeReview(\'' + o.id + '\')"><i class="fas fa-star"></i></button>' : '') + '</td>' +
+                '</tr>';
+        }
+        document.getElementById('ordersBody').innerHTML = html;
+        /* deep link from Recent Orders -> View (#1, #2, #19) */
+        try { if (typeof focusOrderRow === 'function') focusOrderRow(queryParam('order')); } catch (e) {}
+    }
+
+    function viewOrder(orderId) {
+        var orders = getMyOrders();
+        var o = null;
+        for (var i = 0; i < orders.length; i++) { if (orders[i].id === orderId) { o = orders[i]; break; } }
+        if (!o) return;
+
+        var html = '<h3 style="margin-bottom:14px;color:#2563eb;">Order ' + o.id + ' ' + badge(o.status) + '</h3>';
+        /* Which stage is the parcel at? The ADMIN sets it on the Multi-Supplier
+           Orders page; the reseller reads the same strip here. */
+        html += '<div style="margin-bottom:14px"><small style="display:block;font-size:.68rem;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Order Stage</small>' +
+            ((typeof orderStageStripHtml === 'function') ? orderStageStripHtml(o.status) : '') + '</div>';
+
+        html += '<div class="detail-row"><strong>Customer</strong><span>' + o.customer + ' (' + o.phone + ')</span></div>' +
+            '<div class="detail-row"><strong>Address</strong><span>' + o.address + '</span></div>' +
+            '<div class="detail-row"><strong>Date</strong><span>' + formatDate(o.date) + '</span></div>' +
+            (o.courier ? '<div class="detail-row"><strong>Courier</strong><span>' + o.courier + ' (' + (o.trackingId || 'N/A') + ')</span></div>' : '') +
+            (o.trackingUrl ? '<div class="detail-row"><strong>Tracking</strong><span><a href="' + o.trackingUrl + '" target="_blank" style="color:#2563eb;font-weight:600;">Track on courier site →</a></span></div>' : '');
+
+        // Items
+        html += '<h4 style="margin:16px 0 10px;">Products</h4>';
+        if (o.items && o.items.length) {
+            for (var it = 0; it < o.items.length; it++) {
+                var item = o.items[it];
+                var img = item.image ? '<img src="' + item.image + '">' : '<div style="width:50px;height:50px;background:#e2e8f0;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#94a3b8;"><i class="fas fa-box"></i></div>';
+                html += '<div class="item-row">' + img +
+                    '<div style="flex:1;"><strong style="font-size:0.9rem;">' + item.name + '</strong><br><small style="color:#64748b;">Size: ' + (item.size || (item.sizeQty && item.sizeQty[0] && item.sizeQty[0].size) || 'Free Size') + ' | Color: ' + (item.color || '-') + ' | Qty: ' + item.qty + '</small></div>' +
+                    '<div style="text-align:right;"><div style="font-size:0.78rem;color:#64748b;">Wholesale</div><strong>' + formatCurrency(item.price * item.qty) + '</strong><br><small style="color:#64748b;">Resale: ' + formatCurrency(item.resale * item.qty) + '</small></div>' +
+                    '</div>';
+            }
+        } else {
+            html += '<div class="item-row"><div style="flex:1;"><strong>' + (o.productName || '-') + '</strong><br><small>Qty: ' + (o.qty || 1) + '</small></div><strong>' + formatCurrency(o.amount) + '</strong></div>';
+        }
+
+        // Summary
+        var subtotal = o.itemsSubtotal || o.amount;
+        var shipping = o.shippingCharge || 0;
+        html += '<div style="background:#f8fafc;border-radius:10px;padding:14px;margin-top:14px;">' +
+            '<div class="detail-row" style="border:none;"><span style="flex:1;">Items Subtotal</span><span>' + formatCurrency(subtotal) + '</span></div>' +
+            '<div class="detail-row" style="border:none;"><span style="flex:1;">Shipping</span><span>' + formatCurrency(shipping) + '</span></div>' +
+            '<div class="detail-row" style="border:none;"><span style="flex:1;font-weight:700;">Order Total</span><span style="font-weight:800;color:#2563eb;">' + formatCurrency(o.amount) + '</span></div>' +
+            (o.grossProfit || o.codCharge || o.packagingCharge ? '<div class="detail-row" style="border:none;"><span style="flex:1;">Gross Profit</span><span style="font-weight:700;">' + formatCurrency(o.grossProfit !== undefined ? o.grossProfit : ((o.profit || 0) + (o.codCharge || 0) + (o.packagingCharge || 0))) + '</span></div>' : '') +
+            (o.codCharge ? '<div class="detail-row" style="border:none;"><span style="flex:1;"><i class="fas fa-hand-holding-dollar" style="color:#dc2626;"></i> COD Charge (1%)</span><span style="color:#dc2626;font-weight:700;">-' + formatCurrency(o.codCharge) + '</span></div>' : '') +
+            (o.packagingCharge ? '<div class="detail-row" style="border:none;"><span style="flex:1;"><i class="fas fa-box" style="color:#dc2626;"></i> Packaging Charge</span><span style="color:#dc2626;font-weight:700;">-' + formatCurrency(o.packagingCharge) + '</span></div>' : '') +
+            (o.advance ? '<div class="detail-row" style="border:none;"><span style="flex:1;">Advance Paid</span><span>' + formatCurrency(o.advance) + '</span></div>' : '') +
+            '<div class="detail-row" style="border:none;background:#ecfdf5;border-radius:8px;padding:8px 10px;margin-top:4px;"><span style="flex:1;font-weight:800;color:#065f46;">✓ Net Profit (সব কাটার পর)</span><span style="font-weight:900;color:#059669;font-size:1.02rem;">' + formatCurrency(o.profit) + '</span></div>' +
+            '</div>';
+
+        if (o.note) html += '<div style="background:#d1fae5;padding:12px;border-radius:8px;margin-top:12px;font-size:0.85rem;"><strong style="color:#065f46;">Your Note:</strong> ' + o.note + '</div>';
+        if (o.adminNote) html += '<div style="background:#ede9fe;padding:12px;border-radius:8px;margin-top:12px;font-size:0.85rem;"><strong style="color:#6d28d9;">Admin Note:</strong> ' + o.adminNote + '</div>';
+        /* Mixed-source order: show the platform (admin/supplier) side allocation.
+           The customer's own total above is unchanged — the delivery charge is
+           folded in here exactly once so the two groups reconcile (#4, #11). */
+        try {
+            var _ga = (typeof orderGroupAllocation === 'function') ? orderGroupAllocation(o, user.id) : null;
+            if (_ga && _ga.mixed) {
+                html += '<div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:12px 13px;margin-top:12px;font-size:.8rem;">' +
+                    '<div style="font-weight:900;color:#4338ca;font-size:.7rem;letter-spacing:.4px;margin-bottom:7px;"><i class="fas fa-code-branch"></i> COMBINED ORDER — PLATFORM (ADMIN/SUPPLIER) SIDE</div>' +
+                    '<div style="display:flex;justify-content:space-between;color:#334155;margin-bottom:3px;"><span>Product Selling Price</span><b>' + formatCurrency(_ga.catalog.sellingTotal) + '</b></div>' +
+                    '<div style="display:flex;justify-content:space-between;color:#334155;margin-bottom:3px;"><span>Customer Delivery Charge (নেওয়া হয়েছে একবার)</span><b>' + formatCurrency(_ga.catalog.deliveryAllocation) + '</b></div>' +
+                    '<div style="display:flex;justify-content:space-between;color:#1e40af;border-top:1px dashed #a5b4fc;padding-top:6px;margin-top:3px;"><span><b>Platform Side Total</b></span><b>' + formatCurrency(_ga.catalog.netAmount) + '</b></div>' +
+                    '<div style="font-size:.7rem;color:#475569;margin-top:7px;line-height:1.5"><i class="fas fa-circle-info"></i> এই order-এ আপনার নিজের product-ও আছে — সেটি My Shop Orders-এ আলাদাভাবে দেখানো হয়েছে। Customer-এর delivery charge একবারই নেওয়া হয়েছে।</div>' +
+                    '</div>';
+            }
+        } catch (e) { }
+
+        // Tracking timeline
+        var tracking = getData(DB_KEYS.TRACKING);
+        var tList = [];
+        for (var t = 0; t < tracking.length; t++) { if (tracking[t].orderId === o.id) tList.push(tracking[t]); }
+        if (tList.length) {
+            html += '<h4 style="margin:16px 0 10px;">Tracking Timeline</h4>';
+            for (var k = 0; k < tList.length; k++) {
+                html += '<div class="timeline-item"><strong>' + tList[k].status + '</strong> — ' + tList[k].location +
+                    '<br><small style="color:#64748b;">' + tList[k].date + (tList[k].note ? ' | ' + tList[k].note : '') + '</small></div>';
+            }
+        }
+
+        var EDITABLE = ({ 'new': 1, 'pending': 1, 'confirmed': 1 })[o.status || 'new'];
+        if (EDITABLE) {
+            html += '<div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">' +
+                '<button onclick="openEditOrder(\'' + o.id + '\')" style="flex:1;min-width:100px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;padding:13px;border-radius:10px;font-weight:800;cursor:pointer;font-size:.9rem;"><i class="fas fa-pen"></i> Edit</button>' +
+                ((o.status || 'new') === 'new' ? '<button onclick="confirmMyShopOrder(\'' + o.id + '\')" style="flex:1;min-width:100px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;padding:13px;border-radius:10px;font-weight:800;cursor:pointer;font-size:.9rem;"><i class="fas fa-check-circle"></i> Confirm</button>' : '') +
+                '<button onclick="cancelMyShopOrder(\'' + o.id + '\')" style="flex:1;min-width:100px;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;border:none;padding:13px;border-radius:10px;font-weight:800;cursor:pointer;font-size:.9rem;"><i class="fas fa-ban"></i> Cancel</button>' +
+                '</div>';
+        }
+        html += '<div style="display:flex;gap:10px;margin-top:10px;"><button onclick="sfViewFraud(\'' + o.id + '\')" style="width:100%;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;padding:11px;border-radius:10px;font-weight:800;cursor:pointer;font-size:.85rem;"><i class="fas fa-shield"></i> 🛡 Customer Fraud Check (Steadfast)</button></div><div id="sfVOOut"></div>';
+        html += '<div style="margin-top:10px"><button onclick="resSfSend(\'' + o.id + '\')" style="width:100%;background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;border:none;padding:11px;border-radius:8px;font-weight:800;font-size:.8rem;cursor:pointer;margin-top:10px"><i class="fas fa-paper-plane"></i> Send to Steadfast</button></div>';
+
+        document.getElementById('viewBody').innerHTML = html;
+        document.getElementById('viewModal').classList.add('show');
+    }
+
+    window.confirmMyShopOrder = function(orderId) {
+        var orders = getData(DB_KEYS.ORDERS);
+        for (var i = 0; i < orders.length; i++) {
+            if (orders[i].id === orderId) { orders[i].status = 'confirmed'; break; }
+        }
+        setData(DB_KEYS.ORDERS, orders);
+        addTracking(orderId, 'Order Confirmed', 'Reseller Panel', 'Confirmed by reseller — ready for processing');
+        addNotification(1, 'order', 'Customer order ' + orderId + ' confirmed by reseller — check admin orders', false);
+        /* 2026-09-16 — the SUPPLIER was never told. Confirming is what makes an order
+           visible to the supplier at all (supplierOrders() skips anything still
+           'new'/'pending'), so this notification is the only signal they get.
+           Without it the order simply appeared in their list with no alert, and if
+           they already had the page open they saw nothing until a manual reload.
+           One notification per supplier-owned line; admins are unaffected. */
+        try {
+            var _oid = orderId, _notified = {};
+            var _items = (typeof orderLineItems === 'function') ? orderLineItems(orders[i] || {}) : ((orders[i] && orders[i].items) || []);
+            for (var _n = 0; _n < _items.length; _n++) {
+                var _sid = _items[_n] && (_items[_n].supplierId !== undefined && _items[_n].supplierId !== null ? _items[_n].supplierId : _items[_n].supplier_id);
+                if (_sid === undefined || _sid === null || _sid === '') continue;
+                if (_notified[String(_sid)]) continue;
+                _notified[String(_sid)] = 1;
+                addNotification(_sid, 'order', 'New order ' + _oid + ' confirmed by the reseller — ready for you to process.', true);
+            }
+        } catch (e) { }
+        logActivity('order_confirmed', 'Reseller confirmed My Shop customer order ' + orderId);
+        showToast('Order confirmed! Admin panel updated.', 'success');
+        closeModal('viewModal');
+        loadOrders();
+    };
+    window.openEditOrder = function(orderId) {
+        var orders = getData(DB_KEYS.ORDERS);
+        var o = null;
+        for (var i = 0; i < orders.length; i++) { if (orders[i].id === orderId) { o = orders[i]; break; } }
+        if (!o) return;
+        if (!({ 'new': 1, 'pending': 1, 'confirmed': 1 })[o.status || 'new']) { showToast('This order is in packaging/shipping — cannot edit!', 'error'); return; }
+        var h = '<h3 style="margin-bottom:12px;color:#2563eb;">Edit Order ' + o.id + '</h3>';
+        h += '<div style="margin-bottom:10px;"><label style="font-size:.74rem;font-weight:800;display:block;margin-bottom:4px;">Customer Name</label><input id="eoName" value="' + (o.customer || '') + '" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;box-sizing:border-box;"></div>';
+        h += '<div style="margin-bottom:10px;"><label style="font-size:.74rem;font-weight:800;display:block;margin-bottom:4px;">Phone</label><input id="eoPhone" value="' + (o.phone || '') + '" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;box-sizing:border-box;"></div>';
+        h += '<div style="margin-bottom:10px;"><label style="font-size:.74rem;font-weight:800;display:block;margin-bottom:4px;">Address</label><textarea id="eoAddr" rows="2" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;box-sizing:border-box;font-family:inherit;">' + (o.address || '') + '</textarea></div>';
+        h += '<div style="margin-top:10px;max-width:200px;"><label style="font-size:.72rem;font-weight:800;">Delivery Charge (৳)</label><input type="number" id="eoShip" value="' + (o.shippingCharge || 0) + '" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;box-sizing:border-box;"></div>';
+        h += '<h4 style="margin:14px 0 8px;font-size:.9rem;">Products — Qty &amp; Resale Price</h4>';
+        var STY = 'width:100%;padding:7px;border:1.5px solid #e2e8f0;border-radius:7px;text-align:center;box-sizing:border-box;font-weight:700;';
+        if (o.items && o.items.length) {
+            for (var ii = 0; ii < o.items.length; ii++) {
+                var it = o.items[ii];
+                h += '<div style="display:flex;gap:8px;align-items:center;padding:8px;background:#f8fafc;border-radius:8px;margin-bottom:6px;">' +
+                    (it.image ? '<img src="' + it.image + '" style="width:38px;height:38px;border-radius:6px;object-fit:cover;">' : '<div style="width:38px;height:38px;background:#e2e8f0;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#94a3b8;"><i class="fas fa-box" style="font-size:.7rem"></i></div>') +
+                    '<div style="flex:1;font-size:.74rem;font-weight:700;">' + it.name + '</div>' +
+                    '<input type="number" min="1" id="eoQ' + ii + '" value="' + it.qty + '" style="' + STY + 'width:56px;" title="Qty">' +
+                    '<input type="number" min="0" id="eoR' + ii + '" value="' + it.resale + '" style="' + STY + 'width:78px;" title="Resale price">' +
+                    '</div>';
+            }
+        } else {
+            h += '<div style="display:flex;gap:8px;align-items:center;padding:8px;background:#f8fafc;border-radius:8px;">' +
+                '<div style="flex:1;font-size:.74rem;font-weight:700;">' + (o.productName || '-') + '</div>' +
+                '<input type="number" min="1" id="eoQ0" value="' + (o.qty || 1) + '" style="' + STY + 'width:56px;">' +
+                '<input type="number" min="0" id="eoR0" value="' + Math.round((o.productPrice || 0) * 1.5) + '" style="' + STY + 'width:78px;" title="Resale price">' +
+                '</div>';
+        }
+        h += '<div style="border-top:1.5px dashed #e2e8f0;margin-top:14px;padding-top:12px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><b style="font-size:.82rem;color:#059669;"><i class="fas fa-plus-circle"></i> নতুন Product যোগ করুন</b><small style="color:#94a3b8;font-size:.68rem;">color/size সহ</small></div>' +
+            '<input id="eoProdSearch" placeholder="🔍 Product লিখে খুঁজুন..." oninput="eoSearch(this.value)" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;box-sizing:border-box;margin-bottom:8px;">' +
+            '<div id="eoProdResults" style="max-height:150px;overflow-y:auto;border:1px solid #eef0f6;border-radius:8px;display:none;"></div>' +
+            '<div id="eoNewItems"></div>' +
+            '</div>';
+        h += '<div style="display:flex;gap:10px;margin-top:16px;">' +
+            '<button onclick="closeModal(\'editModal\')" style="flex:1;background:#e2e8f0;color:#1e293b;border:none;padding:12px;border-radius:10px;font-weight:800;cursor:pointer;">Discard</button>' +
+            '<button onclick="saveEditOrder(\'' + o.id + '\')" style="flex:1;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;padding:12px;border-radius:10px;font-weight:800;cursor:pointer;"><i class="fas fa-save"></i> Save Changes</button></div>';
+        document.getElementById('editBody').innerHTML = h;
+        window._eoNew = [];
+        document.getElementById('editModal').classList.add('show');
+
+    // ===== Add-product to order (with color/size) =====
+    window.eoSearch = function(q) {
+        q = (q || '').trim().toLowerCase();
+        var box = document.getElementById('eoProdResults');
+        if (!q) { box.style.display = 'none'; box.innerHTML = ''; return; }
+        var ps = getData(DB_KEYS.PRODUCTS) || [];
+        var h = '';
+        for (var i = 0; i < ps.length; i++) {
+            var p = ps[i];
+            if (p.supplierId && p.approved === false) continue;
+            if (p.is_active === false) continue;
+            if ((p.name || '').toLowerCase().indexOf(q) === -1) continue;
+            h += '<div onclick="eoPick(\'' + p.id + '\')" style="display:flex;gap:9px;align-items:center;padding:8px 10px;cursor:pointer;border-bottom:1px solid #f1f5f9;">' +
+                (p.image ? '<img src="' + p.image + '" style="width:34px;height:34px;border-radius:6px;object-fit:cover;">' : '<div style="width:34px;height:34px;background:#f1f5f9;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#cbd5e1;"><i class="fas fa-box"></i></div>') +
+                '<div style="flex:1;font-size:.78rem;font-weight:700;">' + p.name + '<br><small style="color:#64748b;font-weight:600;">' + formatCurrency(p.reseller_price || p.price || 0) + ' (reseller)</small></div>' +
+                '<i class="fas fa-plus" style="color:#10b981;"></i></div>';
+        }
+        box.innerHTML = h || '<div style="padding:12px;color:#94a3b8;font-size:.76rem;">কোনো product পাওয়া যায়নি</div>';
+        box.style.display = 'block';
+    };
+    window.eoPick = function(pid) {
+        var ps = getData(DB_KEYS.PRODUCTS) || [];
+        var p = null;
+        for (var i = 0; i < ps.length; i++) { if (String(ps[i].id) === String(pid)) { p = ps[i]; break; } }
+        if (!p) return;
+        document.getElementById('eoProdResults').style.display = 'none';
+        document.getElementById('eoProdSearch').value = '';
+        window._eoNew.push({ productId: p.id, name: p.name, image: p.image || '', price: p.reseller_price || p.price || 0, resale: p.customer_price || Math.round((p.reseller_price || p.price) * 1.8), qty: 1, size: '', color: '', sizes: (p.sizes || []).slice(), colors: (p.colors || []).slice(), stock: p.stock || 99, supplierId: p.supplierId || null, supplierName: p.supplierName || '' });
+        eoDrawNew();
+    };
+    window.eoRmNew = function(i) { window._eoNew.splice(i, 1); eoDrawNew(); };
+    window.eoNewVal = function(i, fld, el) { if (window._eoNew[i]) window._eoNew[i][fld] = (fld === 'qty') ? (parseInt(el.value) || 1) : el.value; };
+    function eoDrawNew() {
+        var box = document.getElementById('eoNewItems');
+        if (!box) return;
+        var h = '';
+        for (var i = 0; i < window._eoNew.length; i++) {
+            var it = window._eoNew[i];
+            h += '<div style="display:flex;gap:8px;align-items:flex-start;padding:9px;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;margin-bottom:7px;flex-wrap:wrap;">' +
+                (it.image ? '<img src="' + it.image + '" style="width:38px;height:38px;border-radius:6px;object-fit:cover;">' : '<div style="width:38px;height:38px;background:#dcfce7;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#16a34a;"><i class="fas fa-box"></i></div>') +
+                '<div style="flex:1;min-width:150px;"><b style="font-size:.76rem;">' + it.name + '</b><br><small style="color:#64748b;font-size:.66rem;">Cost: ' + formatCurrency(it.price) + '</small></div>';
+            if (it.sizes && it.sizes.length) {
+                h += '<select onchange="eoNewVal(' + i + ',\'size\',this)" style="padding:6px;border:1.5px solid #e2e8f0;border-radius:7px;font-size:.72rem;"><option value="">Size</option>';
+                for (var z = 0; z < it.sizes.length; z++) h += '<option' + (it.size === it.sizes[z] ? ' selected' : '') + '>' + it.sizes[z] + '</option>';
+                h += '</select>';
+            }
+            if (it.colors && it.colors.length) {
+                h += '<select onchange="eoNewVal(' + i + ',\'color\',this)" style="padding:6px;border:1.5px solid #e2e8f0;border-radius:7px;font-size:.72rem;"><option value="">Color</option>';
+                for (var c = 0; c < it.colors.length; c++) h += '<option' + (it.color === it.colors[c] ? ' selected' : '') + '>' + it.colors[c] + '</option>';
+                h += '</select>';
+            }
+            h += '<input type="number" min="1" value="' + it.qty + '" onchange="eoNewVal(' + i + ',\'qty\',this)" style="width:52px;padding:6px;border:1.5px solid #e2e8f0;border-radius:7px;text-align:center;font-weight:700;">';
+            h += '<input type="number" min="0" value="' + it.resale + '" onchange="eoNewVal(' + i + ',\'resale\',this)" style="width:74px;padding:6px;border:1.5px solid #e2e8f0;border-radius:7px;text-align:center;font-weight:700;" title="Resale price">';
+            h += '<button onclick="eoRmNew(' + i + ')" style="width:26px;height:26px;border:none;border-radius:7px;background:#fee2e2;color:#dc2626;cursor:pointer;font-weight:800;">×</button>';
+            h += '</div>';
+        }
+        box.innerHTML = h;
+    }
+    };
+
+    window.saveEditOrder = function(orderId) {
+        var orders = getData(DB_KEYS.ORDERS);
+        var o = null;
+        for (var i = 0; i < orders.length; i++) { if (orders[i].id === orderId) { o = orders[i]; break; } }
+        if (!o) return;
+        if (!({ 'new': 1, 'pending': 1, 'confirmed': 1 })[o.status || 'new']) { showToast('Order is in packaging/shipping — cannot edit!', 'error'); return; }
+        var name = document.getElementById('eoName').value.trim();
+        var phone = document.getElementById('eoPhone').value.trim();
+        var addr = document.getElementById('eoAddr').value.trim();
+        if (name) o.customer = name;
+        if (phone) o.phone = phone;
+        if (addr) o.address = addr;
+        o.shippingCharge = parseInt(document.getElementById('eoShip').value) || 0;
+        var subtotal = 0, profit = 0, qty = 0;
+        if (o.items && o.items.length) {
+            for (var j = 0; j < o.items.length; j++) {
+                var q = parseInt(document.getElementById('eoQ' + j).value) || o.items[j].qty;
+                var r = parseInt(document.getElementById('eoR' + j).value) || o.items[j].resale;
+                if (r < o.items[j].price) { showToast(o.items[j].name + ': resale cannot be below wholesale!', 'error'); return; }
+                o.items[j].qty = q; o.items[j].resale = r;
+                subtotal += r * q; profit += (r - o.items[j].price) * q; qty += q;
+            }
+        } else {
+            var q0 = parseInt(document.getElementById('eoQ0').value) || o.qty || 1;
+            var r0 = parseInt(document.getElementById('eoR0').value) || 0;
+            o.qty = q0; subtotal = r0 * q0; profit = (r0 - (o.productPrice || 0)) * q0;
+        }
+        var cod = Math.round((subtotal + (o.shippingCharge || 0)) * 0.01), pack = 10;
+        profit = profit - cod - pack;
+        o.itemsSubtotal = subtotal;
+        if (qty) o.qty = qty;
+        o.profit = profit;
+        o.grossProfit = profit + cod + pack;
+        o.codCharge = cod;
+        o.packagingCharge = pack;
+        o.amount = subtotal + (o.shippingCharge || 0);
+        o.due = o.amount - (o.advance || 0);
+        // merge newly added products (with color/size)
+        if (window._eoNew && window._eoNew.length) {
+            if (!o.items || !o.items.length) {
+                o.items = [];
+                if (o.productId) o.items.push({ productId: o.productId, name: o.productName || '-', image: o.image || '', qty: o.qty || 1, price: o.productPrice || 0, resale: (o.amount || 0) - (o.shippingCharge || 0), size: o.size || '', color: o.color || '', supplierId: o.supplierId || null, supplierName: o.supplierName || '' });
+            }
+            for (var ni = 0; ni < window._eoNew.length; ni++) {
+                var nw = window._eoNew[ni];
+                o.items.push({ productId: nw.productId, name: nw.name, image: nw.image, qty: nw.qty || 1, price: nw.price, resale: nw.resale, size: nw.size || '', color: nw.color || '', sizeQty: [{ size: nw.size || 'Free Size', qty: nw.qty || 1 }], supplierId: nw.supplierId || null, supplierName: nw.supplierName || '' });
+                subtotal += nw.resale * (nw.qty || 1);
+                profit += (nw.resale - nw.price) * (nw.qty || 1);
+                qty += nw.qty || 1;
+            }
+            o.productName = o.items[0].name + (o.items.length > 1 ? ' +' + (o.items.length - 1) + ' more' : '');
+            var cod2 = Math.round((subtotal + (o.shippingCharge || 0)) * 0.01);
+            profit = profit - cod2 - 10;
+            o.codCharge = cod2; o.packagingCharge = 10; o.grossProfit = profit + cod2 + 10;
+            o.profit = profit;
+        }
+        o.editedByReseller = true;
+        setData(DB_KEYS.ORDERS, orders);
+        addTracking(orderId, 'Order Edited', 'Reseller Panel', 'Customer details / prices updated by reseller');
+        addNotification(1, 'order', 'Order ' + orderId + ' edited by reseller — review the changes in admin orders', false);
+        logActivity('order_edited', 'Reseller edited order ' + orderId);
+        showToast('Order updated successfully!', 'success');
+        closeModal('editModal');
+        viewOrder(orderId);
+        loadOrders();
+    };
+
+    /* 2026-09-17 — Send a ready order to Steadfast from the reseller panel.
+       Keys are read from Admin → Settings → Steadfast Courier at call time; none are
+       stored in this file. If the admin set a proxy URL the call goes through the
+       server, otherwise it goes direct. Same shape as admin/orders.html. */
+    window.resSfSend = function(orderId) {
+        var orders = getData(DB_KEYS.ORDERS) || [];
+        var o = null;
+        for (var i = 0; i < orders.length; i++) { if (String(orders[i].id) === String(orderId)) { o = orders[i]; break; } }
+        if (!o) { try { showToast('Order পাওয়া যায়নি', 'error'); } catch (e) {} return; }
+        var st = {}; try { st = getOne(DB_KEYS.SETTINGS) || {}; } catch (e) {}
+        var px = st.sf_proxy || '';
+        if (!px && (!st.sf_api_key || !st.sf_secret_key)) {
+            try { showToast('আগে Settings → Steadfast Courier-এ API Key/Secret অথবা Proxy URL সেট করুন!', 'error'); } catch (e) {}
+            return;
+        }
+        if (!confirm('Order ' + o.id + ' Steadfast-এ পাঠাবেন?')) return;
+        var cod = (st.sf_cod_source === 'zero') ? 0 : Number(o.amount || 0);
+        var payload = {
+            invoice: String(o.id),
+            recipient_name: o.customer || '',
+            recipient_phone: o.phone || '',
+            recipient_address: [o.address, o.thana, o.district].filter(Boolean).join(', '),
+            cod_amount: cod,
+            note: o.note || ''
+        };
+        var out = document.getElementById('sfVOOut');
+        if (out) out.innerHTML = '<div style="text-align:center;padding:10px"><i class="fas fa-spinner fa-spin" style="color:#0d9488"></i> Steadfast-এ পাঠানো হচ্ছে…</div>';
+        var url = px || 'https://portal.steadfast.com.bd/api/v1/create_order';
+        var body = px
+            ? JSON.stringify({ action: 'create', order: payload, apiKey: st.sf_api_key || '', secretKey: st.sf_secret_key || '' })
+            : JSON.stringify(payload);
+        var hdrs = { 'Content-Type': 'application/json' };
+        if (!px) { hdrs['Api-Key'] = st.sf_api_key || ''; hdrs['Secret-Key'] = st.sf_secret_key || ''; }
+        fetch(url, { method: 'POST', headers: hdrs, body: body })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+            var ok = j && (j.status === 200 || j.consignment_id || (j.data && j.data.consignment_id));
+            var cid = (j && (j.consignment_id || (j.data && j.data.consignment_id))) || '';
+            if (out) out.innerHTML = '<div style="background:' + (ok ? '#f0fdf4' : '#fef2f2') + ';border:1px solid ' + (ok ? '#bbf7d0' : '#fecaca') + ';border-radius:8px;padding:12px;margin-top:10px;font-size:.85rem">' +
+                (ok ? '<b style="color:#16a34a">✅ Steadfast-এ পাঠানো হয়েছে</b>' : '<b style="color:#dc2626">⚠️ সফল হয়নি</b>') +
+                (cid ? '<div style="margin-top:6px">Consignment ID: <b>' + cid + '</b></div>' : '') +
+                '<pre style="background:#0f172a;color:#cbd5e1;padding:10px;border-radius:8px;font-size:.7rem;margin-top:10px;overflow-x:auto">' + JSON.stringify(j, null, 2).replace(/[<>&]/g, '') + '</pre></div>';
+            if (ok) { try { showToast('Steadfast-এ পাঠানো হয়েছে ✓', 'success'); } catch (e) {} }
+        })
+        .catch(function () { if (out) out.innerHTML = '<div style="color:#dc2626;padding:8px">Send failed — proxy সমস্যা।</div>'; });
+    };
+
+    window.sfViewFraud = function(orderId) {
+        var orders = getData(DB_KEYS.ORDERS);
+        var o = null;
+        for (var i = 0; i < orders.length; i++) { if (orders[i].id === orderId) { o = orders[i]; break; } }
+        if (!o) return;
+        var out = document.getElementById('sfVOOut');
+        var px = '';
+        try { px = (getOne(DB_KEYS.SETTINGS).sf_proxy || ''); } catch (e) {}
+        if (!px) { if (out) out.innerHTML = '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px;margin-top:10px;font-size:.8rem;color:#991b1b">Fraud check এখনো সক্রিয় না — admin Settings → Steadfast Courier-এ Backend Proxy URL সেট করলে চালু হবে।</div>'; return; }
+        if (out) out.innerHTML = '<div style="text-align:center;padding:10px"><i class="fas fa-spinner fa-spin" style="color:#7c3aed"></i> ' + o.phone + ' চেক হচ্ছে...</div>';
+        /* 2026-09-17 — BUG FIX. This call sent NO credentials, but the server proxy requires
+           them, so every reseller fraud check came back 400 and the UI always showed
+           "Fraud check failed". The admin's saved keys now travel with the request,
+           exactly as admin/orders.html does it. No key is stored in this file. */
+        var _st = {}; try { _st = getOne(DB_KEYS.SETTINGS) || {}; } catch (e) {}
+        fetch(px, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'fraud', phone: o.phone, apiKey: _st.sf_api_key || '', secretKey: _st.sf_secret_key || '' }) })
+        .then(function(r) { return r.json(); })
+        .then(function(j) {
+            var d = j.data || j;
+            var tot = d.total_delivered || d.total_delivery || 0;
+            var ok = d.successful_delivery || d.total_success || 0;
+            var cn = d.cancelled_delivery || d.total_cancel || 0;
+            var rate = tot ? Math.round(ok * 100 / tot) : 0;
+            var risk = cn > ok;
+            if (out) out.innerHTML = '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-top:10px;font-size:.85rem"><b>' + o.customer + '</b> (' + o.phone + ')<div style="display:flex;gap:14px;flex-wrap:wrap;margin:6px 0"><span>Total: <b>' + tot + '</b></span><span>Success: <b style="color:#16a34a">' + ok + '</b></span><span>Cancelled: <b style="color:#dc2626">' + cn + '</b></span><span style="font-weight:900;color:' + (risk ? '#dc2626' : '#16a34a') + '">' + (risk ? '🚨 HIGH RISK' : '✓ SAFE') + '</span></div><div style="height:8px;background:#e2e8f0;border-radius:6px;overflow:hidden"><div style="height:100%;width:' + rate + '%;background:' + (rate >= 70 ? '#16a34a' : rate >= 50 ? '#f59e0b' : '#dc2626') + '"></div></div></div>';
+        })
+        .catch(function() { if (out) out.innerHTML = '<div style="color:#dc2626;padding:8px">Fraud check failed — proxy সমস্যা।</div>'; });
+    };
+
+    window.cancelMyShopOrder = function(orderId) {
+        if (!confirm('Cancel this order?')) return;
+        var orders = getData(DB_KEYS.ORDERS);
+        for (var i = 0; i < orders.length; i++) {
+            if (orders[i].id === orderId) { orders[i].status = 'cancel'; break; }
+        }
+        setData(DB_KEYS.ORDERS, orders);
+        addTracking(orderId, 'Order Cancelled', 'Reseller Panel', 'Cancelled by reseller');
+        addNotification(1, 'order', 'Customer order ' + orderId + ' cancelled by reseller', false);
+        logActivity('order_cancelled', 'Reseller cancelled My Shop order ' + orderId);
+        showToast('Order cancelled.', 'success');
+        closeModal('viewModal');
+        loadOrders();
+    };
+
+    function trackOrder(orderId) { viewOrder(orderId); }
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+    window.writeReview = function(orderId) {
+        var o = null;
+        var orders = getMyOrders();
+        for (var i = 0; i < orders.length; i++) { if (orders[i].id === orderId) { o = orders[i]; break; } }
+        if (!o) return;
+        var modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:2000;padding:20px';
+        var stars = '';
+        for (var s = 1; s <= 5; s++) stars += '<i class="fas fa-star" data-v="' + s + '" onclick="setStars(' + s + ')" style="font-size:1.6rem;color:#e5e7eb;cursor:pointer;margin-right:4px"></i>';
+        modal.innerHTML = '<div style="background:#fff;border-radius:14px;max-width:440px;width:100%;padding:24px">' +
+            '<h3 style="margin-bottom:6px">Review Order ' + o.id + '</h3>' +
+            '<p style="font-size:.85rem;color:#64748b;margin-bottom:14px">' + o.productName + '</p>' +
+            '<div style="margin-bottom:14px">' + stars + '</div>' +
+            '<textarea id="revText" rows="3" placeholder="How was the product?" style="width:100%;padding:11px;border:2px solid #e2e8f0;border-radius:8px;font-family:inherit;font-size:.9rem"></textarea>' +
+            '<div style="display:flex;gap:9px;margin-top:14px;justify-content:flex-end">' +
+            '<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="padding:9px 16px;border-radius:8px;border:none;background:#e2e8f0;font-weight:600;cursor:pointer">Cancel</button>' +
+            '<button onclick="saveReview(\'' + orderId + '\',\'' + o.productName + '\',' + (o.supplierId || 'null') + ')" style="padding:9px 16px;border-radius:8px;border:none;background:#fbbf24;color:#1e293b;font-weight:700;cursor:pointer">Submit Review</button></div></div>';
+        document.body.appendChild(modal);
+        window._stars = 5;
+    };
+    window.setStars = function(v) {
+        window._stars = v;
+        var modal = document.querySelector('div[style*=fixed]');
+        var stars = modal.querySelectorAll('.fa-star');
+        for (var i = 0; i < stars.length; i++) stars[i].style.color = i < v ? '#fbbf24' : '#e5e7eb';
+    };
+    window.saveReview = function(orderId, pName, supplierId) {
+        var txt = document.getElementById('revText').value.trim();
+        if (!txt) { showToast('Write something!', 'error'); return; }
+        var reviews = getData('rh_reviews');
+        reviews.push({ id: Date.now(), orderId: orderId, productId: orderId, productName: pName, resellerId: user.id, name: user.name, rating: window._stars || 5, text: txt, date: new Date().toISOString().split('T')[0] });
+        setData('rh_reviews', reviews);
+        // Update supplier rating
+        // 2026-09-15 — BUG FIX. This used to average the new score against an
+        // IMAGINARY 5-star seed: with no prior rating `(sups[i].rating || 5)`
+        // supplied 5 and `(sups[i].reviews || 1)` supplied a count of 1, so the
+        // very first review was computed as (5 + stars) / 2. A first 1-star
+        // review was stored as 3.0, a 3-star as 4.0 — every supplier's rating was
+        // biased upward, and one that had never been reviewed showed a perfect
+        // score. The rating is now recomputed from the REAL reviews, so the
+        // stored number is the plain mean of the scores actually given.
+        if (supplierId) {
+            var sups = getData(DB_KEYS.SUPPLIERS);
+            for (var i = 0; i < sups.length; i++) {
+                if (String(sups[i].id) === String(supplierId)) {
+                    var rs = (typeof supplierRatingSummary === 'function')
+                        ? supplierRatingSummary(supplierId) : { avg: 0, count: 0 };
+                    sups[i].rating = rs.count ? Math.round(rs.avg * 10) / 10 : 0;
+                    sups[i].reviews = rs.count;
+                    break;
+                }
+            }
+            setData(DB_KEYS.SUPPLIERS, sups);
+        }
+        showToast('Review submitted! Thank you!', 'success');
+        document.querySelector('div[style*=fixed]').remove();
+        loadCards();
+    };
+
+    setOnline(user.id, true);
+    setInterval(function() { setOnline(user.id, true); }, 60000);
+    window.addEventListener('beforeunload', function() { setOnline(user.id, false); });
+
+    window.filterBy = filterBy;
+    window.viewOrder = viewOrder;
+    window.trackOrder = trackOrder;
+    window.closeModal = closeModal;
+    window.doLogout = doLogout;
+
+    loadOrders();
+    // Real-time refresh every 8 seconds
+    setInterval(function() { loadOrders(); }, 8000);
+})();
+</script>
+
+<script>
+window.toggleSidebar = function(open) {
+    var sb = document.querySelector('.sidebar');
+    var ov = document.getElementById('sideOverlay');
+    if (sb) sb.classList.toggle('open', open);
+    if (ov) ov.classList.toggle('show', open);
+};
+</script>
+
+<script>
+window.menuToggle = function() {
+    var sb = document.querySelector('.sidebar');
+    if (!sb) return;
+    var open = !sb.classList.contains('open');
+    if (window.toggleSidebar) window.toggleSidebar(open);
+    else { sb.classList.toggle('open', open); var ov = document.getElementById('sideOverlay'); if (ov) ov.classList.toggle('show', open); }
+};
+</script>
+
+
+<script>
+/* Robust menu toggle */
+if (!window.menuToggle) {
+    window.menuToggle = function() {
+        var sb = document.querySelector('.sidebar');
+        if (!sb) return;
+        var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+        var open = !sb.classList.contains('open');
+        sb.classList.toggle('open', open);
+        if (ov) ov.classList.toggle('show', open);
+        document.body.classList.toggle('sb-open', open);
+    };
+}
+</script>
+
+
+<script>
+/* Logout fix: keep the mobile bottom-nav in sync with the drawer state. */
+(function () {
+    function sync(open) {
+        try {
+            var sb = document.querySelector('.sidebar');
+            var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+            if (sb) sb.classList.toggle('open', !!open);
+            if (ov) ov.classList.toggle('show', !!open);
+            document.body.classList.toggle('sb-open', !!open);
+        } catch (e) {}
+    }
+    var orig = window.toggleSidebar;
+    window.toggleSidebar = function (open) {
+        try { if (typeof orig === 'function') orig(open); } catch (e) {}
+        sync(open);
+    };
+    window.menuToggle = function () {
+        var sb = document.querySelector('.sidebar');
+        var open = !(sb && sb.classList.contains('open'));
+        window.toggleSidebar(open);
+    };
+})();
+</script>
+
+<script>
+/* ==========================================================================
+   RESELLER CUSTOMER INVOICE  (PART 22 - 31)
+   Preview -> Print. Never shows cost / buying price / profit.
+   ========================================================================== */
+var riOrderId = null;
+function riOrder(id) {
+    var orders = getData(DB_KEYS.ORDERS) || [];
+    for (var i = 0; i < orders.length; i++) {
+        if (String(orders[i].id) !== String(id)) continue;
+        /* authorization: only this reseller's own order */
+        var uid = sessionStorage.getItem('user_id');
+        if (String(orders[i].resellerId) !== String(uid)) return null;
+        return orders[i];
+    }
+    return null;
+}
+function riMe() {
+    var uid = sessionStorage.getItem('user_id');
+    var list = getData(DB_KEYS.RESELLERS) || [];
+    for (var i = 0; i < list.length; i++) if (String(list[i].id) === String(uid)) return list[i];
+    return null;
+}
+window.openResellerInvoice = function (id) {
+    var o = riOrder(id);
+    if (!o) { showToast('Order পাওয়া যায়নি।', 'error'); return; }
+    riOrderId = id;
+    var d = resellerInvoiceData(o, riMe());
+    var rows = '';
+    for (var i = 0; i < d.items.length; i++) {
+        var it = d.items[i];
+        rows += '<div class="ri-row"><span>' + escH2(it.name) + (it.variant ? ' <small>' + escH2(it.variant) + '</small>' : '') +
+            '</span><span><b>' + it.qty + '</b> × ' + formatCurrency(it.retail) + '</span><b>' + formatCurrency(it.line) + '</b></div>';
+    }
+    var box = document.getElementById('riBody');
+    box.innerHTML =
+        '<div class="ri-hd"><h3>' + escH2(d.business) + '</h3>' +
+        (d.phone ? '<small>' + escH2(d.phone) + '</small>' : '') +
+        (d.address ? '<small>' + escH2(d.address) + '</small>' : '') + '</div>' +
+        '<div class="ri-inv">INVOICE</div>' +
+        '<div class="ri-meta"><span>Invoice: <b>' + escH2(d.orderId) + '</b></span><span>Date: <b>' + escH2(d.date) + '</b></span></div>' +
+        '<div class="ri-rows">' + rows + '</div>' +
+        '<div class="ri-sum"><div><span>Delivery Charge</span><b>' + formatCurrency(d.shippingCharge) + '</b></div>' +
+        '<div class="total"><span>TOTAL PAYABLE</span><b>' + formatCurrency(d.totalPayable) + '</b></div></div>' +
+        '<div class="ri-thx">' + escH2(d.thankYou) + '</div>';
+    var m = document.getElementById('riModal');
+    m.classList.add('show'); m.style.display = 'flex';
+};
+function escH2(v) {
+    return String(v === undefined || v === null ? '' : v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+window.closeResellerInvoice = function () {
+    var m = document.getElementById('riModal');
+    m.classList.remove('show'); m.style.display = 'none';
+    riOrderId = null;
+};
+window.printResellerInvoice = function () {
+    var o = riOrder(riOrderId);
+    if (!o) return;
+    var html = resellerInvoiceHtml(o, riMe());
+    var fr = document.createElement('iframe');
+    fr.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+    document.body.appendChild(fr);
+    var doc = fr.contentWindow.document;
+    doc.open(); doc.write(html); doc.close();
+    setTimeout(function () {
+        try { fr.contentWindow.focus(); fr.contentWindow.print(); } catch (e) {}
+        setTimeout(function () { if (fr.parentNode) fr.parentNode.removeChild(fr); }, 2500);
+    }, 400);
+};
+</script>
+
+<style id="lx-reseller-invoice">
+#riModal{display:none;position:fixed;inset:0;background:rgba(15,23,42,.7);z-index:3000;align-items:center;justify-content:center;padding:16px}
+#riModal.show{display:flex}
+.ri-box{background:#fff;border-radius:18px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 24px 60px rgba(15,23,42,.4)}
+.ri-hd{padding:20px 22px 14px;border-bottom:3px solid #0f172a;text-align:center}
+.ri-hd h3{font-size:1.1rem;font-weight:900}
+.ri-hd small{display:block;font-size:.72rem;color:#64748b;margin-top:3px}
+.ri-inv{text-align:center;font-size:.72rem;font-weight:900;letter-spacing:5px;color:#94a3b8;padding:12px 0 0}
+.ri-meta{display:flex;justify-content:space-between;gap:10px;padding:10px 22px 14px;font-size:.72rem;color:#64748b;flex-wrap:wrap}
+.ri-meta b{color:#0f172a}
+.ri-rows{padding:0 22px}
+.ri-row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:9px 0;border-bottom:1px dashed #e2e8f0;font-size:.78rem}
+.ri-row span:first-child{flex:1;font-weight:700}
+.ri-row small{color:#94a3b8;font-weight:600}
+.ri-sum{padding:14px 22px;margin-left:auto;width:100%;max-width:300px}
+.ri-sum > div{display:flex;justify-content:space-between;font-size:.78rem;padding:6px 0;border-bottom:1px solid #e2e8f0}
+.ri-sum .total{border-bottom:none;border-top:2.5px solid #0f172a;margin-top:5px;padding-top:10px;font-size:1.05rem;font-weight:900}
+.ri-thx{text-align:center;font-size:.84rem;font-weight:900;padding:16px 22px;border-top:2px solid #0f172a}
+.ri-foot{display:flex;gap:10px;justify-content:flex-end;padding:14px 22px;border-top:1px solid #eef2f7}
+@media(max-width:560px){ .ri-foot button{flex:1} }
+</style>
+
+<!-- ===== Reseller customer invoice (PART 22 - 31) ===== -->
+<div id="riModal" onclick="if(event.target===this)closeResellerInvoice()">
+    <div class="ri-box">
+        <div id="riBody"></div>
+        <div class="ri-foot">
+            <button class="btn btn-sm" style="background:#f1f5f9;color:#475569;padding:11px 20px;font-weight:800" onclick="closeResellerInvoice()">Cancel</button>
+            <button class="btn btn-sm" style="background:#0d9488;color:#fff;padding:11px 20px;font-weight:800" onclick="printResellerInvoice()"><i class="fas fa-print"></i> Print Invoice</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>

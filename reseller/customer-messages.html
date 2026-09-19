@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Shop Orders - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root { --pri:#4f46e5; --prid:#4338ca; --vio:#7c3aed; --grn:#10b981; --gold:#fbbf24; --dark:#0f172a; --gray:#64748b; }
+        body { font-family:'Inter','Hind Siliguri',sans-serif; background:#eef1f9; color:#1e293b; padding-bottom:70px; overflow-x:hidden; }
+
+        /* ===== Animations ===== */
+        @keyframes dashUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:none} }
+        @keyframes dashSide { from{opacity:0;transform:translateX(-24px)} to{opacity:1;transform:none} }
+        @keyframes iconBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        @keyframes drift { 0%,100%{transform:translate(0,0) rotate(0)} 33%{transform:translate(24px,-18px) rotate(3deg)} 66%{transform:translate(-16px,14px) rotate(-2deg)} }
+        @keyframes welcomeShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        @keyframes barGrow { from{height:0 !important} }
+        @keyframes tilePop { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:none} }
+        .sidebar-header, .sidebar-menu a { animation:dashSide .4s ease both; }
+        .welcome { animation:dashUp .55s .1s ease both; }
+        .quick-row .quick-btn:nth-child(1) { animation:dashUp .5s .18s ease both; }
+        .quick-row .quick-btn:nth-child(2) { animation:dashUp .5s .24s ease both; }
+        .quick-row .quick-btn:nth-child(3) { animation:dashUp .5s .3s ease both; }
+        .quick-row .quick-btn:nth-child(4) { animation:dashUp .5s .36s ease both; }
+        .stats-grid .stat-card:nth-child(1) { animation:dashUp .5s .3s ease both; }
+        .stats-grid .stat-card:nth-child(2) { animation:dashUp .5s .38s ease both; }
+        .stats-grid .stat-card:nth-child(3) { animation:dashUp .5s .46s ease both; }
+        .stats-grid .stat-card:nth-child(4) { animation:dashUp .5s .54s ease both; }
+        .card { animation:dashUp .55s .5s ease both; }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:248px; background:linear-gradient(180deg,#0b1029 0%,#151a3a 100%); color:#c7d2fe; z-index:200; overflow-y:auto; transition:transform 0.3s; box-shadow:4px 0 24px rgba(11,16,41,.35); }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; justify-content:space-between; align-items:center; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:40px; height:40px; background:linear-gradient(135deg,var(--pri),var(--vio)); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .sidebar-logo h3 { color:white; font-size:1rem; font-weight:900; }
+        .sidebar-logo small { color:#818cf8; font-size:0.66rem; display:block; font-weight:700; letter-spacing:1px; }
+        .sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; }
+        .sidebar-menu { list-style:none; padding:12px 10px; }
+        .sidebar-menu li { margin:3px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:11px 15px; color:#c7d2fe; text-decoration:none; font-size:0.88rem; font-weight:600; border-radius:11px; transition:all .22s; }
+        .sidebar-menu a:hover { background:rgba(129,140,248,.14); color:white; transform:translateX(4px); }
+        .sidebar-menu a.active { background:linear-gradient(135deg,var(--pri),var(--vio)); color:white; box-shadow:0 8px 20px rgba(79,70,229,.4); }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 15px 5px; color:#6366f1; font-size:0.66rem; text-transform:uppercase; letter-spacing:1.4px; font-weight:800; }
+        .menu-badge { background:var(--gold); color:#1e293b; font-size:0.68rem; padding:1px 8px; border-radius:10px; font-weight:800; margin-left:auto; }
+        .menu-badge-n { color:var(--gold); font-weight:900; }
+
+        .side-overlay { display:none; position:fixed; inset:0; background:rgba(11,16,41,.55); z-index:150; backdrop-filter:blur(2px); }
+
+        /* ===== MAIN ===== */
+        .main { margin-left:248px; min-height:100vh; }
+        .topbar { background:rgba(255,255,255,.88); backdrop-filter:blur(12px); padding:12px 22px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 14px rgba(15,23,42,.06); position:sticky; top:0; z-index:100; }
+        .topbar-left { display:flex; align-items:center; gap:12px; }
+        .hamburger { display:none; background:none; border:none; font-size:1.3rem; color:#1e293b; cursor:pointer; padding:4px; }
+        .topbar h2 { font-size:1.12rem; font-weight:800; }
+        .topbar-right { display:flex; align-items:center; gap:8px; }
+        .topbar-balance { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#7c2d12; padding:7px 15px; border-radius:22px; font-weight:800; font-size:0.84rem; white-space:nowrap; box-shadow:0 4px 12px rgba(245,158,11,.35); }
+        .topbar-user { display:flex; align-items:center; gap:7px; padding:6px 14px; background:#eef2ff; color:var(--pri); border-radius:22px; font-size:0.84rem; font-weight:700; }
+        .btn-logout { background:#fee2e2; color:#dc2626; border:none; padding:8px 12px; border-radius:10px; cursor:pointer; font-size:0.85rem; transition:all .25s; }
+        .btn-logout:hover { background:#dc2626; color:#fff; transform:translateY(-1px); }
+
+        .content { padding:22px 28px; width:100%; }
+
+        /* ===== Welcome — index hero style (dark + orbit) ===== */
+        .welcome { background:radial-gradient(700px 400px at 80% 10%, #312e81 0%, transparent 55%), radial-gradient(500px 320px at 8% 90%, #1e1b4b 0%, transparent 55%), linear-gradient(150deg,#0b1029,#12102e 60%,#181436); color:white; padding:30px 32px; border-radius:26px; margin-bottom:22px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; position:relative; overflow:hidden; box-shadow:0 22px 50px rgba(11,16,41,.4); animation:dashUp .55s .1s ease both; }
+        .w-orbit { position:absolute; border:1px solid rgba(129,140,248,.22); border-radius:50%; pointer-events:none; }
+        .w-orbit.o1 { width:340px; height:340px; top:-140px; right:-80px; animation:drift 14s ease-in-out infinite; }
+        .w-orbit.o2 { width:240px; height:240px; bottom:-110px; left:-60px; animation:drift 18s ease-in-out infinite reverse; }
+        .w-kicker { display:inline-flex; align-items:center; gap:7px; background:rgba(129,140,248,.18); border:1px solid rgba(129,140,248,.45); color:#c7d2fe; font-size:.66rem; font-weight:900; letter-spacing:1.6px; padding:5px 14px; border-radius:18px; margin-bottom:12px; position:relative; }
+        .welcome h3 { font-size:1.5rem; font-weight:900; margin-bottom:4px; position:relative; }
+        .w-grad { background:linear-gradient(90deg,#a5b4fc,#f0abfc,#67e8f9); background-size:200% auto; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; animation:welcomeShift 5s linear infinite; }
+        .welcome p { opacity:0.92; font-size:0.9rem; position:relative; }
+        .welcome .ref-code { background:rgba(129,140,248,.25); border:1px solid rgba(129,140,248,.4); padding:3px 12px; border-radius:14px; font-weight:800; font-size:0.76rem; position:relative; }
+        .btn-welcome { background:linear-gradient(135deg,var(--grn),#059669); color:white; padding:14px 26px; border-radius:14px; border:none; font-weight:800; cursor:pointer; font-size:0.92rem; white-space:nowrap; position:relative; transition:all .28s; box-shadow:0 12px 28px rgba(16,185,129,.4); }
+        .btn-welcome:hover { transform:translateY(-3px); box-shadow:0 18px 36px rgba(16,185,129,.5); }
+
+        /* Pending banner */
+        .pending-banner { background:linear-gradient(135deg,#fef3c7,#fde68a); border-left:5px solid #f59e0b; padding:15px 19px; border-radius:14px; margin-bottom:18px; }
+        .pending-banner h4 { color:#92400e; font-size:0.95rem; margin-bottom:3px; }
+        .pending-banner p { color:#78350f; font-size:0.85rem; }
+
+        /* ===== Kickers (index-style section badges) ===== */
+        .kick { display:inline-flex; align-items:center; font-size:.6rem; font-weight:900; letter-spacing:1.6px; color:var(--pri); background:#eef2ff; padding:4px 12px; border-radius:16px; margin-right:9px; vertical-align:2px; }
+
+        /* Stats */
+        .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:15px; margin-bottom:20px; }
+        .stat-card { background:white; padding:19px; border-radius:18px; box-shadow:0 3px 14px rgba(15,23,42,.05); border:1px solid #eef2f7; display:flex; align-items:center; gap:14px; transition:all .28s; }
+        .stat-card:hover { transform:translateY(-4px); box-shadow:0 16px 32px rgba(15,23,42,.11); }
+        .stat-icon { width:52px; height:52px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:1.35rem; flex-shrink:0; }
+        .stat-icon.green { background:linear-gradient(135deg,#d1fae5,#a7f3d0); color:#059669; }
+        .stat-icon.blue { background:linear-gradient(135deg,#e0e7ff,#c7d2fe); color:var(--pri); }
+        .stat-icon.orange { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#d97706; }
+        .stat-icon.purple { background:linear-gradient(135deg,#ede9fe,#ddd6fe); color:#7c3aed; }
+        .stat-card .label { font-size:0.74rem; color:var(--gray); margin-bottom:3px; font-weight:700; }
+        .stat-card .value { font-size:1.32rem; font-weight:900; }
+
+        /* Quick actions */
+        .quick-row { display:grid; grid-template-columns:repeat(4,1fr); gap:13px; margin-bottom:20px; }
+        .quick-btn { background:white; border:1px solid #eef2f7; border-radius:18px; padding:17px 10px; cursor:pointer; text-align:center; box-shadow:0 3px 12px rgba(15,23,42,.05); transition:all .25s; text-decoration:none; }
+        .quick-btn:hover { transform:translateY(-4px); box-shadow:0 14px 30px rgba(79,70,229,.14); border-color:#c7d2fe; }
+        .quick-btn .qi { width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin:0 auto 9px; transition:transform .3s; }
+        .quick-btn:hover .qi { transform:scale(1.12) rotate(-6deg); }
+        .quick-btn p { font-size:0.8rem; font-weight:700; color:#334155; }
+
+        /* ===== SALES ANALYTICS ===== */
+        .analytics { background:white; border-radius:20px; border:1px solid #eef2f7; box-shadow:0 4px 16px rgba(15,23,42,.05); padding:20px 22px; margin-bottom:20px; animation:dashUp .55s .48s ease both; }
+        .analytics-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:8px; }
+        .analytics-head h4 { font-size:0.95rem; font-weight:800; }
+        .analytics-head small { color:var(--gray); font-size:.72rem; font-weight:700; }
+        .atile-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+        .atile { border-radius:16px; padding:14px 16px; text-align:center; animation:tilePop .45s ease both; transition:transform .25s; }
+        .atile:hover { transform:translateY(-3px); }
+        .atile:nth-child(2) { animation-delay:.08s; } .atile:nth-child(3) { animation-delay:.16s; } .atile:nth-child(4) { animation-delay:.24s; }
+        .atile .tl { font-size:.64rem; font-weight:800; letter-spacing:.8px; text-transform:uppercase; opacity:.85; }
+        .atile .tv { font-size:1.18rem; font-weight:900; margin-top:3px; }
+        .atile.t-ind { background:linear-gradient(135deg,#e0e7ff,#c7d2fe); color:#3730a3; }
+        .atile.t-grn { background:linear-gradient(135deg,#d1fae5,#a7f3d0); color:#065f46; }
+        .atile.t-amb { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#92400e; }
+        .atile.t-vio { background:linear-gradient(135deg,#ede9fe,#ddd6fe); color:#5b21b6; }
+        .achart { display:flex; align-items:flex-end; gap:10px; height:170px; padding:6px 4px 0; }
+        .acol { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
+        .abar { width:100%; max-width:44px; border-radius:9px 9px 4px 4px; background:linear-gradient(180deg,var(--pri),var(--vio)); min-height:5px; transition:height .8s cubic-bezier(.2,.8,.3,1); box-shadow:0 4px 10px rgba(79,70,229,.25); position:relative; }
+        .abar:hover { filter:brightness(1.15); }
+        .abar .av { position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-size:.62rem; font-weight:800; color:var(--pri); white-space:nowrap; opacity:0; transition:opacity .3s; }
+        .acol:hover .av { opacity:1; }
+        .abar.zero { background:#e2e8f0; box-shadow:none; }
+        .abar.zero .av { color:#94a3b8; }
+        .alab { font-size:.64rem; font-weight:800; color:var(--gray); }
+        .duo { display:grid; grid-template-columns:1.6fr 1fr; gap:20px; align-items:start; }
+
+        .card { background:white; border-radius:20px; box-shadow:0 4px 16px rgba(15,23,42,.05); border:1px solid #eef2f7; margin-bottom:20px; overflow:hidden; animation:dashUp .55s .5s ease both; }
+        .card-header { padding:15px 20px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; }
+        .card-header h4 { font-size:0.95rem; font-weight:800; }
+        .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+        .data-table { width:100%; border-collapse:collapse; min-width:600px; }
+        .data-table th { text-align:left; padding:11px 18px; background:#f8fafc; font-weight:700; font-size:0.68rem; color:var(--gray); text-transform:uppercase; white-space:nowrap; }
+        .data-table td { padding:12px 18px; border-bottom:1px solid #f4f6fb; font-size:0.84rem; }
+        .data-table tr:hover { background:#f8faff; }
+        .badge { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; white-space:nowrap; }
+        .b-delivered { background:#d1fae5; color:#065f46; }
+        .b-shipped { background:#e0e7ff; color:#4338ca; }
+        .b-processing { background:#e0f2fe; color:#0369a1; }
+        .b-cancelled { background:#fee2e2; color:#991b1b; }
+        .b-new { background:#fef3c7; color:#92400e; }
+        .b-pending { background:#fef3c7; color:#92400e; }
+        .b-confirmed { background:#dbeafe; color:#1e40af; }
+        .b-packaging { background:#ede9fe; color:#6d28d9; }
+        .b-shipping { background:#e0e7ff; color:#4338ca; }
+        .b-wfr { background:#fef9c3; color:#854d0e; }
+        .b-returned { background:#ffe4e6; color:#9f1239; }
+        .btn { padding:6px 12px; border:none; border-radius:8px; font-size:0.8rem; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:5px; transition:all .22s; }
+        .btn-primary { background:linear-gradient(135deg,var(--pri),var(--prid)); color:white; }
+        .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 14px rgba(79,70,229,.35); }
+        .empty { text-align:center; padding:38px 16px; color:var(--gray); }
+        .empty i { font-size:2.2rem; margin-bottom:8px; opacity:0.4; }
+        .empty a { color:var(--pri); font-weight:700; }
+
+        .notif-item { padding:12px 18px; border-bottom:1px solid #f4f6fb; display:flex; gap:11px; align-items:flex-start; font-size:0.86rem; transition:background .2s; }
+        .notif-item:hover { background:#f8faff; }
+        .notif-item:last-child { border-bottom:none; }
+        .notif-item i { color:var(--pri); margin-top:3px; }
+
+        /* ===== MOBILE BOTTOM NAV ===== */
+        .bottom-nav { display:none; position:fixed; bottom:10px; left:12px; right:12px; background:rgba(255,255,255,.92); backdrop-filter:blur(14px); border:1px solid #eef2f7; box-shadow:0 10px 30px rgba(15,23,42,.16); z-index:400; padding:7px 6px calc(7px + env(safe-area-inset-bottom)); border-radius:20px; }
+        .bottom-nav a { display:flex; flex-direction:column; align-items:center; gap:2px; text-decoration:none; color:#94a3b8; font-size:0.62rem; font-weight:700; padding:6px 6px; border-radius:12px; flex:1; transition:all .2s; }
+        .bottom-nav a i { font-size:1.12rem; }
+        .bottom-nav a.active { color:var(--pri); background:#eef2ff; }
+        .bn-menu { background:linear-gradient(135deg,var(--pri),var(--vio)); color:#fff; border-radius:14px; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .bn-menu i { color:#fff; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width:1024px) { .stats-grid { grid-template-columns:repeat(2,1fr); } .quick-row { grid-template-columns:repeat(4,1fr); } .duo { grid-template-columns:1fr; } .atile-row { grid-template-columns:1fr 1fr; } }
+        @media (max-width:768px) {
+            body { padding-bottom:86px; }
+            .sidebar { transform:translateX(-100%); width:272px; }
+            .sidebar.open { transform:translateX(0); }
+            .side-overlay.show { display:block; }
+            .sidebar-close-m { display:block; }
+            .main { margin-left:0; }
+            .hamburger { display:block; }
+            .topbar-user span { max-width:78px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+            .stats-grid { grid-template-columns:1fr 1fr; gap:10px; }
+            .stat-card { padding:14px 12px; flex-direction:column; text-align:center; gap:8px; }
+            .stat-card .value { font-size:1.12rem; }
+            .quick-row { grid-template-columns:repeat(2,1fr); gap:10px; }
+            .welcome { flex-direction:column; text-align:center; padding:24px 18px; }
+            .btn-welcome { width:100%; }
+            .bottom-nav { display:flex; }
+            .content { padding:14px; }
+            .topbar { padding:11px 14px; }
+            /* 2026-09-16 — MOBILE FIX (this request). The topbar measured about 440px
+               across on a 390px phone, so the logout button was pushed past the right
+               edge and looked cut off. These rules tighten the SAME header so it fits a
+               narrow screen. Nothing is hidden and nothing outside this media query is
+               touched, so the desktop layout is unchanged. */
+            .topbar { padding:10px 12px; }
+            .topbar-left { gap:8px; }
+            .topbar h2 { font-size:.98rem; }
+            .topbar-right { gap:6px; }
+            .topbar-balance { padding:6px 10px; font-size:.78rem; }
+            .topbar-user { padding:5px 10px; font-size:.78rem; }
+            .topbar-user span { max-width:52px; }
+
+            .atile-row { grid-template-columns:1fr 1fr; gap:9px; }
+            .achart { gap:5px; height:130px; }
+            .analytics { padding:16px 14px; }
+        }
+        @media (max-width:400px) { .quick-row { grid-template-columns:1fr 1fr; } .stats-grid { grid-template-columns:1fr 1fr; } }
+
+</style>
+
+<style id="lx-nav-force">
+@media(max-width:768px){
+    .bottom-nav{display:flex !important;position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;opacity:1 !important;visibility:visible !important;transform:none !important}
+    body{padding-bottom:86px !important}
+}
+</style>
+
+<style id="lx-bnav">
+/* ===== Complete bottom-nav styling ===== */
+.bottom-nav{position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;display:flex !important;align-items:stretch;background:rgba(255,255,255,.97) !important;backdrop-filter:blur(14px);border:1px solid #e8ecf4 !important;border-radius:18px !important;box-shadow:0 -4px 24px rgba(15,23,42,.14) !important;padding:7px 6px calc(7px + env(safe-area-inset-bottom)) !important}
+.bottom-nav a,.bottom-nav button{flex:1 !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;gap:3px !important;padding:7px 2px !important;border:none !important;background:none !important;color:#7b879c !important;font-size:.62rem !important;font-weight:700 !important;text-decoration:none !important;cursor:pointer !important;border-radius:12px !important;font-family:inherit !important;line-height:1.2 !important}
+.bottom-nav a i,.bottom-nav button i{font-size:1.18rem !important;line-height:1 !important}
+.bottom-nav a span,.bottom-nav button span{display:block !important}
+.bottom-nav a:hover,.bottom-nav button:hover{color:#4f46e5 !important;background:#eef2ff !important;transform:translateY(-2px)}
+.bottom-nav a.active{color:#4f46e5 !important;background:#eef2ff !important}
+.bottom-nav .bn-menu{color:#4f46e5 !important;background:#eef2ff !important;box-shadow:none !important;border-radius:12px !important}
+.bottom-nav .bn-menu:hover{background:#e0e7ff !important}
+.bottom-nav .bn-menu i,.bottom-nav .bn-menu span{color:#4f46e5 !important}
+body{padding-bottom:86px !important}
+@media(min-width:769px){
+    .bottom-nav{display:none !important}
+    body{padding-bottom:0 !important}
+}
+</style>
+
+<style>
+@media(max-width:768px){
+    .sidebar{transform:translateX(-100%) !important;transition:transform .32s cubic-bezier(.2,.8,.3,1) !important;display:block !important}
+    .sidebar.open{transform:translateX(0) !important;box-shadow:24px 0 60px rgba(11,16,41,.45) !important}
+}
+</style>
+
+<style id="lx-logout-fix">
+/* Logout fix: the open sidebar must paint ABOVE the fixed mobile bottom-nav,
+   otherwise the last menu item (Logout) is covered and un-tappable. */
+.sidebar{ z-index:900 !important; }
+.side-overlay{ z-index:880 !important; }
+.sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+@supports selector(:has(*)){
+  body:has(.sidebar.open) .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+}
+@media(min-width:769px){ .sidebar-menu{ padding-bottom:12px !important; } }
+</style>
+
+<style id="lx-sidebar-fix">
+/* ===== Reseller sidebar — canonical & stable (do not mutate at runtime) ===== */
+/* 1) Labels and section headings are ALWAYS visible. The old template hid
+      .sidebar-menu a span and .sidebar-divider under 768px, which made menu
+      text disappear and the "Account" heading vanish on some pages. */
+.sidebar .sidebar-menu a span{ display:inline !important; }
+.sidebar .sidebar-menu .sidebar-divider,
+.sidebar .sidebar-divider{ display:block !important; }
+.sidebar .sidebar-logo h3{ display:block !important; }
+.sidebar .sidebar-logo small{ display:block !important; }
+
+/* 2) Fixed geometry — the sidebar is never collapsed to a 70px icon rail. */
+.sidebar{ width:248px !important; z-index:900 !important; overflow-y:auto !important; }
+.side-overlay{ z-index:880 !important; }
+@media(min-width:769px){
+    .main{ margin-left:248px !important; }
+    .sidebar{ transform:none !important; }
+}
+@media(max-width:768px){
+    .main{ margin-left:0 !important; }
+    .sidebar{ transform:translateX(-100%) !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; display:block !important; }
+    .sidebar.open{ transform:translateX(0) !important; box-shadow:24px 0 60px rgba(11,16,41,.45) !important; }
+}
+
+/* 3) Row geometry is locked: the "All Orders" counter is absolutely positioned
+      so a changing number can never push the rows below it up or down. */
+.sidebar .sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.sidebar .sidebar-menu li{ position:relative; display:block; margin:3px 0; }
+.sidebar .sidebar-menu a{ display:flex !important; align-items:center; gap:12px; padding:11px 15px; }
+.sidebar .menu-badge{ position:absolute; right:12px; top:50%; transform:translateY(-50%); margin-left:0 !important; }
+
+/* 4) Mobile: hide the bottom nav while the drawer is open so the last item
+      (Logout) is never covered. */
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+
+/* 5) Close button inside the drawer on mobile. */
+.sidebar .sidebar-close-m{ display:none; }
+@media(max-width:768px){ .sidebar .sidebar-close-m{ display:block !important; } }
+</style>
+
+<style id="reseller-hamburger-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   Every reseller page hides the hamburger with ".hamburger{display:none}", but most
+   pages never turn it back ON at mobile width — only products.html did. So on a phone
+   there was no way to open the sidebar on Products, Orders, Wallet, Withdrawals,
+   Courier, Messages, Support, Profile, Referral or Website Integration.
+   This shows the SAME existing button (onclick="menuToggle()") at mobile width only.
+   It is an ADDED block and lives entirely inside a max-width query, so the DESKTOP
+   LAYOUT IS UNCHANGED. */
+@media (max-width:768px){
+  .hamburger { display:block !important; }
+}
+</style>
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+
+<style id="lx-page-entrance">
+/* ============================================================================
+   2026-09-18 — THE PAGE ENTRANCE (this request)
+   ----------------------------------------------------------------------------
+   The same animation the products page uses, copied VERBATIM from
+   reseller/products.html: the content block rises 20px and fades in as the page
+   opens, instead of appearing all at once.
+
+   This block adds nothing but that animation. It is the only change on this page,
+   and every selector it uses is either the keyframe or the .content wrapper the
+   panel shell already provides — so nothing else here can be affected.
+   ============================================================================ */
+@keyframes lxPgUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+.content > * { animation:lxPgUp .5s ease both; }
+
+/* somebody who asked their device to calm down gets a calm page */
+@media (prefers-reduced-motion: reduce){
+    .content > * { animation:none !important; }
+}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon"><i class="fas fa-store"></i></div>
+            <div><h3>ResellerHub</h3><small>Reseller Panel</small></div>
+        </div>
+        
+        <button class="sidebar-close-m" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+        <ul class="sidebar-menu">
+        <li class="sidebar-divider">Main</li>
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+        <li><a href="products.html"><i class="fas fa-box"></i> <span>Products</span></a></li>
+        <li><a href="my-shop.html"><i class="fas fa-store"></i> <span>My Shop</span></a></li>
+        <li><a href="transactions.html"><i class="fas fa-right-left"></i> <span>Transactions</span></a></li>
+        <li class="sidebar-divider">Orders</li>
+        <li><a href="my-orders.html"><i class="fas fa-list"></i> <span>All Orders<span class="menu-badge-n" id="ordersBadgeLabel"></span></span></a> <span class="menu-badge" id="ordersBadge" style="display:none">0</span></li>
+        <li><a href="order.html"><i class="fas fa-cart-plus"></i> <span>Add New Order</span></a></li>
+        <li><a href="offers.html"><i class="fas fa-gift"></i> <span>Offers</span></a></li>
+        <li><a href="shop-categories.html"><i class="fas fa-sitemap"></i> <span>Shop Categories</span></a></li>
+        <li class="sidebar-divider">My Shop</li>
+        <li><a href="my-shop-settings.html"><i class="fas fa-sliders"></i> <span>Shop Settings</span></a></li>
+        <li><a href="my-products.html"><i class="fas fa-box-open"></i> <span>My Products</span></a></li>
+        <li><a href="my-shop-orders.html"><i class="fas fa-bag-shopping"></i> <span>My Shop Orders</span></a></li>
+        <li><a href="customer-messages.html" class="active"><i class="fas fa-comment-dots"></i> <span>Customer Messages<span class="menu-badge-n" id="cmsgBadgeLabel"></span></span></a></li>
+        <li class="sidebar-divider">Account</li>
+        <li><a href="wallet.html"><i class="fas fa-wallet"></i> <span>Wallet</span></a></li>
+        <li><a href="withdrawals.html"><i class="fas fa-money-bill-wave"></i> <span>Withdrawals</span></a></li>
+        <li><a href="courier.html"><i class="fas fa-truck"></i> <span>Courier</span></a></li>
+        <li><a href="messages.html"><i class="fas fa-comments"></i> <span>Messages<span class="menu-badge-n" id="msgBadgeLabel"></span></span></a></li>
+        <li><a href="support.html"><i class="fas fa-headset"></i> <span>Support</span></a></li>
+        <li><a href="profile.html"><i class="fas fa-user-cog"></i> <span>Profile</span></a></li>
+        <li><a href="referral.html"><i class="fas fa-user-plus"></i> <span>Referral</span></a></li>
+        <li><a href="website-integration.html"><i class="fas fa-plug"></i> <span>Website Integration</span></a></li>
+        <li><a href="../index.html"><i class="fas fa-globe"></i> <span>Visit Site</span></a></li>
+        <li><a href="javascript:void(0)" onclick="resellerLogout()" style="color:#dc2626"><i class="fas fa-right-from-bracket"></i> <span>Logout</span></a></li>
+    </ul>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+        <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h2><i class="fas fa-comment-dots"></i> Customer Messages</h2>
+        <div class="topbar-user"><i class="fas fa-user"></i> <span id="userName">User</span></div>
+    </div>
+    <div class="content">
+        <style id="cmsg-css">
+        .cm-grid{display:grid;grid-template-columns:320px 1fr;gap:16px;align-items:start}
+        @media(max-width:980px){.cm-grid{grid-template-columns:1fr}}
+        .cm-card{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(15,23,42,.07);overflow:hidden;margin-bottom:14px}
+        .cm-h{padding:13px 16px;border-bottom:1px solid #eef2f6;display:flex;justify-content:space-between;align-items:center;gap:9px;flex-wrap:wrap;background:linear-gradient(180deg,#fff,#fcfdfe)}
+        .cm-h h4{font-size:.92rem;font-weight:800}
+        .cm-row{padding:12px 16px;border-bottom:1px solid #f4f7fa;cursor:pointer;display:flex;gap:10px;align-items:flex-start}
+        .cm-row:hover{background:#f8fafc}
+        .cm-row.on{background:#eef2ff;box-shadow:inset 3px 0 0 #4f46e5}
+        .cm-av{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;flex:none}
+        .cm-nm{font-size:.85rem;font-weight:800}
+        .cm-pv{font-size:.74rem;color:#64748b;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+        .cm-badge{background:#ef4444;color:#fff;font-size:.62rem;font-weight:900;padding:1px 7px;border-radius:10px;margin-left:auto}
+        .cm-body{padding:14px 16px;background:#f1f5f9;max-height:52vh;overflow-y:auto}
+        .cm-bub{max-width:80%;padding:9px 13px;border-radius:13px;margin-bottom:9px;font-size:.85rem;line-height:1.5;word-break:break-word}
+        .cm-bub.me{background:linear-gradient(135deg,#4f46e5,#4338ca);color:#fff;margin-left:auto;border-bottom-right-radius:4px}
+        .cm-bub.you{background:#fff;border:1px solid #e2e8f0;border-bottom-left-radius:4px}
+        .cm-bub img{max-width:200px;border-radius:9px;display:block;margin-top:6px}
+        .cm-bub .ord{display:inline-block;margin-top:5px;background:rgba(255,255,255,.2);border-radius:7px;padding:2px 8px;font-size:.68rem;font-weight:800}
+        .cm-bub.you .ord{background:#eef2ff;color:#4338ca}
+        .cm-bub .t{display:block;font-size:.62rem;opacity:.7;margin-top:4px}
+        .cm-form{padding:11px 16px;border-top:1px solid #eef2f6;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#fff}
+        .cm-form textarea{flex:1;min-width:150px;min-height:42px;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.84rem;font-family:inherit;resize:vertical}
+        .cm-form textarea:focus{outline:none;border-color:#4f46e5}
+        .cm-btn{border:none;border-radius:10px;padding:9px 15px;font-weight:800;font-size:.8rem;cursor:pointer;font-family:inherit}
+        .cm-btn.pri{background:linear-gradient(135deg,#4f46e5,#4338ca);color:#fff}
+        .cm-btn.gh{background:#f1f5f9;color:#475569}
+        .cm-btn.dan{background:#fee2e2;color:#dc2626}
+        .cm-empty{padding:34px 16px;text-align:center;color:#94a3b8;font-size:.85rem}
+        /* ===== Parts 1-5 — customer profile / context panel ===== */
+        .cm-prof{padding:12px 14px;background:#f8fafc;border-bottom:1px solid #eef2f6}
+        .cm-prof-h{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.8rem;font-weight:800;color:#334155}
+        .cm-prof-h .caret{margin-left:auto;transition:transform .2s}
+        .cm-prof.open .cm-prof-h .caret{transform:rotate(180deg)}
+        .cm-prof-b{display:none;margin-top:11px}
+        .cm-prof.open .cm-prof-b{display:block}
+        .cm-idn{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+        .cm-idn .av{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.05rem;flex:none}
+        .cm-idn .nm{font-size:.9rem;font-weight:900;color:#0f172a}
+        .cm-idn .ph{font-size:.78rem;color:#475569;margin-top:2px}
+        .cm-tag{display:inline-block;font-size:.6rem;font-weight:900;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle}
+        .cm-tag.guest{background:#fef3c7;color:#92400e}
+        .cm-tag.acct{background:#dcfce7;color:#166534}
+        .cm-sec{margin-top:11px}
+        .cm-sec>h5{font-size:.7rem;font-weight:900;color:#64748b;letter-spacing:.4px;text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:6px}
+        .cm-it{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #eef2f6;border-radius:10px;padding:7px 9px;margin-bottom:6px}
+        .cm-it img,.cm-it .ph{width:40px;height:40px;border-radius:8px;object-fit:contain;background:#f1f5f9;flex:none;display:flex;align-items:center;justify-content:center;color:#cbd5e1}
+        .cm-it .tx{min-width:0;flex:1}
+        .cm-it .tx b{font-size:.78rem;font-weight:800;color:#0f172a;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .cm-it .tx small{font-size:.68rem;color:#64748b}
+        .cm-it .pr{font-size:.76rem;font-weight:900;color:#0f172a;flex:none}
+        .cm-it .st{font-size:.6rem;font-weight:900;padding:2px 7px;border-radius:20px;flex:none}
+        .cm-none{font-size:.74rem;color:#94a3b8;padding:6px 2px}
+        </style>
+        <div class="cm-card">
+            <div class="cm-h"><h4><i class="fas fa-comment-dots"></i> Customer Messages</h4>
+                <span id="cmCount" class="cm-btn gh" style="cursor:default">0 conversations</span></div>
+            <div class="cm-grid" style="padding:14px">
+                <div style="border:1px solid #eef2f6;border-radius:12px;overflow:hidden">
+                    <div id="cmList"></div>
+                </div>
+                <div style="border:1px solid #eef2f6;border-radius:12px;overflow:hidden;background:#fff">
+                    <div class="cm-h"><h4 id="cmWho">কোনো conversation সিলেক্ট করুন</h4>
+                        <button class="cm-btn dan" id="cmEndBtn" style="display:none" onclick="cmEndChat()"><i class="fas fa-flag-checkered"></i> End Chat</button></div>
+                    <!-- Parts 1-5 — customer profile: identity + cart + purchase history,
+                         loaded from the shop's OWN records for THIS customer only. -->
+                    <div id="cmProfile"></div>
+                    <div class="cm-body" id="cmBody"><div class="cm-empty">বাম দিক থেকে একটি কাস্টমার সিলেক্ট করুন।</div></div>
+                    <div class="cm-form" id="cmForm" style="display:none">
+                        <input type="file" id="cmFile" accept="image/*" style="display:none" onchange="cmPick(this)">
+                        <button class="cm-btn gh" onclick="document.getElementById('cmFile').click()" title="ছবি পাঠান"><i class="fas fa-image"></i></button>
+                        <textarea id="cmText" placeholder="রিপ্লাই লিখুন..."></textarea>
+                        <button class="cm-btn pri" onclick="cmSend()"><i class="fas fa-paper-plane"></i> Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<div class="toast" id="toast"></div>
+<script src="../app.js"></script>
+<script>
+(function(){
+    var uid = sessionStorage.getItem('user_id');
+    var ut  = sessionStorage.getItem('user_type');
+    if (!uid || ut !== 'reseller') { window.location.replace('login.html'); return; }
+
+    /* The mobile sidebar toggle. This lived in the trailing script of the page
+       this one was built from and was not carried over, so the hamburger button
+       threw "toggleSidebar is not defined". Same implementation as every other
+       reseller page. */
+    window.toggleSidebar = function (open) {
+        var sb = document.getElementById('sidebar');
+        var ov = document.getElementById('sideOverlay');
+        if (sb) sb.classList.toggle('open', open);
+        if (ov) ov.classList.toggle('show', open);
+    };
+    var ME=null;
+    try{ var list=getData(DB_KEYS.RESELLERS)||[]; for(var i=0;i<list.length;i++){ if(String(list[i].id)===String(uid)){ME=list[i];break} } }catch(e){}
+    var RID=String(uid);
+    var cur=null;
+    function esc(s){return String(s===undefined||s===null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
+    function toast(m){var t=document.getElementById('toast');if(!t)return;t.textContent=m;t.classList.add('on');setTimeout(function(){t.classList.remove('on')},2200)}
+    var un=document.getElementById('userName');
+    if(un)un.textContent=(ME&&(ME.name||ME.businessName))||'User';
+
+    /* A thread that is ON SCREEN counts as READ. cmRender() auto-selects the
+       newest conversation and paints its messages, so without this the badge
+       could never reach 0 — the reseller would be looking straight at a message
+       the badge still called unread. The write is CONDITIONAL (only when
+       something really is unread), so the 6s cmRender timer below does not churn
+       localStorage. Returns true when it actually wrote. */
+    function cmMarkShownRead(){
+        if(!cur)return false;
+        var ms=cur.messages||[],n=0;
+        for(var i=0;i<ms.length;i++) if(ms[i].from==='customer'&&!ms[i].read) n++;
+        if(!n)return false;
+        try{shopChatMarkRead(RID,cur.id,'reseller')}catch(e){return false}
+        return true;
+    }
+    /* The nav icon counts DIFFERENT CUSTOMERS still holding an UNREAD message:
+       10 customers write and the reseller reads 5 -> 5; 12 write and the reseller
+       reads 2 -> 10; one customer writing 100 times -> 1. */
+    function cmPaintBadge(){
+        var badge=document.getElementById('cmsgBadgeLabel'); if(badge)badge.textContent='';
+        try{ if(typeof rhPaintCustomerMessageBadge==='function') rhPaintCustomerMessageBadge(RID); }catch(e){}
+    }
+    window.cmRender=function(){
+        /* 1. whatever was on screen a moment ago is read by now */
+        try{cmMarkShownRead()}catch(e){}
+        var list=[]; try{list=shopChatList(RID)}catch(e){list=[]}
+        var el=document.getElementById('cmList');
+        var c=document.getElementById('cmCount'); if(c)c.textContent=list.length+' conversation'+(list.length===1?'':'s');
+        if(!list.length){ el.innerHTML='<div class="cm-empty"><i class="fas fa-comments" style="font-size:1.7rem;color:#cbd5e1"></i><br><br>কোনো কাস্টমার মেসেজ নেই।</div>';
+                          cur=null; cmPaintThread(); cmPaintBadge(); return; }
+        if(!cur||!list.some(function(x){return x.id===cur.id})){ cur=list[0]; }
+        /* 2. the newly auto-selected thread is on screen too. Mark it, then
+           RE-READ the store so the rows and the badge agree with the write. */
+        if(cmMarkShownRead()){
+            try{list=shopChatList(RID)}catch(e){}
+        }
+        /* 2026-09-16 — FIX "a message I just sent does not appear until I refresh".
+           The line that re-read `cur` from the fresh list used to sit INSIDE the
+           `if(cmMarkShownRead())` block above. cmMarkShownRead() returns false
+           when the thread holds nothing UNREAD — which is always the case when the
+           RESELLER is the one sending — so `cur` kept the copy loaded before the
+           send, and cmPaintThread() repainted those older messages. The message
+           was saved correctly the whole time; only the repaint was stale.
+           Re-reading cur unconditionally fixes it. Nothing else changed. */
+        for(var q=0;q<list.length;q++) if(list[q].id===cur.id){ cur=list[q]; break; }
+        var h='';
+        for(var i=0;i<list.length;i++){
+            var cv=list[i], n=0;
+            for(var j=0;j<cv.messages.length;j++) if(cv.messages[j].from==='customer'&&!cv.messages[j].read) n++;
+            var last=cv.messages[cv.messages.length-1];
+            h+='<div class="cm-row'+((cur&&cur.id===cv.id)?' on':'')+'" onclick="cmOpen(\''+esc(cv.id)+'\')">'+
+               '<div class="cm-av">'+esc(String(cv.customerName||'C').charAt(0).toUpperCase())+'</div>'+
+               '<div style="min-width:0;flex:1"><div class="cm-nm">'+esc(cv.customerName||('Customer #'+cv.customerId))+
+               (n>0?'<span class="cm-badge">'+n+'</span>':'')+'</div>'+
+               '<div class="cm-pv">'+esc(last?(last.text||(last.image?'[image]':'')):'')+'</div></div></div>';
+        }
+        el.innerHTML=h;
+        cmPaintThread();
+        /* 3. badge LAST, so it reflects whatever was just marked read */
+        cmPaintBadge();
+    };
+    /* ===== Parts 1-5 — customer profile / context =====
+       Everything here is read through the shop-scoped helpers in app.js, each of
+       which takes `RID` FIRST:
+         • shopCustomerOrders(RID, cust) — only THIS shop's orders for THIS phone
+         • shopCustomerCart(RID, cust)   — only THIS shop's shared cart
+       so a Reseller can never see another shop's customer, cart, or purchases.
+       A guest customer (no account) still has a name + phone on the chat record,
+       so the identity block works identically for guests and account holders. */
+    window.cmProfileOpen=false;
+    window.cmToggleProfile=function(){ window.cmProfileOpen=!window.cmProfileOpen; cmPaintProfile(); };
+    function money(n){ return '&#2547;'+(Number(n)||0); }
+    function statusPill(st){
+        st=String(st||'').toLowerCase();
+        var map={new:'#dbeafe|#1e40af',pending:'#fef3c7|#92400e',confirmed:'#e0e7ff|#3730a3',
+                 processing:'#e0e7ff|#3730a3',shipped:'#cffafe|#155e75',delivered:'#dcfce7|#166534',
+                 cancelled:'#fee2e2|#991b1b',returned:'#f3e8ff|#6b21a8'};
+        var p=(map[st]||'#f1f5f9|#475569').split('|');
+        return '<span class="st" style="background:'+p[0]+';color:'+p[1]+'">'+esc(st||'—')+'</span>';
+    }
+    /* Resolve the customer record for THIS shop from the chat's phone. A guest
+       conversation has no account, so `shopFindCustomer` may legitimately return
+       null — the identity still renders from the chat record itself. */
+    function cmCustomer(){
+        if(!cur) return null;
+        var acct=null;
+        try{ acct=shopFindCustomer(RID, cur.customerPhone); }catch(e){ acct=null; }
+        var phone=(acct&&acct.phone)||cur.customerPhone||'';
+        return {
+            id:(acct&&acct.id)||cur.customerId||'',
+            name:(acct&&acct.name)||cur.customerName||'',
+            phone:phone,
+            hasAccount:!!acct,
+            account:acct
+        };
+    }
+    window.cmPaintProfile=function(){
+        var box=document.getElementById('cmProfile');
+        if(!box) return;
+        if(!cur){ box.innerHTML=''; return; }
+        var c=cmCustomer(); if(!c){ box.innerHTML=''; return; }
+        var carts=[], orders=[];
+        try{ carts=shopCustomerCart(RID, c)||[]; }catch(e){ carts=[]; }
+        try{ orders=shopCustomerOrders(RID, c)||[]; }catch(e){ orders=[]; }
+
+        /* ---- current cart ---- */
+        var cartH='';
+        if(carts.length){
+            for(var i=0;i<carts.length;i++){
+                var it=carts[i], q=Number(it.qty)||0;
+                var v=[it.size,it.color].filter(function(x){return x}).join(' · ');
+                cartH+='<div class="cm-it">'+
+                    (it.image?'<img src="'+esc(it.image)+'" alt="">':'<div class="ph"><i class="fas fa-box"></i></div>')+
+                    '<div class="tx"><b>'+esc(it.name||'Item')+'</b><small>'+esc(v)+(v?' · ':'')+'× '+q+'</small></div>'+
+                    (it.price?'<div class="pr">'+money(it.price*q)+'</div>':'')+'</div>';
+            }
+        } else cartH='<div class="cm-none">এই কাস্টমারের Cart খালি (অথবা এখনো শেয়ার করেনি)।</div>';
+
+        /* ---- previous purchases ---- */
+        var ordH='';
+        if(orders.length){
+            var shown=0;
+            for(var k=0;k<orders.length && shown<6;k++){
+                var o=orders[k], its=(o.items||[]), first=its[0]||{};
+                var extra=its.length>1?(' +'+(its.length-1)+' আরও'):'';
+                var vv=[first.size,first.color].filter(function(x){return x}).join(' · ');
+                ordH+='<div class="cm-it">'+
+                    (first.image?'<img src="'+esc(first.image)+'" alt="">':'<div class="ph"><i class="fas fa-box"></i></div>')+
+                    '<div class="tx"><b>'+esc(first.name||o.productName||'Order item')+esc(extra)+'</b>'+
+                    '<small>#'+esc(o.id)+' · '+esc(String(o.date||'').slice(0,10))+(vv?' · '+esc(vv):'')+' · × '+(Number(o.qty)||0)+'</small></div>'+
+                    statusPill(o.status)+'</div>';
+                shown++;
+            }
+            if(orders.length>shown) ordH+='<div class="cm-none">আরও '+(orders.length-shown)+'টি অর্ডার আছে।</div>';
+        } else ordH='<div class="cm-none">এই কাস্টমারের কোনো আগের purchase নেই।</div>';
+
+        box.innerHTML=
+            '<div class="cm-prof'+(window.cmProfileOpen?' open':'')+'">'+
+              '<div class="cm-prof-h" onclick="cmToggleProfile()">'+
+                '<i class="fas fa-address-card"></i> কাস্টমার প্রোফাইল'+
+                '<span class="caret"><i class="fas fa-chevron-down"></i></span></div>'+
+              '<div class="cm-prof-b">'+
+                '<div class="cm-idn"><div class="av">'+esc(String(c.name||'C').charAt(0).toUpperCase())+'</div>'+
+                  '<div style="min-width:0"><div class="nm">'+esc(c.name||'Customer')+
+                    (c.hasAccount?'<span class="cm-tag acct">Account</span>':'<span class="cm-tag guest">Guest</span>')+'</div>'+
+                    '<div class="ph"><i class="fas fa-phone"></i> '+esc(c.phone||'—')+'</div></div></div>'+
+                '<div class="cm-sec"><h5><i class="fas fa-cart-shopping"></i> Current Cart ('+carts.length+')</h5>'+cartH+'</div>'+
+                '<div class="cm-sec"><h5><i class="fas fa-receipt"></i> Previous Purchases ('+orders.length+')</h5>'+ordH+'</div>'+
+              '</div>'+
+            '</div>';
+    };
+    window.cmOpen=function(id){
+        var list=shopChatList(RID);
+        for(var i=0;i<list.length;i++) if(list[i].id===id) cur=list[i];
+        try{shopChatMarkRead(RID,id,'reseller')}catch(e){}
+        cmRender();
+    };
+    window.cmPaintThread=function(){
+        var body=document.getElementById('cmBody'), form=document.getElementById('cmForm'),
+            who=document.getElementById('cmWho'), end=document.getElementById('cmEndBtn');
+        if(!cur){ if(body)body.innerHTML='<div class="cm-empty">বাম দিক থেকে একটি কাস্টমার সিলেক্ট করুন।</div>';
+                  if(form)form.style.display='none'; if(who)who.textContent='কোনো conversation সিলেক্ট করুন';
+                  if(end)end.style.display='none';
+                  if(window.cmPaintProfile) cmPaintProfile();
+                  return; }
+        if(window.cmPaintProfile) cmPaintProfile();
+        if(who)who.innerHTML='<i class="fas fa-user"></i> '+esc(cur.customerName||('Customer #'+cur.customerId))+
+            (cur.orderId?' · <span style="font-size:.72rem;color:#64748b">Order #'+esc(cur.orderId)+'</span>':'');
+        if(end)end.style.display=(cur.messages.length?'inline-block':'none');
+        var h='';
+        for(var i=0;i<cur.messages.length;i++){
+            var m=cur.messages[i], mine=(m.from==='reseller');
+            h+='<div class="cm-bub '+(mine?'me':'you')+'">'+(m.text?esc(m.text):'')+
+               (m.image?'<img src="'+esc(m.image)+'" alt="attachment">':'')+
+               (m.orderId?'<span class="ord"><i class="fas fa-receipt"></i> Order #'+esc(m.orderId)+'</span>':'')+
+               '<span class="t">'+esc(String(m.at||'').slice(11,16))+'</span></div>';
+        }
+        body.innerHTML=h||'<div class="cm-empty">এই conversation-এ কোনো মেসেজ নেই।</div>';
+        body.scrollTop=body.scrollHeight;
+        if(form)form.style.display='flex';
+    };
+    window.cmSend=function(){
+        if(!cur)return;
+        var ta=document.getElementById('cmText');
+        var txt=ta?String(ta.value||'').trim():'';
+        if(!txt&&!window._cmImg){ toast('মেসেজ বা ছবি দিন।'); return; }
+        var r=shopChatSend(RID,cur.id,'reseller',txt,window._cmImg||'','');
+        if(!r.ok){ toast(r.message||'পাঠানো যায়নি।'); return; }
+        if(ta)ta.value='';
+        window._cmImg='';
+        cmRender();
+    };
+    window.cmPick=function(inp){
+        var f=inp&&inp.files&&inp.files[0]; if(!f)return;
+        if(f.size>2*1024*1024){ toast('ছবির সাইজ ২MB এর কম হতে হবে।'); inp.value=''; return; }
+        var r=new FileReader();
+        r.onload=function(){ window._cmImg=r.result; cmSend(); inp.value=''; };
+        r.readAsDataURL(f);
+    };
+    /* #11 — End Chat clears THIS conversation's messages only */
+    window.cmEndChat=function(){
+        if(!cur)return;
+        if(!confirm('End Chat করবেন? এই conversation-এর সব মেসেজ মুছে যাবে (অন্য কাস্টমারদের কিছু হবে না)।'))return;
+        var others=shopChatList(RID).length-1;
+        var r=shopChatEnd(RID,cur.id);
+        if(!r.ok){ toast(r.message||'করতে পারিনি।'); return; }
+        var keep=shopChatList(RID).length;
+        cur=r.conversation;
+        toast('Chat ended — মেসেজ মুছে ফেলা হয়েছে।');
+        cmRender();
+    };
+    var ta=document.getElementById('cmText');
+    if(ta)ta.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); cmSend(); }});
+    cmRender();
+    setInterval(cmRender, 6000);
+})();
+</script>
+</body>
+</html>

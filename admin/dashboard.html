@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Admin - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#f1f5f9; color:#1e293b; }
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:240px; background:#1e293b; color:#cbd5e1; z-index:100; overflow-y:auto; }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid #334155; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:38px; height:38px; background:linear-gradient(135deg,#dc2626,#b91c1c); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; }
+        .sidebar-logo h3 { color:white; font-size:1rem; }
+        .sidebar-logo small { color:#94a3b8; font-size:0.7rem; display:block; }
+        .sidebar-menu { list-style:none; padding:12px 0; }
+        .sidebar-menu li { margin:2px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:10px 20px; color:#cbd5e1; text-decoration:none; font-size:0.88rem; }
+        .sidebar-menu a:hover { background:rgba(255,255,255,0.05); color:white; }
+        .sidebar-menu a.active { background:#dc2626; color:white; }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 20px 5px; color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+        .menu-badge { background:#fbbf24; color:#1e293b; font-size:0.65rem; padding:1px 6px; border-radius:10px; font-weight:700; margin-left:auto; }
+        .main { margin-left:240px; min-height:100vh; }
+        .topbar { background:white; padding:14px 25px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:sticky; top:0; z-index:50; }
+        .topbar h2 { font-size:1.2rem; font-weight:600; }
+        .topbar h2 i { color:#dc2626; margin-right:8px; }
+        .topbar-right { display:flex; align-items:center; gap:12px; }
+        .user-pill { display:flex; align-items:center; gap:8px; padding:6px 14px; background:#fee2e2; border-radius:30px; font-size:0.85rem; color:#991b1b; font-weight:600; }
+        .btn-logout { background:#dc2626; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:500; }
+        .content { padding:25px; }
+        .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px; }
+        .stat-card { background:white; border-radius:12px; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:relative; overflow:hidden; cursor:pointer; }
+        .stat-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; }
+        .stat-card.blue::before { background:#2563eb; }
+        .stat-card.green::before { background:#10b981; }
+        .stat-card.orange::before { background:#f59e0b; }
+        .stat-card.red::before { background:#dc2626; }
+        .stat-card.purple::before { background:#8b5cf6; }
+        .stat-card .icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin-bottom:12px; }
+        .stat-card.blue .icon { background:#dbeafe; color:#2563eb; }
+        .stat-card.green .icon { background:#d1fae5; color:#10b981; }
+        .stat-card.orange .icon { background:#fef3c7; color:#f59e0b; }
+        .stat-card.red .icon { background:#fee2e2; color:#dc2626; }
+        .stat-card.purple .icon { background:#ede9fe; color:#8b5cf6; }
+        .stat-card .label { color:#64748b; font-size:0.8rem; margin-bottom:4px; }
+        .stat-card .value { font-size:1.6rem; font-weight:800; }
+        .card { background:white; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:20px; }
+        .card-header { padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; }
+        .card-header h4 { font-size:0.95rem; font-weight:600; }
+        .card-header h4 i { color:#dc2626; margin-right:6px; }
+        .view-all { font-size:0.82rem; color:#dc2626; font-weight:600; text-decoration:none; }
+        .data-table { width:100%; border-collapse:collapse; }
+        .data-table th { text-align:left; padding:11px 20px; background:#f8fafc; font-weight:600; font-size:0.72rem; color:#64748b; text-transform:uppercase; }
+        .data-table td { padding:12px 20px; border-bottom:1px solid #f1f5f9; font-size:0.85rem; }
+        .data-table tr:hover { background:#f8fafc; }
+        .badge { padding:3px 9px; border-radius:20px; font-size:0.7rem; font-weight:600; }
+        .badge-success { background:#d1fae5; color:#065f46; }
+        .badge-warning { background:#fef3c7; color:#92400e; }
+        .badge-danger { background:#fee2e2; color:#991b1b; }
+        .badge-info { background:#dbeafe; color:#1e40af; }
+        .btn { padding:6px 11px; border:none; border-radius:7px; font-size:0.78rem; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+        .btn-primary { background:#2563eb; color:white; }
+        .btn-success { background:#10b981; color:white; }
+        .empty { text-align:center; padding:40px 20px; color:#64748b; }
+        .empty i { font-size:2.5rem; margin-bottom:10px; opacity:0.4; }
+        .activity-item { padding:10px 20px; border-bottom:1px solid #f1f5f9; display:flex; gap:10px; font-size:0.86rem; align-items:flex-start; }
+        .activity-item:last-child { border-bottom:none; }
+        @media (max-width:1024px) { .stats-row { grid-template-columns:repeat(2,1fr); } }
+        @media (max-width:768px) { .sidebar { width:240px; } .sidebar-logo h3, .sidebar-logo small, .sidebar-menu a span, .sidebar-divider, .menu-badge { display:initial; } .main { margin-left:240px; } .stats-row { grid-template-columns:1fr; } }
+    </style>
+
+
+
+
+<style id="lx-sb-final">
+/* ===== ADMIN SIDEBAR v4 — fresh premium design (authoritative) ===== */
+body .lx-sidebar { position:fixed !important; left:0 !important; top:0 !important; bottom:0 !important; width:264px !important; background:linear-gradient(180deg,#0d1226 0%,#171233 100%) !important; border-right:1px solid rgba(129,140,248,.14) !important; z-index:600 !important; overflow-y:auto !important; overflow-x:hidden !important; display:flex !important; flex-direction:column !important; transform:none !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; font-family:'Inter','Hind Siliguri',sans-serif !important; }
+body .lx-sidebar::before { content:'' !important; position:absolute !important; top:-80px !important; right:-60px !important; width:260px !important; height:260px !important; background:radial-gradient(circle,rgba(99,102,241,.18),transparent 70%) !important; pointer-events:none !important; }
+body .lx-brand { display:flex !important; align-items:center !important; gap:12px !important; padding:20px 18px !important; border-bottom:1px solid rgba(129,140,248,.14) !important; position:relative !important; }
+body .lx-brand-ic { width:42px !important; height:42px !important; border-radius:13px !important; background:linear-gradient(135deg,#6366f1,#a855f7) !important; display:flex !important; align-items:center !important; justify-content:center !important; color:#fff !important; font-size:1.05rem !important; box-shadow:0 8px 20px rgba(99,102,241,.4) !important; flex-shrink:0 !important; }
+body .lx-brand-tx b { color:#fff !important; font-size:1.02rem !important; font-weight:900 !important; display:block !important; line-height:1.2 !important; }
+body .lx-brand-tx small { color:#818cf8 !important; font-size:.6rem !important; font-weight:800 !important; letter-spacing:2px !important; }
+body .lx-close { margin-left:auto !important; background:rgba(255,255,255,.06) !important; border:none !important; color:#94a3b8 !important; width:30px !important; height:30px !important; border-radius:9px !important; cursor:pointer !important; font-size:1rem !important; display:none !important; align-items:center !important; justify-content:center !important; }
+body .lx-close:hover { background:#fee2e2 !important; color:#dc2626 !important; }
+body .lx-menu { padding:14px 12px !important; flex:1 !important; }
+body .sec-label { font-size:.6rem !important; font-weight:900 !important; letter-spacing:2.2px !important; color:#6b7280 !important; text-transform:uppercase !important; padding:14px 12px 6px !important; display:flex !important; align-items:center !important; gap:8px !important; }
+body .sec-label::before { content:'' !important; width:14px !important; height:2px !important; background:linear-gradient(90deg,#6366f1,#a855f7) !important; border-radius:2px !important; }
+body .sb-item { position:relative !important; display:flex !important; align-items:center !important; gap:11px !important; padding:9px 12px !important; margin:3px 0 !important; border-radius:12px !important; color:#b6c2e2 !important; text-decoration:none !important; font-size:.86rem !important; font-weight:600 !important; transition:all .2s !important; border:1px solid transparent !important; background:transparent !important; opacity:1 !important; visibility:visible !important; pointer-events:auto !important; box-shadow:none !important; transform:none !important; }
+body .sb-item .sb-ico { width:30px !important; height:30px !important; border-radius:9px !important; background:rgba(255,255,255,.05) !important; display:flex !important; align-items:center !important; justify-content:center !important; font-size:.82rem !important; flex-shrink:0 !important; transition:all .2s !important; }
+body .sb-item .sb-txt { flex:1 !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; display:block !important; }
+body .sb-item:hover { background:rgba(99,102,241,.13) !important; color:#fff !important; }
+body .sb-item:hover .sb-ico { background:rgba(99,102,241,.3) !important; }
+body .sb-item.on { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; border-color:rgba(129,140,248,.35) !important; }
+body .sb-item.on::before { content:'' !important; position:absolute !important; left:-12px !important; top:50% !important; transform:translateY(-50%) !important; width:3.5px !important; height:60% !important; background:linear-gradient(180deg,#818cf8,#c084fc) !important; border-radius:3px !important; }
+body .sb-item.on .sb-ico { background:linear-gradient(135deg,#6366f1,#a855f7) !important; color:#fff !important; }
+/* page-এর নিচের inline-highlight script সবসময় হারাবে */
+body .sb-item[style] { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; }
+body .sb-badge { background:#fbbf24 !important; color:#1e293b !important; font-size:.62rem !important; padding:1px 8px !important; border-radius:10px !important; font-weight:800 !important; margin-left:auto !important; }
+body .main { margin-left:264px !important; min-height:100vh !important; }
+body .side-overlay { display:none !important; position:fixed !important; inset:0 !important; background:rgba(7,10,26,.6) !important; z-index:590 !important; backdrop-filter:blur(2px) !important; }
+body .side-overlay.show { display:block !important; pointer-events:auto !important; }
+body .hamburger { display:none !important; }
+/* ===== মোবাইল/ট্যাবলেট: slide drawer ===== */
+@media (max-width:1024px) {
+    body .main { margin-left:0 !important; }
+    body .lx-sidebar { transform:translateX(-100%) !important; box-shadow:none !important; }
+    body .lx-sidebar.open { transform:none !important; box-shadow:30px 0 70px rgba(7,10,26,.6) !important; }
+    body .lx-close { display:flex !important; }
+    body .hamburger { display:inline-flex !important; }
+    body { overflow-x:hidden !important; }
+}
+</style>
+
+
+
+
+
+<style id="lx-ovf-fix">
+@media(max-width:768px){ body{overflow-x:hidden !important} }
+</style>
+<style id="lx-orders-badge-n">.orders-badge-n{color:#fbbf24;font-weight:900;font-size:.72rem}.orders-badge-n:empty{display:none}</style>
+<style id="admin-mobile-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   The admin topbar measured about 474px across on a 390px phone (25px padding, an
+   h2 at 1.2rem, 12px gaps, a wide user pill), so the logout button was pushed past
+   the right edge. Several admin tables are also built by JS with NO .table-scroll
+   wrapper, so they widened the whole page instead of scrolling.
+   EVERY rule below sits inside a max-width query, so the DESKTOP LAYOUT IS
+   UNCHANGED. This is an ADDED block — no existing rule is modified or removed. */
+@media (max-width:768px){
+  .topbar { padding:10px 12px; gap:8px; }
+  .topbar h2 { font-size:.92rem; }
+  .topbar h2 i { margin-right:4px; }
+  .topbar-right { gap:6px; }
+  .user-pill { padding:5px 9px; font-size:.72rem; }
+  .btn-logout { padding:7px 10px; }
+  /* a table without a scroll wrapper would otherwise push the page wide */
+  .data-table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%; }
+}
+</style>
+<style id="panel-fullwidth-fix">
+/* 2026-09-16 — FULL-WIDTH FIX for the admin and supplier panels (this request).
+   The whole page sat in a narrow column with empty space on the right, because the
+   base rule reserves the sidebar with `margin-left`, and a block element with
+   margin-left and width:auto is only (100% - that) wide. A LATER rule in the same
+   file re-asserted the margin with !important, so the earlier mobile override lost.
+   This block is the LAST thing in the document, so it wins, and it resets width as
+   well as margin. Desktop is untouched — everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+
+<style id="admin-profit-expense">
+/* 2026-09-18 — PROFIT ANALYTICS month-wise breakdown + DAILY EXPENSE TRACKER.
+   This is an ADDED block for this request only. No existing rule is modified or
+   removed, and every mobile override sits inside a max-width query, so the
+   current desktop layout is byte-for-byte unchanged. */
+
+/* ---- month-wise breakdown (lives inside the Profit Analytics card) ---- */
+.pe-sep { height:1px; background:#e2e8f0; margin:0 20px; }
+.pe-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:14px 20px 0; }
+.pe-title { font-size:.86rem; font-weight:800; color:#1e293b; }
+.pe-title i { color:#dc2626; margin-right:7px; }
+.pe-years { display:flex; gap:6px; flex-wrap:wrap; }
+.pe-y { padding:4px 13px; border-radius:14px; font-size:.68rem; font-weight:800; cursor:pointer; background:#fff; color:#475569; border:1.5px solid #e2e8f0; }
+.pe-y.on { background:#1e293b; color:#fff; border-color:#1e293b; }
+.pe-tbl-wrap { overflow-x:auto; padding:12px 0 6px; }
+.pe-tbl { width:100%; min-width:560px; border-collapse:collapse; }
+.pe-tbl th { text-align:left; padding:10px 20px; background:#f8fafc; font-size:.66rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:.4px; white-space:nowrap; }
+.pe-tbl td { padding:11px 20px; border-bottom:1px solid #f1f5f9; font-size:.84rem; white-space:nowrap; }
+.pe-tbl tbody tr:hover td { background:#f8fafc; }
+.pe-tbl tr.pe-tot td { background:#f8fafc; font-weight:900; border-top:2px solid #e2e8f0; border-bottom:none; }
+.pe-num { font-weight:800; }
+.pe-pos { color:#059669; font-weight:800; }
+.pe-neg { color:#dc2626; font-weight:800; }
+.pe-cur { display:inline-block; font-size:.58rem; font-weight:800; color:#065f46; background:#d1fae5; padding:2px 7px; border-radius:8px; margin-left:7px; vertical-align:middle; }
+.pe-empty { text-align:center; padding:26px 20px; color:#64748b; font-size:.84rem; }
+
+/* ---- daily expense tracker card ---- */
+.exp-form { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; padding:16px 20px 0; }
+.exp-form .ef { display:flex; flex-direction:column; gap:5px; }
+.exp-form .ef label { font-size:.61rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:.4px; }
+.exp-form input, .exp-form select { font-family:inherit; font-size:.84rem; padding:9px 11px; border:1.5px solid #e2e8f0; border-radius:9px; background:#fff; color:#1e293b; outline:none; }
+.exp-form input:focus, .exp-form select:focus { border-color:#2563eb; }
+.exp-form .ef-grow { flex:1; min-width:170px; }
+.exp-form .ef-grow input { width:100%; }
+.exp-form .exp-add { padding:10px 16px; border-radius:9px; }
+.exp-chips { display:flex; gap:7px; flex-wrap:wrap; padding:16px 20px 0; }
+.exp-chips .ec { padding:6px 14px; border-radius:16px; font-size:.7rem; font-weight:800; cursor:pointer; background:#fff; color:#475569; border:1.5px solid #e2e8f0; }
+.exp-chips .ec.on { background:#1e293b; color:#fff; border-color:#1e293b; }
+.exp-range { padding:10px 20px 0; font-size:.72rem; color:#64748b; font-weight:700; }
+.exp-custom { display:flex; gap:14px; flex-wrap:wrap; padding:10px 20px 0; }
+.exp-custom label { display:flex; align-items:center; gap:7px; font-size:.72rem; font-weight:800; color:#64748b; }
+.exp-custom input { font-family:inherit; font-size:.8rem; padding:7px 10px; border:1.5px solid #e2e8f0; border-radius:8px; color:#1e293b; outline:none; }
+.exp-sum { display:grid; grid-template-columns:repeat(auto-fit,minmax(158px,1fr)); gap:14px; padding:14px 20px 0; }
+.exp-sbox { border-radius:12px; padding:15px; border:1px solid #e2e8f0; background:#f8fafc; }
+.exp-sbox .sl { font-size:.62rem; font-weight:800; color:#64748b; letter-spacing:.5px; text-transform:uppercase; }
+.exp-sbox .sv { font-size:1.35rem; font-weight:900; margin-top:5px; }
+.exp-sbox.inc { background:#eff6ff; border-color:#bfdbfe; } .exp-sbox.inc .sv { color:#2563eb; }
+.exp-sbox.out { background:#fef2f2; border-color:#fecaca; } .exp-sbox.out .sv { color:#dc2626; }
+.exp-sbox.net { background:#ecfdf5; border-color:#a7f3d0; } .exp-sbox.net .sv { color:#059669; }
+.exp-sbox.net.neg { background:#fef2f2; border-color:#fecaca; } .exp-sbox.net.neg .sv { color:#dc2626; }
+.exp-sbox.oin { background:#f0fdf4; border-color:#bbf7d0; } .exp-sbox.oin .sv { color:#15803d; }
+.exp-note { padding:10px 20px 0; font-size:.72rem; color:#64748b; font-weight:700; }
+/* other-source income form — inherits every .exp-form rule, only adds a divider */
+.exp-form.inc-form { padding-top:14px; margin-top:14px; border-top:1px solid #f1f5f9; }
+.exp-form .inc-add { background:#15803d; color:#fff; border:1.5px solid #15803d; }
+.exp-form .inc-add:hover { background:#166534; border-color:#166534; }
+/* income rows reuse .exp-row; only the palette flips to green */
+.exp-row.inc .er-c { background:#dcfce7; color:#166534; }
+.exp-row.inc .er-a { color:#15803d; }
+.exp-row.inc .er-x { background:#dcfce7; color:#15803d; }
+.exp-row.inc .er-x:hover { background:#15803d; color:#fff; }
+.exp-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:16px 20px 0; }
+.exp-box { border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; background:#fff; }
+.exp-box .eb-t { padding:11px 14px; background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:.72rem; font-weight:800; color:#334155; }
+.exp-box .eb-t i { color:#dc2626; margin-right:6px; }
+.exp-box .eb-t small { color:#94a3b8; font-weight:700; margin-left:6px; }
+.exp-box .eb-b { max-height:300px; overflow-y:auto; }
+.cat-row { padding:9px 14px; }
+.cat-top { display:flex; justify-content:space-between; gap:10px; font-size:.78rem; font-weight:800; color:#334155; }
+.cat-bar { height:6px; border-radius:4px; background:#f1f5f9; margin-top:6px; overflow:hidden; }
+.cat-bar i { display:block; height:100%; background:linear-gradient(90deg,#2563eb,#60a5fa); border-radius:4px; }
+.mini-tbl { width:100%; border-collapse:collapse; }
+.mini-tbl th { text-align:left; padding:8px 14px; font-size:.61rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:.3px; white-space:nowrap; }
+.mini-tbl td { padding:8px 14px; border-top:1px solid #f1f5f9; font-size:.78rem; white-space:nowrap; }
+.mini-tbl tbody tr:hover td { background:#f8fafc; }
+.exp-list-wrap { margin:16px 20px 20px; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; background:#fff; }
+.exp-list-wrap .eb-t { padding:11px 14px; background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:.72rem; font-weight:800; color:#334155; }
+.exp-list-wrap .eb-t i { color:#dc2626; margin-right:6px; }
+.exp-list-wrap .eb-t small { color:#94a3b8; font-weight:700; margin-left:6px; }
+.exp-row { display:flex; align-items:center; gap:10px; padding:10px 14px; border-top:1px solid #f1f5f9; font-size:.82rem; }
+.exp-row .er-d { font-weight:800; color:#334155; min-width:96px; }
+.exp-row .er-c { font-size:.63rem; font-weight:800; padding:2px 9px; border-radius:8px; background:#e0e7ff; color:#3730a3; white-space:nowrap; }
+.exp-row .er-n { flex:1; color:#64748b; font-size:.76rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.exp-row .er-a { font-weight:900; color:#dc2626; }
+.exp-row .er-x { background:#fee2e2; color:#dc2626; border:none; width:27px; height:27px; border-radius:7px; cursor:pointer; flex-shrink:0; }
+.exp-row .er-x:hover { background:#dc2626; color:#fff; }
+.eb-empty { padding:20px 14px; text-align:center; color:#94a3b8; font-size:.76rem; font-weight:600; }
+
+@media (max-width:768px){
+  .pe-head { padding:12px 12px 0; }
+  .pe-title { font-size:.8rem; }
+  .pe-tbl th, .pe-tbl td { padding-left:12px; padding-right:12px; }
+  .exp-form { padding:14px 12px 0; }
+  .exp-form .ef, .exp-form .ef-grow { flex:1 1 100%; }
+  .exp-form .exp-add { width:100%; justify-content:center; }
+  .exp-chips { padding:14px 12px 0; }
+  .exp-range { padding:8px 12px 0; }
+  .exp-custom { padding:8px 12px 0; }
+  .exp-custom label { flex:1 1 100%; }
+  .exp-sum { grid-template-columns:1fr; padding:12px 12px 0; }
+  .exp-note { padding:8px 12px 0; }
+  .exp-grid { grid-template-columns:1fr; padding:14px 12px 0; }
+  .exp-list-wrap { margin:14px 12px 14px; }
+  .exp-row { flex-wrap:wrap; gap:7px; }
+  .exp-row .er-n { flex:1 1 100%; }
+  .exp-row .er-d { min-width:0; }
+}
+</style>
+</head>
+<body>
+<aside class="lx-sidebar sidebar" id="sidebar">
+    <div class="lx-brand">
+        <span class="lx-brand-ic"><i class="fas fa-user-shield"></i></span>
+        <div class="lx-brand-tx"><b>AdminHub</b><small>CONTROL PANEL</small></div>
+        <button class="lx-close" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+    <nav class="lx-menu">
+        <div class="sec-label">Main</div>
+        <a href="dashboard.html" class="sb-item"><span class="sb-ico"><i class="fas fa-chart-line"></i></span><span class="sb-txt">Dashboard</span></a>
+        <a href="orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-shopping-cart"></i></span><span class="sb-txt">All Orders<span class="orders-badge-n" id="ordersBadgeN"></span></span><span id="ordersBadge" style="display:none;margin-left:auto;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:.62rem;font-weight:800"></span></a>
+        <a href="multi-supplier-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-people-arrows"></i></span><span class="sb-txt">Multi-Supplier Orders<span class="orders-badge-n" id="msCount"></span></span></a>
+        <a href="products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box"></i></span><span class="sb-txt">Products</span></a>
+        <div class="sec-label">Users</div>
+        <a href="resellers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-users"></i></span><span class="sb-txt">Resellers</span></a>
+        <a href="suppliers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-warehouse"></i></span><span class="sb-txt">Suppliers</span></a>
+        <a href="supplier-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-boxes-stacked"></i></span><span class="sb-txt">Supplier Products</span></a>
+        <a href="add-reseller.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Add Reseller</span></a>
+        <a href="add-supplier.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck"></i></span><span class="sb-txt">Add Supplier</span></a>
+        <a href="approvals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-check"></i></span><span class="sb-txt">Approvals</span><span id="approvalsBadge" style="display:none;margin-left:auto;background:#f59e0b;color:#fff;border-radius:10px;padding:1px 7px;font-size:.62rem;font-weight:800"></span></a>
+        <a href="withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-money-bill-wave"></i></span><span class="sb-txt">Withdrawals</span><span id="withdrawalsBadge" style="display:none;margin-left:auto;background:#8b5cf6;color:#fff;border-radius:10px;padding:1px 7px;font-size:.62rem;font-weight:800"></span></a>
+        <a href="supplier-withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-hand-holding-dollar"></i></span><span class="sb-txt">Supplier Withdraw</span></a>
+        <a href="transactions.html" class="sb-item"><span class="sb-ico"><i class="fas fa-receipt"></i></span><span class="sb-txt">Transaction History</span></a>
+        <a href="moderators.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-shield"></i></span><span class="sb-txt">Moderators</span></a>
+        <div class="sec-label">Referral</div>
+        <a href="referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Reseller Referral</span></a>
+        <a href="supplier-referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck-arrow-right"></i></span><span class="sb-txt">Supplier Referral</span></a>
+                <a href="myshop-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-bag-shopping"></i></span><span class="sb-txt">My Shop Orders</span></a>
+        <a href="myshop-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box-open"></i></span><span class="sb-txt">My Shop Products</span></a>
+        <div class="sec-label">Offers &amp; Banners</div>
+        <a href="add-offer.html" class="sb-item"><span class="sb-ico"><i class="fas fa-plus-circle"></i></span><span class="sb-txt">Add Offers</span></a>
+        <a href="manage-offers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-gift"></i></span><span class="sb-txt">Manage Offers</span></a>
+        <a href="add-banner.html" class="sb-item"><span class="sb-ico"><i class="fas fa-image"></i></span><span class="sb-txt">Add Banners</span></a>
+        <a href="manage-banners.html" class="sb-item"><span class="sb-ico"><i class="fas fa-images"></i></span><span class="sb-txt">Manage Banners</span></a>
+        <div class="sec-label">System</div>
+        <a href="messages.html" class="sb-item"><span class="sb-ico"><i class="fas fa-comments"></i></span><span class="sb-txt">Messages<span class="orders-badge-n" id="msgBadgeN"></span></span></a>
+        <a href="settings.html" class="sb-item"><span class="sb-ico"><i class="fas fa-cog"></i></span><span class="sb-txt">Settings</span></a>
+        <a href="../index.html" class="sb-item"><span class="sb-ico"><i class="fas fa-globe"></i></span><span class="sb-txt">Visit Site</span></a>
+    </nav>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+            <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h2><i class="fas fa-chart-line"></i> Dashboard Overview</h2>
+        <div class="topbar-right">
+            <div class="user-pill"><i class="fas fa-user-shield"></i> Admin</div>
+            <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="stats-row">
+            <a href="resellers.html" class="stat-card blue" style="text-decoration:none;">
+                <div class="icon"><i class="fas fa-users"></i></div>
+                <div class="label">Total Resellers</div>
+                <div class="value" id="stResellers">0</div>
+            </a>
+            <a href="resellers.html" class="stat-card green" style="text-decoration:none;">
+                <div class="icon"><i class="fas fa-user-check"></i></div>
+                <div class="label">Active Resellers</div>
+                <div class="value" id="stActive">0</div>
+            </a>
+            <a href="approvals.html" class="stat-card orange" style="text-decoration:none;">
+                <div class="icon"><i class="fas fa-user-clock"></i></div>
+                <div class="label">Pending Approvals</div>
+                <div class="value" id="stPending">0</div>
+            </a>
+            <a href="withdrawals.html" class="stat-card purple" style="text-decoration:none;">
+                <div class="icon"><i class="fas fa-money-bill-wave"></i></div>
+                <div class="label">Pending Withdrawals</div>
+                <div class="value" id="stWithdrawals">0</div>
+            </a>
+        </div>
+
+        <div class="stats-row">
+            <a href="orders.html" class="stat-card blue" style="text-decoration:none;">
+                <div class="icon"><i class="fas fa-shopping-cart"></i></div>
+                <div class="label">Total Orders</div>
+                <div class="value" id="stOrders">0</div>
+            </a>
+            <div class="stat-card green">
+                <div class="icon"><i class="fas fa-coins"></i></div>
+                <div class="label">Total Sales</div>
+                <div class="value" id="stSales">0</div>
+            </div>
+            <a href="products.html" class="stat-card red" style="text-decoration:none;">
+                <div class="icon"><i class="fas fa-box"></i></div>
+                <div class="label">Total Products</div>
+                <div class="value" id="stProducts">0</div>
+            </a>
+            <div class="stat-card orange">
+                <div class="icon"><i class="fas fa-users"></i></div>
+                <div class="label">Online Now</div>
+                <div class="value" id="stOnline" style="color:#10b981;">0</div>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <a href="suppliers.html" class="stat-card blue" style="text-decoration:none;">
+                <div class="icon"><i class="fas fa-warehouse"></i></div>
+                <div class="label">Total Suppliers</div>
+                <div class="value" id="stSuppliers">0</div>
+            </a>
+            <div class="stat-card teal">
+                <div class="icon"><i class="fas fa-box"></i></div>
+                <div class="label">Supplier Products</div>
+                <div class="value" id="stSupProducts">0</div>
+            </div>
+            <div class="stat-card green">
+                <div class="icon"><i class="fas fa-coins"></i></div>
+                <div class="label">Supplier Sales</div>
+                <div class="value" id="stSupSales">0</div>
+            </div>
+            <div class="stat-card purple">
+                <div class="icon"><i class="fas fa-user-clock"></i></div>
+                <div class="label">Suppliers Online</div>
+                <div class="value" id="stSupOnline" style="color:#10b981;">0</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-shopping-cart"></i> Recent Orders</h4>
+                <a href="orders.html" class="view-all">View All →</a>
+            </div>
+            <div id="recentOrders"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-users"></i> Recent Resellers</h4>
+                <a href="resellers.html" class="view-all">View All →</a>
+            </div>
+            <div id="recentResellers"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h4><i class="fas fa-coins"></i> Profit Analytics (3-Tier Pricing)</h4><small style="color:#64748b;font-weight:600;">Delivered orders only</small></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;padding:14px 20px 0;" id="pftChips"></div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;padding:16px 20px 20px;">
+                <div style="flex:1;min-width:200px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:16px;"><div style="font-size:.65rem;font-weight:800;color:#64748b;letter-spacing:.5px;">ADMIN PROFIT</div><div id="pftAdmin" style="font-size:1.4rem;font-weight:900;color:#2563eb;">৳0</div></div>
+                <div style="flex:1;min-width:200px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:12px;padding:16px;"><div style="font-size:.65rem;font-weight:800;color:#64748b;letter-spacing:.5px;">ALL RESELLERS PROFIT</div><div id="pftRes" style="font-size:1.4rem;font-weight:900;color:#059669;">৳0</div></div>
+            </div>
+            <!-- 2026-09-18 (this request) — MONTH-WISE BREAKDOWN.
+                 Independent of the chips above: each row is a FULL calendar month,
+                 so a partial month is never shown as a full month's income. -->
+            <div class="pe-sep"></div>
+            <div class="pe-head">
+                <div class="pe-title"><i class="fas fa-calendar-days"></i> Month-wise Breakdown <span style="font-weight:700;color:#94a3b8;font-size:.74rem;">(মাস অনুযায়ী ইনকাম)</span></div>
+                <div class="pe-years" id="pftYears"></div>
+            </div>
+            <div class="pe-tbl-wrap"><div id="pftMonths"></div></div>
+        </div>
+
+        <!-- 2026-09-18 (this request) — DAILY EXPENSE TRACKER.
+             প্রতিদিনের খরচ এখানে লেখা হবে; খরচ প্রফিট থেকে বাদ যাবে এবং
+             নেট প্রফিট দেখাবে। ডেটা থাকে rh_admin_expenses-এ (এই পেজ নিজেই পড়ে/লেখে,
+             অন্য কোনো পেজ বা app.js ছোঁয়া হয়নি)। -->
+        <div class="card" id="expCard">
+            <div class="card-header">
+                <h4><i class="fas fa-wallet"></i> Daily Expense Tracker</h4>
+                <small style="color:#64748b;font-weight:600;">দৈনিক খরচ — প্রফিট থেকে বাদ যাবে</small>
+            </div>
+
+            <div class="exp-form">
+                <div class="ef"><label>Date</label><input type="date" id="expDate"></div>
+                <div class="ef"><label>Category</label><select id="expCat"></select></div>
+                <div class="ef"><label>Amount (৳)</label><input type="number" id="expAmt" min="1" step="1" placeholder="0" style="width:130px;" onkeydown="if(event.key==='Enter')expAdd()"></div>
+                <div class="ef ef-grow"><label>Note (optional)</label><input type="text" id="expNote" placeholder="যেমন: Steadfast কুরিয়ার বিল" onkeydown="if(event.key==='Enter')expAdd()"></div>
+                <button class="btn btn-primary exp-add" onclick="expAdd()"><i class="fas fa-plus"></i> Add Expense</button>
+            </div>
+
+            <!-- 2026-09-18 (this request) — OTHER-SOURCE INCOME.
+                 খরচ যেভাবে লেখা হয়, ঠিক সেভাবেই অন্য সোর্সের ইনকাম লেখা হবে।
+                 ডেটা থাকে rh_admin_incomes-এ — নতুন key, purely additive,
+                 আগের কোনো key/page ছোঁয়া হয়নি। -->
+            <div class="exp-form inc-form">
+                <div class="ef"><label>Date</label><input type="date" id="incDate"></div>
+                <div class="ef"><label>Source</label><select id="incSrc"></select></div>
+                <div class="ef"><label>Amount (৳)</label><input type="number" id="incAmt" min="1" step="1" placeholder="0" style="width:130px;" onkeydown="if(event.key==='Enter')incAdd()"></div>
+                <div class="ef ef-grow"><label>Note (optional)</label><input type="text" id="incNote" placeholder="যেমন: Sponsorship / বাইরের কাজের পেমেন্ট" onkeydown="if(event.key==='Enter')incAdd()"></div>
+                <button class="btn exp-add inc-add" onclick="incAdd()"><i class="fas fa-plus"></i> Add Income</button>
+            </div>
+
+            <div class="exp-chips" id="expChips"></div>
+            <div class="exp-range" id="expRangeNote"></div>
+            <div class="exp-custom" id="expCustom" style="display:none;">
+                <label>From <input type="date" id="expFrom" onchange="expCustomGo()"></label>
+                <label>To <input type="date" id="expTo" onchange="expCustomGo()"></label>
+            </div>
+
+            <div class="exp-sum" id="expSummary"></div>
+            <div class="exp-note" id="expNoteLine"></div>
+
+            <div class="exp-grid">
+                <div class="exp-box">
+                    <div class="eb-t"><i class="fas fa-layer-group"></i> Category-wise Expense</div>
+                    <div class="eb-b" id="expCats"></div>
+                </div>
+                <div class="exp-box">
+                    <div class="eb-t"><i class="fas fa-calendar-day"></i> Day-wise Breakdown</div>
+                    <div class="eb-b" id="expDays"></div>
+                </div>
+            </div>
+
+            <div class="exp-list-wrap">
+                <div class="eb-t"><i class="fas fa-receipt"></i> Expense Entries <small id="expCount"></small></div>
+                <div id="expList"></div>
+            </div>
+
+            <div class="exp-list-wrap">
+                <div class="eb-t"><i class="fas fa-hand-holding-dollar" style="color:#15803d;"></i> Other Income Entries <small id="incCount"></small></div>
+                <div id="incList"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h4><i class="fas fa-list-ul"></i> Recent Activity</h4></div>
+            <div id="activityFeed"></div>
+        </div>
+    </div>
+</main>
+
+<script src="../app.js"></script>
+<script>
+(function() {
+    var userId = sessionStorage.getItem('user_id');
+    var userType = sessionStorage.getItem('user_type');
+    if (!userId || (userType !== 'admin' && userType !== 'moderator')) { sessionStorage.clear(); window.location.replace('login.html'); return; } setInterval(function(){ var t=sessionStorage.getItem('user_type'); if(t && (t!=='admin' && t!=='moderator')){ sessionStorage.clear(); window.location.replace('login.html'); } },3000);
+
+    function statusBadge(s) {
+        var c = 'warning';
+        if (s === 'approved' || s === 'delivered') c = 'success';
+        else if (s === 'shipped') c = 'info';
+        else if (s === 'cancelled' || s === 'rejected' || s === 'banned') c = 'danger';
+        return '<span class="badge badge-' + c + '">' + s + '</span>';
+    }
+
+    /* Null-safe badge writer: hides the chip when the count is 0 and never
+       throws if the element is missing from the markup. */
+    function setBadge(id, n) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        n = Number(n) || 0;
+        if (n > 0) { el.textContent = n; el.style.display = ''; }
+        else { el.textContent = ''; el.style.display = 'none'; }
+    }
+
+    function loadDashboard() {
+        var resellers = getData(DB_KEYS.RESELLERS);
+        var orders = getData(DB_KEYS.ORDERS);
+        var products = getData(DB_KEYS.PRODUCTS);
+        var withdrawals = getData(DB_KEYS.WITHDRAWALS);
+        var activities = getData(DB_KEYS.ACTIVITY);
+
+        var active = 0, pending = 0, online = 0;
+        for (var i = 0; i < resellers.length; i++) {
+            if (resellers[i].status === 'approved') active++;
+            if (resellers[i].status === 'pending') pending++;
+            if (isResellerOnline(resellers[i].id)) online++;
+        }
+        var pendWds = 0;
+        for (var w = 0; w < withdrawals.length; w++) { if (withdrawals[w].status === 'pending') pendWds++; }
+        /* (#3, #4) All Orders badge = Pending + Confirmed only.
+           Packaging / Shipping / Shipped / Delivered / Returned / Cancelled /
+           Rejected / Failed are never counted. Computed by the shared rule. */
+        var pendOrders = adminOrderBadgeCount();
+
+        document.getElementById('stResellers').textContent = resellers.length;
+        document.getElementById('stActive').textContent = active;
+        document.getElementById('stPending').textContent = pending;
+        document.getElementById('stWithdrawals').textContent = pendWds;
+        document.getElementById('stOrders').textContent = orders.length;
+        document.getElementById('stProducts').textContent = products.length;
+        document.getElementById('stOnline').textContent = online;
+
+        // Supplier stats - registered, selling (products), sales
+        var suppliers = getData(DB_KEYS.SUPPLIERS);
+        var supOnline = 0, supPending = 0;
+        for (var su = 0; su < suppliers.length; su++) {
+            if (suppliers[su].status === 'pending') supPending++;
+            if (isResellerOnline(suppliers[su].id)) supOnline++;
+        }
+        var supProducts = 0, supSales = 0;
+        var supIds = {};
+        for (var sp = 0; sp < suppliers.length; sp++) supIds[suppliers[sp].id] = true;
+        for (var pi = 0; pi < products.length; pi++) {
+            if (products[pi].supplierId && supIds[products[pi].supplierId]) supProducts++;
+        }
+        for (var oi = 0; oi < orders.length; oi++) {
+            if (orders[oi].items) {
+                for (var ii = 0; ii < orders[oi].items.length; ii++) {
+                    if (orders[oi].items[ii].supplierId && supIds[orders[oi].items[ii].supplierId]) supSales += orders[oi].items[ii].price * orders[oi].items[ii].qty;
+                }
+            }
+        }
+        document.getElementById('stSuppliers').textContent = suppliers.length;
+        document.getElementById('stSupProducts').textContent = supProducts;
+        document.getElementById('stSupSales').textContent = formatCurrency(supSales);
+        document.getElementById('stSupOnline').textContent = supOnline;
+        setBadge('ordersBadge', pendOrders);
+        setBadge('approvalsBadge', pending);
+        setBadge('withdrawalsBadge', pendWds);
+
+        var totalSales = 0;
+        for (var s = 0; s < orders.length; s++) totalSales += orders[s].amount;
+        document.getElementById('stSales').textContent = formatCurrency(totalSales);
+
+        // Recent Resellers
+        var recentR = [];
+        for (var r = resellers.length - 1; r >= 0 && recentR.length < 6; r--) recentR.push(resellers[r]);
+        var rrHtml = '';
+        if (recentR.length) {
+            rrHtml = '<table class="data-table"><thead><tr><th>Name</th><th>Email</th><th>Online</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+            for (var q = 0; q < recentR.length; q++) {
+                var rr = recentR[q];
+                var onBadge = isResellerOnline(rr.id) ? '<span class="badge badge-success">Online</span>' : '<span class="badge badge-danger">Offline</span>';
+                rrHtml += '<tr><td><strong>' + rr.name + '</strong></td><td style="font-size:0.82rem;">' + (rr.email || rr.phone) + '</td><td>' + onBadge + '</td><td>' + statusBadge(rr.status) + '</td>' +
+                    '<td><a href="resellers.html" class="btn btn-primary"><i class="fas fa-eye"></i></a>' + (rr.status === 'pending' ? ' <a href="approvals.html" class="btn btn-success"><i class="fas fa-check"></i></a>' : '') + '</td></tr>';
+            }
+            rrHtml += '</tbody></table>';
+        } else {
+            rrHtml = '<div class="empty"><i class="fas fa-users"></i><br>No resellers yet. <a href="add-reseller.html" style="color:#2563eb;font-weight:600;">Add one →</a></div>';
+        }
+        document.getElementById('recentResellers').innerHTML = rrHtml;
+
+        // Recent Orders
+        var recentO = [];
+        for (var ord = orders.length - 1; ord >= 0 && recentO.length < 5; ord--) recentO.push(orders[ord]);
+        var roHtml = '';
+        if (recentO.length) {
+            roHtml = '<table class="data-table"><thead><tr><th>Order ID</th><th>Reseller</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>';
+            for (var ro = 0; ro < recentO.length; ro++) {
+                roHtml += '<tr><td><a href="orders.html" style="color:#dc2626;font-weight:600;">' + recentO[ro].id + '</a></td><td>' + recentO[ro].resellerName + '</td><td>' + recentO[ro].customer + '</td><td>' + formatCurrency(recentO[ro].amount) + '</td><td>' + statusBadge(recentO[ro].status) + '</td><td>' + formatDate(recentO[ro].date) + '</td></tr>';
+            }
+            roHtml += '</tbody></table>';
+        } else {
+            roHtml = '<div class="empty"><i class="fas fa-shopping-cart"></i><br>No orders yet</div>';
+        }
+        document.getElementById('recentOrders').innerHTML = roHtml;
+
+        // Activity
+        var acts = [];
+        for (var a = activities.length - 1; a >= 0 && acts.length < 8; a--) acts.push(activities[a]);
+        var actHtml = '';
+        if (acts.length) {
+            for (var ac = 0; ac < acts.length; ac++) {
+                actHtml += '<div class="activity-item"><i class="fas fa-circle" style="color:#2563eb;font-size:0.45rem;margin-top:7px;"></i><div>' + acts[ac].message + '<br><small style="color:#64748b;">' + new Date(acts[ac].date).toLocaleString() + '</small></div></div>';
+            }
+        } else {
+            actHtml = '<div class="empty"><i class="fas fa-list-ul"></i><br>No activity yet</div>';
+        }
+        document.getElementById('activityFeed').innerHTML = actHtml;
+    }
+
+    window.doLogout = doLogout;
+
+    loadDashboard();
+    renderPft();
+
+    var PFTS = [['today', 'Today'], ['yday', 'Yesterday'], ['7', '7 Days'], ['30', '1 Month'], ['90', '3 Months'], ['180', '6 Months'], ['365', '1 Year'], ['all', 'Lifetime']];
+    window._pftSel = 'today';
+    function renderPftChips() {
+        var h = '';
+        for (var i = 0; i < PFTS.length; i++) {
+            h += '<div onclick="setPft(\'' + PFTS[i][0] + '\')" style="padding:7px 16px;border-radius:18px;font-size:.72rem;font-weight:800;cursor:pointer;' + (window._pftSel === PFTS[i][0] ? 'background:#1e293b;color:#fff;' : 'background:#fff;color:#475569;border:1.5px solid #e2e8f0;') + '">' + PFTS[i][1] + '</div>';
+        }
+        document.getElementById('pftChips').innerHTML = h;
+    }
+    window.setPft = function(p) { window._pftSel = p; renderPft(); renderPftChips(); };
+    function renderPft() {
+        var orders = getData(DB_KEYS.ORDERS);
+        var products = getData(DB_KEYS.PRODUCTS);
+        var costMap = {};
+        for (var p = 0; p < products.length; p++) costMap[products[p].id] = products[p].buy_price || 0;
+        var now = new Date();
+        var cut = 0;
+        if (window._pftSel === 'today') cut = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        else if (window._pftSel === 'yday') { var t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime(); cut = t0 - 86400000; var end = t0; }
+        else if (window._pftSel === '7') cut = now.getTime() - 7 * 86400000;
+        else if (window._pftSel === '30') cut = now.getTime() - 30 * 86400000;
+        else if (window._pftSel === '90') cut = now.getTime() - 90 * 86400000;
+        else if (window._pftSel === '180') cut = now.getTime() - 180 * 86400000;
+        else if (window._pftSel === '365') cut = now.getTime() - 365 * 86400000;
+        var a = 0, r = 0;
+        for (var i = 0; i < orders.length; i++) {
+            var o = orders[i];
+            if ((o.status || '') !== 'delivered') continue;
+            var d = new Date(o.deliveryDate || o.date || now.toISOString()).getTime();
+            if (cut && d < cut) continue;
+            if (window._pftSel === 'yday' && end && d >= end) continue;
+            var ap = 0;
+            if (o.items && o.items.length) {
+                for (var j = 0; j < o.items.length; j++) { ap += ((o.items[j].price || 0) - (costMap[o.items[j].productId] || 0)) * (o.items[j].qty || 0); }
+            } else {
+                ap = ((o.productPrice || 0) - (costMap[o.productId] || 0)) * (o.qty || 1);
+            }
+            a += ap; r += (o.profit || 0);
+        }
+        document.getElementById('pftAdmin').textContent = formatCurrency(a);
+        document.getElementById('pftRes').textContent = formatCurrency(r);
+    }
+    renderPftChips();
+    // Real-time: refresh every 8 seconds
+    setInterval(function() { loadDashboard(); }, 8000);
+})();
+</script>
+
+<script>
+/* ============================================================================
+   2026-09-18 — ADMIN DASHBOARD: MONTH-WISE PROFIT + DAILY EXPENSE TRACKER
+   ---------------------------------------------------------------------------
+   SCOPE: THIS FILE ONLY (admin/dashboard.html). app.js and every other page are
+   untouched. The expense store is a brand-new localStorage key,
+   `rh_admin_expenses`, read/written through app.js's generic getData()/setData()
+   so the quota self-heal (rhFreeSpace + the image compactor) keeps working.
+
+   Store shape:
+     rh_admin_expenses = [ { id, date:'YYYY-MM-DD', cat, amount:Number, note, createdAt } ]
+
+   MONEY RULES (agreed with the user):
+     * "আমাদের ইনকাম" = ADMIN PROFIT (item.price - buy_price) of DELIVERED orders,
+       grouped by the DELIVERY date (deliveryDate || date) — the same formula and
+       the same fallback as the Profit Analytics boxes above, so the month table
+       and those two boxes can never disagree.
+     * RESELLER PROFIT (order.profit) is shown SEPARATELY and is never added into
+       net profit — that money belongs to the reseller, not the platform.
+     * NET PROFIT = ADMIN PROFIT - EXPENSE.  Negative ⇒ লস (red).
+
+   Everything is declared at TOP LEVEL on purpose: inline onclick/onchange in the
+   markup resolve against the GLOBAL scope, and a function declared inside an IIFE
+   is unreachable from markup.
+   ========================================================================= */
+var RH_EXP_KEY = 'rh_admin_expenses';
+var RH_EXP_CATS = ['Courier', 'Food', 'Office', 'Marketing', 'Salary', 'Rent', 'Utility', 'Other'];
+/* other-source income — separate key so nothing that already exists is touched */
+var RH_INC_KEY = 'rh_admin_incomes';
+var RH_INC_CATS = ['Other Source', 'Sponsorship', 'Investment', 'Bonus / Gift', 'Refund', 'Commission', 'Service', 'Other'];
+var RH_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+var RH_MONTHS_S = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var RH_PERIODS = [['today','Today'],['week','This Week'],['month','This Month'],['lastmonth','Last Month'],['year','This Year'],['custom','Custom'],['all','All Time']];
+
+var rhExpSel = 'month';
+var rhExpFrom = '';
+var rhExpTo = '';
+var rhPftYear = 'all';
+
+/* ---------------------------- date / format ---------------------------- */
+function rhPad2(n) { return (n < 10 ? '0' : '') + n; }
+function rhDayStart(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function rhToday() { return rhDayStart(new Date()); }
+function rhYmd(d) { return d.getFullYear() + '-' + rhPad2(d.getMonth() + 1) + '-' + rhPad2(d.getDate()); }
+function rhFmtDay(d) { return d.getDate() + ' ' + RH_MONTHS_S[d.getMonth()] + ' ' + d.getFullYear(); }
+function rhParseDay(v) {
+    if (v === null || v === undefined || v === '') return null;
+    if (typeof v === 'number') { var dn = new Date(v); return isNaN(dn.getTime()) ? null : rhDayStart(dn); }
+    var m = String(v).match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (m) { var d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])); return isNaN(d.getTime()) ? null : d; }
+    var d2 = new Date(v);
+    return isNaN(d2.getTime()) ? null : rhDayStart(d2);
+}
+function rhEsc(s) {
+    return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+}
+/* an id put into an inline handler MUST be quoted, or a string id becomes a bare
+   identifier and throws ReferenceError: exp123 is not defined. JSON.stringify
+   gives the quotes; &quot; keeps them safe inside a double-quoted attribute. */
+function rhAttr(s) { return JSON.stringify(String(s === null || s === undefined ? '' : s)).replace(/"/g, '&quot;'); }
+function rhMoney(n) { return formatCurrency(Math.round(Number(n) || 0)); }
+function rhSigned(n) { n = Math.round(Number(n) || 0); return (n < 0 ? '-' : '') + formatCurrency(Math.abs(n)); }
+
+/* ------------------- profit (mirrors the Profit Analytics boxes) ------------------- */
+function rhCostMap() {
+    var p = getData(DB_KEYS.PRODUCTS), m = {};
+    for (var i = 0; i < p.length; i++) m[p[i].id] = p[i].buy_price || 0;
+    return m;
+}
+function rhOrderAdminProfit(o, cm) {
+    var ap = 0;
+    if (o.items && o.items.length) {
+        for (var j = 0; j < o.items.length; j++) {
+            ap += ((o.items[j].price || 0) - (cm[o.items[j].productId] || 0)) * (o.items[j].qty || 0);
+        }
+    } else {
+        ap = ((o.productPrice || 0) - (cm[o.productId] || 0)) * (o.qty || 1);
+    }
+    return ap;
+}
+/* delivered orders only, keyed by the day the order was DELIVERED */
+function rhProfitRows() {
+    var orders = getData(DB_KEYS.ORDERS), cm = rhCostMap(), now = rhToday(), out = [];
+    for (var i = 0; i < orders.length; i++) {
+        var o = orders[i];
+        if (!o || (o.status || '') !== 'delivered') continue;
+        out.push({
+            day: rhParseDay(o.deliveryDate) || rhParseDay(o.date) || now,
+            admin: rhOrderAdminProfit(o, cm),
+            reseller: Number(o.profit) || 0
+        });
+    }
+    return out;
+}
+
+/* ------------------------------ expense store ------------------------------ */
+function rhExpAll() { var a = getData(RH_EXP_KEY); return Array.isArray(a) ? a : []; }
+function rhExpRows() {
+    var a = rhExpAll(), out = [];
+    for (var i = 0; i < a.length; i++) {
+        var e = a[i];
+        if (!e || typeof e !== 'object') continue;
+        var amt = Number(e.amount) || 0;
+        if (!(amt > 0)) continue;
+        var day = rhParseDay(e.date) || rhParseDay(e.createdAt);
+        if (!day) continue;
+        out.push({
+            id: String(e.id === undefined || e.id === null ? '' : e.id),
+            day: day, cat: String(e.cat || 'Other'), amount: amt, note: String(e.note || '')
+        });
+    }
+    return out;
+}
+
+/* ------------------------------ income store (other sources) ------------------------------
+   Mirror of the expense store. Kept in its own key so an income entry can never
+   be mistaken for (or summed into) an expense. */
+function rhIncAll() { var a = getData(RH_INC_KEY); return Array.isArray(a) ? a : []; }
+function rhIncRows() {
+    var a = rhIncAll(), out = [];
+    for (var i = 0; i < a.length; i++) {
+        var e = a[i];
+        if (!e || typeof e !== 'object') continue;
+        var amt = Number(e.amount) || 0;
+        if (!(amt > 0)) continue;
+        var day = rhParseDay(e.date) || rhParseDay(e.createdAt);
+        if (!day) continue;
+        out.push({
+            id: String(e.id === undefined || e.id === null ? '' : e.id),
+            day: day, cat: String(e.cat || 'Other Source'), amount: amt, note: String(e.note || '')
+        });
+    }
+    return out;
+}
+
+/* --------------------------- period range (inclusive days) --------------------------- */
+function rhPeriodRange() {
+    var now = new Date(), t0 = rhDayStart(now), s, e;
+    if (rhExpSel === 'today') { s = t0; e = t0; }
+    else if (rhExpSel === 'week') {
+        /* Bangladesh week: শনিবার → শুক্রবার (Sat = 0) */
+        var dow = (t0.getDay() + 1) % 7;
+        s = new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() - dow);
+        e = new Date(s.getFullYear(), s.getMonth(), s.getDate() + 6);
+    }
+    else if (rhExpSel === 'month') { s = new Date(now.getFullYear(), now.getMonth(), 1); e = new Date(now.getFullYear(), now.getMonth() + 1, 0); }
+    else if (rhExpSel === 'lastmonth') { s = new Date(now.getFullYear(), now.getMonth() - 1, 1); e = new Date(now.getFullYear(), now.getMonth(), 0); }
+    else if (rhExpSel === 'year') { s = new Date(now.getFullYear(), 0, 1); e = new Date(now.getFullYear(), 11, 31); }
+    else if (rhExpSel === 'custom') {
+        s = rhParseDay(rhExpFrom); e = rhParseDay(rhExpTo);
+        if (s && e && e < s) { var t = s; s = e; e = t; }
+    }
+    else { s = null; e = null; }
+    return { s: s, e: e };
+}
+function rhInRange(day, r) {
+    if (!r.s) return true;
+    if (day < r.s) return false;
+    if (r.e && day > r.e) return false;
+    return true;
+}
+
+/* ========================= MONTH-WISE BREAKDOWN ========================= */
+function rhRenderMonthly() {
+    var host = document.getElementById('pftMonths');
+    if (!host) return;
+    var rows = rhProfitRows(), exps = rhExpRows(), months = {}, i, k;
+    for (i = 0; i < rows.length; i++) {
+        k = rhYmd(rows[i].day).slice(0, 7);
+        if (!months[k]) months[k] = { admin: 0, reseller: 0, expense: 0 };
+        months[k].admin += rows[i].admin;
+        months[k].reseller += rows[i].reseller;
+    }
+    for (i = 0; i < exps.length; i++) {
+        k = rhYmd(exps[i].day).slice(0, 7);
+        if (!months[k]) months[k] = { admin: 0, reseller: 0, expense: 0 };
+        months[k].expense += exps[i].amount;
+    }
+    var keys = Object.keys(months).sort().reverse();
+
+    /* year filter — rendered ONLY when more than one year actually has data */
+    var years = {}, yk;
+    for (i = 0; i < keys.length; i++) years[keys[i].slice(0, 4)] = true;
+    yk = Object.keys(years).sort().reverse();
+    if (rhPftYear !== 'all' && yk.indexOf(rhPftYear) === -1) rhPftYear = 'all';
+    var yHost = document.getElementById('pftYears');
+    if (yHost) {
+        if (yk.length > 1) {
+            var yh = '<div class="pe-y' + (rhPftYear === 'all' ? ' on' : '') + '" onclick="pftSetYear(\'all\')">All</div>';
+            for (i = 0; i < yk.length; i++) yh += '<div class="pe-y' + (rhPftYear === yk[i] ? ' on' : '') + '" onclick="pftSetYear(\'' + yk[i] + '\')">' + yk[i] + '</div>';
+            yHost.innerHTML = yh;
+        } else { yHost.innerHTML = ''; }
+    }
+
+    var shown = [];
+    for (i = 0; i < keys.length; i++) {
+        if (rhPftYear !== 'all' && keys[i].slice(0, 4) !== rhPftYear) continue;
+        shown.push(keys[i]);
+    }
+    if (!shown.length) {
+        host.innerHTML = '<div class="pe-empty"><i class="fas fa-calendar-xmark" style="font-size:1.6rem;opacity:.35;display:block;margin-bottom:8px;"></i>কোনো delivered order নেই — মাসভিত্তিক ইনকাম দেখানোর জন্য কিছু নেই।</div>';
+        return;
+    }
+    var cur = rhYmd(rhToday()).slice(0, 7);
+    var tA = 0, tR = 0, tE = 0;
+    var h = '<table class="pe-tbl"><thead><tr><th>Month</th><th>Admin Profit (ইনকাম)</th><th>Reseller Profit</th><th>Expense (খরচ)</th><th>Net Profit</th></tr></thead><tbody>';
+    for (i = 0; i < shown.length; i++) {
+        var mk = shown[i], v = months[mk], net = v.admin - v.expense;
+        tA += v.admin; tR += v.reseller; tE += v.expense;
+        h += '<tr><td><strong>' + RH_MONTHS[Number(mk.slice(5, 7)) - 1] + ' ' + mk.slice(0, 4) + '</strong>' + (mk === cur ? '<span class="pe-cur">চলতি মাস</span>' : '') + '</td>' +
+             '<td class="pe-num" style="color:#2563eb;">' + rhMoney(v.admin) + '</td>' +
+             '<td class="pe-num" style="color:#059669;">' + rhMoney(v.reseller) + '</td>' +
+             '<td class="pe-num" style="color:#dc2626;">' + rhMoney(v.expense) + '</td>' +
+             '<td class="' + (net < 0 ? 'pe-neg' : 'pe-pos') + '">' + rhSigned(net) + '</td></tr>';
+    }
+    if (shown.length > 1) {
+        h += '<tr class="pe-tot"><td>Total (' + shown.length + ' months)</td>' +
+             '<td style="color:#2563eb;">' + rhMoney(tA) + '</td>' +
+             '<td style="color:#059669;">' + rhMoney(tR) + '</td>' +
+             '<td style="color:#dc2626;">' + rhMoney(tE) + '</td>' +
+             '<td class="' + (tA - tE < 0 ? 'pe-neg' : 'pe-pos') + '">' + rhSigned(tA - tE) + '</td></tr>';
+    }
+    h += '</tbody></table>';
+    host.innerHTML = h;
+}
+function pftSetYear(y) { rhPftYear = y; rhRenderMonthly(); }
+
+/* ============================ EXPENSE TRACKER ============================ */
+function rhRenderExpChips() {
+    var host = document.getElementById('expChips');
+    if (!host) return;
+    var h = '';
+    for (var i = 0; i < RH_PERIODS.length; i++) {
+        h += '<div class="ec' + (rhExpSel === RH_PERIODS[i][0] ? ' on' : '') + '" onclick="expSetPeriod(\'' + RH_PERIODS[i][0] + '\')">' + RH_PERIODS[i][1] + '</div>';
+    }
+    host.innerHTML = h;
+    var cw = document.getElementById('expCustom');
+    if (cw) cw.style.display = (rhExpSel === 'custom') ? 'flex' : 'none';
+}
+
+function rhRenderExpense() {
+    var r = rhPeriodRange();
+    var rows = rhProfitRows(), exps = rhExpRows(), incs = rhIncRows();
+    var incA = 0, incR = 0, incO = 0, exp = 0, i, x, y, k;
+    var byCat = {}, byDay = {}, incDay = {}, incODay = {}, list = [], ilist = [];
+
+    for (i = 0; i < rows.length; i++) {
+        if (!rhInRange(rows[i].day, r)) continue;
+        incA += rows[i].admin; incR += rows[i].reseller;
+        k = rhYmd(rows[i].day);
+        incDay[k] = (incDay[k] || 0) + rows[i].admin;
+    }
+    for (i = 0; i < exps.length; i++) {
+        x = exps[i];
+        if (!rhInRange(x.day, r)) continue;
+        exp += x.amount;
+        byCat[x.cat] = (byCat[x.cat] || 0) + x.amount;
+        k = rhYmd(x.day);
+        byDay[k] = (byDay[k] || 0) + x.amount;
+        list.push(x);
+    }
+    /* other-source income — same period filter, kept in its own bucket */
+    for (i = 0; i < incs.length; i++) {
+        y = incs[i];
+        if (!rhInRange(y.day, r)) continue;
+        incO += y.amount;
+        k = rhYmd(y.day);
+        incODay[k] = (incODay[k] || 0) + y.amount;
+        ilist.push(y);
+    }
+    var net = incA + incO - exp;
+
+    /* range caption — always shows the RESOLVED dates, so "This Week" can never
+       be ambiguous about which day the week starts on */
+    var rn = document.getElementById('expRangeNote');
+    if (rn) {
+        var cap;
+        if (r.s && r.e) cap = (rhYmd(r.s) === rhYmd(r.e)) ? rhFmtDay(r.s) : (rhFmtDay(r.s) + ' — ' + rhFmtDay(r.e));
+        else cap = 'সব সময় (All Time)';
+        if (rhExpSel === 'week') cap += '  (শনিবার — শুক্রবার)';
+        rn.innerHTML = '<i class="fas fa-calendar-check"></i> ' + rhEsc(cap) + ' · ' + list.length + ' expense + ' + ilist.length + ' income entry';
+    }
+
+    var sm = document.getElementById('expSummary');
+    if (sm) {
+        sm.innerHTML =
+            '<div class="exp-sbox inc"><div class="sl">Income · Admin Profit</div><div class="sv">' + rhMoney(incA) + '</div></div>' +
+            '<div class="exp-sbox oin"><div class="sl">Other Income · অন্য সোর্স</div><div class="sv">' + rhMoney(incO) + '</div></div>' +
+            '<div class="exp-sbox out"><div class="sl">Total Expense · খরচ</div><div class="sv">' + rhMoney(exp) + '</div></div>' +
+            '<div class="exp-sbox net' + (net < 0 ? ' neg' : '') + '"><div class="sl">Net Profit · Admin + Other − খরচ</div><div class="sv">' + rhSigned(net) + '</div></div>';
+    }
+    var nl = document.getElementById('expNoteLine');
+    if (nl) {
+        nl.innerHTML = 'Reseller Profit (আলাদা, নেটে যোগ হয় না): <strong style="color:#059669;">' + rhMoney(incR) + '</strong>' +
+            ' &nbsp;·&nbsp; মোট ইনকাম (Admin + Reseller): <strong>' + rhMoney(incA + incR) + '</strong>' +
+            ' &nbsp;·&nbsp; হিসাব: ' + rhMoney(incA) + ' Admin + ' + rhMoney(incO) + ' Other − ' + rhMoney(exp) + ' খরচ = <strong class="' + (net < 0 ? 'pe-neg' : 'pe-pos') + '">' + rhSigned(net) + '</strong>';
+    }
+
+    /* category-wise */
+    var ch = document.getElementById('expCats');
+    if (ch) {
+        var ck = Object.keys(byCat).sort(function (a, b) { return byCat[b] - byCat[a]; });
+        if (!ck.length) ch.innerHTML = '<div class="eb-empty">এই সময়ে কোনো খরচ লেখা হয়নি।</div>';
+        else {
+            var mx = byCat[ck[0]] || 1, hh = '';
+            for (i = 0; i < ck.length; i++) {
+                var pct = Math.max(3, Math.round(byCat[ck[i]] / mx * 100));
+                hh += '<div class="cat-row"><div class="cat-top"><span>' + rhEsc(ck[i]) + '</span><span style="color:#dc2626;">' + rhMoney(byCat[ck[i]]) + '</span></div>' +
+                      '<div class="cat-bar"><i style="width:' + pct + '%"></i></div></div>';
+            }
+            ch.innerHTML = hh;
+        }
+    }
+
+    /* day-wise */
+    var dh = document.getElementById('expDays');
+    if (dh) {
+        var dk = {};
+        for (k in byDay) dk[k] = true;
+        for (k in incDay) dk[k] = true;
+        for (k in incODay) dk[k] = true;
+        var dkeys = Object.keys(dk).sort().reverse();
+        if (!dkeys.length) dh.innerHTML = '<div class="eb-empty">এই সময়ে কোনো ইনকাম বা খরচ নেই।</div>';
+        else {
+            var capD = 120, shownD = dkeys.slice(0, capD);
+            var hd = '<table class="mini-tbl"><thead><tr><th>Date</th><th>Income</th><th>Other</th><th>Expense</th><th>Net</th></tr></thead><tbody>';
+            for (i = 0; i < shownD.length; i++) {
+                var di = incDay[shownD[i]] || 0, de = byDay[shownD[i]] || 0, dot = incODay[shownD[i]] || 0, dn = di + dot - de;
+                hd += '<tr><td><strong>' + shownD[i] + '</strong></td>' +
+                      '<td style="color:#2563eb;font-weight:700;">' + rhMoney(di) + '</td>' +
+                      '<td style="color:#15803d;font-weight:700;">' + rhMoney(dot) + '</td>' +
+                      '<td style="color:#dc2626;font-weight:700;">' + rhMoney(de) + '</td>' +
+                      '<td class="' + (dn < 0 ? 'pe-neg' : 'pe-pos') + '">' + rhSigned(dn) + '</td></tr>';
+            }
+            hd += '</tbody></table>';
+            if (dkeys.length > capD) hd += '<div class="eb-empty">…আরও ' + (dkeys.length - capD) + ' দিন (শেষ ' + capD + ' দিন দেখানো হচ্ছে)</div>';
+            dh.innerHTML = hd;
+        }
+    }
+
+    /* entries */
+    var lh = document.getElementById('expList');
+    var cnt = document.getElementById('expCount');
+    if (cnt) cnt.textContent = '(' + list.length + ' টি · ' + rhMoney(exp) + ')';
+    if (lh) {
+        if (!list.length) {
+            lh.innerHTML = '<div class="eb-empty">এই সময়ের জন্য কোনো খরচ লেখা হয়নি। উপরে তারিখ, খরচের খাত আর টাকা দিয়ে <b>Add Expense</b> চাপুন।</div>';
+        } else {
+            var sorted = list.slice().sort(function (a, b) { return b.day - a.day; });
+            var capL = 200, shownL = sorted.slice(0, capL), he = '';
+            for (i = 0; i < shownL.length; i++) {
+                x = shownL[i];
+                he += '<div class="exp-row"><span class="er-d">' + rhYmd(x.day) + '</span>' +
+                      '<span class="er-c">' + rhEsc(x.cat) + '</span>' +
+                      '<span class="er-n">' + (x.note ? rhEsc(x.note) : '<i style="color:#cbd5e1;">—</i>') + '</span>' +
+                      '<span class="er-a">' + rhMoney(x.amount) + '</span>' +
+                      '<button class="er-x" title="Delete" onclick="expDel(' + rhAttr(x.id) + ')"><i class="fas fa-trash"></i></button></div>';
+            }
+            if (sorted.length > capL) he += '<div class="eb-empty">…আরও ' + (sorted.length - capL) + ' টি entry</div>';
+            lh.innerHTML = he;
+        }
+    }
+
+    /* ---------------- other-source income entries ---------------- */
+    var ic = document.getElementById('incCount');
+    if (ic) ic.textContent = '(' + ilist.length + ' টি · ' + rhMoney(incO) + ')';
+    var ih = document.getElementById('incList');
+    if (ih) {
+        if (!ilist.length) {
+            ih.innerHTML = '<div class="eb-empty">এই সময়ের জন্য কোনো other-source ইনকাম লেখা হয়নি। উপরে তারিখ, সোর্স আর টাকা দিয়ে <b>Add Income</b> চাপুন।</div>';
+        } else {
+            var isorted = ilist.slice().sort(function (a, b) { return b.day - a.day; });
+            var capI = 200, shownI = isorted.slice(0, capI), hi = '';
+            for (i = 0; i < shownI.length; i++) {
+                y = shownI[i];
+                hi += '<div class="exp-row inc"><span class="er-d">' + rhYmd(y.day) + '</span>' +
+                      '<span class="er-c">' + rhEsc(y.cat) + '</span>' +
+                      '<span class="er-n">' + (y.note ? rhEsc(y.note) : '<i style="color:#cbd5e1;">—</i>') + '</span>' +
+                      '<span class="er-a">' + rhMoney(y.amount) + '</span>' +
+                      '<button class="er-x" title="Delete" onclick="incDel(' + rhAttr(y.id) + ')"><i class="fas fa-trash"></i></button></div>';
+            }
+            if (isorted.length > capI) hi += '<div class="eb-empty">…আরও ' + (isorted.length - capI) + ' টি entry</div>';
+            ih.innerHTML = hi;
+        }
+    }
+}
+
+/* ---------------- public handlers (inline handlers need the GLOBAL scope) ---------------- */
+function expSetPeriod(p) {
+    rhExpSel = p;
+    if (p === 'custom') {
+        var t = rhToday();
+        if (!rhExpFrom) rhExpFrom = rhYmd(new Date(t.getFullYear(), t.getMonth(), 1));
+        if (!rhExpTo) rhExpTo = rhYmd(t);
+        var f = document.getElementById('expFrom'), g = document.getElementById('expTo');
+        if (f) f.value = rhExpFrom;
+        if (g) g.value = rhExpTo;
+    }
+    rhRenderExpChips();
+    rhRenderExpense();
+}
+function expCustomGo() {
+    var f = document.getElementById('expFrom'), g = document.getElementById('expTo');
+    rhExpFrom = f ? f.value : '';
+    rhExpTo = g ? g.value : '';
+    rhRenderExpense();
+}
+function expAdd() {
+    var dEl = document.getElementById('expDate');
+    var cEl = document.getElementById('expCat');
+    var aEl = document.getElementById('expAmt');
+    var nEl = document.getElementById('expNote');
+    var amt = Math.round(Number(aEl && aEl.value) || 0);
+    if (!(amt > 0)) {
+        showToast('Amount লিখুন — ০ থেকে বড় হতে হবে।', 'error');
+        if (aEl) aEl.focus();
+        return;
+    }
+    var day = rhParseDay(dEl && dEl.value) || rhToday();
+    var cat = (cEl && cEl.value) ? String(cEl.value) : 'Other';
+    var list = rhExpAll();
+    list.push({
+        id: 'exp' + Date.now() + Math.floor(Math.random() * 1000),
+        date: rhYmd(day),
+        cat: cat,
+        amount: amt,
+        note: (nEl && nEl.value ? String(nEl.value) : '').trim(),
+        createdAt: new Date().toISOString()
+    });
+    /* house rule: 1 mutate -> 2 setData AND check the return -> 3 side effects in
+       their own try/catch -> 4 success UI last, unconditionally */
+    var saved = false;
+    try { saved = setData(RH_EXP_KEY, list); } catch (e) { saved = false; }
+    if (!saved) {
+        showToast('খরচ সেভ হয়নি — storage full বা unavailable. কিছু ডেটা মুছে আবার চেষ্টা করুন।', 'error');
+        return;   /* keep the form as-is so the user can retry */
+    }
+    try { if (aEl) aEl.value = ''; } catch (e) {}
+    try { if (nEl) nEl.value = ''; } catch (e) {}
+    try { if (dEl) dEl.value = rhYmd(day); } catch (e) {}
+    try { rhRenderExpense(); } catch (e) {}
+    try { rhRenderMonthly(); } catch (e) {}
+    showToast('খরচ যোগ হয়েছে — ' + rhMoney(amt) + ' (' + cat + ')', 'success');
+}
+function expDel(id) {
+    var all = rhExpAll(), target = null, i;
+    for (i = 0; i < all.length; i++) { if (String(all[i] && all[i].id) === String(id)) { target = all[i]; break; } }
+    if (!target) return;
+    if (!window.confirm('এই খরচটা মুছে ফেলবেন?\n\n' + (target.date || '') + ' · ' + (target.cat || '') + ' · ' + rhMoney(target.amount))) return;
+    var keep = [];
+    for (i = 0; i < all.length; i++) { if (String(all[i] && all[i].id) !== String(id)) keep.push(all[i]); }
+    var saved = false;
+    try { saved = setData(RH_EXP_KEY, keep); } catch (e) { saved = false; }
+    if (!saved) { showToast('মুছে ফেলা যায়নি — storage সমস্যা।', 'error'); return; }
+    try { rhRenderExpense(); } catch (e) {}
+    try { rhRenderMonthly(); } catch (e) {}
+    showToast('খরচ মুছে ফেলা হয়েছে', 'success');
+}
+
+/* ====================== OTHER-SOURCE INCOME (mirror of the expense API) ====================== */
+function incAdd() {
+    var dEl = document.getElementById('incDate');
+    var cEl = document.getElementById('incSrc');
+    var aEl = document.getElementById('incAmt');
+    var nEl = document.getElementById('incNote');
+    var amt = Math.round(Number(aEl && aEl.value) || 0);
+    if (!(amt > 0)) {
+        showToast('Amount লিখুন — ০ থেকে বড় হতে হবে।', 'error');
+        if (aEl) aEl.focus();
+        return;
+    }
+    var day = rhParseDay(dEl && dEl.value) || rhToday();
+    var src = (cEl && cEl.value) ? String(cEl.value) : 'Other Source';
+    var list = rhIncAll();
+    list.push({
+        id: 'inc' + Date.now() + Math.floor(Math.random() * 1000),
+        date: rhYmd(day),
+        cat: src,
+        amount: amt,
+        note: (nEl && nEl.value ? String(nEl.value) : '').trim(),
+        createdAt: new Date().toISOString()
+    });
+    /* house rule: 1 mutate -> 2 setData AND check the return -> 3 side effects in
+       their own try/catch -> 4 success UI last, unconditionally */
+    var saved = false;
+    try { saved = setData(RH_INC_KEY, list); } catch (e) { saved = false; }
+    if (!saved) {
+        showToast('ইনকাম সেভ হয়নি — storage full বা unavailable। কিছু ডেটা মুছে আবার চেষ্টা করুন।', 'error');
+        return;   /* keep the form as-is so the user can retry */
+    }
+    try { if (aEl) aEl.value = ''; } catch (e) {}
+    try { if (nEl) nEl.value = ''; } catch (e) {}
+    try { if (dEl) dEl.value = rhYmd(day); } catch (e) {}
+    try { rhRenderExpense(); } catch (e) {}
+    showToast('ইনকাম যোগ হয়েছে — ' + rhMoney(amt) + ' (' + src + ')', 'success');
+}
+function incDel(id) {
+    var all = rhIncAll(), target = null, i;
+    for (i = 0; i < all.length; i++) { if (String(all[i] && all[i].id) === String(id)) { target = all[i]; break; } }
+    if (!target) return;
+    if (!window.confirm('এই ইনকামটা মুছে ফেলবেন?\n\n' + (target.date || '') + ' · ' + (target.cat || '') + ' · ' + rhMoney(target.amount))) return;
+    var keep = [];
+    for (i = 0; i < all.length; i++) { if (String(all[i] && all[i].id) !== String(id)) keep.push(all[i]); }
+    var saved = false;
+    try { saved = setData(RH_INC_KEY, keep); } catch (e) { saved = false; }
+    if (!saved) { showToast('মুছে ফেলা যায়নি — storage সমস্যা।', 'error'); return; }
+    try { rhRenderExpense(); } catch (e) {}
+    showToast('ইনকাম মুছে ফেলা হয়েছে', 'success');
+}
+
+/* ---------- boot ----------
+   This block sits AFTER the dashboard IIFE, so app.js globals (getData, setData,
+   DB_KEYS, formatCurrency, showToast) and every element above already exist. */
+(function rhProfitExpenseBoot() {
+    try {
+        var cEl = document.getElementById('expCat');
+        if (cEl && !cEl.options.length) {
+            var h = '';
+            for (var i = 0; i < RH_EXP_CATS.length; i++) h += '<option value="' + rhEsc(RH_EXP_CATS[i]) + '">' + rhEsc(RH_EXP_CATS[i]) + '</option>';
+            cEl.innerHTML = h;
+        }
+        var dEl = document.getElementById('expDate');
+        if (dEl && !dEl.value) dEl.value = rhYmd(rhToday());
+
+        /* other-source income: Source dropdown + default date */
+        var sEl = document.getElementById('incSrc');
+        if (sEl && !sEl.options.length) {
+            var sh = '';
+            for (i = 0; i < RH_INC_CATS.length; i++) sh += '<option value="' + rhEsc(RH_INC_CATS[i]) + '">' + rhEsc(RH_INC_CATS[i]) + '</option>';
+            sEl.innerHTML = sh;
+        }
+        var idEl = document.getElementById('incDate');
+        if (idEl && !idEl.value) idEl.value = rhYmd(rhToday());
+
+        rhRenderExpChips();
+        rhRenderExpense();
+        rhRenderMonthly();
+    } catch (e) {
+        try { console.error('rhProfitExpenseBoot failed:', e); } catch (e2) {}
+    }
+})();
+</script>
+    <script src="assistant.js"></script>\r\n<script>document.addEventListener('DOMContentLoaded',function(){var p=location.pathname.split('/').pop();var sel=null;if(p==='add-reseller.html')sel='resellers.html';else if(p==='supplier-products.html')sel='suppliers.html';else sel=p;document.querySelectorAll('.smenu a,.sidebar a,.sidebar-menu a').forEach(function(a){if(a.getAttribute('href')===sel){a.classList.add('active');a.style.background='#10b981';a.style.color='#fff';a.style.fontWeight='800'}})});</script>
+
+<script>
+/* Admin sidebar toggle (additive) */
+if (!window.toggleSidebar) {
+    window.toggleSidebar = function(open) {
+        var sb = document.querySelector('.sidebar');
+        if (!sb) return;
+        if (open === undefined) open = !sb.classList.contains('open');
+        sb.classList.toggle('open', open);
+        var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+        if (ov) ov.classList.toggle('show', open);
+    };
+}
+</script>
+
+
+<script id="lx-auto-active">
+(function() {
+    var page = location.pathname.split('/').pop();
+    document.querySelectorAll('.sb-item').forEach(function(a) {
+        var href = (a.getAttribute('href') || '').split('?')[0];
+        if (href === page) a.classList.add('on');
+    });
+    /* ADMIN ONLY (this request) — a moderator must not see the Moderators page,
+       which is the one screen that could let them recruit another moderator.
+       The page itself also bounces a moderator; this hides the door as well. */
+    try {
+        if (sessionStorage.getItem('user_type') !== 'admin') {
+            document.querySelectorAll('.sb-item[href="moderators.html"]').forEach(function (a) { a.style.display = 'none'; });
+        }
+    } catch (e) {}
+})();
+</script>
+</body>
+</html>
+

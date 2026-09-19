@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Information - Admin - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#f1f5f9; color:#1e293b; }
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:240px; background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%); color:#cbd5e1; z-index:100; overflow-y:auto; }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid #334155; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:38px; height:38px; background:linear-gradient(135deg,#dc2626,#b91c1c); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; }
+        .sidebar-logo h3 { color:white; font-size:1rem; }
+        .sidebar-logo small { color:#94a3b8; font-size:0.7rem; display:block; }
+        .sidebar-menu { list-style:none; padding:12px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:10px 20px; color:#cbd5e1; text-decoration:none; font-size:0.88rem; }
+        .sidebar-menu a:hover { background:rgba(255,255,255,0.05); color:white; }
+        .sidebar-menu a.active { background:#dc2626; color:white; }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 20px 5px; color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+        .main { margin-left:240px; min-height:100vh; }
+        .topbar { background:white; padding:14px 25px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:sticky; top:0; z-index:50; }
+        .topbar h2 { font-size:1.2rem; font-weight:600; }
+        .topbar h2 i { color:#dc2626; margin-right:8px; }
+        .user-pill { display:flex; align-items:center; gap:8px; padding:6px 14px; background:#fee2e2; border-radius:30px; font-size:0.85rem; color:#991b1b; font-weight:600; }
+        .btn-logout { background:#dc2626; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:500; }
+        .content { padding:25px; }
+        .card { background:white; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:20px; overflow:hidden; }
+        .card-header { padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+        .card-header h4 { font-size:0.95rem; font-weight:600; }
+        .card-header h4 i { color:#dc2626; margin-right:6px; }
+        .data-table { width:100%; border-collapse:collapse; }
+        .data-table th { text-align:left; padding:11px 20px; background:#f8fafc; font-weight:600; font-size:0.72rem; color:#64748b; text-transform:uppercase; }
+        .data-table td { padding:12px 20px; border-bottom:1px solid #f1f5f9; font-size:0.85rem; }
+        .data-table tr:hover { background:#f8fafc; }
+        .badge { padding:3px 9px; border-radius:20px; font-size:0.7rem; font-weight:600; }
+        .badge-success { background:#d1fae5; color:#065f46; }
+        .badge-warning { background:#fef3c7; color:#92400e; }
+        .badge-danger { background:#fee2e2; color:#991b1b; }
+        .btn { padding:6px 12px; border:none; border-radius:7px; font-size:0.78rem; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+        .btn-success { background:#10b981; color:white; }
+        .btn-danger { background:#dc2626; color:white; }
+        .btn-sm { padding:4px 9px; font-size:0.72rem; }
+        .empty { text-align:center; padding:40px; color:#94a3b8; }
+        .stat-row { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px; }
+        .stat { background:white; border-radius:12px; padding:16px 18px; border:1px solid #e2e8f0; }
+        .stat .big { font-size:1.4rem; font-weight:900; }
+        .stat .lbl { font-size:.76rem; color:#64748b; margin-top:2px; }
+        @media (max-width:768px) { .main { margin-left:240px; } .stat-row { grid-template-columns:1fr; } }
+    </style>
+
+
+
+
+<style id="lx-sb-final">
+/* ===== ADMIN SIDEBAR v4 — fresh premium design (authoritative) ===== */
+body .lx-sidebar { position:fixed !important; left:0 !important; top:0 !important; bottom:0 !important; width:264px !important; background:linear-gradient(180deg,#0d1226 0%,#171233 100%) !important; border-right:1px solid rgba(129,140,248,.14) !important; z-index:600 !important; overflow-y:auto !important; overflow-x:hidden !important; display:flex !important; flex-direction:column !important; transform:none !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; font-family:'Inter','Hind Siliguri',sans-serif !important; }
+body .lx-sidebar::before { content:'' !important; position:absolute !important; top:-80px !important; right:-60px !important; width:260px !important; height:260px !important; background:radial-gradient(circle,rgba(99,102,241,.18),transparent 70%) !important; pointer-events:none !important; }
+body .lx-brand { display:flex !important; align-items:center !important; gap:12px !important; padding:20px 18px !important; border-bottom:1px solid rgba(129,140,248,.14) !important; position:relative !important; }
+body .lx-brand-ic { width:42px !important; height:42px !important; border-radius:13px !important; background:linear-gradient(135deg,#6366f1,#a855f7) !important; display:flex !important; align-items:center !important; justify-content:center !important; color:#fff !important; font-size:1.05rem !important; box-shadow:0 8px 20px rgba(99,102,241,.4) !important; flex-shrink:0 !important; }
+body .lx-brand-tx b { color:#fff !important; font-size:1.02rem !important; font-weight:900 !important; display:block !important; line-height:1.2 !important; }
+body .lx-brand-tx small { color:#818cf8 !important; font-size:.6rem !important; font-weight:800 !important; letter-spacing:2px !important; }
+body .lx-close { margin-left:auto !important; background:rgba(255,255,255,.06) !important; border:none !important; color:#94a3b8 !important; width:30px !important; height:30px !important; border-radius:9px !important; cursor:pointer !important; font-size:1rem !important; display:none !important; align-items:center !important; justify-content:center !important; }
+body .lx-close:hover { background:#fee2e2 !important; color:#dc2626 !important; }
+body .lx-menu { padding:14px 12px !important; flex:1 !important; }
+body .sec-label { font-size:.6rem !important; font-weight:900 !important; letter-spacing:2.2px !important; color:#6b7280 !important; text-transform:uppercase !important; padding:14px 12px 6px !important; display:flex !important; align-items:center !important; gap:8px !important; }
+body .sec-label::before { content:'' !important; width:14px !important; height:2px !important; background:linear-gradient(90deg,#6366f1,#a855f7) !important; border-radius:2px !important; }
+body .sb-item { position:relative !important; display:flex !important; align-items:center !important; gap:11px !important; padding:9px 12px !important; margin:3px 0 !important; border-radius:12px !important; color:#b6c2e2 !important; text-decoration:none !important; font-size:.86rem !important; font-weight:600 !important; transition:all .2s !important; border:1px solid transparent !important; background:transparent !important; opacity:1 !important; visibility:visible !important; pointer-events:auto !important; box-shadow:none !important; transform:none !important; }
+body .sb-item .sb-ico { width:30px !important; height:30px !important; border-radius:9px !important; background:rgba(255,255,255,.05) !important; display:flex !important; align-items:center !important; justify-content:center !important; font-size:.82rem !important; flex-shrink:0 !important; transition:all .2s !important; }
+body .sb-item .sb-txt { flex:1 !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; display:block !important; }
+body .sb-item:hover { background:rgba(99,102,241,.13) !important; color:#fff !important; }
+body .sb-item:hover .sb-ico { background:rgba(99,102,241,.3) !important; }
+body .sb-item.on { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; border-color:rgba(129,140,248,.35) !important; }
+body .sb-item.on::before { content:'' !important; position:absolute !important; left:-12px !important; top:50% !important; transform:translateY(-50%) !important; width:3.5px !important; height:60% !important; background:linear-gradient(180deg,#818cf8,#c084fc) !important; border-radius:3px !important; }
+body .sb-item.on .sb-ico { background:linear-gradient(135deg,#6366f1,#a855f7) !important; color:#fff !important; }
+/* page-এর নিচের inline-highlight script সবসময় হারাবে */
+body .sb-item[style] { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; }
+body .sb-badge { background:#fbbf24 !important; color:#1e293b !important; font-size:.62rem !important; padding:1px 8px !important; border-radius:10px !important; font-weight:800 !important; margin-left:auto !important; }
+body .main { margin-left:264px !important; min-height:100vh !important; }
+body .side-overlay { display:none !important; position:fixed !important; inset:0 !important; background:rgba(7,10,26,.6) !important; z-index:590 !important; backdrop-filter:blur(2px) !important; }
+body .side-overlay.show { display:block !important; pointer-events:auto !important; }
+body .hamburger { display:none !important; }
+/* ===== মোবাইল/ট্যাবলেট: slide drawer ===== */
+@media (max-width:1024px) {
+    body .main { margin-left:0 !important; }
+    body .lx-sidebar { transform:translateX(-100%) !important; box-shadow:none !important; }
+    body .lx-sidebar.open { transform:none !important; box-shadow:30px 0 70px rgba(7,10,26,.6) !important; }
+    body .lx-close { display:flex !important; }
+    body .hamburger { display:inline-flex !important; }
+    body { overflow-x:hidden !important; }
+}
+</style>
+
+
+
+
+
+<style id="lx-ovf-fix">
+@media(max-width:768px){ body{overflow-x:hidden !important} }
+</style>
+<style id="lx-orders-badge-n">.orders-badge-n{color:#fbbf24;font-weight:900;font-size:.72rem}.orders-badge-n:empty{display:none}</style>
+<style id="admin-mobile-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   The admin topbar measured about 474px across on a 390px phone (25px padding, an
+   h2 at 1.2rem, 12px gaps, a wide user pill), so the logout button was pushed past
+   the right edge. Several admin tables are also built by JS with NO .table-scroll
+   wrapper, so they widened the whole page instead of scrolling.
+   EVERY rule below sits inside a max-width query, so the DESKTOP LAYOUT IS
+   UNCHANGED. This is an ADDED block — no existing rule is modified or removed. */
+@media (max-width:768px){
+  .topbar { padding:10px 12px; gap:8px; }
+  .topbar h2 { font-size:.92rem; }
+  .topbar h2 i { margin-right:4px; }
+  .topbar-right { gap:6px; }
+  .user-pill { padding:5px 9px; font-size:.72rem; }
+  .btn-logout { padding:7px 10px; }
+  /* a table without a scroll wrapper would otherwise push the page wide */
+  .data-table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%; }
+}
+</style>
+<style id="panel-fullwidth-fix">
+/* 2026-09-16 — FULL-WIDTH FIX for the admin and supplier panels (this request).
+   The whole page sat in a narrow column with empty space on the right, because the
+   base rule reserves the sidebar with `margin-left`, and a block element with
+   margin-left and width:auto is only (100% - that) wide. A LATER rule in the same
+   file re-asserted the margin with !important, so the earlier mobile override lost.
+   This block is the LAST thing in the document, so it wins, and it resets width as
+   well as margin. Desktop is untouched — everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<aside class="lx-sidebar sidebar" id="sidebar">
+    <div class="lx-brand">
+        <span class="lx-brand-ic"><i class="fas fa-user-shield"></i></span>
+        <div class="lx-brand-tx"><b>AdminHub</b><small>CONTROL PANEL</small></div>
+        <button class="lx-close" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+    <nav class="lx-menu">
+        <div class="sec-label">Main</div>
+        <a href="dashboard.html" class="sb-item"><span class="sb-ico"><i class="fas fa-chart-line"></i></span><span class="sb-txt">Dashboard</span></a>
+        <a href="orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-shopping-cart"></i></span><span class="sb-txt">All Orders<span class="orders-badge-n" id="ordersBadgeN"></span></span><span class="orders-badge" style="display:none;margin-left:auto;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:.62rem;font-weight:800"></span></a>
+        <a href="multi-supplier-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-people-arrows"></i></span><span class="sb-txt">Multi-Supplier Orders<span class="orders-badge-n" id="msCount"></span></span></a>
+        <a href="products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box"></i></span><span class="sb-txt">Products</span></a>
+        <div class="sec-label">Users</div>
+        <a href="resellers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-users"></i></span><span class="sb-txt">Resellers</span></a>
+        <a href="suppliers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-warehouse"></i></span><span class="sb-txt">Suppliers</span></a>
+        <a href="supplier-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-boxes-stacked"></i></span><span class="sb-txt">Supplier Products</span></a>
+        <a href="add-reseller.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Add Reseller</span></a>
+        <a href="add-supplier.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck"></i></span><span class="sb-txt">Add Supplier</span></a>
+        <a href="approvals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-check"></i></span><span class="sb-txt">Approvals</span></a>
+        <a href="withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-money-bill-wave"></i></span><span class="sb-txt">Withdrawals</span></a>
+        <a href="supplier-withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-hand-holding-dollar"></i></span><span class="sb-txt">Supplier Withdraw</span></a>
+        <a href="transactions.html" class="sb-item"><span class="sb-ico"><i class="fas fa-receipt"></i></span><span class="sb-txt">Transaction History</span></a>
+        <a href="moderators.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-shield"></i></span><span class="sb-txt">Moderators</span></a>
+        <div class="sec-label">Referral</div>
+        <a href="referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Reseller Referral</span></a>
+        <a href="supplier-referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck-arrow-right"></i></span><span class="sb-txt">Supplier Referral</span></a>
+                <a href="myshop-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-bag-shopping"></i></span><span class="sb-txt">My Shop Orders</span></a>
+        <a href="myshop-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box-open"></i></span><span class="sb-txt">My Shop Products</span></a>
+        <div class="sec-label">Offers &amp; Banners</div>
+        <a href="add-offer.html" class="sb-item"><span class="sb-ico"><i class="fas fa-plus-circle"></i></span><span class="sb-txt">Add Offers</span></a>
+        <a href="manage-offers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-gift"></i></span><span class="sb-txt">Manage Offers</span></a>
+        <a href="add-banner.html" class="sb-item"><span class="sb-ico"><i class="fas fa-image"></i></span><span class="sb-txt">Add Banners</span></a>
+        <a href="manage-banners.html" class="sb-item"><span class="sb-ico"><i class="fas fa-images"></i></span><span class="sb-txt">Manage Banners</span></a>
+        <div class="sec-label">System</div>
+        <a href="messages.html" class="sb-item"><span class="sb-ico"><i class="fas fa-comments"></i></span><span class="sb-txt">Messages<span class="orders-badge-n" id="msgBadgeN"></span></span></a>
+        <a href="settings.html" class="sb-item"><span class="sb-ico"><i class="fas fa-cog"></i></span><span class="sb-txt">Settings</span></a>
+        <a href="../index.html" class="sb-item"><span class="sb-ico"><i class="fas fa-globe"></i></span><span class="sb-txt">Visit Site</span></a>
+    </nav>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+            <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h2><i class="fas fa-address-book"></i> Customer Information</h2>
+        <div class="topbar-right">
+            <div class="user-pill"><i class="fas fa-user-shield"></i> Admin</div>
+            <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content">
+        <!-- ==========================================================================
+             CUSTOMER INFORMATION — ADMIN VIEW  (2026-09-18, this request)
+             --------------------------------------------------------------------------
+             Every reseller's customers in ONE list. This is the ONLY screen in the
+             app that reads across shops, and it does so through ciAllFlat() — the
+             single cross-tenant reader. Every row carries the owning reseller so
+             the admin can always tell whose customer it is.
+
+             READ-ONLY on purpose: the address book belongs to the reseller, and
+             editing another person's customer from here would be a silent
+             cross-tenant write. The reseller edits and deletes from their own
+             Customer Information page.
+             ========================================================================== -->
+        <style>
+            .ci-chip{padding:6px 14px;border-radius:16px;font-size:.74rem;font-weight:800;cursor:pointer;border:1.5px solid #e2e8f0;background:#fff;color:#475569;}
+            .ci-chip.on{border-color:#4f46e5;background:#4f46e5;color:#fff;}
+            .ci-shop{display:inline-block;padding:2px 9px;border-radius:9px;font-size:.64rem;font-weight:800;background:#eef2ff;color:#4338ca;}
+            .ci-src{display:inline-block;padding:2px 8px;border-radius:9px;font-size:.62rem;font-weight:800;background:#f1f5f9;color:#475569;}
+            .ci-who b{font-size:.84rem;display:block;}
+            .ci-who small{color:#64748b;font-size:.7rem;}
+            /* ---- the full-profile modal (this request). Same class names and same
+                    renderer as the reseller's page, so both read identically. ---- */
+            .ci-row{cursor:pointer;transition:background .18s}
+            .ci-row:hover{background:#f8faff}
+            .cp-ov{position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:1400;display:flex;align-items:center;justify-content:center;padding:16px}
+            .cp-box{background:#fff;border-radius:18px;max-width:580px;width:100%;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.4);display:flex;flex-direction:column;max-height:92vh}
+            .cp-hd{display:flex;align-items:center;justify-content:space-between;padding:15px 19px;border-bottom:1px solid #eef2f7;background:#f8fafc;flex:none}
+            .cp-hd b{font-size:.94rem;font-weight:900;display:flex;align-items:center;gap:8px}
+            .cp-hd b i{color:#4f46e5}
+            .cp-hd button{border:none;background:none;font-size:1.55rem;line-height:1;color:#94a3b8;cursor:pointer}
+            .cp-bd{padding:18px 19px;overflow-y:auto}
+            .cp-ft{padding:13px 19px;border-top:1px solid #eef2f7;background:#f8fafc;text-align:right;flex:none}
+            .cp-ft button{border:none;border-radius:10px;padding:10px 20px;font-size:.82rem;font-weight:800;cursor:pointer;font-family:inherit;background:#e2e8f0;color:#334155}
+            .cp-id{display:flex;gap:13px;align-items:center;margin-bottom:16px}
+            .cp-av{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.2rem;flex:none}
+            .cp-who{min-width:0;flex:1}
+            .cp-who b{font-size:1.02rem;font-weight:900;color:#0f172a;display:block}
+            .cp-ph{font-size:.82rem;font-weight:700;color:#475569;margin-top:3px}
+            .cp-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+            .cp-tag{display:inline-flex;align-items:center;gap:5px;font-size:.62rem;font-weight:900;padding:3px 10px;border-radius:20px;background:#f1f5f9;color:#475569}
+            .cp-tag.on{background:#dcfce7;color:#15803d}
+            .cp-tag.off{background:#f1f5f9;color:#94a3b8}
+            .cp-tag.acc{background:#eef2ff;color:#4338ca}
+            .cp-sec{margin-bottom:16px}
+            .cp-sec h5{font-size:.72rem;font-weight:900;color:#64748b;letter-spacing:.4px;text-transform:uppercase;margin-bottom:9px;display:flex;align-items:center;gap:7px}
+            .cp-sec h5 i{color:#4f46e5}
+            .cp-addr{font-size:.82rem;color:#334155;line-height:1.75;background:#f8fafc;border:1px solid #eef2f7;border-radius:12px;padding:11px 14px}
+            .cp-none{font-size:.8rem;color:#94a3b8;padding:10px 2px}
+            .cp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+            .cp-stat{background:linear-gradient(135deg,#eef2ff,#f5f3ff);border:1px solid #e0e7ff;border-radius:13px;padding:12px 8px;text-align:center}
+            .cp-stat .v{display:block;font-size:1rem;font-weight:900;color:#4338ca;line-height:1.3}
+            .cp-stat .l{display:block;font-size:.66rem;font-weight:800;color:#6366f1;margin-top:3px}
+            .cp-dates{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+            .cp-dates div{background:#f8fafc;border:1px solid #eef2f7;border-radius:11px;padding:9px 12px}
+            .cp-dates span{display:block;font-size:.66rem;font-weight:800;color:#94a3b8}
+            .cp-dates b{display:block;font-size:.8rem;font-weight:800;color:#334155;margin-top:2px}
+            .cp-orders{display:flex;flex-direction:column;gap:8px}
+            .cp-ord{background:#fff;border:1px solid #eef2f7;border-radius:12px;padding:11px 13px}
+            .cp-ord-h{display:flex;justify-content:space-between;gap:10px;font-size:.78rem;font-weight:900;color:#0f172a}
+            .cp-ord-h span{font-weight:700;color:#94a3b8;font-size:.72rem}
+            .cp-ord-i{font-size:.76rem;color:#475569;margin-top:5px;line-height:1.5}
+            .cp-ord-f{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:7px}
+            .cp-ord-f b{font-size:.84rem;font-weight:900;color:#0f172a}
+            .cp-ord-f .st{font-size:.6rem;font-weight:900;padding:2px 9px;border-radius:20px;background:#f1f5f9;color:#475569;text-transform:capitalize}
+            .cp-ord-f .st.delivered,.cp-ord-f .st.confirmed{background:#dcfce7;color:#15803d}
+            .cp-ord-f .st.cancelled,.cp-ord-f .st.returned,.cp-ord-f .st.failed_delivery{background:#fee2e2;color:#b91c1c}
+            .cp-ord-f .st.pending,.cp-ord-f .st.new{background:#fef3c7;color:#b45309}
+            @media(max-width:520px){ .cp-stats{grid-template-columns:1fr 1fr} .cp-dates{grid-template-columns:1fr} }
+        </style>
+
+        <div class="stat-row">
+            <div class="stat"><div class="big" id="ciCount">0</div><div class="lbl">Total Customers</div></div>
+            <div class="stat"><div class="big" style="color:#4f46e5;" id="ciShops">0</div><div class="lbl">Resellers With Customers</div></div>
+            <div class="stat"><div class="big" style="color:#059669;" id="ciToday">0</div><div class="lbl">Added Today</div></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-address-book"></i> All Customers (<span id="ciRows">0</span>)</h4>
+                <small style="color:#64748b;">প্রতিটি রিসেলারের My Shop থেকে নিজে থেকেই সেভ হওয়া কাস্টমার — কে কোন শপের, তা আলাদা করে লেখা আছে</small>
+            </div>
+            <div style="padding:12px 20px;border-bottom:1px solid #f1f5f9;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                <span class="ci-chip on" data-src="all" onclick="ciF('all',this)">All</span>
+                <span class="ci-chip" data-src="myshop-order" onclick="ciF('myshop-order',this)">My Shop Order</span>
+                <span class="ci-chip" data-src="register" onclick="ciF('register',this)">Registration</span>
+                <span class="ci-chip" data-src="login" onclick="ciF('login',this)">Login</span>
+                <span class="ci-chip" data-src="chat" onclick="ciF('chat',this)">Message</span>
+                <span class="ci-chip" data-src="panel-order" onclick="ciF('panel-order',this)">Panel Order</span>
+                <input id="ciSearch" oninput="ciPaint()" placeholder="রিসেলার, কাস্টমারের নাম বা ফোন নাম্বার খুঁজুন" style="margin-left:auto;min-width:250px;padding:8px 13px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:.78rem;">
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Customer</th><th>Phone</th><th>Address</th><th>Reseller</th><th>Source</th><th>Last Activity</th></tr></thead>
+                    <tbody id="ciBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="../app.js"></script><script>(function(){function paint(){try{var n=(typeof adminNewOrderCount==="function")?adminNewOrderCount():(typeof adminOrderBadgeCount==="function"?adminOrderBadgeCount():0);var els=document.querySelectorAll(".orders-badge");for(var i=0;i<els.length;i++){els[i].textContent=n;els[i].style.display=n>0?"inline-block":"none";}}catch(e){}var lb=document.getElementById("ordersBadgeN");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+/* ===========================================================================
+   Admin — Customer Information  (2026-09-18, this request)
+   ---------------------------------------------------------------------------
+   Read-only view of every reseller's customer address book, in one list.
+   The data comes from ciAllFlat() in app.js — the ONLY reader that crosses
+   shops — and every row carries its owning reseller, so the admin can always
+   tell whose customer it is.
+
+   Deliberately READ-ONLY: editing another person's customer from here would be
+   a silent cross-tenant write. The address book belongs to the reseller, who
+   edits and deletes from their own Customer Information page.
+   =========================================================================== */
+(function() {
+    var uid = sessionStorage.getItem('user_id');
+    var ut = sessionStorage.getItem('user_type');
+    if (!uid || (ut !== 'admin' && ut !== 'moderator')) { sessionStorage.clear(); window.location.replace('login.html'); return; }
+    setInterval(function(){ var t=sessionStorage.getItem('user_type'); if(t && (t!=='admin' && t!=='moderator')){ sessionStorage.clear(); window.location.replace('login.html'); } },3000);
+
+    var SRC = {
+        register: 'Registration', login: 'Login', chat: 'Message',
+        'myshop-order': 'My Shop Order', 'panel-order': 'Panel Order'
+    };
+    var filter = 'all';
+
+    function txt(s) { return String(s === undefined || s === null ? '' : s); }
+    function esc2(s) { return (typeof esc === 'function') ? esc(txt(s)) : txt(s); }
+    function dt(d) {
+        if (typeof formatDate === 'function') { try { return formatDate(d); } catch (e) {} }
+        return txt(d).slice(0, 10);
+    }
+    /* reseller id -> shop name, so a row reads "Karim Store" and not "11" */
+    function shopNames() {
+        var out = {}, rs = [];
+        try { rs = getData(DB_KEYS.RESELLERS) || []; } catch (e) { rs = []; }
+        for (var i = 0; i < rs.length; i++) {
+            if (!rs[i]) continue;
+            out[String(rs[i].id)] = String(rs[i].businessName || rs[i].shopName || rs[i].name || ('#' + rs[i].id));
+        }
+        return out;
+    }
+
+    window.ciF = function(v, el) {
+        filter = String(v || 'all');
+        var cs = document.querySelectorAll('.ci-chip');
+        for (var i = 0; i < cs.length; i++) cs[i].classList.toggle('on', cs[i].getAttribute('data-src') === filter);
+        ciPaint();
+    };
+
+    window.ciPaint = function() {
+        var rows = [];
+        try { rows = (typeof ciAllFlat === 'function') ? ciAllFlat() : []; } catch (e) { rows = []; }
+        var names = shopNames();
+        var qEl = document.getElementById('ciSearch');
+        var q = qEl ? txt(qEl.value).trim().toLowerCase() : '';
+        var digits = q.replace(/\D/g, '');
+        var today = new Date().toISOString().slice(0, 10);
+        var i;
+
+        /* the stats describe EVERYTHING, not the filtered view */
+        var shops = {}, addedToday = 0;
+        for (i = 0; i < rows.length; i++) {
+            shops[String(rows[i].rid)] = 1;
+            if (txt(rows[i].createdAt).slice(0, 10) === today) addedToday++;
+        }
+
+        var out = [];
+        for (i = 0; i < rows.length; i++) {
+            var r = rows[i];
+            if (filter !== 'all' && txt(r.source) !== filter) continue;
+            if (q) {
+                var shop = String(names[String(r.rid)] || '').toLowerCase();
+                var nm = txt(r.name).toLowerCase();
+                if (nm.indexOf(q) === -1 && shop.indexOf(q) === -1 &&
+                    !(digits && txt(r.phone).indexOf(digits) !== -1)) continue;
+            }
+            out.push(r);
+        }
+
+        document.getElementById('ciCount').textContent = rows.length;
+        document.getElementById('ciShops').textContent = Object.keys(shops).length;
+        document.getElementById('ciToday').textContent = addedToday;
+        document.getElementById('ciRows').textContent = out.length;
+
+        var h = '';
+        for (i = 0; i < out.length; i++) {
+            var x = out[i];
+            var src = SRC[txt(x.source)] || txt(x.source);
+            var shop = names[String(x.rid)] || ('#' + x.rid);
+            h += '<tr class="ci-row" onclick="ciProfile(\'' + esc2(x.rid) + '\',\'' + esc2(x.phone) + '\')" title="পুরো বিস্তারিত দেখুন">' +
+                '<td class="ci-who"><b>' + (esc2(x.name) || '(নাম নেই)') + '</b><small>' + esc2(x.id) + '</small></td>' +
+                '<td style="white-space:nowrap;font-weight:700;">' + esc2(x.phone) + '</td>' +
+                '<td style="font-size:.78rem;color:#475569;max-width:280px;">' + (esc2(x.address) || '—') + '</td>' +
+                '<td><span class="ci-shop">' + esc2(shop) + '</span></td>' +
+                '<td>' + (src ? '<span class="ci-src">' + esc2(src) + '</span>' : '—') + '</td>' +
+                '<td style="white-space:nowrap;font-size:.76rem;">' + txt(dt(x.updatedAt)) + '</td>' +
+                '</tr>';
+        }
+        document.getElementById('ciBody').innerHTML = h ||
+            '<tr><td colspan="6" class="empty">No customers yet</td></tr>';
+    };
+
+    /* ---- the full profile (this request) -----------------------------------
+       A row opens everything about that customer: full address, order count,
+       products, what they bought and when, when they joined, and whether they
+       are online. customerProfile(null, ...) reads ACROSS every shop, which is
+       the admin's job — and the renderer is the SAME one the reseller's page
+       uses, so the two can never show different facts about one person. */
+    window.ciProfile = function (rid, phone) {
+        var prof = null;
+        /* rid = null — the ADMIN sees this customer's orders across EVERY shop.
+           That is the admin's job, and it is the only place a cross-shop read is
+           allowed (the reseller's page passes its own rid). */
+        try { prof = customerProfile(null, phone, null); } catch (e) { prof = null; }
+        if (!prof) { showToast('তথ্য লোড করা যায়নি।', 'error'); return; }
+        var shopName = (shopNames()[String(rid)] || ('#' + rid));
+        var ov = document.createElement('div');
+        ov.className = 'cp-ov'; ov.id = 'ciProfOv';
+        ov.innerHTML = '<div class="cp-box">' +
+            '<div class="cp-hd"><b><i class="fas fa-id-card"></i> ' + esc2(shopName) + ' — কাস্টমারের বিস্তারিত</b>' +
+            '<button type="button" onclick="ciProfileClose()">&times;</button></div>' +
+            '<div class="cp-bd">' + customerProfileHtml(prof, { showShop: true }) + '</div>' +
+            '<div class="cp-ft"><button type="button" onclick="ciProfileClose()">Close</button></div>' +
+            '</div>';
+        ov.onclick = function (ev) { if (ev.target === ov) window.ciProfileClose(); };
+        document.body.appendChild(ov);
+    };
+    window.ciProfileClose = function () {
+        var o = document.getElementById('ciProfOv');
+        if (o && o.parentNode) o.parentNode.removeChild(o);
+    };
+
+    window.doLogout = function() { sessionStorage.clear(); window.location.href = 'login.html'; };
+
+    ciPaint();
+    /* Re-render when another tab changes any rh_* store. */
+    window.addEventListener('storage', function(e) {
+        if (!e.key) return;
+        if (e.key.indexOf('rh_') === 0) ciPaint();
+    });
+    setInterval(ciPaint, 15000);
+})();
+</script>
+
+<script>
+/* Admin sidebar toggle (additive) */
+if (!window.toggleSidebar) {
+    window.toggleSidebar = function(open) {
+        var sb = document.querySelector('.sidebar');
+        if (!sb) return;
+        if (open === undefined) open = !sb.classList.contains('open');
+        sb.classList.toggle('open', open);
+        var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+        if (ov) ov.classList.toggle('show', open);
+    };
+}
+</script>
+
+
+<script id="lx-auto-active">
+(function() {
+    var page = location.pathname.split('/').pop();
+    document.querySelectorAll('.sb-item').forEach(function(a) {
+        var href = (a.getAttribute('href') || '').split('?')[0];
+        if (href === page) a.classList.add('on');
+    });
+    /* ADMIN ONLY (this request) — a moderator must not see the Moderators page,
+       which is the one screen that could let them recruit another moderator.
+       The page itself also bounces a moderator; this hides the door as well. */
+    try {
+        if (sessionStorage.getItem('user_type') !== 'admin') {
+            document.querySelectorAll('.sb-item[href="moderators.html"]').forEach(function (a) { a.style.display = 'none'; });
+        }
+    } catch (e) {}
+})();
+</script>
+</body>
+</html>

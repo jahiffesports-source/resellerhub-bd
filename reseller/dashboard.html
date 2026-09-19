@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root { --pri:#4f46e5; --prid:#4338ca; --vio:#7c3aed; --grn:#10b981; --gold:#fbbf24; --dark:#0f172a; --gray:#64748b; }
+        /* 2026-09-16 — MOBILE FIX. Nothing stopped this page being wider than the
+           phone screen, so it could be dragged sideways and the left edge of the
+           content (Dashboard, Place Order, My Balance …) got cut off. index.html
+           already guards its body this way; this brings the dashboard in line.
+           One property added — nothing else in the rule changed. */
+        body { font-family:'Inter','Hind Siliguri',sans-serif; background:#eef1f9; color:#1e293b; padding-bottom:70px; overflow-x:hidden; }
+
+        /* ===== Animations ===== */
+        @keyframes dashUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:none} }
+        @keyframes dashSide { from{opacity:0;transform:translateX(-24px)} to{opacity:1;transform:none} }
+        @keyframes iconBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        @keyframes drift { 0%,100%{transform:translate(0,0) rotate(0)} 33%{transform:translate(24px,-18px) rotate(3deg)} 66%{transform:translate(-16px,14px) rotate(-2deg)} }
+        @keyframes welcomeShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        @keyframes barGrow { from{height:0 !important} }
+        @keyframes tilePop { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:none} }
+        .sidebar-header, .sidebar-menu a { animation:dashSide .4s ease both; }
+        .welcome { animation:dashUp .55s .1s ease both; }
+        .quick-row .quick-btn:nth-child(1) { animation:dashUp .5s .18s ease both; }
+        .quick-row .quick-btn:nth-child(2) { animation:dashUp .5s .24s ease both; }
+        .quick-row .quick-btn:nth-child(3) { animation:dashUp .5s .3s ease both; }
+        .quick-row .quick-btn:nth-child(4) { animation:dashUp .5s .36s ease both; }
+        .stats-grid .stat-card:nth-child(1) { animation:dashUp .5s .3s ease both; }
+        .stats-grid .stat-card:nth-child(2) { animation:dashUp .5s .38s ease both; }
+        .stats-grid .stat-card:nth-child(3) { animation:dashUp .5s .46s ease both; }
+        .stats-grid .stat-card:nth-child(4) { animation:dashUp .5s .54s ease both; }
+        .card { animation:dashUp .55s .5s ease both; }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:248px; background:linear-gradient(180deg,#0b1029 0%,#151a3a 100%); color:#c7d2fe; z-index:200; overflow-y:auto; transition:transform 0.3s; box-shadow:4px 0 24px rgba(11,16,41,.35); }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; justify-content:space-between; align-items:center; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:40px; height:40px; background:linear-gradient(135deg,var(--pri),var(--vio)); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .sidebar-logo h3 { color:white; font-size:1rem; font-weight:900; }
+        .sidebar-logo small { color:#818cf8; font-size:0.66rem; display:block; font-weight:700; letter-spacing:1px; }
+        .sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; position:relative; }
+        /* BUG FIX 8 — this × was only ~21x21px (no padding at all) and, because the
+           drawer hides the bottom-nav, it is one of only two ways to close the
+           menu. Same trick: a 44x44 invisible hit area, zero layout change. */
+        .sidebar-close-m::after { content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px; }
+        .sidebar-menu { list-style:none; padding:12px 10px; }
+        .sidebar-menu li { margin:3px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:11px 15px; color:#c7d2fe; text-decoration:none; font-size:0.88rem; font-weight:600; border-radius:11px; transition:all .22s; }
+        .sidebar-menu a:hover { background:rgba(129,140,248,.14); color:white; transform:translateX(4px); }
+        .sidebar-menu a.active { background:linear-gradient(135deg,var(--pri),var(--vio)); color:white; box-shadow:0 8px 20px rgba(79,70,229,.4); }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 15px 5px; color:#6366f1; font-size:0.66rem; text-transform:uppercase; letter-spacing:1.4px; font-weight:800; }
+        .menu-badge { background:var(--gold); color:#1e293b; font-size:0.68rem; padding:1px 8px; border-radius:10px; font-weight:800; margin-left:auto; }
+        .menu-badge-n { color:var(--gold); font-weight:900; }
+
+        .side-overlay { display:none; position:fixed; inset:0; background:rgba(11,16,41,.55); z-index:150; backdrop-filter:blur(2px); }
+
+        /* ===== MAIN ===== */
+        .main { margin-left:248px; min-height:100vh; }
+        .topbar { background:rgba(255,255,255,.88); backdrop-filter:blur(12px); padding:12px 22px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 14px rgba(15,23,42,.06); position:sticky; top:0; z-index:100; }
+        .topbar-left { display:flex; align-items:center; gap:12px; }
+        .hamburger { display:none; background:none; border:none; font-size:1.3rem; color:#1e293b; cursor:pointer; padding:4px; position:relative; }
+        /* BUG FIX 9 — the button was ~29x29px, too small to tap comfortably on a
+           phone (44x44 is the recommended minimum). An invisible centred overlay
+           enlarges the HIT AREA to 44x44 WITHOUT changing the button's size,
+           the topbar height or anything visible. */
+        .hamburger::after { content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:44px; height:44px; }
+        .topbar h2 { font-size:1.12rem; font-weight:800; }
+        .topbar-right { display:flex; align-items:center; gap:8px; }
+        .topbar-balance { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#7c2d12; padding:7px 15px; border-radius:22px; font-weight:800; font-size:0.84rem; white-space:nowrap; box-shadow:0 4px 12px rgba(245,158,11,.35); }
+        .topbar-user { display:flex; align-items:center; gap:7px; padding:6px 14px; background:#eef2ff; color:var(--pri); border-radius:22px; font-size:0.84rem; font-weight:700; }
+        .btn-logout { background:#fee2e2; color:#dc2626; border:none; padding:8px 12px; border-radius:10px; cursor:pointer; font-size:0.85rem; transition:all .25s; }
+        .btn-logout:hover { background:#dc2626; color:#fff; transform:translateY(-1px); }
+
+        .content { padding:22px 28px; width:100%; }
+
+        /* ===== Welcome — index hero style (dark + orbit) ===== */
+        .welcome { background:radial-gradient(700px 400px at 80% 10%, #312e81 0%, transparent 55%), radial-gradient(500px 320px at 8% 90%, #1e1b4b 0%, transparent 55%), linear-gradient(150deg,#0b1029,#12102e 60%,#181436); color:white; padding:30px 32px; border-radius:26px; margin-bottom:22px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; position:relative; overflow:hidden; box-shadow:0 22px 50px rgba(11,16,41,.4); animation:dashUp .55s .1s ease both; }
+        .w-orbit { position:absolute; border:1px solid rgba(129,140,248,.22); border-radius:50%; pointer-events:none; }
+        .w-orbit.o1 { width:340px; height:340px; top:-140px; right:-80px; animation:drift 14s ease-in-out infinite; }
+        .w-orbit.o2 { width:240px; height:240px; bottom:-110px; left:-60px; animation:drift 18s ease-in-out infinite reverse; }
+        .w-kicker { display:inline-flex; align-items:center; gap:7px; background:rgba(129,140,248,.18); border:1px solid rgba(129,140,248,.45); color:#c7d2fe; font-size:.66rem; font-weight:900; letter-spacing:1.6px; padding:5px 14px; border-radius:18px; margin-bottom:12px; position:relative; }
+        .welcome h3 { font-size:1.5rem; font-weight:900; margin-bottom:4px; position:relative; }
+        .w-grad { background:linear-gradient(90deg,#a5b4fc,#f0abfc,#67e8f9); background-size:200% auto; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; animation:welcomeShift 5s linear infinite; }
+        .welcome p { opacity:0.92; font-size:0.9rem; position:relative; }
+        .welcome .ref-code { background:rgba(129,140,248,.25); border:1px solid rgba(129,140,248,.4); padding:3px 12px; border-radius:14px; font-weight:800; font-size:0.76rem; position:relative; }
+        .btn-welcome { background:linear-gradient(135deg,var(--grn),#059669); color:white; padding:14px 26px; border-radius:14px; border:none; font-weight:800; cursor:pointer; font-size:0.92rem; white-space:nowrap; position:relative; transition:all .28s; box-shadow:0 12px 28px rgba(16,185,129,.4); }
+        .btn-welcome:hover { transform:translateY(-3px); box-shadow:0 18px 36px rgba(16,185,129,.5); }
+
+        /* Pending banner */
+        .pending-banner { background:linear-gradient(135deg,#fef3c7,#fde68a); border-left:5px solid #f59e0b; padding:15px 19px; border-radius:14px; margin-bottom:18px; }
+        .pending-banner h4 { color:#92400e; font-size:0.95rem; margin-bottom:3px; }
+        .pending-banner p { color:#78350f; font-size:0.85rem; }
+
+        /* ===== Kickers (index-style section badges) ===== */
+        .kick { display:inline-flex; align-items:center; font-size:.6rem; font-weight:900; letter-spacing:1.6px; color:var(--pri); background:#eef2ff; padding:4px 12px; border-radius:16px; margin-right:9px; vertical-align:2px; }
+
+        /* Stats */
+        .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:15px; margin-bottom:20px; }
+        .stat-card { background:white; padding:19px; border-radius:18px; box-shadow:0 3px 14px rgba(15,23,42,.05); border:1px solid #eef2f7; display:flex; align-items:center; gap:14px; transition:all .28s; }
+        .stat-card:hover { transform:translateY(-4px); box-shadow:0 16px 32px rgba(15,23,42,.11); }
+        .stat-icon { width:52px; height:52px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:1.35rem; flex-shrink:0; }
+        .stat-icon.green { background:linear-gradient(135deg,#d1fae5,#a7f3d0); color:#059669; }
+        .stat-icon.blue { background:linear-gradient(135deg,#e0e7ff,#c7d2fe); color:var(--pri); }
+        .stat-icon.orange { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#d97706; }
+        .stat-icon.purple { background:linear-gradient(135deg,#ede9fe,#ddd6fe); color:#7c3aed; }
+        .stat-card .label { font-size:0.74rem; color:var(--gray); margin-bottom:3px; font-weight:700; }
+        .stat-card .value { font-size:1.32rem; font-weight:900; }
+
+        /* Quick actions */
+        .quick-row { display:grid; grid-template-columns:repeat(4,1fr); gap:13px; margin-bottom:20px; }
+        .quick-btn { background:white; border:1px solid #eef2f7; border-radius:18px; padding:17px 10px; cursor:pointer; text-align:center; box-shadow:0 3px 12px rgba(15,23,42,.05); transition:all .25s; text-decoration:none; }
+        .quick-btn:hover { transform:translateY(-4px); box-shadow:0 14px 30px rgba(79,70,229,.14); border-color:#c7d2fe; }
+        .quick-btn .qi { width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin:0 auto 9px; transition:transform .3s; }
+        .quick-btn:hover .qi { transform:scale(1.12) rotate(-6deg); }
+        .quick-btn p { font-size:0.8rem; font-weight:700; color:#334155; }
+
+        /* ===== SALES ANALYTICS ===== */
+        .analytics { background:white; border-radius:20px; border:1px solid #eef2f7; box-shadow:0 4px 16px rgba(15,23,42,.05); padding:20px 22px; margin-bottom:20px; animation:dashUp .55s .48s ease both; }
+        .analytics-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:8px; }
+        .analytics-head h4 { font-size:0.95rem; font-weight:800; }
+        .analytics-head small { color:var(--gray); font-size:.72rem; font-weight:700; }
+        .atile-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+        .atile { border-radius:16px; padding:14px 16px; text-align:center; animation:tilePop .45s ease both; transition:transform .25s; }
+        .atile:hover { transform:translateY(-3px); }
+        .atile:nth-child(2) { animation-delay:.08s; } .atile:nth-child(3) { animation-delay:.16s; } .atile:nth-child(4) { animation-delay:.24s; }
+        .atile .tl { font-size:.64rem; font-weight:800; letter-spacing:.8px; text-transform:uppercase; opacity:.85; }
+        .atile .tv { font-size:1.18rem; font-weight:900; margin-top:3px; }
+        .atile.t-ind { background:linear-gradient(135deg,#e0e7ff,#c7d2fe); color:#3730a3; }
+        .atile.t-grn { background:linear-gradient(135deg,#d1fae5,#a7f3d0); color:#065f46; }
+        .atile.t-amb { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#92400e; }
+        .atile.t-vio { background:linear-gradient(135deg,#ede9fe,#ddd6fe); color:#5b21b6; }
+        /* 2026-09-16 — "All Time" made the chart spill sideways and leave a white gap.
+           `.achart` is a flex row with `gap:10px` but NO overflow, and every `.acol` is
+           `flex:1`. With 7 buckets that is fine; "All Time" can produce up to 36, so each
+           column was squeezed to a sliver and the row pushed past the card — which is the
+           white area and the half-cut chart the user saw.
+           Now the row scrolls when it needs to, and each column keeps a readable minimum
+           width. Short ranges are unaffected: with few buckets the row still fits and no
+           scrollbar appears. */
+        .achart { display:flex; align-items:flex-end; gap:10px; height:170px; padding:6px 4px 0; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; }
+        .acol { flex:1 1 0; min-width:30px; }
+        .acol { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
+        .abar { width:100%; max-width:44px; border-radius:9px 9px 4px 4px; background:linear-gradient(180deg,var(--pri),var(--vio)); min-height:5px; transition:height .8s cubic-bezier(.2,.8,.3,1); box-shadow:0 4px 10px rgba(79,70,229,.25); position:relative; }
+        .abar:hover { filter:brightness(1.15); }
+        .abar .av { position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-size:.62rem; font-weight:800; color:var(--pri); white-space:nowrap; opacity:0; transition:opacity .3s; }
+        .acol:hover .av { opacity:1; }
+        .abar.zero { background:#e2e8f0; box-shadow:none; }
+        .abar.zero .av { color:#94a3b8; }
+        .alab { font-size:.64rem; font-weight:800; color:var(--gray); }
+        .duo { display:grid; grid-template-columns:1.6fr 1fr; gap:20px; align-items:start; }
+
+        .card { background:white; border-radius:20px; box-shadow:0 4px 16px rgba(15,23,42,.05); border:1px solid #eef2f7; margin-bottom:20px; overflow:hidden; animation:dashUp .55s .5s ease both; }
+        .card-header { padding:15px 20px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; }
+        .card-header h4 { font-size:0.95rem; font-weight:800; }
+        .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+        .data-table { width:100%; border-collapse:collapse; min-width:600px; }
+        .data-table th { text-align:left; padding:11px 18px; background:#f8fafc; font-weight:700; font-size:0.68rem; color:var(--gray); text-transform:uppercase; white-space:nowrap; }
+        .data-table td { padding:12px 18px; border-bottom:1px solid #f4f6fb; font-size:0.84rem; }
+        .data-table tr:hover { background:#f8faff; }
+        .badge { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; white-space:nowrap; }
+        .b-delivered { background:#d1fae5; color:#065f46; }
+        .b-shipped { background:#e0e7ff; color:#4338ca; }
+        .b-processing { background:#e0f2fe; color:#0369a1; }
+        .b-cancelled { background:#fee2e2; color:#991b1b; }
+        .b-new { background:#fef3c7; color:#92400e; }
+        .b-pending { background:#fef3c7; color:#92400e; }
+        .b-confirmed { background:#dbeafe; color:#1e40af; }
+        .b-packaging { background:#ede9fe; color:#6d28d9; }
+        .b-shipping { background:#e0e7ff; color:#4338ca; }
+        .b-wfr { background:#fef9c3; color:#854d0e; }
+        .b-returned { background:#ffe4e6; color:#9f1239; }
+        .btn { padding:6px 12px; border:none; border-radius:8px; font-size:0.8rem; cursor:pointer; font-weight:700; display:inline-flex; align-items:center; gap:5px; transition:all .22s; }
+        .btn-primary { background:linear-gradient(135deg,var(--pri),var(--prid)); color:white; }
+        .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 14px rgba(79,70,229,.35); }
+        .empty { text-align:center; padding:38px 16px; color:var(--gray); }
+        .empty i { font-size:2.2rem; margin-bottom:8px; opacity:0.4; }
+        .empty a { color:var(--pri); font-weight:700; }
+
+        .notif-item { padding:12px 18px; border-bottom:1px solid #f4f6fb; display:flex; gap:11px; align-items:flex-start; font-size:0.86rem; transition:background .2s; }
+        .notif-item:hover { background:#f8faff; }
+        .notif-item:last-child { border-bottom:none; }
+        .notif-item i { color:var(--pri); margin-top:3px; }
+
+        /* ===== MOBILE BOTTOM NAV ===== */
+        .bottom-nav { display:none; position:fixed; bottom:10px; left:12px; right:12px; background:rgba(255,255,255,.92); backdrop-filter:blur(14px); border:1px solid #eef2f7; box-shadow:0 10px 30px rgba(15,23,42,.16); z-index:400; padding:7px 6px calc(7px + env(safe-area-inset-bottom)); border-radius:20px; }
+        .bottom-nav a { display:flex; flex-direction:column; align-items:center; gap:2px; text-decoration:none; color:#94a3b8; font-size:0.62rem; font-weight:700; padding:6px 6px; border-radius:12px; flex:1; transition:all .2s; }
+        .bottom-nav a i { font-size:1.12rem; }
+        .bottom-nav a.active { color:var(--pri); background:#eef2ff; }
+        .bn-menu { background:linear-gradient(135deg,var(--pri),var(--vio)); color:#fff; border-radius:14px; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .bn-menu i { color:#fff; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width:1024px) { .stats-grid { grid-template-columns:repeat(2,1fr); } .quick-row { grid-template-columns:repeat(4,1fr); } .duo { grid-template-columns:1fr; } .atile-row { grid-template-columns:1fr 1fr; } }
+        @media (max-width:768px) {
+            body { padding-bottom:86px; }
+            .sidebar { transform:translateX(-100%); width:272px; }
+            .sidebar.open { transform:translateX(0); }
+            .side-overlay.show { display:block; }
+            .sidebar-close-m { display:block; }
+            .main { margin-left:0; }
+            .hamburger { display:block; }
+            .topbar-user span { max-width:78px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+            .stats-grid { grid-template-columns:1fr 1fr; gap:10px; }
+            .stat-card { padding:14px 12px; flex-direction:column; text-align:center; gap:8px; }
+            .stat-card .value { font-size:1.12rem; }
+            .quick-row { grid-template-columns:repeat(2,1fr); gap:10px; }
+            .welcome { flex-direction:column; text-align:center; padding:24px 18px; }
+            .btn-welcome { width:100%; }
+            .bottom-nav { display:flex; }
+            .content { padding:14px; }
+            .topbar { padding:11px 14px; }
+            /* 2026-09-16 — MOBILE FIX (this request). The topbar measured roughly
+               440px across on a 390px phone, so the logout button was pushed past
+               the right edge and looked cut off. These rules tighten the same
+               header so it fits a narrow screen — nothing is hidden and nothing
+               in the desktop layout changes; every line below lives inside the
+               existing max-width media query. */
+            .topbar { padding:10px 12px; }
+            .topbar-left { gap:8px; }
+            .topbar h2 { font-size:.98rem; }
+            .topbar-right { gap:6px; }
+            .topbar-balance { padding:6px 10px; font-size:.78rem; }
+            .topbar-user { padding:5px 10px; font-size:.78rem; }
+            .topbar-user span { max-width:52px; }
+            .atile-row { grid-template-columns:1fr 1fr; gap:9px; }
+            .achart { gap:5px; height:130px; }
+            .analytics { padding:16px 14px; }
+        }
+        @media (max-width:400px) { .quick-row { grid-template-columns:1fr 1fr; } .stats-grid { grid-template-columns:1fr 1fr; } }
+    </style>
+
+<style id="lx-nav-force">
+@media(max-width:768px){
+    .bottom-nav{display:flex !important;position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;opacity:1 !important;visibility:visible !important;transform:none !important}
+    body{padding-bottom:86px !important}
+}
+</style>
+
+<style id="lx-bnav">
+/* ===== Complete bottom-nav styling ===== */
+.bottom-nav{position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;display:flex !important;align-items:stretch;background:rgba(255,255,255,.97) !important;backdrop-filter:blur(14px);border:1px solid #e8ecf4 !important;border-radius:18px !important;box-shadow:0 -4px 24px rgba(15,23,42,.14) !important;padding:7px 6px calc(7px + env(safe-area-inset-bottom)) !important}
+.bottom-nav a,.bottom-nav button{flex:1 !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;gap:3px !important;padding:7px 2px !important;border:none !important;background:none !important;color:#7b879c !important;font-size:.62rem !important;font-weight:700 !important;text-decoration:none !important;cursor:pointer !important;border-radius:12px !important;font-family:inherit !important;line-height:1.2 !important}
+.bottom-nav a i,.bottom-nav button i{font-size:1.18rem !important;line-height:1 !important}
+.bottom-nav a span,.bottom-nav button span{display:block !important}
+.bottom-nav a:hover,.bottom-nav button:hover{color:#4f46e5 !important;background:#eef2ff !important;transform:translateY(-2px)}
+.bottom-nav a.active{color:#4f46e5 !important;background:#eef2ff !important}
+.bottom-nav .bn-menu{color:#4f46e5 !important;background:#eef2ff !important;box-shadow:none !important;border-radius:12px !important}
+.bottom-nav .bn-menu:hover{background:#e0e7ff !important}
+.bottom-nav .bn-menu i,.bottom-nav .bn-menu span{color:#4f46e5 !important}
+body{padding-bottom:86px !important}
+@media(min-width:769px){
+    .bottom-nav{display:none !important}
+    body{padding-bottom:0 !important}
+}
+</style>
+
+<style>
+@media(max-width:768px){
+    .sidebar{transform:translateX(-100%) !important;transition:transform .32s cubic-bezier(.2,.8,.3,1) !important;display:block !important}
+    .sidebar.open{transform:translateX(0) !important;box-shadow:24px 0 60px rgba(11,16,41,.45) !important}
+}
+</style>
+
+<style id="lx-offer-banners">
+/* ===== Offer banner strip — reseller dashboard only =====
+   ROOT CAUSE of the "broken / strange" banner look:
+   the old rule was `width:100%; height:auto; max-height:220px; object-fit:cover`.
+   `height:auto` + `max-height` clamps the box to 220px, and `object-fit:cover`
+   then SCALES THE IMAGE UP to fill that box and crops the overflow. Measured
+   against a 1200x300 banner that is fine, but a square banner lost 66% of its
+   height and a portrait one 83% — it looked zoomed and chopped.
+   Two more faults amplified it:
+     · `.ofb-item{max-width:640px}` inside a full-width area left a 960px empty
+       gutter on a wide screen, so a lone banner looked left-aligned and stray.
+     · three competing width rules (100% / 640px / min(88%,520px)) made the
+       rendered size depend on how many banners happened to be present.
+   The fix keeps the image WHOLE (`object-fit:contain`) in a stable 4:1 box that
+   matches the admin's recommended 1200x300 geometry, and lets a single banner
+   fill the available width. */
+.ofb-area{margin:0 0 20px}
+.ofb-strip{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.ofb-strip::-webkit-scrollbar{height:6px}
+.ofb-strip::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:6px}
+.ofb-item{flex:0 0 auto;width:100%;scroll-snap-align:start;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(15,23,42,.08);background:#f1f5f9;position:relative}
+/* A lone banner fills the row; extra banners share it at a readable size. */
+.ofb-strip.many .ofb-item{width:min(88%,560px)}
+/* The box owns the aspect ratio; the image is CONTAINED inside it, never cropped. */
+.ofb-item a,.ofb-item .ofb-plain{display:block;position:relative}
+.ofb-item img{display:block;width:100%;height:auto;aspect-ratio:4/1;object-fit:contain;object-position:center;background:#f1f5f9}
+.ofb-item .ofb-plain{cursor:default}
+.ofb-item .ofb-cap{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(15,23,42,0),rgba(15,23,42,.82));color:#fff;padding:16px 16px 12px;pointer-events:none}
+.ofb-item .ofb-cap b{display:block;font-size:.86rem;font-weight:900;line-height:1.3;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.ofb-item .ofb-cap small{display:block;font-size:.68rem;opacity:.9;margin-top:2px}
+@media(max-width:768px){
+ .ofb-strip.many .ofb-item{width:92%}
+ /* a 4:1 box is very short on a phone — give it a friendlier ratio */
+ .ofb-item img{aspect-ratio:2/1}
+ .ofb-item .ofb-cap b{font-size:.78rem}
+}
+</style>
+<style id="lx-logout-fix">
+/* Logout fix: the open sidebar must paint ABOVE the fixed mobile bottom-nav,
+   otherwise the last menu item (Logout) is covered and un-tappable. */
+.sidebar{ z-index:900 !important; }
+.side-overlay{ z-index:880 !important; }
+.sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+@supports selector(:has(*)){
+  body:has(.sidebar.open) .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+}
+@media(min-width:769px){ .sidebar-menu{ padding-bottom:12px !important; } }
+</style>
+
+<style id="lx-sidebar-fix">
+/* ===== Reseller sidebar — canonical & stable (do not mutate at runtime) ===== */
+/* 1) Labels and section headings are ALWAYS visible. The old template hid
+      .sidebar-menu a span and .sidebar-divider under 768px, which made menu
+      text disappear and the "Account" heading vanish on some pages. */
+.sidebar .sidebar-menu a span{ display:inline !important; }
+.sidebar .sidebar-menu .sidebar-divider,
+.sidebar .sidebar-divider{ display:block !important; }
+.sidebar .sidebar-logo h3{ display:block !important; }
+.sidebar .sidebar-logo small{ display:block !important; }
+
+/* 2) Fixed geometry — the sidebar is never collapsed to a 70px icon rail. */
+.sidebar{ width:248px !important; z-index:900 !important; overflow-y:auto !important; }
+.side-overlay{ z-index:880 !important; }
+@media(min-width:769px){
+    .main{ margin-left:248px !important; }
+    .sidebar{ transform:none !important; }
+}
+@media(max-width:768px){
+    .main{ margin-left:0 !important; }
+    .sidebar{ transform:translateX(-100%) !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; display:block !important; }
+    .sidebar.open{ transform:translateX(0) !important; box-shadow:24px 0 60px rgba(11,16,41,.45) !important; }
+}
+
+/* 3) Row geometry is locked: the "All Orders" counter is absolutely positioned
+      so a changing number can never push the rows below it up or down. */
+.sidebar .sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.sidebar .sidebar-menu li{ position:relative; display:block; margin:3px 0; }
+.sidebar .sidebar-menu a{ display:flex !important; align-items:center; gap:12px; padding:11px 15px; }
+.sidebar .menu-badge{ position:absolute; right:12px; top:50%; transform:translateY(-50%); margin-left:0 !important; }
+
+/* 4) Mobile: hide the bottom nav while the drawer is open so the last item
+      (Logout) is never covered. */
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+
+/* 5) Close button inside the drawer on mobile. */
+.sidebar .sidebar-close-m{ display:none; }
+@media(max-width:768px){ .sidebar .sidebar-close-m{ display:block !important; } }
+</style>
+
+<style id="reseller-hamburger-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   Every reseller page hides the hamburger with ".hamburger{display:none}", but most
+   pages never turn it back ON at mobile width — only products.html did. So on a phone
+   there was no way to open the sidebar on Products, Orders, Wallet, Withdrawals,
+   Courier, Messages, Support, Profile, Referral or Website Integration.
+   This shows the SAME existing button (onclick="menuToggle()") at mobile width only.
+   It is an ADDED block and lives entirely inside a max-width query, so the DESKTOP
+   LAYOUT IS UNCHANGED. */
+@media (max-width:768px){
+  .hamburger { display:block !important; }
+}
+</style>
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon"><i class="fas fa-store"></i></div>
+            <div><h3>ResellerHub</h3><small>Reseller Panel</small></div>
+        </div>
+        
+        <button class="sidebar-close-m" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+        <ul class="sidebar-menu">
+        <li class="sidebar-divider">Main</li>
+        <li><a href="dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+        <li><a href="products.html"><i class="fas fa-box"></i> <span>Products</span></a></li>
+        <li><a href="my-shop.html"><i class="fas fa-store"></i> <span>My Shop</span></a></li>
+        <li><a href="transactions.html"><i class="fas fa-right-left"></i> <span>Transactions</span></a></li>
+        <li class="sidebar-divider">Orders</li>
+        <li><a href="my-orders.html"><i class="fas fa-list"></i> <span>All Orders<span class="menu-badge-n" id="ordersBadgeLabel"></span></span></a> <span class="menu-badge" id="ordersBadge" style="display:none">0</span></li>
+        <li><a href="order.html"><i class="fas fa-cart-plus"></i> <span>Add New Order</span></a></li>
+        <li><a href="offers.html"><i class="fas fa-gift"></i> <span>Offers</span></a></li>
+        <li><a href="shop-categories.html"><i class="fas fa-sitemap"></i> <span>Shop Categories</span></a></li>
+        <li class="sidebar-divider">My Shop</li>
+        <li><a href="my-shop-settings.html"><i class="fas fa-sliders"></i> <span>Shop Settings</span></a></li>
+        <li><a href="my-products.html"><i class="fas fa-box-open"></i> <span>My Products</span></a></li>
+        <li><a href="my-shop-orders.html"><i class="fas fa-bag-shopping"></i> <span>My Shop Orders</span></a></li>
+        <li><a href="customer-messages.html"><i class="fas fa-comment-dots"></i> <span>Customer Messages<span class="menu-badge-n" id="cmsgBadgeLabel"></span></span></a></li>
+        <li class="sidebar-divider">Account</li>
+        <li><a href="wallet.html"><i class="fas fa-wallet"></i> <span>Wallet</span></a></li>
+        <li><a href="withdrawals.html"><i class="fas fa-money-bill-wave"></i> <span>Withdrawals</span></a></li>
+        <li><a href="courier.html"><i class="fas fa-truck"></i> <span>Courier</span></a></li>
+        <li><a href="messages.html"><i class="fas fa-comments"></i> <span>Messages<span class="menu-badge-n" id="msgBadgeLabel"></span></span></a></li>
+        <li><a href="support.html"><i class="fas fa-headset"></i> <span>Support</span></a></li>
+        <li><a href="profile.html"><i class="fas fa-user-cog"></i> <span>Profile</span></a></li>
+        <li><a href="referral.html"><i class="fas fa-user-plus"></i> <span>Referral</span></a></li>
+        <li><a href="website-integration.html"><i class="fas fa-plug"></i> <span>Website Integration</span></a></li>
+        <li><a href="../index.html"><i class="fas fa-globe"></i> <span>Visit Site</span></a></li>
+        <li><a href="javascript:void(0)" onclick="resellerLogout()" style="color:#dc2626"><i class="fas fa-right-from-bracket"></i> <span>Logout</span></a></li>
+    </ul>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+        <div class="topbar-left">
+            <button class="hamburger" onclick="menuToggle()"><i class="fas fa-bars"></i></button>
+            <h2><i class="fas fa-tachometer-alt" style="color:#2563eb;margin-right:6px;"></i> Dashboard</h2>
+        </div>
+        <div class="topbar-right">
+            <div class="topbar-balance"><i class="fas fa-coins"></i> <span id="topBalance">0</span></div>
+            <div class="topbar-user"><i class="fas fa-user" style="color:#2563eb;"></i> <span id="userName">User</span></div>
+            <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content">
+        <div id="pendingBanner" style="display:none;" class="pending-banner">
+            <h4><i class="fas fa-clock"></i> Account Pending Approval</h4>
+            <p>আপনার একাউন্ট Admin approval এর জন্য অপেক্ষা করছে। Approve হলে অর্ডার করতে পারবেন।</p>
+        </div>
+
+        <div class="welcome">
+            <div class="w-orbit o1"></div><div class="w-orbit o2"></div>
+            <div>
+                <span class="w-kicker"><i class="fas fa-bolt"></i> DASHBOARD</span>
+                <h3>স্বাগতম, <span id="welcomeName" class="w-grad">Reseller</span>! 👋</h3>
+                <p>আজ অনেক পণ্য অর্ডার করার দিন!</p>
+                <span class="ref-code" id="refInfo" style="display:none;"></span>
+            </div>
+            <button class="btn-welcome" onclick="window.location.href='order.html'"><i class="fas fa-cart-plus"></i> Place New Order</button>
+        </div>
+
+        <!-- Offer banners (reseller dashboard only) -->
+        <div id="offerBannerArea" class="ofb-area" style="display:none"></div>
+
+        <!-- Quick Actions -->
+        <div class="quick-row">
+            <a href="order.html" class="quick-btn"><div class="qi" style="background:#dbeafe;color:#2563eb;"><i class="fas fa-cart-plus"></i></div><p>Place Order</p></a>
+            <a href="products.html" class="quick-btn"><div class="qi" style="background:#d1fae5;color:#10b981;"><i class="fas fa-box"></i></div><p>Products</p></a>
+            <a href="my-orders.html" class="quick-btn"><div class="qi" style="background:#fef3c7;color:#f59e0b;"><i class="fas fa-list"></i></div><p>My Orders</p></a>
+            <a href="withdrawals.html" class="quick-btn"><div class="qi" style="background:#ede9fe;color:#8b5cf6;"><i class="fas fa-money-bill-transfer"></i></div><p>Withdraw</p></a>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-icon green"><i class="fas fa-wallet"></i></div><div><div class="label">My Balance</div><div class="value" id="statBalance">0</div></div></div>
+            <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-shopping-cart"></i></div><div><div class="label">Total Orders</div><div class="value" id="statOrders">0</div></div></div>
+            <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-clock"></i></div><div><div class="label">Active Orders</div><div class="value" id="statPending">0</div></div></div>
+            <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-chart-line"></i></div><div><div class="label">Total Earning</div><div class="value" id="statEarning">0</div></div></div>
+        </div>
+
+        <!-- SALES ANALYTICS -->
+        <div class="analytics">
+            <div class="analytics-head">
+                <h4><span class="kick">ANALYTICS</span> Sales Analytics</h4>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                    <small id="anSub">গত ৭ দিনের হিসাব • বার-এ hover করলে টাকা দেখা যাবে</small>
+                    <select id="anPeriod" title="Select period" style="padding:7px 10px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:.76rem;font-weight:800;color:#475569;background:#fff;cursor:pointer">
+                        <!-- 2026-09-16 — the user asked for 7 Days as the default. The first
+                             option is therefore the default again; no `selected` attribute is
+                             needed. (An earlier change had made All Time the default because a
+                             week-long window can show ৳0 for older orders — the reseller can
+                             still pick All Time from this list at any time.) -->
+                        <option value="7d">7 Days</option>
+                        <option value="14d">14 Days</option>
+                        <option value="1m">1 Month</option>
+                        <option value="6m">6 Months</option>
+                        <option value="1y">1 Year</option>
+                        <option value="all">All Time</option>
+                    </select>
+                </div>
+            </div>
+            <div class="atile-row">
+                <div class="atile t-ind"><div class="tl">Delivered Sales</div><div class="tv" id="anSales">৳0</div></div>
+                <div class="atile t-grn"><div class="tl">Total Profit</div><div class="tv" id="anProfit">৳0</div></div>
+                <div class="atile t-amb"><div class="tl">Avg Order Value</div><div class="tv" id="anAvg">৳0</div></div>
+                <div class="atile t-vio"><div class="tl">Delivered Orders</div><div class="tv" id="anCount">0</div></div>
+            </div>
+            <div class="achart" id="anChart"></div>
+        </div>
+
+        <div class="duo">
+        <!-- Recent Orders -->
+        <div class="card">
+            <div class="card-header"><h4><span class="kick">ORDERS</span> Recent Orders</h4><a href="my-orders.html" style="font-size:0.82rem;color:#2563eb;font-weight:600;text-decoration:none;">All Orders →</a> <a href="my-shop-orders.html" style="font-size:0.82rem;color:#7c3aed;font-weight:600;text-decoration:none;margin-left:10px;">My Shop Orders →</a></div>
+            <div class="table-scroll" id="recentOrders"></div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="card">
+            <div class="card-header"><h4><span class="kick">ALERTS</span> Notifications</h4></div>
+            <div id="notifList"></div>
+        </div>
+        </div>
+    </div>
+</main>
+
+<!-- Mobile Bottom Nav -->
+<nav class="bottom-nav">
+    <a href="dashboard.html" class="active"><i class="fas fa-home"></i>Home</a>
+    <a href="products.html"><i class="fas fa-box"></i>Products</a>
+    <a href="order.html"><i class="fas fa-cart-plus"></i>Order</a>
+    <button class="bn-menu" onclick="menuToggle()"><i class="fas fa-bars"></i><span>Menu</span></button>
+    <a href="profile.html"><i class="fas fa-user"></i>Profile</a>
+</nav>
+
+<script src="../app.js"></script>
+<script>
+(function() {
+    var userId = sessionStorage.getItem('user_id');
+    if (!userId || sessionStorage.getItem('user_type') !== 'reseller') { window.location.replace('login.html'); return; }
+    var user = null;
+    function loadUser() {
+        var resellers = getData(DB_KEYS.RESELLERS);
+        for (var i = 0; i < resellers.length; i++) { if (resellers[i].id === parseInt(userId)) { user = resellers[i]; break; } }
+        if (!user) { sessionStorage.clear(); window.location.replace('login.html'); return false; }
+        return true;
+    }
+    if (!loadUser()) return;
+
+    function statusBadge(s) {
+        var map = { 'new':'b-new','processing':'b-new','pending':'b-pending','confirmed':'b-confirmed','packaging':'b-packaging','shipping':'b-shipping','shipped':'b-shipping','delivered':'b-delivered','wfr':'b-wfr','returned':'b-returned','cancel':'b-cancelled','cancelled':'b-cancelled' };
+        return '<span class="badge ' + (map[s] || 'b-new') + '">' + s + '</span>';
+    }
+
+    /* ---------- BUG-FIX HELPERS (dashboard-local, display only) ----------
+       Nothing here changes any stored data or any shared app.js behaviour. */
+
+    /* An order is FINISHED once it can no longer move forward. Everything else
+       (new / pending / processing / confirmed / packaging / shipping / shipped)
+       is still in flight — that is what the "Active Orders" card promises. */
+    var FINISHED_ORDER_STATUSES = ['delivered', 'cancel', 'cancelled', 'rejected', 'failed', 'returned', 'wfr'];
+    function activeOrderCount(list) {
+        var n = 0;
+        for (var i = 0; i < list.length; i++) {
+            var s = String((list[i] && list[i].status) || '').toLowerCase().trim();
+            if (FINISHED_ORDER_STATUSES.indexOf(s) === -1) n++;
+        }
+        return n;
+    }
+    /* Newest-first comparator — same 4 levels the other order lists use:
+       date -> createdAt -> trailing digits of the id -> original order (stable). */
+    function orderTime(o) {
+        var v = (o && (o.date || o.createdAt || o.created_at || o.time || o.orderedAt)) || '';
+        if (!v) return -Infinity;
+        var t = new Date(v).getTime();
+        return isNaN(t) ? -Infinity : t;          /* an unparseable date sorts last */
+    }
+    function orderSeq(o) {
+        var m = String((o && o.id) || '').match(/(\d+)\s*$/);
+        return m ? parseInt(m[1], 10) : -1;
+    }
+    function orderNewestFirst(a, b) {
+        var ta = orderTime(a), tb = orderTime(b);
+        if (ta !== tb) return tb - ta;
+        var sa = orderSeq(a), sb = orderSeq(b);
+        if (sa !== sb) return sb - sa;
+        return 0;                                  /* Array#sort is stable */
+    }
+
+    function render() {
+        if (!loadUser()) return;
+        document.getElementById('userName').textContent = user.name;
+        document.getElementById('welcomeName').textContent = user.name;
+        document.getElementById('topBalance').textContent = formatCurrency(user.balance);
+        document.getElementById('pendingBanner').style.display = user.status === 'pending' ? 'block' : 'none';
+        var refEl = document.getElementById('refInfo');
+        /* Same rule as referral.html: the code shown is THIS reseller's own,
+           never a stale code that belongs to somebody else. */
+        var myRef = resellerOwnRefCode(user);
+        if (myRef) { refEl.style.display = 'inline-block'; refEl.textContent = 'Referral: ' + myRef; }
+
+        /* BUG FIX 1 — use the SAME canonical selection as every other page
+           (`resellerAllOrders` -> `orderBelongsToReseller`, which resolves
+           ownership from resellerId / reseller_id / shop_id). The old hand-rolled
+           `orders[i].resellerId === user.id` used a strict compare on ONE field, so
+           it silently dropped orders whose resellerId was stored as a string and
+           orders that carry only `shop_id` — which made "Total Orders" disagree
+           with the All Orders page (4 vs 6 in the reproduction). */
+        var mine;
+        if (typeof resellerAllOrders === 'function') {
+            mine = resellerAllOrders(user.id);
+        } else {
+            /* defensive fallback — only reached if app.js ever loses the helper */
+            mine = [];
+            var allOrders = getData(DB_KEYS.ORDERS) || [];
+            for (var i0 = 0; i0 < allOrders.length; i0++) {
+                if (String(allOrders[i0].resellerId) === String(user.id)) mine.push(allOrders[i0]);
+            }
+        }
+
+        /* (#3, #4, #5) The SIDEBAR BADGE keeps its own meaning: only NEW
+           (new + pending) orders of this reseller's All Orders — own-product
+           orders belong to My Shop Orders and never count here. Unchanged. */
+        var badgeCount = resellerOrderBadgeCount(user.id);
+        document.getElementById('statBalance').textContent = formatCurrency(user.balance);
+        document.getElementById('statOrders').textContent = mine.length;
+        /* BUG FIX 3 — the card is labelled "Active Orders" but it rendered the
+           new+pending badge count, so confirmed / packaging / shipping / shipped
+           orders were invisible and the number contradicted its own label.
+           It now counts every order that is still in flight. The badge above is
+           deliberately left as-is. */
+        document.getElementById('statPending').textContent = activeOrderCount(mine);
+        document.getElementById('statEarning').textContent = formatCurrency(user.totalEarning);
+        var badgeEl = document.getElementById('ordersBadge');
+        if (badgeEl) {
+            badgeEl.textContent = badgeCount;
+            badgeEl.style.display = badgeCount > 0 ? 'inline-block' : 'none';
+        }
+        /* item 14 — "All Orders (N)" where N = this reseller's NEW orders.
+           Ownership-scoped in app.js so it can never count another tenant's orders. */
+        try {
+            var nNew = (typeof resellerNewOrderCount === 'function') ? resellerNewOrderCount(user.id) : 0;
+            var lbl = document.getElementById('ordersBadgeLabel');
+            if (lbl) lbl.textContent = nNew > 0 ? (' (' + nNew + ')') : '';
+            if (badgeEl) { badgeEl.textContent = nNew; badgeEl.style.display = nNew > 0 ? 'inline-block' : 'none'; }
+        } catch (e) {}
+
+        // Recent orders — BUG FIX 4: the newest 5 BY DATE (was: the last 5 array
+        // entries, so the newest order could render last and an old one look new).
+        var recent = mine.slice().sort(orderNewestFirst).slice(0, 5);
+        var roHtml = '';
+        if (recent.length) {
+            roHtml = '<table class="data-table"><thead><tr><th>Invoice</th><th>Product</th><th>Customer</th><th>Total</th><th>Profit</th><th>Status</th><th>View</th></tr></thead><tbody>';
+            for (var r = 0; r < recent.length; r++) {
+                var o = recent[r];
+                /* (#1, #2, #19) The View button routes by the order's REAL
+                   product source — not by name, not by a hardcoded URL.
+                   Own uploaded product -> My Shop Orders, admin/supplier -> All Orders. */
+                var _own = orderHasOwnProduct(o, user.id);
+                var _href = resellerOrderViewUrl(o, user.id);
+                var _lbl = _own ? 'My Shop Orders' : 'All Orders';
+                var _tgt = _own ? 'My Shop ✓' : 'All Orders ✓';
+                /* BUG FIX 12 — every cell gets a fallback. productName already had
+                   one, but customer / amount / profit / id did not, so an order
+                   missing any of those printed the literal word "undefined". */
+                roHtml += '<tr><td><strong style="color:#2563eb;">' + (o.id || '-') + '</strong><br><small style="color:' + (_own ? '#7c3aed' : '#64748b') + ';font-size:.64rem;font-weight:700;">' + _tgt + '</small></td><td style="max-width:160px;">' + (o.productName || '-') + '</td><td>' + (o.customer || '-') + '</td><td>' + formatCurrency(o.amount || 0) + '</td><td style="color:#10b981;font-weight:600;">' + formatCurrency(o.profit || 0) + '</td><td>' + statusBadge(o.status) + '</td><td><a href="' + _href + '" class="btn btn-primary" style="padding:4px 10px;font-size:0.72rem;white-space:nowrap;" title="' + _lbl + '"><i class="fas fa-eye"></i> ' + (_own ? 'My Shop' : 'Orders') + '</a></td></tr>';
+            }
+            roHtml += '</tbody></table>';
+        } else {
+            roHtml = '<div class="empty"><i class="fas fa-shopping-cart"></i><br>No orders yet. <a href="order.html">Place your first order →</a></div>';
+        }
+        document.getElementById('recentOrders').innerHTML = roHtml;
+
+        // Notifications — BUG FIX 5 (newest first) + FIX 11 (a missing `type` used
+        // to throw and wipe the whole notifications area every 8 seconds).
+        var notifs = getData(DB_KEYS.NOTIFICATIONS) || [];
+        var mineN = [];
+        for (var n = 0; n < notifs.length; n++) {
+            var cand = notifs[n];
+            if (!cand) continue;
+            if (String(cand.userId) === String(user.id) || cand.userId === 'all') mineN.push(cand);
+        }
+        mineN.sort(orderNewestFirst);
+        mineN = mineN.slice(0, 6);
+        var nh = '';
+        if (!mineN.length) {
+            nh = '<div class="empty"><i class="fas fa-bell-slash"></i><br>No notifications</div>';
+        } else {
+            for (var m = 0; m < mineN.length; m++) {
+                var nt = mineN[m];
+                var tp = String(nt.type || '');
+                var ic = tp.indexOf('order') !== -1 ? 'fa-shopping-cart' : tp.indexOf('withdrawal') !== -1 ? 'fa-money-bill' : tp.indexOf('approval') !== -1 ? 'fa-check-circle' : 'fa-bell';
+                nh += '<div class="notif-item"><i class="fas ' + ic + '"></i><div><div>' + (nt.message || '') + '</div><small style="color:#94a3b8;">' + (nt.date ? formatDate(nt.date) : '') + '</small></div></div>';
+            }
+        }
+        document.getElementById('notifList').innerHTML = nh;
+    }
+
+    // Mobile sidebar
+    window.toggleSidebar = function(open) {
+        document.getElementById('sidebar').classList.toggle('open', open);
+        document.getElementById('sideOverlay').classList.toggle('show', open);
+    };
+
+    setOnline(user.id, true);
+    setInterval(function() { setOnline(user.id, true); }, 60000);
+    window.addEventListener('beforeunload', function() { setOnline(user.id, false); });
+
+    render();
+    // Real-time refresh
+    setInterval(function() { render(); }, 8000);
+})();
+</script>
+
+<script>
+window.menuToggle = function() {
+    var sb = document.getElementById('sidebar');
+    var open = !sb.classList.contains('open');
+    window.toggleSidebar(open);
+};
+</script>
+
+<script>
+/* Robust menu toggle */
+if (!window.menuToggle) {
+    window.menuToggle = function() {
+        var sb = document.querySelector('.sidebar');
+        if (!sb) return;
+        var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+        var open = !sb.classList.contains('open');
+        sb.classList.toggle('open', open);
+        if (ov) ov.classList.toggle('show', open);
+        document.body.classList.toggle('sb-open', open);
+    };
+}
+</script>
+
+
+<script>
+/* Sales Analytics — standalone, additive only */
+(function() {
+    /* Item 2 — period filter: 7 Days / 14 Days / 1 Month / 6 Months / 1 Year / All Time */
+    var PERIOD_DAYS = { '7d': 7, '14d': 14, '1m': 30, '6m': 183, '1y': 365, 'all': 0 };
+    var PERIOD_LABEL = { '7d': 'গত ৭ দিন', '14d': 'গত ১৪ দিন', '1m': 'গত ১ মাস', '6m': 'গত ৬ মাস', '1y': 'গত ১ বছর', 'all': 'শুরু থেকে আজ পর্যন্ত' };
+    function periodStart(period) {
+        var n = PERIOD_DAYS[period];
+        if (!n) return null;                       // All Time -> no lower bound
+        var d = new Date(); d.setHours(0, 0, 0, 0);
+        d.setDate(d.getDate() - (n - 1));
+        return d;
+    }
+    function inPeriod(o, from) {
+        if (!from) return true;
+        var d = new Date(o.date);
+        if (isNaN(d.getTime())) return false;
+        return d >= from;
+    }
+    function compute() {
+        var userId = parseInt(sessionStorage.getItem('user_id'));
+        /* BUG FIX 2 — this block had its OWN copy of the same broken filter
+           (`orders[i].resellerId === userId`), so a delivered order whose
+           resellerId was a string, or one carrying only `shop_id`, was dropped
+           before the delivered-status test — and the whole analytics card
+           (Sales / Profit / Avg / Delivered count / chart) read ৳0 while the
+           All Orders page showed the real figures (৳0 vs ৳2,800 in the
+           reproduction). It now uses the same canonical selection as the
+           stat cards above. */
+        var mine;
+        if (typeof resellerAllOrders === 'function') {
+            mine = resellerAllOrders(userId);
+        } else {
+            mine = [];
+            var orders = getData(DB_KEYS.ORDERS) || [];
+            for (var i = 0; i < orders.length; i++) { if (String(orders[i].resellerId) === String(userId)) mine.push(orders[i]); }
+        }
+        var sel = document.getElementById('anPeriod');
+        /* 2026-09-16 — the fallback matches the dropdown default again (7 Days), as the
+           user asked. It only applies if the select is somehow missing. */
+        var period = sel ? sel.value : '7d';
+        var from = periodStart(period);
+        // orders inside the selected period
+        var scoped = [];
+        for (var m = 0; m < mine.length; m++) { if (inPeriod(mine[m], from)) scoped.push(mine[m]); }
+        var del = [], sales = 0, profit = 0;
+        for (var j = 0; j < scoped.length; j++) {
+            if (scoped[j].status === 'delivered') { del.push(scoped[j]); sales += (scoped[j].amount || 0); profit += (scoped[j].profit || 0); }
+        }
+        var sEl = document.getElementById('anSales');
+        if (!sEl) return;
+        sEl.textContent = formatCurrency(sales);
+        document.getElementById('anProfit').textContent = formatCurrency(profit);
+        document.getElementById('anAvg').textContent = formatCurrency(del.length ? Math.round(sales / del.length) : 0);
+        document.getElementById('anCount').textContent = del.length;
+        var subEl = document.getElementById('anSub');
+        if (subEl) subEl.textContent = (PERIOD_LABEL[period] || 'গত ৭ দিন') + ' • বার-এ hover করলে টাকা দেখা যাবে';
+        /* ---------- chart buckets ---------- */
+        var chart = document.getElementById('anChart');
+        var dayNames = ['রবি', 'সোম', 'মঙ্গল', 'বুধ', 'বৃহঃ', 'শুক্র', 'শনি'];
+        var monNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var bars = [];
+        if (period === '6m' || period === '1y' || period === 'all') {
+            /* BUG FIX 13 — "All Time" was hardcoded to 12 bars, so it silently
+               dropped anything older than a year while the dropdown promised
+               "শুরু থেকে আজ পর্যন্ত". It now spans from the earliest order month
+               to this month (capped at 36 bars so the chart stays readable). */
+            var nowM0 = new Date(); nowM0.setDate(1); nowM0.setHours(0, 0, 0, 0);
+            var months;
+            if (period === '6m') months = 6;
+            else if (period === '1y') months = 12;
+            else {
+                months = 12;                                  /* safe default */
+                var earliest = null;
+                for (var e0 = 0; e0 < scoped.length; e0++) {
+                    var ed0 = new Date(scoped[e0].date);
+                    if (isNaN(ed0.getTime())) continue;
+                    if (!earliest || ed0 < earliest) earliest = ed0;
+                }
+                if (earliest) {
+                    months = (nowM0.getFullYear() - earliest.getFullYear()) * 12 + (nowM0.getMonth() - earliest.getMonth()) + 1;
+                }
+                if (!months || months < 1) months = 1;
+                if (months > 36) months = 36;                 /* cap for readability */
+            }
+            var nowM = new Date(); nowM.setDate(1); nowM.setHours(0, 0, 0, 0);
+            for (var mi = months - 1; mi >= 0; mi--) {
+                var bs = new Date(nowM.getFullYear(), nowM.getMonth() - mi, 1);
+                var be = new Date(bs.getFullYear(), bs.getMonth() + 1, 1);
+                var sumM = 0;
+                for (var q = 0; q < scoped.length; q++) { var od2 = new Date(scoped[q].date); if (od2 >= bs && od2 < be) sumM += (scoped[q].amount || 0); }
+                bars.push({ label: monNames[bs.getMonth()], sum: sumM });
+            }
+        } else {
+            var days = PERIOD_DAYS[period] || 7;
+            var startD = periodStart(period);
+            for (var d2 = 0; d2 < days; d2++) {
+                var ds = new Date(startD); ds.setDate(startD.getDate() + d2);
+                var de = new Date(ds); de.setDate(ds.getDate() + 1);
+                var sumD = 0;
+                for (var k = 0; k < scoped.length; k++) { var od3 = new Date(scoped[k].date); if (od3 >= ds && od3 < de) sumD += (scoped[k].amount || 0); }
+                bars.push({ label: days > 14 ? String(ds.getDate()) : dayNames[ds.getDay()], sum: sumD });
+            }
+        }
+        var max = 0;
+        for (var b = 0; b < bars.length; b++) { if (bars[b].sum > max) max = bars[b].sum; }
+        var h = '';
+        for (var x = 0; x < bars.length; x++) {
+            var pct = max ? Math.max(8, Math.round(bars[x].sum / max * 100)) : 8;
+            h += '<div class="acol"><div class="abar' + (bars[x].sum ? '' : ' zero') + '" style="height:' + pct + '%" data-v="' + formatCurrency(bars[x].sum) + '"><span class="av">' + formatCurrency(bars[x].sum) + '</span></div><span class="alab">' + bars[x].label + '</span></div>';
+        }
+        chart.innerHTML = h;
+    }
+    var selEl = document.getElementById('anPeriod');
+    if (selEl) selEl.addEventListener('change', compute);   // update without page reload
+    compute();
+    setInterval(compute, 10000);
+})();
+</script>
+
+<script>
+/* Logout fix: keep the mobile bottom-nav in sync with the drawer state. */
+(function () {
+    function sync(open) {
+        try {
+            var sb = document.querySelector('.sidebar');
+            var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+            if (sb) sb.classList.toggle('open', !!open);
+            if (ov) ov.classList.toggle('show', !!open);
+            document.body.classList.toggle('sb-open', !!open);
+        } catch (e) {}
+    }
+    var orig = window.toggleSidebar;
+    window.toggleSidebar = function (open) {
+        try { if (typeof orig === 'function') orig(open); } catch (e) {}
+        sync(open);
+    };
+    window.menuToggle = function () {
+        var sb = document.querySelector('.sidebar');
+        var open = !(sb && sb.classList.contains('open'));
+        window.toggleSidebar(open);
+    };
+})();
+</script>
+
+<script>
+/* ===== Offer banners — RESELLER DASHBOARD ONLY =====
+   Rendered from the signed-in reseller's own session, so admin/supplier/public
+   pages can never receive these. Nothing here is clickable unless the admin
+   configured a link, or the banner belongs to an offer. */
+(function () {
+    try {
+        var area = document.getElementById('offerBannerArea');
+        if (!area) return;
+        var rid = sessionStorage.getItem('user_id');
+        var utype = sessionStorage.getItem('user_type');
+        if (!rid || utype !== 'reseller') return;         /* dashboard is reseller-only anyway */
+        if (typeof dashboardBannersFor !== 'function') return;
+
+        var items = dashboardBannersFor(rid);
+        if (!items || !items.length) return;
+
+        function esc(v) {
+            return String(v === undefined || v === null ? '' : v)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+        var h = '<div class="ofb-strip' + (items.length > 1 ? ' many' : '') + '">';
+        /* BUG FIX 10 — count what we actually render. The loop below skips any
+           offer without a banner image, so the strip could end up EMPTY while
+           `area.style.display = ''` still made it visible — leaving a blank band
+           on the dashboard. */
+        var rendered = 0;
+        for (var i = 0; i < items.length; i++) {
+            var b = items[i].banner || {};
+            if (!b.image) continue;                        /* image banners only */
+            var img = '<img src="' + esc(b.image) + '" alt="' + esc(b.title || 'Offer banner') + '" loading="lazy">';
+            var cap = (b.title || b.subtitle)
+                ? '<span class="ofb-cap"><b>' + esc(b.title || '') + '</b>' + (b.subtitle ? '<small>' + esc(b.subtitle) + '</small>' : '') + '</span>'
+                : '';
+            var target = (typeof bannerLinkTarget === 'function') ? bannerLinkTarget(b) : '';
+            /* no admin link + attached to an offer -> offer context.
+               The offer id travels in the query string so offers.html can jump
+               straight to that card instead of dumping the user on a generic
+               list (the reported "banner click does not open offers"). */
+            if (!target && items[i].offerId) {
+                target = 'offers.html?offer=' + encodeURIComponent(items[i].offerId);
+            }
+            if (target) {
+                var ext = /^https?:/i.test(target) ? ' target="_blank" rel="noopener"' : '';
+                h += '<div class="ofb-item' + (items.length === 1 ? ' solo' : '') + '"><a href="' + esc(target) + '"' + ext + '>' + img + cap + '</a></div>';
+            } else {
+                h += '<div class="ofb-item' + (items.length === 1 ? ' solo' : '') + '"><span class="ofb-plain">' + img + cap + '</span></div>';
+            }
+            rendered++;
+        }
+        h += '</div>';
+        /* BUG FIX 10 — nothing rendered (no offer had an image) => leave the area
+           exactly as it was: hidden, with no blank band. */
+        if (!rendered) return;
+        area.innerHTML = h;
+        area.style.display = '';
+    } catch (e) { /* a banner problem must never break the dashboard */ }
+})();
+</script>
+</body>
+</html>

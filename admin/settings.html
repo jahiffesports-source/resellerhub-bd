@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Admin - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#f1f5f9; color:#1e293b; }
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:240px; background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%); color:#cbd5e1; z-index:100; overflow-y:auto; }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid #334155; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:38px; height:38px; background:linear-gradient(135deg,#dc2626,#b91c1c); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; }
+        .sidebar-logo h3 { color:white; font-size:1rem; }
+        .sidebar-logo small { color:#94a3b8; font-size:0.7rem; display:block; }
+        .sidebar-menu { list-style:none; padding:12px 0; }
+        .sidebar-menu li { margin:2px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:10px 20px; color:#cbd5e1; text-decoration:none; font-size:0.88rem; }
+        .sidebar-menu a:hover { background:rgba(255,255,255,0.05); color:white; }
+        .sidebar-menu a.active { background:#dc2626; color:white; }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 20px 5px; color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+        .main { margin-left:240px; min-height:100vh; }
+        .topbar { background:white; padding:14px 25px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:sticky; top:0; z-index:50; }
+        .topbar h2 { font-size:1.2rem; font-weight:600; }
+        .topbar h2 i { color:#dc2626; margin-right:8px; }
+        .topbar-right { display:flex; align-items:center; gap:12px; }
+        .user-pill { display:flex; align-items:center; gap:8px; padding:6px 14px; background:#fee2e2; border-radius:30px; font-size:0.85rem; color:#991b1b; font-weight:600; }
+        .btn-logout { background:#dc2626; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:500; }
+        .content { padding:25px; max-width:950px; }
+        .tabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+        .tab-btn { padding:10px 20px; border:none; border-radius:8px; font-weight:600; font-size:0.88rem; cursor:pointer; background:white; color:#64748b; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+        .tab-btn.active { background:#dc2626; color:white; }
+        .card { background:white; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:20px; }
+        .card-header { padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+        .card-header h4 { font-size:0.95rem; font-weight:600; }
+        .card-header h4 i { color:#dc2626; margin-right:6px; }
+        .card-body { padding:22px; }
+        .form-group { margin-bottom:16px; }
+        .form-group label { display:block; font-weight:600; margin-bottom:6px; font-size:0.87rem; }
+        .form-group input, .form-group select, .form-group textarea { width:100%; padding:11px 14px; border:2px solid #e2e8f0; border-radius:8px; font-size:0.92rem; font-family:inherit; }
+        .form-group input:focus, .form-group textarea:focus { outline:none; border-color:#2563eb; }
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+        .btn { padding:10px 20px; border:none; border-radius:8px; font-weight:600; font-size:0.9rem; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+        .btn-primary { background:#2563eb; color:white; }
+        .btn-success { background:#10b981; color:white; }
+        .btn-danger { background:#dc2626; color:white; }
+        .btn-sm { padding:5px 11px; font-size:0.78rem; }
+        .data-table { width:100%; border-collapse:collapse; }
+        .data-table th { text-align:left; padding:10px 16px; background:#f8fafc; font-weight:600; font-size:0.72rem; color:#64748b; text-transform:uppercase; }
+        .data-table td { padding:11px 16px; border-bottom:1px solid #f1f5f9; font-size:0.86rem; }
+        .data-table tr:hover { background:#f8fafc; }
+        .badge { padding:3px 9px; border-radius:20px; font-size:0.7rem; font-weight:600; }
+        .badge-success { background:#d1fae5; color:#065f46; }
+        .badge-danger { background:#fee2e2; color:#991b1b; }
+        .tab-section { display:none; }
+        .tab-section.active { display:block; }
+        .empty { text-align:center; padding:30px; color:#94a3b8; }
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+        .modal-overlay.show { display:flex; }
+        .modal { background:white; border-radius:14px; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; }
+        .modal-header { padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; }
+        .modal-header h3 { font-size:1.02rem; }
+        .modal-close { background:none; border:none; font-size:1.4rem; cursor:pointer; color:#64748b; }
+        .modal-body { padding:20px; }
+        .modal-footer { padding:14px 20px; border-top:1px solid #e2e8f0; display:flex; gap:10px; justify-content:flex-end; }
+        @media (max-width:768px) { .sidebar { width:240px; } .sidebar-logo h3, .sidebar-logo small, .sidebar-menu a span, .sidebar-divider { display:initial; } .main { margin-left:70px; } .form-row { grid-template-columns:1fr; } }
+    </style>
+
+<!-- ============================================================================
+     2026-09-18 — "My Shop Banner" + "My Shop Homepage" default-design tabs.
+     Self-contained: every class is prefixed msb- / mhb- so nothing here can
+     collide with a class already on this page. No other page is affected.
+     ============================================================================ -->
+<style id="admin-myshop-defaults">
+.msb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.msb-cell{position:relative;border:1.5px solid #e2e8f0;border-radius:14px;overflow:hidden;background:#f8fafc}
+.msb-cell img{width:100%;height:auto;display:block}
+.msb-n{position:absolute;top:7px;left:7px;background:rgba(15,23,42,.74);color:#fff;font-size:.66rem;font-weight:800;padding:3px 9px;border-radius:8px}
+.msb-x{position:absolute;top:7px;right:7px;background:#dc2626;color:#fff;border:none;width:29px;height:29px;border-radius:8px;cursor:pointer;font-size:.74rem}
+.msb-empty{border:2px dashed #cbd5e1;border-radius:14px;padding:26px 16px;text-align:center;color:#94a3b8;font-size:.82rem;font-weight:600}
+.mhb-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:13px;padding:13px 15px;margin-bottom:14px}
+.mhb-hd{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+.mhb-hd b{font-size:.88rem;font-weight:800;color:#0f172a}
+.mhb-hd>span{font-size:.68rem;font-weight:800;color:#94a3b8;text-transform:uppercase}
+.mhb-empty{color:#94a3b8;font-size:.82rem;font-weight:600;padding:10px 0}
+.mhb-row{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid #eef2f7;border-radius:11px;padding:9px 12px;margin-bottom:7px}
+.mhb-ic{width:34px;height:34px;flex:0 0 34px;border-radius:9px;background:#eef2ff;color:#4f46e5;display:flex;align-items:center;justify-content:center;font-size:.95rem}
+.mhb-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.mhb-tx b{font-size:.82rem;font-weight:800;color:#0f172a}
+.mhb-tx small{font-size:.64rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px}
+.mhb-tx em{font-size:.68rem;font-style:normal;font-weight:700;color:#64748b}
+.mhb-ops{display:flex;gap:4px}
+.mhb-ops button{width:28px;height:28px;border:1px solid #e2e8f0;background:#fff;color:#475569;border-radius:7px;font-size:.74rem;font-weight:800;cursor:pointer;padding:0}
+.mhb-ops button:hover{background:#eef2ff;border-color:#c7d2fe}
+.mhb-ops button.del:hover{background:#fee2e2;border-color:#fecaca;color:#dc2626}
+.mhb-ov{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:1200;display:flex;align-items:center;justify-content:center;padding:16px}
+.mhb-modal{background:#fff;border-radius:18px;max-width:620px;width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,.4);overflow:hidden}
+.mhb-modal-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #eef2f7;background:#f8fafc}
+.mhb-modal-hd b{font-size:1rem;font-weight:800;color:#0f172a;display:flex;align-items:center;gap:8px}
+.mhb-modal-hd b i{color:#4f46e5}
+.mhb-modal-x{border:none;background:none;font-size:1.7rem;line-height:1;color:#94a3b8;cursor:pointer;padding:0 4px}
+.mhb-modal-x:hover{color:#dc2626}
+.mhb-modal-bd{padding:18px 20px;overflow-y:auto}
+.mhb-f{margin-bottom:15px}
+.mhb-f>label{display:block;font-size:.8rem;font-weight:800;color:#334155;margin-bottom:6px}
+.mhb-f>label i{color:#dc2626;font-style:normal}
+.mhb-f>label em{font-size:.68rem;font-weight:600;color:#94a3b8;font-style:normal;margin-left:5px}
+.mhb-cnt{float:right;font-size:.68rem;font-weight:800;color:#4f46e5;background:#eef2ff;border-radius:6px;padding:2px 8px}
+.mhb-in{width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;font-size:.84rem;font-family:inherit;color:#0f172a;background:#fff;outline:none}
+.mhb-in:focus{border-color:#818cf8;box-shadow:0 0 0 3px rgba(99,102,241,.12)}
+.mhb-in:disabled{background:#f1f5f9;color:#94a3b8}
+.mhb-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.mhb-list{max-height:210px;overflow-y:auto;border:1.5px solid #e2e8f0;border-radius:10px;padding:6px}
+.mhb-grp{margin-bottom:6px}
+.mhb-grp-h{font-size:.64rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;padding:5px 7px 3px}
+.mhb-pk{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:8px;cursor:pointer}
+.mhb-pk:hover{background:#f8fafc}
+.mhb-pk input{width:16px;height:16px;accent-color:#4f46e5;cursor:pointer;flex:0 0 16px}
+.mhb-pk-n{flex:1;font-size:.79rem;font-weight:600;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mhb-pk-t{font-size:.75rem;font-weight:800;color:#dc2626}
+.mhb-none{padding:14px;text-align:center;color:#94a3b8;font-size:.8rem}
+.mhb-modal-ft{display:flex;gap:10px;justify-content:flex-end;padding:15px 20px;border-top:1px solid #eef2f7;background:#f8fafc}
+.mhb-btn{border:none;border-radius:10px;padding:11px 20px;font-size:.84rem;font-weight:800;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px}
+.mhb-btn.gh{background:#e2e8f0;color:#334155}
+.mhb-btn.pri{background:#4f46e5;color:#fff}
+.mhb-btn.pri:hover{background:#4338ca}
+@media (max-width:560px){ .mhb-3{grid-template-columns:1fr} .msb-grid{grid-template-columns:1fr 1fr} }
+</style>
+
+<style id="lx-sb-final">
+/* ===== ADMIN SIDEBAR v4 — fresh premium design (authoritative) ===== */
+body .lx-sidebar { position:fixed !important; left:0 !important; top:0 !important; bottom:0 !important; width:264px !important; background:linear-gradient(180deg,#0d1226 0%,#171233 100%) !important; border-right:1px solid rgba(129,140,248,.14) !important; z-index:600 !important; overflow-y:auto !important; overflow-x:hidden !important; display:flex !important; flex-direction:column !important; transform:none !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; font-family:'Inter','Hind Siliguri',sans-serif !important; }
+body .lx-sidebar::before { content:'' !important; position:absolute !important; top:-80px !important; right:-60px !important; width:260px !important; height:260px !important; background:radial-gradient(circle,rgba(99,102,241,.18),transparent 70%) !important; pointer-events:none !important; }
+body .lx-brand { display:flex !important; align-items:center !important; gap:12px !important; padding:20px 18px !important; border-bottom:1px solid rgba(129,140,248,.14) !important; position:relative !important; }
+body .lx-brand-ic { width:42px !important; height:42px !important; border-radius:13px !important; background:linear-gradient(135deg,#6366f1,#a855f7) !important; display:flex !important; align-items:center !important; justify-content:center !important; color:#fff !important; font-size:1.05rem !important; box-shadow:0 8px 20px rgba(99,102,241,.4) !important; flex-shrink:0 !important; }
+body .lx-brand-tx b { color:#fff !important; font-size:1.02rem !important; font-weight:900 !important; display:block !important; line-height:1.2 !important; }
+body .lx-brand-tx small { color:#818cf8 !important; font-size:.6rem !important; font-weight:800 !important; letter-spacing:2px !important; }
+body .lx-close { margin-left:auto !important; background:rgba(255,255,255,.06) !important; border:none !important; color:#94a3b8 !important; width:30px !important; height:30px !important; border-radius:9px !important; cursor:pointer !important; font-size:1rem !important; display:none !important; align-items:center !important; justify-content:center !important; }
+body .lx-close:hover { background:#fee2e2 !important; color:#dc2626 !important; }
+body .lx-menu { padding:14px 12px !important; flex:1 !important; }
+body .sec-label { font-size:.6rem !important; font-weight:900 !important; letter-spacing:2.2px !important; color:#6b7280 !important; text-transform:uppercase !important; padding:14px 12px 6px !important; display:flex !important; align-items:center !important; gap:8px !important; }
+body .sec-label::before { content:'' !important; width:14px !important; height:2px !important; background:linear-gradient(90deg,#6366f1,#a855f7) !important; border-radius:2px !important; }
+body .sb-item { position:relative !important; display:flex !important; align-items:center !important; gap:11px !important; padding:9px 12px !important; margin:3px 0 !important; border-radius:12px !important; color:#b6c2e2 !important; text-decoration:none !important; font-size:.86rem !important; font-weight:600 !important; transition:all .2s !important; border:1px solid transparent !important; background:transparent !important; opacity:1 !important; visibility:visible !important; pointer-events:auto !important; box-shadow:none !important; transform:none !important; }
+body .sb-item .sb-ico { width:30px !important; height:30px !important; border-radius:9px !important; background:rgba(255,255,255,.05) !important; display:flex !important; align-items:center !important; justify-content:center !important; font-size:.82rem !important; flex-shrink:0 !important; transition:all .2s !important; }
+body .sb-item .sb-txt { flex:1 !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; display:block !important; }
+body .sb-item:hover { background:rgba(99,102,241,.13) !important; color:#fff !important; }
+body .sb-item:hover .sb-ico { background:rgba(99,102,241,.3) !important; }
+body .sb-item.on { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; border-color:rgba(129,140,248,.35) !important; }
+body .sb-item.on::before { content:'' !important; position:absolute !important; left:-12px !important; top:50% !important; transform:translateY(-50%) !important; width:3.5px !important; height:60% !important; background:linear-gradient(180deg,#818cf8,#c084fc) !important; border-radius:3px !important; }
+body .sb-item.on .sb-ico { background:linear-gradient(135deg,#6366f1,#a855f7) !important; color:#fff !important; }
+/* page-এর নিচের inline-highlight script সবসময় হারাবে */
+body .sb-item[style] { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; }
+body .sb-badge { background:#fbbf24 !important; color:#1e293b !important; font-size:.62rem !important; padding:1px 8px !important; border-radius:10px !important; font-weight:800 !important; margin-left:auto !important; }
+body .main { margin-left:264px !important; min-height:100vh !important; }
+body .side-overlay { display:none !important; position:fixed !important; inset:0 !important; background:rgba(7,10,26,.6) !important; z-index:590 !important; backdrop-filter:blur(2px) !important; }
+body .side-overlay.show { display:block !important; pointer-events:auto !important; }
+body .hamburger { display:none !important; }
+/* ===== মোবাইল/ট্যাবলেট: slide drawer ===== */
+@media (max-width:1024px) {
+    body .main { margin-left:0 !important; }
+    body .lx-sidebar { transform:translateX(-100%) !important; box-shadow:none !important; }
+    body .lx-sidebar.open { transform:none !important; box-shadow:30px 0 70px rgba(7,10,26,.6) !important; }
+    body .lx-close { display:flex !important; }
+    body .hamburger { display:inline-flex !important; }
+    body { overflow-x:hidden !important; }
+}
+</style>
+
+
+
+
+
+<style id="lx-ovf-fix">
+@media(max-width:768px){ body{overflow-x:hidden !important} }
+</style>
+<style id="lx-orders-badge-n">.orders-badge-n{color:#fbbf24;font-weight:900;font-size:.72rem}.orders-badge-n:empty{display:none}</style>
+<style id="admin-mobile-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   The admin topbar measured about 474px across on a 390px phone (25px padding, an
+   h2 at 1.2rem, 12px gaps, a wide user pill), so the logout button was pushed past
+   the right edge. Several admin tables are also built by JS with NO .table-scroll
+   wrapper, so they widened the whole page instead of scrolling.
+   EVERY rule below sits inside a max-width query, so the DESKTOP LAYOUT IS
+   UNCHANGED. This is an ADDED block — no existing rule is modified or removed. */
+@media (max-width:768px){
+  .topbar { padding:10px 12px; gap:8px; }
+  .topbar h2 { font-size:.92rem; }
+  .topbar h2 i { margin-right:4px; }
+  .topbar-right { gap:6px; }
+  .user-pill { padding:5px 9px; font-size:.72rem; }
+  .btn-logout { padding:7px 10px; }
+  /* a table without a scroll wrapper would otherwise push the page wide */
+  .data-table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%; }
+}
+</style>
+<style id="panel-fullwidth-fix">
+/* 2026-09-16 — FULL-WIDTH FIX for the admin and supplier panels (this request).
+   The whole page sat in a narrow column with empty space on the right, because the
+   base rule reserves the sidebar with `margin-left`, and a block element with
+   margin-left and width:auto is only (100% - that) wide. A LATER rule in the same
+   file re-asserted the margin with !important, so the earlier mobile override lost.
+   This block is the LAST thing in the document, so it wins, and it resets width as
+   well as margin. Desktop is untouched — everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<aside class="lx-sidebar sidebar" id="sidebar">
+    <div class="lx-brand">
+        <span class="lx-brand-ic"><i class="fas fa-user-shield"></i></span>
+        <div class="lx-brand-tx"><b>AdminHub</b><small>CONTROL PANEL</small></div>
+        <button class="lx-close" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+    <nav class="lx-menu">
+        <div class="sec-label">Main</div>
+        <a href="dashboard.html" class="sb-item"><span class="sb-ico"><i class="fas fa-chart-line"></i></span><span class="sb-txt">Dashboard</span></a>
+        <a href="orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-shopping-cart"></i></span><span class="sb-txt">All Orders<span class="orders-badge-n" id="ordersBadgeN"></span></span><span class="orders-badge" style="display:none;margin-left:auto;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:.62rem;font-weight:800"></span></a>
+        <a href="multi-supplier-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-people-arrows"></i></span><span class="sb-txt">Multi-Supplier Orders<span class="orders-badge-n" id="msCount"></span></span></a>
+        <a href="products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box"></i></span><span class="sb-txt">Products</span></a>
+        <div class="sec-label">Users</div>
+        <a href="resellers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-users"></i></span><span class="sb-txt">Resellers</span></a>
+        <a href="suppliers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-warehouse"></i></span><span class="sb-txt">Suppliers</span></a>
+        <a href="supplier-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-boxes-stacked"></i></span><span class="sb-txt">Supplier Products</span></a>
+        <a href="add-reseller.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Add Reseller</span></a>
+        <a href="add-supplier.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck"></i></span><span class="sb-txt">Add Supplier</span></a>
+        <a href="approvals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-check"></i></span><span class="sb-txt">Approvals</span></a>
+        <a href="withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-money-bill-wave"></i></span><span class="sb-txt">Withdrawals</span></a>
+        <a href="supplier-withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-hand-holding-dollar"></i></span><span class="sb-txt">Supplier Withdraw</span></a>
+        <a href="transactions.html" class="sb-item"><span class="sb-ico"><i class="fas fa-receipt"></i></span><span class="sb-txt">Transaction History</span></a>
+        <a href="moderators.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-shield"></i></span><span class="sb-txt">Moderators</span></a>
+        <div class="sec-label">Referral</div>
+        <a href="referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Reseller Referral</span></a>
+        <a href="supplier-referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck-arrow-right"></i></span><span class="sb-txt">Supplier Referral</span></a>
+                <a href="myshop-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-bag-shopping"></i></span><span class="sb-txt">My Shop Orders</span></a>
+        <a href="myshop-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box-open"></i></span><span class="sb-txt">My Shop Products</span></a>
+        <div class="sec-label">Offers &amp; Banners</div>
+        <a href="add-offer.html" class="sb-item"><span class="sb-ico"><i class="fas fa-plus-circle"></i></span><span class="sb-txt">Add Offers</span></a>
+        <a href="manage-offers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-gift"></i></span><span class="sb-txt">Manage Offers</span></a>
+        <a href="add-banner.html" class="sb-item"><span class="sb-ico"><i class="fas fa-image"></i></span><span class="sb-txt">Add Banners</span></a>
+        <a href="manage-banners.html" class="sb-item"><span class="sb-ico"><i class="fas fa-images"></i></span><span class="sb-txt">Manage Banners</span></a>
+        <div class="sec-label">System</div>
+        <a href="messages.html" class="sb-item"><span class="sb-ico"><i class="fas fa-comments"></i></span><span class="sb-txt">Messages<span class="orders-badge-n" id="msgBadgeN"></span></span></a>
+        <a href="settings.html" class="sb-item"><span class="sb-ico"><i class="fas fa-cog"></i></span><span class="sb-txt">Settings</span></a>
+        <a href="../index.html" class="sb-item"><span class="sb-ico"><i class="fas fa-globe"></i></span><span class="sb-txt">Visit Site</span></a>
+    </nav>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+            <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h2><i class="fas fa-cog"></i> Settings</h2>
+        <div class="topbar-right">
+            <div class="user-pill"><i class="fas fa-user-shield"></i> Admin</div>
+            <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('general', this)"><i class="fas fa-globe"></i> General</button>
+            <button class="tab-btn" onclick="showTab('categories', this)"><i class="fas fa-th"></i> Categories</button>
+            <button class="tab-btn" onclick="showTab('banners', this)"><i class="fas fa-images"></i> Banners</button>
+            <button class="tab-btn" onclick="showTab('coupons', this)"><i class="fas fa-ticket"></i> Coupons</button>
+            <button class="tab-btn" onclick="showTab('notifications', this)"><i class="fas fa-bell"></i> Notifications</button>
+            <button class="tab-btn" onclick="showTab('steadfast', this)"><i class="fas fa-truck-fast"></i> Courier</button>
+            <!-- 2026-09-18 — the two DEFAULT-design tabs. Everything they set is a
+                 fallback for every reseller's My Shop (rh_myshop_defaults). -->
+            <button class="tab-btn" onclick="showTab('myshop-banner', this)"><i class="fas fa-rectangle-ad"></i> My Shop Banner</button>
+            <button class="tab-btn" onclick="showTab('myshop-home', this)"><i class="fas fa-table-cells-large"></i> My Shop Homepage</button>
+        </div>
+
+        <!-- STEADFAST COURIER -->
+        <div class="tab-section" id="tab-steadfast">
+            <div class="card">
+                <div class="card-header"><h4><i class="fas fa-truck-fast"></i> Courier API Credentials</h4></div>
+                <div class="card-body">
+                    <form onsubmit="return saveSteadfast(event)">
+                        <!-- 2026-09-19 — the admin may connect ANY courier (this request).
+                             Each courier keeps its own API Key / Secret / endpoint below. -->
+                        <div class="form-group">
+                            <label>Courier</label>
+                            <div id="courierPick" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+                            <small style="color:#94a3b8;font-size:.75rem;display:block;margin-top:6px;">
+                                যে কুরিয়ার দিয়ে অর্ডার পাঠাবেন সেটা বেছে নিন। প্রতিটি কুরিয়ারের API Key আলাদা করে সেভ হয় —
+                                একটার key অন্যটায় যায় না। Orders পেজের "Book Selected" বাটন এই বেছে নেওয়া কুরিয়ারেই বুক করবে।
+                            </small>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>API Key</label><input type="text" id="sfKey" placeholder="API Key"></div>
+                            <div class="form-group"><label>Secret Key</label><input type="text" id="sfSecret" placeholder="Secret Key"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" style="flex:1"><label>API Endpoint (booking URL)</label><input type="text" id="sfBase" placeholder="https://your-courier.com/api/create_order"></div>
+                            <div class="form-group"><label>Auth Style</label><select id="sfAuth"></select></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>COD Amount Source</label>
+                                <select id="sfCod"><option value="amount">Order Total (amount)</option><option value="due">Due Amount</option></select>
+                            </div>
+                            <div class="form-group"><label>Fraud Check Endpoint</label><input type="text" id="sfFraudUrl" placeholder="https://check.steadfast.com.bd/api/v1/fraud"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Backend Proxy URL (live site-এর জন্য — recommended)</label>
+                            <input type="text" id="sfProxy" placeholder="https://yoursite.com/steadfast-proxy.php">
+                            <small style="color:#94a3b8;font-size:.75rem;display:block;margin-top:4px;">ফোল্ডারের <b>backend/steadfast-proxy.php</b> ফাইলটা আপনার hosting-এ আপলোড করে ওই URL বসান। এতে API key ব্রাউজারে দেখা যাবে না এবং CORS সমস্যাও থাকবে না। খালি রাখলে সরাসরি (direct) API call হবে।</small>
+                        </div>
+                        <!-- 2026-09-18 (this request) — SHOP ID. One value, printed
+                             identically on every sheet: the supplier's ready-to-ship
+                             invoice and the admin invoice. Left blank -> OGIQVRWD. -->
+                        <div class="form-row">
+                            <div class="form-group" style="flex:1">
+                                <label>Shop ID <span style="color:#dc2626">*</span> — সব প্রিন্টে একই বসবে</label>
+                                <input type="text" id="sfShopId" placeholder="OGIQVRWD">
+                                <small style="color:#94a3b8;font-size:.75rem;display:block;margin-top:4px;">
+                                    কুরিয়ার (Steadfast) অ্যাকাউন্টের <b>Shop ID</b>। এই একটা আইডি-ই
+                                    <b>প্রতিটা প্রিন্ট</b>-এ বসবে — সাপ্লায়ারের Ready-to-Ship ইনভয়েস, অ্যাডমিনের
+                                    All Orders ইনভয়েস আর Multi-Supplier ইনভয়েস, সবখানে। খালি রাখলে ডিফল্ট
+                                    <b>OGIQVRWD</b> দেখাবে।
+                                </small>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Courier Keys</button>
+                    </form>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h4><i class="fas fa-shield"></i> Fraud Check (Test)</h4></div>
+                <div class="card-body">
+                    <p style="font-size:.8rem;color:#64748b;margin-bottom:10px;">কাস্টমারের phone দিয়ে Steadfast delivery history চেক করুন — কতগুলো সফল ডেলিভারি, কতগুলো cancel।</p>
+                    <div class="form-row" style="align-items:flex-end">
+                        <div class="form-group" style="flex:1"><label>Customer Phone</label><input type="text" id="fcPhone" placeholder="01XXXXXXXXX"></div>
+                        <div class="form-group"><button type="button" class="btn btn-danger" onclick="runFraudCheck()"><i class="fas fa-search"></i> Check Fraud</button></div>
+                    </div>
+                    <div id="fcResult" style="display:none;margin-top:12px"></div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h4><i class="fas fa-circle-info"></i> কীভাবে কাজ করে</h4></div>
+                <div class="card-body" style="font-size:.82rem;color:#475569;line-height:1.9">
+                    ১. Steadfast portal (<b>portal.steadfast.com.bd</b>) → Apps/API থেকে <b>API Key</b> ও <b>Secret Key</b> নিন।<br>
+                    ২. উপরে সেভ করুন — তারপর <b>Orders পেজে</b> গিয়ে একাধিক order checkbox সিলেক্ট করে <b>"Book Selected → Steadfast"</b> চাপলেই সব অর্ডার একসাথে বুক হয়ে যাবে (tracking code অটো অর্ডারে বসবে)।<br>
+                    ৩. যেকোনো order ভিউ করে <b>🛡 Fraud Check</b> চাপলে ওই কাস্টমারের Steadfast delivery history দেখা যাবে।<br>
+                    <small style="color:#94a3b8">⚠️ ব্রাউজার থেকে সরাসরি API call করলে CORS block হতে পারে — তখন CORS-unblock extension লাগবে অথবা Steadfast-এ domain whitelist করতে হবে।</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- GENERAL -->
+        <div class="tab-section active" id="tab-general">
+            <div class="card">
+                <div class="card-header"><h4><i class="fas fa-globe"></i> Site & Payment & Delivery Settings</h4></div>
+                <div class="card-body">
+                    <form onsubmit="return saveGeneral(event)">
+                        <div class="form-row">
+                            <div class="form-group"><label>Site Name</label><input type="text" id="siteName"></div>
+                            <div class="form-group"><label>Support Email</label><input type="email" id="siteEmail"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Support Phone</label><input type="text" id="sitePhone"></div>
+                            <div class="form-group"><label>Site Address</label><input type="text" id="siteAddress"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>bKash Number (withdrawal)</label><input type="text" id="bkashNumber"></div>
+                            <div class="form-group"><label>Nagad Number (withdrawal)</label><input type="text" id="nagadNumber"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Min Withdrawal (TK)</label><input type="number" id="minWithdraw"></div>
+                            <div class="form-group"><label>Max Withdrawal (TK)</label><input type="number" id="maxWithdraw"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Delivery Inside Dhaka (TK)</label><input type="number" id="deliveryCharge"></div>
+                            <div class="form-group"><label>Delivery Outside Dhaka (TK)</label><input type="number" id="outsideCharge"></div>
+                        </div>
+                        <div class="form-group"><label>Supplier Commission (%) <small style="color:#94a3b8">— supplier দামের উপর এত % যোগ করে reseller price হবে</small></label><input type="number" id="supComm" min="0" max="200"></div>
+                        <div class="form-group">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                                <input type="checkbox" id="autoApprove" style="width:auto;"> Auto-approve new reseller registrations
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save All Settings</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- CATEGORIES -->
+        <div class="tab-section" id="tab-categories">
+            <style id="lx-cat-sort">
+            /* #9 — drag & drop affordance for the main categories */
+            #catsBody .cat-row{transition:background .12s}
+            #catsBody .cat-row.dragging{opacity:.45;background:#eef2ff}
+            #catsBody .cat-row.drag-over{background:#e0e7ff;box-shadow:inset 0 2px 0 #4f46e5}
+            #catsBody .cat-row td:first-child{cursor:grab}
+            #catsBody .cat-row td:first-child:active{cursor:grabbing}
+            </style>
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-th"></i> Product Categories</h4>
+                    <button class="btn btn-primary btn-sm" onclick="openCatModal()"><i class="fas fa-plus"></i> Add Category</button>
+                </div>
+                <div id="catOrderHint" style="display:none;padding:11px 16px;font-size:.79rem;color:#4338ca;background:#eef2ff;border-bottom:1px solid #e0e7ff;line-height:1.6">
+                    <i class="fas fa-arrows-up-down"></i> <b>Drag করে Main Category-এর order বদলান।</b> বাঁ পাশের <i class="fas fa-grip-vertical"></i> handle ধরে উপরে/নিচে টেনে দিন — order সাথে সাথে save হবে এবং <b>সব My Shop-এর header-এ একই order</b> দেখাবে।
+                </div>
+                <table class="data-table">
+                    <thead><tr><th style="width:40px"></th><th>Icon</th><th>Name</th><th>Actions</th></tr></thead>
+                    <tbody id="catsBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- BANNERS -->
+        <div class="tab-section" id="tab-banners">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-images"></i> Homepage Banners</h4>
+                    <button class="btn btn-primary btn-sm" onclick="openBannerModal()"><i class="fas fa-plus"></i> Add Banner</button>
+                </div>
+                <table class="data-table">
+                    <thead><tr><th>Title</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="bannersBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- COUPONS -->
+        <div class="tab-section" id="tab-coupons">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-ticket"></i> Coupon Codes</h4>
+                    <button class="btn btn-primary btn-sm" onclick="openCoupModal()"><i class="fas fa-plus"></i> Add Coupon</button>
+                </div>
+                <table class="data-table">
+                    <thead><tr><th>Code</th><th>Discount</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="couponsBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- NOTIFICATIONS -->
+        <div class="tab-section" id="tab-notifications">
+            <div class="card">
+                <div class="card-header"><h4><i class="fas fa-paper-plane"></i> Send Notification to Resellers</h4></div>
+                <div class="card-body">
+                    <form onsubmit="return sendNotif(event)">
+                        <div class="form-group">
+                            <label>Send To</label>
+                            <select id="notifTarget" onchange="document.getElementById('targetWrap').style.display=this.value==='specific'?'block':'none'">
+                                <option value="all">All Approved Resellers</option>
+                                <option value="specific">Specific Reseller</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="targetWrap" style="display:none;">
+                            <label>Select Reseller</label>
+                            <select id="notifReseller"></select>
+                        </div>
+                        <div class="form-group"><label>Message</label><textarea id="notifMsg" rows="3" required placeholder="Your message..."></textarea></div>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Send</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             MY SHOP DEFAULT BANNER  (2026-09-18 request)
+             The three banners here are the DEFAULT for every reseller's My Shop.
+             A reseller sees them in their own Shop Settings and can delete them
+             and put their own in — or press "Reset to Default" to get these back.
+             Stored in rh_myshop_defaults.bannerImages.
+             ============================================================ -->
+        <div class="tab-section" id="tab-myshop-banner">
+            <div class="card">
+                <div class="card-header"><h4><i class="fas fa-rectangle-ad"></i> My Shop Default Banner</h4></div>
+                <div class="card-body">
+                    <p style="font-size:.85rem;color:#64748b;line-height:1.75;margin-bottom:16px">
+                        এখানে <b>৩টি পর্যন্ত</b> ব্যানার আপলোড করলে সেটি <b>প্রতিটি রিসেলারের My Shop</b>-এ ডিফল্ট হিসেবে দেখাবে —
+                        হোমপেজের উপরে, পুরো চওড়া, <b>প্রতি ২ সেকেন্ডে</b> একটার পর একটা বদলাবে।<br>
+                        রিসেলার তার নিজের Shop Settings থেকে এগুলো দেখতে পাবে, চাইলে <b>মুছে নিজের ব্যানার</b> দিতে পারবে,
+                        আর <b>“Reset to Default”</b> চাপলে আবার এই ব্যানারগুলোই ফিরে আসবে।<br>
+                        <b>ব্যানারটি ON/OFF</b> করার সুইচ রিসেলারের নিজের হাতে — ডিফল্টভাবে <b>চালু</b> থাকে।
+                    </p>
+                    <div id="msbGrid" class="msb-grid"></div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+                        <button type="button" class="btn btn-primary" id="msbAddBtn" onclick="document.getElementById('msbFile').click()"><i class="fas fa-upload"></i> ব্যানার যোগ করুন</button>
+                        <button type="button" class="btn btn-danger" id="msbClearBtn" onclick="msbClear()"><i class="fas fa-trash"></i> সব সরান</button>
+                        <input type="file" id="msbFile" accept="image/*" style="display:none" onchange="msbPick(this)">
+                    </div>
+                    <div id="msbNote" style="margin-top:12px;font-size:.78rem;font-weight:700;color:#64748b"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             MY SHOP DEFAULT HOMEPAGE  (2026-09-18 request)
+             The blocks here are the DEFAULT homepage for every reseller's My Shop.
+             A reseller can change or delete any of them for their own shop (their
+             first change copies these into their own settings), and "Reset to
+             Default" brings them back. Stored in rh_myshop_defaults.blocks.
+             ============================================================ -->
+        <div class="tab-section" id="tab-myshop-home">
+            <div class="card">
+                <div class="card-header"><h4><i class="fas fa-table-cells-large"></i> My Shop Default Homepage</h4></div>
+                <div class="card-body">
+                    <p style="font-size:.85rem;color:#64748b;line-height:1.75;margin-bottom:16px">
+                        এখানে যে ব্লকগুলো বানাবেন সেটি <b>প্রতিটি রিসেলারের My Shop হোমপেজ</b>-এ ডিফল্ট হিসেবে দেখাবে।
+                        রিসেলার তার নিজের Shop Settings → <b>Homepage Sections</b> থেকে এগুলো দেখতে পাবে, চাইলে বদলাতে বা মুছতে পারবে,
+                        আর <b>“Reset to Default”</b> চাপলে আবার এগুলোই ফিরে আসবে।<br>
+                        <b>পরামর্শ:</b> ব্লকে নির্দিষ্ট প্রোডাক্ট না বেছে শুধু <b>ক্যাটাগরি</b> দিলে প্রতিটি রিসেলারের শপে সেই ক্যাটাগরির
+                        <i>তার নিজের</i> প্রোডাক্টগুলোই দেখাবে — এটাই সবচেয়ে নিরাপদ ডিফল্ট।
+                    </p>
+                    <div id="mhbList"></div>
+                    <button type="button" class="btn btn-primary" style="margin-top:6px" onclick="mhbOpen()"><i class="fas fa-plus"></i> নতুন ব্লক</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- CATEGORY MODAL -->
+<div class="modal-overlay" id="catModal">
+    <div class="modal">
+        <div class="modal-header"><h3 id="catMTitle">Add Category</h3><button class="modal-close" onclick="closeModal('catModal')">&times;</button></div>
+        <form onsubmit="return saveCat(event)">
+            <div class="modal-body">
+                <div class="form-group"><label>Name *</label><input type="text" id="catName" required></div>
+                <div class="form-group"><label>Icon Class *</label><input type="text" id="catIcon" required placeholder="fa-shirt"><small style="color:#94a3b8;font-size:.75rem;display:block;margin-top:4px;">FontAwesome icon, e.g. fa-shirt, fa-mobile-screen, fa-gift</small></div>
+                <div class="form-group"><label>Category Image (circle-এ দেখাবে, optional)</label><input type="file" id="catImgFile" accept="image/*" onchange="pickCatImg(event)" style="width:100%;padding:8px;border:1.5px dashed #c9c4ea;border-radius:8px"><div id="catImgPrev" style="width:60px;height:60px;border-radius:50%;overflow:hidden;margin-top:8px;display:none"><img style="width:100%;height:100%;object-fit:cover" id="catImgEl"></div></div>
+                <div class="form-group"><label>Sub-sections (comma separated)</label><input type="text" id="catSubs" placeholder="e.g. T-Shirt, Pants, Panjabi"><small style="color:#94a3b8;font-size:.75rem;display:block;margin-top:4px;">এই category-র নিচে যে sub-category গুলো থাকবে</small></div>
+                <div class="form-group"><label>Sub-Sub Categories (optional)</label><input type="text" id="catSubSubs" placeholder="T-Shirt: Drop Shoulder, Polo | Pants: Cargo, Joggers"><small style="color:#94a3b8;font-size:.75rem;display:block;margin-top:4px;">ফরম্যাট: <b>Sub: ভাগ1, ভাগ2 | Sub2: ভাগ1</b> — product form-এ suggest হবে</small></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" style="background:#e2e8f0;color:#1e293b;" onclick="closeModal('catModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- BANNER MODAL -->
+<div class="modal-overlay" id="bannerModal">
+    <div class="modal">
+        <div class="modal-header"><h3 id="banMTitle">Add Banner</h3><button class="modal-close" onclick="closeModal('bannerModal')">&times;</button></div>
+        <form onsubmit="return saveBanner(event)">
+            <div class="modal-body">
+                <div class="form-group"><label>Title *</label><input type="text" id="banTitle" required></div>
+                <div class="form-group"><label>Subtitle</label><input type="text" id="banSubtitle"></div>
+                <div class="form-group"><label>Link</label><input type="text" id="banLink" placeholder="#categories"></div>
+                <div class="form-group"><label><input type="checkbox" id="banActive" checked style="width:auto;"> Active</label></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" style="background:#e2e8f0;color:#1e293b;" onclick="closeModal('bannerModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- COUPON MODAL -->
+<div class="modal-overlay" id="coupModal">
+    <div class="modal">
+        <div class="modal-header"><h3 id="coupMTitle">Add Coupon</h3><button class="modal-close" onclick="closeModal('coupModal')">&times;</button></div>
+        <form onsubmit="return saveCoup(event)">
+            <div class="modal-body">
+                <div class="form-group"><label>Code *</label><input type="text" id="coupCode" required style="text-transform:uppercase;"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Discount *</label><input type="number" id="coupDiscount" required></div>
+                    <div class="form-group"><label>Type</label><select id="coupType"><option value="fixed">Fixed TK</option><option value="percent">Percent %</option></select></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Min Order</label><input type="number" id="coupMin" value="0"></div>
+                    <div class="form-group"><label>Expiry</label><input type="date" id="coupExpiry" required></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" style="background:#e2e8f0;color:#1e293b;" onclick="closeModal('coupModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="../app.js"></script>
+<script src="assistant.js"></script><script>(function(){function paint(){try{var n=(typeof adminNewOrderCount==="function")?adminNewOrderCount():(typeof adminOrderBadgeCount==="function"?adminOrderBadgeCount():0);var els=document.querySelectorAll(".orders-badge");for(var i=0;i<els.length;i++){els[i].textContent=n;els[i].style.display=n>0?"inline-block":"none";}}catch(e){}var lb=document.getElementById("ordersBadgeN");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+(function() {
+    var userId = sessionStorage.getItem('user_id');
+    var userType = sessionStorage.getItem('user_type');
+    if (!userId || (userType !== 'admin' && userType !== 'moderator')) { sessionStorage.clear(); window.location.replace('login.html'); return; } setInterval(function(){ var t=sessionStorage.getItem('user_type'); if(t && (t!=='admin' && t!=='moderator')){ sessionStorage.clear(); window.location.replace('login.html'); } },3000);
+
+    function showTab(tab, btn) {
+        var secs = document.querySelectorAll('.tab-section');
+        for (var i = 0; i < secs.length; i++) secs[i].classList.remove('active');
+        document.getElementById('tab-' + tab).classList.add('active');
+        var btns = document.querySelectorAll('.tab-btn');
+        for (var j = 0; j < btns.length; j++) btns[j].classList.remove('active');
+        btn.classList.add('active');
+        if (tab === 'categories') loadCats();
+        if (tab === 'banners') loadBanners();
+        if (tab === 'coupons') loadCoupons();
+        if (tab === 'notifications') fillResellers();
+        if (tab === 'steadfast') loadSteadfast();
+        /* 2026-09-18 — the two My Shop default-design tabs */
+        if (tab === 'myshop-banner') msbRender();
+        if (tab === 'myshop-home') mhbRender();
+    }
+
+    // ===== GENERAL =====
+    function loadGeneral() {
+        var s = getOne(DB_KEYS.SETTINGS);
+        document.getElementById('siteName').value = s.siteName || '';
+        document.getElementById('siteEmail').value = s.siteEmail || '';
+        document.getElementById('sitePhone').value = s.sitePhone || '';
+        document.getElementById('siteAddress').value = s.siteAddress || '';
+        document.getElementById('bkashNumber').value = s.bkashNumber || '';
+        document.getElementById('nagadNumber').value = s.nagadNumber || '';
+        document.getElementById('minWithdraw').value = s.minWithdraw || 500;
+        document.getElementById('maxWithdraw').value = s.maxWithdraw || 50000;
+        document.getElementById('deliveryCharge').value = s.deliveryCharge || 60;
+        document.getElementById('outsideCharge').value = s.outsideCharge || 180;
+        document.getElementById('supComm').value = s.supplierCommission || 10;
+        document.getElementById('autoApprove').checked = s.autoApproveReseller || false;
+    }
+    function saveGeneral(e) {
+        e.preventDefault();
+        var s = getOne(DB_KEYS.SETTINGS);
+        s.siteName = document.getElementById('siteName').value;
+        s.siteEmail = document.getElementById('siteEmail').value;
+        s.sitePhone = document.getElementById('sitePhone').value;
+        s.siteAddress = document.getElementById('siteAddress').value;
+        s.bkashNumber = document.getElementById('bkashNumber').value;
+        s.nagadNumber = document.getElementById('nagadNumber').value;
+        s.minWithdraw = parseInt(document.getElementById('minWithdraw').value) || 500;
+        s.maxWithdraw = parseInt(document.getElementById('maxWithdraw').value) || 50000;
+        s.deliveryCharge = parseInt(document.getElementById('deliveryCharge').value) || 60;
+        s.outsideCharge = parseInt(document.getElementById('outsideCharge').value) || 180;
+        s.supplierCommission = parseInt(document.getElementById('supComm').value);
+        if (isNaN(s.supplierCommission) || s.supplierCommission < 0) s.supplierCommission = 10;
+        s.autoApproveReseller = document.getElementById('autoApprove').checked;
+        setData(DB_KEYS.SETTINGS, s);
+        logActivity('settings_updated', 'General settings saved');
+        showToast('Settings saved successfully!', 'success');
+        return false;
+    }
+
+    // ===== CATEGORIES =====
+    /* ---------- #9 - #17: drag & drop ordering of the MAIN categories ----------
+       The order IS the array order of DB_KEYS.CATEGORIES, which is exactly what
+       shopMainCategories() walks — so saving the new array order automatically
+       reorders every My Shop header (#12, #16). Nothing is deleted: only the
+       position inside the array changes (#14, #15). */
+    var catDragId = '';
+    function loadCats() {
+        var cats = getData(DB_KEYS.CATEGORIES) || [];
+        var html = '';
+        for (var i = 0; i < cats.length; i++) {
+            var c = cats[i];
+            html += '<tr class="cat-row" draggable="true" data-cid="' + c.id + '"' +
+                ' ondragstart="catDragStart(event,\'' + c.id + '\')"' +
+                ' ondragover="catDragOver(event)"' +
+                ' ondrop="catDrop(event,\'' + c.id + '\')"' +
+                ' ondragend="catDragEnd(event)">' +
+                '<td style="width:40px;cursor:grab;color:#94a3b8;text-align:center" title="Drag করে সাজান"><i class="fas fa-grip-vertical"></i></td>' +
+                '<td>' + (c.image ? '<img src="' + c.image + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover">' : '<i class="fas ' + c.icon + '" style="font-size:1.3rem;color:#2563eb;"></i>') + '</td>' +
+                '<td><strong>' + c.name + '</strong>' + (c.subs && c.subs.length ? '<br><small style="color:#64748b;font-size:.72rem">Subs: ' + c.subs.join(', ') + '</small>' : '') + '</td>' +
+                '<td><button class="btn btn-sm btn-primary" onclick="editCat(\'' + c.id + '\')"><i class="fas fa-edit"></i></button> ' +
+                '<button class="btn btn-sm btn-danger" onclick="deleteCat(\'' + c.id + '\')"><i class="fas fa-trash"></i></button></td></tr>';
+        }
+        var body = document.getElementById('catsBody');
+        body.innerHTML = html || '<tr><td colspan="4" class="empty">No categories yet</td></tr>';
+        var hint = document.getElementById('catOrderHint');
+        if (hint) hint.style.display = cats.length > 1 ? 'block' : 'none';
+    }
+    window.catDragStart = function (e, id) {
+        catDragId = String(id);
+        try { e.dataTransfer.setData('text/plain', catDragId); e.dataTransfer.effectAllowed = 'move'; } catch (err) {}
+        if (e.target && e.target.classList) e.target.classList.add('dragging');
+    };
+    window.catDragOver = function (e) {
+        if (!catDragId) return;
+        e.preventDefault();
+        try { e.dataTransfer.dropEffect = 'move'; } catch (err) {}
+        var tr = e.currentTarget;
+        if (tr && tr.classList) tr.classList.add('drag-over');
+    };
+    window.catDragEnd = function (e) {
+        catDragId = '';
+        var rows = document.querySelectorAll('#catsBody .cat-row');
+        for (var i = 0; i < rows.length; i++) rows[i].classList.remove('dragging', 'drag-over');
+    };
+    window.catDrop = function (e, targetId) {
+        e.preventDefault();
+        var from = catDragId;
+        catDragEnd(e);
+        var cats = getData(DB_KEYS.CATEGORIES) || [];
+        var fi = -1, ti = -1;
+        for (var i = 0; i < cats.length; i++) {
+            if (String(cats[i].id) === String(from)) fi = i;
+            if (String(cats[i].id) === String(targetId)) ti = i;
+        }
+        if (fi < 0 || ti < 0 || fi === ti) return;
+        /* ONLY reorder — the objects themselves (subs, sub-subs, ids, products)
+           are moved untouched. */
+        var moved = cats.splice(fi, 1)[0];
+        cats.splice(ti, 0, moved);
+        setData(DB_KEYS.CATEGORIES, cats);
+        if (typeof logActivity === 'function') logActivity('category_reordered', String(moved.name || moved.id) + ' -> position ' + (ti + 1));
+        showToast('"' + (moved.name || 'Category') + '" সরানো হয়েছে — order saved.', 'success');
+        loadCats();
+    };
+    function openCatModal(id, name, icon) {
+        document.getElementById('catMTitle').textContent = id ? 'Edit Category' : 'Add Category';
+        document.getElementById('catName').value = name || '';
+        /* 2026-09-18 — data-id MUST be written BEFORE anything reads it.
+           It used to be set at the very END of this function, while the block right
+           below already read it — so when editing, the lookup used the PREVIOUS
+           category's id (or none at all) and the Sub-Sub Categories box came up
+           EMPTY, wiping what was on screen. */
+        document.getElementById('catModal').setAttribute('data-id', id || '');
+        (function() {
+            var cs = getData(DB_KEYS.CATEGORIES);
+            var cid = document.getElementById('catModal').getAttribute('data-id');
+            var c0 = null;
+            for (var i0 = 0; i0 < cs.length; i0++) { if (String(cs[i0].id) === String(cid)) { c0 = cs[i0]; break; } }
+            var sse = document.getElementById('catSubSubs');
+            if (!sse) return;
+            if (c0 && c0.subSubs) {
+                var ssp = [];
+                for (var sk in c0.subSubs) ssp.push(sk + ': ' + c0.subSubs[sk].join(', '));
+                sse.value = ssp.join(' | ');
+            } else sse.value = '';
+        })();
+        document.getElementById('catIcon').value = icon || '';
+        document.getElementById('catModal').classList.add('show');
+        window._catImg = '';
+        var subs = '';
+        if (id) {
+            var cats = getData(DB_KEYS.CATEGORIES);
+            for (var i = 0; i < cats.length; i++) {
+                if (String(cats[i].id) === String(id)) {
+                    window._catImg = cats[i].image || '';
+                    if (cats[i].image) { document.getElementById('catImgPrev').style.display = 'block'; document.getElementById('catImgEl').src = cats[i].image; }
+                    else document.getElementById('catImgPrev').style.display = 'none';
+                    /* 2026-09-18 — the sub entries are OBJECTS ({name, subSubs}) in
+                       the real data, so .join() rendered "[object Object]" in the
+                       field. Read the name out of either shape. */
+                    subs = (cats[i].subs || []).map(function (s) {
+                        return (typeof catEntryName === 'function') ? catEntryName(s) : (s && s.name ? s.name : s);
+                    }).filter(Boolean).join(', ');
+                    break;
+                }
+            }
+        } else { document.getElementById('catImgPrev').style.display = 'none'; }
+        document.getElementById('catSubs').value = subs;
+    }
+    window.pickCatImg = function(e) {
+        var f = e.target.files[0];
+        if (!f) return;
+        if (f.size > 1048576) { showToast('Max 1MB!', 'error'); return; }
+        var r = new FileReader();
+        r.onload = function() {
+            window._catImg = r.result;
+            document.getElementById('catImgPrev').style.display = 'block';
+            document.getElementById('catImgEl').src = r.result;
+        };
+        r.readAsDataURL(f);
+    };
+    function saveCat(e) {
+        e.preventDefault();
+        var id = document.getElementById('catModal').getAttribute('data-id');
+        var name = document.getElementById('catName').value.trim();
+        var icon = document.getElementById('catIcon').value.trim();
+        if (!name || !icon) return false;
+        var subsRaw = document.getElementById('catSubs').value.trim();
+        var subs = subsRaw ? subsRaw.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
+        var ssRaw = document.getElementById('catSubSubs') ? document.getElementById('catSubSubs').value.trim() : '';
+        var subSubs = {};
+        if (ssRaw) {
+            ssRaw.split('|').forEach(function(part) {
+                var seg = part.split(':');
+                if (seg.length === 2) {
+                    var k0 = seg[0].trim();
+                    var v0 = seg[1].split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+                    if (k0 && v0.length) subSubs[k0] = v0;
+                }
+            });
+        }
+        var cats = getData(DB_KEYS.CATEGORIES);
+        if (id) {
+            for (var i = 0; i < cats.length; i++) {
+                if (String(cats[i].id) !== String(id)) continue;
+                /* 2026-09-18 — a sub may be a RICH entry ({name, subSubs}), and the
+                   editor's text field can only carry names. Rebuild the list by
+                   matching names, so an unchanged sub keeps its own subSubs instead
+                   of being flattened into a plain string. */
+                var oldSubs = cats[i].subs || [];
+                var rebuilt = [];
+                for (var s2 = 0; s2 < subs.length; s2++) {
+                    var keep = null;
+                    for (var o2 = 0; o2 < oldSubs.length; o2++) {
+                        var on2 = (typeof catEntryName === 'function') ? catEntryName(oldSubs[o2]) : oldSubs[o2];
+                        if (String(on2) === String(subs[s2])) { keep = oldSubs[o2]; break; }
+                    }
+                    rebuilt.push(keep || subs[s2]);
+                }
+                cats[i].name = name;
+                cats[i].icon = icon;
+                cats[i].image = window._catImg || '';
+                cats[i].subs = rebuilt;
+                cats[i].subSubs = Object.keys(subSubs).length ? subSubs : (cats[i].subSubs || {});
+                break;
+            }
+            showToast('Category updated!', 'success');
+        } else {
+            cats.push({ id: Date.now(), name: name, icon: icon, count: 0, color: '#2563eb', image: window._catImg || '', subs: subs, subSubs: subSubs });
+            showToast('Category added!', 'success');
+        }
+        setData(DB_KEYS.CATEGORIES, cats);
+        logActivity('category_saved', name);
+        closeModal('catModal');
+        loadCats();
+        return false;
+    }
+    function editCat(id) {
+        var cats = getData(DB_KEYS.CATEGORIES);
+        for (var i = 0; i < cats.length; i++) {
+            if (String(cats[i].id) === String(id)) { openCatModal(cats[i].id, cats[i].name, cats[i].icon); return; }
+        }
+    }
+    /* 2026-09-18 — an IN-PAGE confirm. window.confirm() is a blocking browser dialog
+       and can be suppressed entirely (embedded views, some browser settings). When
+       it is, confirm() returns false and shows nothing, so the Delete button does
+       absolutely nothing — which is exactly how it was reported. This cannot be
+       suppressed. */
+    window.adminConfirm = function (message, onYes) {
+        var old = document.getElementById('adminConfirmOv');
+        if (old && old.parentNode) old.parentNode.removeChild(old);
+        var ov = document.createElement('div');
+        ov.className = 'modal-overlay show';
+        ov.id = 'adminConfirmOv';
+        ov.style.zIndex = '1300';
+        ov.innerHTML = '<div class="modal" style="max-width:420px">' +
+            '<div class="modal-header"><h3>নিশ্চিত করুন</h3>' +
+            '<button class="modal-close" type="button" data-no="1">&times;</button></div>' +
+            '<div class="modal-body"><p style="font-size:.9rem;color:#334155;line-height:1.75">' + message + '</p></div>' +
+            '<div class="modal-footer">' +
+            '<button type="button" class="btn" style="background:#e2e8f0;color:#1e293b;" data-no="1">Cancel</button>' +
+            '<button type="button" class="btn btn-danger" data-yes="1">Delete</button>' +
+            '</div></div>';
+        document.body.appendChild(ov);
+        function close() { if (ov.parentNode) ov.parentNode.removeChild(ov); }
+        var y = ov.querySelector('[data-yes]'), n = ov.querySelectorAll('[data-no]');
+        if (y) y.onclick = function () { close(); try { onYes(); } catch (e) {} };
+        for (var i = 0; i < n.length; i++) n[i].onclick = close;
+        ov.onclick = function (ev) { if (ev.target === ov) close(); };
+    };
+    function deleteCat(id) {
+        var cats = getData(DB_KEYS.CATEGORIES);
+        var nm = '';
+        for (var q = 0; q < cats.length; q++) { if (String(cats[q].id) === String(id)) { nm = cats[q].name; break; } }
+        window.adminConfirm('Delete the category <b>' + String(nm || id).replace(/[&<>]/g, '') + '</b>?<br><br>' +
+            '<span style="color:#92400e">Products in it are not deleted — they simply lose this category.</span>',
+            function () {
+                var list = getData(DB_KEYS.CATEGORIES);
+                var out = [];
+                for (var i = 0; i < list.length; i++) { if (String(list[i].id) !== String(id)) out.push(list[i]); }
+                setData(DB_KEYS.CATEGORIES, out);
+                showToast('Category deleted!', 'success');
+                loadCats();
+            });
+    }
+
+    // ===== BANNERS =====
+    function loadBanners() {
+        var items = getData(DB_KEYS.BANNERS);
+        var html = '';
+        for (var i = 0; i < items.length; i++) {
+            var b = items[i];
+            html += '<tr><td><strong>' + b.title + '</strong>' + (b.subtitle ? '<br><small style="color:#64748b;">' + b.subtitle + '</small>' : '') + '</td>' +
+                '<td><span class="badge ' + (b.active ? 'badge-success' : 'badge-danger') + '">' + (b.active ? 'Active' : 'Inactive') + '</span></td>' +
+                '<td><button class="btn btn-sm btn-primary" onclick="editBanner(\'' + b.id + '\')"><i class="fas fa-edit"></i></button> ' +
+                '<button class="btn btn-sm btn-danger" onclick="deleteBanner(\'' + b.id + '\')"><i class="fas fa-trash"></i></button></td></tr>';
+        }
+        document.getElementById('bannersBody').innerHTML = html || '<tr><td colspan="3" class="empty">No banners yet</td></tr>';
+    }
+    function openBannerModal(id, title, subtitle, link, active) {
+        document.getElementById('banMTitle').textContent = id ? 'Edit Banner' : 'Add Banner';
+        document.getElementById('banTitle').value = title || '';
+        document.getElementById('banSubtitle').value = subtitle || '';
+        document.getElementById('banLink').value = link || '';
+        document.getElementById('banActive').checked = id ? !!active : true;
+        document.getElementById('bannerModal').setAttribute('data-id', id || '');
+        document.getElementById('bannerModal').classList.add('show');
+    }
+    function saveBanner(e) {
+        e.preventDefault();
+        var id = document.getElementById('bannerModal').getAttribute('data-id');
+        var items = getData(DB_KEYS.BANNERS);
+        var data = { title: document.getElementById('banTitle').value, subtitle: document.getElementById('banSubtitle').value, link: document.getElementById('banLink').value, active: document.getElementById('banActive').checked };
+        if (id) {
+            for (var i = 0; i < items.length; i++) { if (String(items[i].id) === String(id)) { items[i] = Object.assign({}, items[i], data); break; } }
+            showToast('Banner updated!', 'success');
+        } else {
+            data.id = Date.now(); data.color = '#2563eb';
+            items.push(data);
+            showToast('Banner added!', 'success');
+        }
+        setData(DB_KEYS.BANNERS, items);
+        closeModal('bannerModal');
+        loadBanners();
+        return false;
+    }
+    function editBanner(id) {
+        var items = getData(DB_KEYS.BANNERS);
+        for (var i = 0; i < items.length; i++) { if (String(items[i].id) === String(id)) { openBannerModal(items[i].id, items[i].title, items[i].subtitle, items[i].link, items[i].active); return; } }
+    }
+    function deleteBanner(id) {
+        if (!confirm('Delete banner?')) return;
+        var items = getData(DB_KEYS.BANNERS);
+        var out = [];
+        for (var i = 0; i < items.length; i++) { if (String(items[i].id) !== String(id)) out.push(items[i]); }
+        setData(DB_KEYS.BANNERS, out);
+        showToast('Deleted!', 'success');
+        loadBanners();
+    }
+
+    // ===== COUPONS =====
+    function loadCoupons() {
+        var items = getData(DB_KEYS.COUPONS);
+        var html = '';
+        for (var i = 0; i < items.length; i++) {
+            var c = items[i];
+            html += '<tr><td><strong style="background:#fef3c7;padding:3px 8px;border-radius:4px;">' + c.code + '</strong></td>' +
+                '<td style="color:#dc2626;font-weight:600;">' + (c.type === 'percent' ? c.discount + '%' : c.discount + ' TK') + '</td>' +
+                '<td><span class="badge ' + (c.status === 'active' ? 'badge-success' : 'badge-danger') + '">' + c.status + '</span></td>' +
+                '<td><button class="btn btn-sm btn-primary" onclick="editCoup(\'' + c.id + '\')"><i class="fas fa-edit"></i></button> ' +
+                '<button class="btn btn-sm btn-danger" onclick="deleteCoup(\'' + c.id + '\')"><i class="fas fa-trash"></i></button></td></tr>';
+        }
+        document.getElementById('couponsBody').innerHTML = html || '<tr><td colspan="4" class="empty">No coupons yet</td></tr>';
+    }
+    function openCoupModal(id, code, discount, type, minOrder, expiry) {
+        document.getElementById('coupMTitle').textContent = id ? 'Edit Coupon' : 'Add Coupon';
+        document.getElementById('coupCode').value = code || '';
+        document.getElementById('coupDiscount').value = discount || '';
+        document.getElementById('coupType').value = type || 'fixed';
+        document.getElementById('coupMin').value = minOrder || 0;
+        document.getElementById('coupExpiry').value = expiry || '';
+        document.getElementById('coupModal').setAttribute('data-id', id || '');
+        document.getElementById('coupModal').classList.add('show');
+    }
+    function saveCoup(e) {
+        e.preventDefault();
+        var id = document.getElementById('coupModal').getAttribute('data-id');
+        var items = getData(DB_KEYS.COUPONS);
+        var data = { code: document.getElementById('coupCode').value.toUpperCase(), discount: parseInt(document.getElementById('coupDiscount').value) || 0, type: document.getElementById('coupType').value, minOrder: parseInt(document.getElementById('coupMin').value) || 0, expiryDate: document.getElementById('coupExpiry').value, status: 'active' };
+        if (id) {
+            for (var i = 0; i < items.length; i++) { if (String(items[i].id) === String(id)) { items[i] = Object.assign({}, items[i], data); break; } }
+            showToast('Coupon updated!', 'success');
+        } else {
+            data.id = Date.now(); data.used = 0; data.maxUses = 100;
+            items.push(data);
+            showToast('Coupon added!', 'success');
+        }
+        setData(DB_KEYS.COUPONS, items);
+        closeModal('coupModal');
+        loadCoupons();
+        return false;
+    }
+    function editCoup(id) {
+        var items = getData(DB_KEYS.COUPONS);
+        for (var i = 0; i < items.length; i++) { if (String(items[i].id) === String(id)) { openCoupModal(items[i].id, items[i].code, items[i].discount, items[i].type, items[i].minOrder, items[i].expiryDate); return; } }
+    }
+    function deleteCoup(id) {
+        if (!confirm('Delete coupon?')) return;
+        var items = getData(DB_KEYS.COUPONS);
+        var out = [];
+        for (var i = 0; i < items.length; i++) { if (String(items[i].id) !== String(id)) out.push(items[i]); }
+        setData(DB_KEYS.COUPONS, out);
+        showToast('Deleted!', 'success');
+        loadCoupons();
+    }
+
+    // ===== NOTIFICATIONS =====
+    function fillResellers() {
+        var rs = getData(DB_KEYS.RESELLERS);
+        var html = '';
+        for (var i = 0; i < rs.length; i++) {
+            if (rs[i].status === 'approved') html += '<option value="' + rs[i].id + '">' + rs[i].name + '</option>';
+        }
+        document.getElementById('notifReseller').innerHTML = html;
+    }
+    function sendNotif(e) {
+        e.preventDefault();
+        var target = document.getElementById('notifTarget').value;
+        var msg = document.getElementById('notifMsg').value.trim();
+        if (!msg) return false;
+        if (target === 'all') {
+            var rs = getData(DB_KEYS.RESELLERS);
+            var n = 0;
+            for (var i = 0; i < rs.length; i++) { if (rs[i].status === 'approved') { addNotification(rs[i].id, 'announcement', msg, true); n++; } }
+            showToast('Sent to ' + n + ' resellers!', 'success');
+        } else {
+            addNotification(parseInt(document.getElementById('notifReseller').value), 'announcement', msg, true);
+            showToast('Notification sent!', 'success');
+        }
+        document.getElementById('notifMsg').value = '';
+        logActivity('notification_sent', msg.substring(0, 40));
+        return false;
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+    // ===== STEADFAST COURIER =====
+    /* 2026-09-15 — SECURITY. These two lines used to hold the live Steadfast API
+       key and secret. Because this file is delivered to the browser, ANY visitor
+       could open /admin/settings.html and read them straight out of the page
+       source — the login guard stops the page rendering, but not the file being
+       sent. Anyone with that pair could act as this business on Steadfast.
+       They are now empty: the keys come only from the saved settings, which the
+       admin fills in here. Rotate the old pair in your Steadfast dashboard. */
+    var SF_DEFAULT_KEY = '';
+    var SF_DEFAULT_SECRET = '';
+    /* 2026-09-19 — MULTI-COURIER (this request).
+       The admin may connect ANY courier, not just Steadfast. Each courier keeps
+       its own API Key / Secret / endpoint in settings.courier_accounts, and
+       settings.courier_active is the one the Orders page books to.
+       Steadfast is MIRRORED into the legacy sf_api_key / sf_secret_key, so the
+       fraud check, the printing layer and every existing Steadfast path are
+       untouched. adminCurCid is only which courier THIS FORM is showing. */
+    var adminCurCid = (typeof rhAdminCourierActive === 'function') ? rhAdminCourierActive() : 'steadfast';
+    function adminCourierList() { return (typeof RH_COURIERS !== 'undefined' && RH_COURIERS) ? RH_COURIERS : [{ id: 'steadfast', name: 'Steadfast Courier', base: '', auth: 'key_secret_headers' }]; }
+    function adminCourierDef(id) {
+        var l = adminCourierList();
+        for (var i = 0; i < l.length; i++) if (l[i].id === String(id)) return l[i];
+        return l[0];
+    }
+    /* the saved values for one courier — with a legacy fallback for Steadfast,
+       whose keys were saved under sf_api_key / sf_secret_key before this change */
+    function adminCourierVals(cid) {
+        var s = getOne(DB_KEYS.SETTINGS) || {};
+        var a = (typeof rhAdminCourierAccount === 'function') ? rhAdminCourierAccount(cid) : null;
+        var def = adminCourierDef(cid);
+        if (String(cid) === 'steadfast') {
+            return { k: (a && a.apiKey) || s.sf_api_key || SF_DEFAULT_KEY,
+                     sec: (a && a.secret) || s.sf_secret_key || SF_DEFAULT_SECRET,
+                     base: (a && a.base) || def.base || '', auth: (a && a.auth) || def.auth };
+        }
+        return { k: (a && a.apiKey) || '', sec: (a && a.secret) || '',
+                 base: (a && a.base) || def.base || '', auth: (a && a.auth) || def.auth };
+    }
+    function adminRenderCourierPick() {
+        var host = document.getElementById('courierPick');
+        if (!host) return;
+        var h = '', l = adminCourierList();
+        for (var i = 0; i < l.length; i++) {
+            var c = l[i], on = (c.id === adminCurCid);
+            var has = false;
+            try { has = (typeof rhAdminCourierConnected === 'function') ? rhAdminCourierConnected(c.id) : false; } catch (e) {}
+            if (c.id === 'steadfast') { try { has = has || !!((getOne(DB_KEYS.SETTINGS) || {}).sf_api_key); } catch (e2) {} }
+            h += '<button type="button" onclick="adminPickCourier(\'' + c.id + '\')" style="padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:700;font-size:.8rem;border:1.5px solid ' +
+                 (on ? '#2563eb' : '#e2e8f0') + ';background:' + (on ? '#eff6ff' : '#fff') + ';color:' + (on ? '#1d4ed8' : '#475569') + ';">' +
+                 c.name + (has ? ' <i class="fas fa-circle-check" style="color:#16a34a"></i>' : '') + '</button>';
+        }
+        host.innerHTML = h;
+    }
+    window.adminPickCourier = function (cid) {
+        adminCurCid = String(cid);
+        /* switching courier must NOT carry the previous courier's key across */
+        document.getElementById('sfKey').value = '';
+        document.getElementById('sfSecret').value = '';
+        loadSteadfast();
+    };
+    function adminRenderAuthOptions(cur) {
+        var sel = document.getElementById('sfAuth');
+        if (!sel) return;
+        var styles = (typeof rhCourierAuthStyles === 'function') ? rhCourierAuthStyles() : [{ id: 'key_secret_headers', label: 'Api-Key + Secret-Key headers' }];
+        var h = '';
+        for (var i = 0; i < styles.length; i++) {
+            h += '<option value="' + styles[i].id + '"' + (cur === styles[i].id ? ' selected' : '') + '>' + styles[i].label + '</option>';
+        }
+        sel.innerHTML = h;
+    }
+    function loadSteadfast() {
+        var s = getOne(DB_KEYS.SETTINGS);
+        var v = adminCourierVals(adminCurCid);
+        document.getElementById('sfKey').value = v.k;
+        document.getElementById('sfSecret').value = v.sec;
+        var _b = document.getElementById('sfBase'); if (_b) _b.value = v.base;
+        adminRenderAuthOptions(v.auth);
+        document.getElementById('sfCod').value = s.sf_cod_source || 'amount';
+        document.getElementById('sfFraudUrl').value = s.sf_fraud_url || 'https://check.steadfast.com.bd/api/v1/fraud';
+        document.getElementById('sfProxy').value = s.sf_proxy || '';
+        /* 2026-09-18 (this request) — the Shop ID that every printed sheet shows.
+           Blank in storage means "use the default", so the input stays empty and
+           the sheet falls back to OGIQVRWD via shipShopId(). */
+        var _si = document.getElementById('sfShopId');
+        if (_si) _si.value = s.ship_shop_id || '';
+        adminRenderCourierPick();
+    }
+    function saveSteadfast(e) {
+        e.preventDefault();
+        var s = getOne(DB_KEYS.SETTINGS);
+        var _b = document.getElementById('sfBase'), _a = document.getElementById('sfAuth');
+        var key = document.getElementById('sfKey').value.trim();
+        var sec = document.getElementById('sfSecret').value.trim();
+        /* per-courier save — one courier's key can never overwrite another's */
+        if (typeof rhAdminCourierSave === 'function') {
+            rhAdminCourierSave(adminCurCid, key, sec, _b ? _b.value : '', _a ? _a.value : '');
+            if (typeof rhAdminCourierSetActive === 'function') rhAdminCourierSetActive(adminCurCid);
+            s = getOne(DB_KEYS.SETTINGS);          /* re-read: the helper just wrote */
+        } else {
+            s.sf_api_key = key; s.sf_secret_key = sec;
+        }
+        s.sf_cod_source = document.getElementById('sfCod').value;
+        s.sf_fraud_url = document.getElementById('sfFraudUrl').value.trim() || 'https://check.steadfast.com.bd/api/v1/fraud';
+        s.sf_proxy = document.getElementById('sfProxy').value.trim();
+        var _si = document.getElementById('sfShopId');
+        if (_si) s.ship_shop_id = _si.value.trim();
+        setData(DB_KEYS.SETTINGS, s);
+        logActivity('courier_settings', adminCurCid + ' settings saved (proxy: ' + (s.sf_proxy ? 'on' : 'off') + ', shop id: ' + (s.ship_shop_id || 'default') + ')');
+        showToast(adminCourierDef(adminCurCid).name + ' settings saved!', 'success');
+        adminRenderCourierPick();
+        return false;
+    }
+    /* 2026-09-15 — the form calls this from an inline `onsubmit="return
+       saveSteadfast(event)"`, and an inline handler runs in GLOBAL scope. The
+       function was declared inside this page's IIFE, so the call threw
+       "saveSteadfast is not defined" and the Save button did nothing — the
+       Steadfast keys could never be saved from this screen. Exposing it is what
+       makes the button work, and it is required now that the keys are no longer
+       hardcoded: without it the courier would have no keys at all. */
+    window.saveSteadfast = saveSteadfast;
+    function sfGetK() {
+        var s = getOne(DB_KEYS.SETTINGS);
+        return { k: s.sf_api_key || SF_DEFAULT_KEY, sec: s.sf_secret_key || SF_DEFAULT_SECRET, fraud: s.sf_fraud_url || 'https://check.steadfast.com.bd/api/v1/fraud', cod: s.sf_cod_source || 'amount' };
+    }
+    function runFraudCheck() {
+        var phone = document.getElementById('fcPhone').value.trim();
+        var box = document.getElementById('fcResult');
+        var k = sfGetK();
+        if (!k.k || !k.sec) { showToast('আগে Steadfast API Key/Secret সেভ করুন!', 'error'); return; }
+        if (!phone) { showToast('Phone লিখুন!', 'error'); return; }
+        box.style.display = 'block';
+        box.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking ' + phone + '...';
+        fetch(k.fraud, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Api-Key': k.k, 'Secret-Key': k.sec }, body: JSON.stringify({ api_key: k.k, secret_key: k.sec, customer_phone_number: phone }) })
+        .then(function(r) { return r.json(); })
+        .then(function(j) {
+            var d = j.data || j;
+            var tot = d.total_delivered || d.total_delivery || 0;
+            var ok = d.successful_delivery || d.total_success || 0;
+            var cn = d.cancelled_delivery || d.total_cancel || 0;
+            var amt = d.total_cancelled_amount || d.cancelled_amount || 0;
+            var risk = cn > ok ? '#dc2626' : '#16a34a';
+            box.innerHTML = '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:14px;display:flex;gap:24px;flex-wrap:wrap;font-size:.95rem;">' +
+                '<div><small style="color:#64748b">Total Deliveries</small><br><b>' + tot + '</b></div>' +
+                '<div><small style="color:#64748b">Successful</small><br><b style="color:#16a34a">' + ok + '</b></div>' +
+                '<div><small style="color:#64748b">Cancelled</small><br><b style="color:#dc2626">' + cn + '</b></div>' +
+                '<div><small style="color:#64748b">Cancelled Amount</small><br><b>' + formatCurrency(amt) + '</b></div>' +
+                '<div><small style="color:#64748b">Risk</small><br><b style="color:' + risk + '">' + (cn > ok ? 'HIGH RISK ⚠️' : 'OK ✓') + '</b></div></div>';
+        })
+        .catch(function(err) { box.innerHTML = '<span style="color:#dc2626"><b>Failed:</b> ' + (err.message || 'network') + ' — CORS block হতে পারে (CORS-unblock extension দিন)।</span>'; });
+    }
+    window.runFraudCheck = runFraudCheck;
+    window.showTab = showTab;
+    window.saveGeneral = saveGeneral;
+    window.openCatModal = openCatModal;
+    window.saveCat = saveCat;
+    window.editCat = editCat;
+    window.deleteCat = deleteCat;
+    window.openBannerModal = openBannerModal;
+    window.saveBanner = saveBanner;
+    window.editBanner = editBanner;
+    window.deleteBanner = deleteBanner;
+    window.openCoupModal = openCoupModal;
+    window.saveCoup = saveCoup;
+    window.editCoup = editCoup;
+    window.deleteCoup = deleteCoup;
+    window.sendNotif = sendNotif;
+    window.closeModal = closeModal;
+    window.doLogout = doLogout;
+
+    loadGeneral();
+})();
+</script>
+
+<!-- ============================================================================
+     2026-09-18 — "My Shop Banner" + "My Shop Homepage" default-design tabs.
+     ---------------------------------------------------------------------------
+     These two tabs let the ADMIN design what every reseller's My Shop starts
+     from. All state lives in ONE key, rh_myshop_defaults, through the app.js
+     helpers — never in a reseller's own settings, never in a product or an order,
+     and no other page is involved.
+     Self-contained block: it defines its own functions and reads app.js only.
+     ============================================================================ -->
+<script>
+function mjEsc(v) { return String(v === undefined || v === null ? '' : v).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+
+/* ======================= 1. DEFAULT BANNERS ======================= */
+function msbList() {
+    try { return (typeof myshopDefaultBannerImages === 'function') ? (myshopDefaultBannerImages() || []) : []; }
+    catch (e) { return []; }
+}
+function msbRender() {
+    var box = document.getElementById('msbGrid');
+    var add = document.getElementById('msbAddBtn');
+    var clr = document.getElementById('msbClearBtn');
+    var note = document.getElementById('msbNote');
+    var list = msbList();
+    if (box) {
+        box.innerHTML = '';
+        if (!list.length) {
+            box.innerHTML = '<div class="msb-empty"><i class="fas fa-image" style="font-size:1.6rem;display:block;margin-bottom:8px;opacity:.5"></i>' +
+                'এখনো কোনো ডিফল্ট ব্যানার নেই।<br>ব্যানার না দিলে রিসেলারদের শপে আগের ডেমো ব্যানারটাই দেখাবে।</div>';
+        } else {
+            for (var i = 0; i < list.length; i++) {
+                (function (idx, src) {
+                    var d = document.createElement('div');
+                    d.className = 'msb-cell';
+                    d.innerHTML = '<img src="' + esc(src) + '" alt="Default banner ' + (idx + 1) + '">' +
+                                  '<span class="msb-n">' + (idx + 1) + '</span>';
+                    var rm = document.createElement('button');
+                    rm.type = 'button';
+                    rm.className = 'msb-x';
+                    rm.title = 'সরান';
+                    rm.innerHTML = '<i class="fas fa-trash"></i>';
+                    rm.onclick = function () { msbRemove(idx); };
+                    d.appendChild(rm);
+                    box.appendChild(d);
+                })(i, list[i]);
+            }
+        }
+    }
+    if (add) add.style.display = (list.length >= 3) ? 'none' : '';
+    if (clr) clr.style.display = list.length ? '' : 'none';
+    if (note) note.textContent = list.length
+        ? (list.length + ' / ৩টি ডিফল্ট ব্যানার — রিসেলারদের My Shop-এ প্রতি ২ সেকেন্ডে বদলাবে।')
+        : '';
+}
+window.msbPick = function (inp) {
+    var f = inp && inp.files && inp.files[0];
+    if (!f) return;
+    if (f.size > 5 * 1024 * 1024) { showToast('ব্যানার ছবির সাইজ ৫MB এর কম হতে হবে।', 'error'); inp.value = ''; return; }
+    if (msbList().length >= 3) { showToast('সর্বোচ্চ ৩টি ডিফল্ট ব্যানার দেওয়া যাবে।', 'error'); inp.value = ''; return; }
+    var r = new FileReader();
+    r.onload = function () {
+        var im = new Image();
+        im.onload = function () {
+            /* keep the ORIGINAL shape (no cropping); only shrink a genuinely huge
+               upload so the shared store never grows past its budget */
+            var out = r.result;
+            try {
+                var MAXW = 1920;
+                if (im.width > MAXW) {
+                    var k = MAXW / im.width;
+                    var c = document.createElement('canvas');
+                    c.width = MAXW; c.height = Math.round(im.height * k);
+                    c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+                    out = c.toDataURL('image/jpeg', 0.92);
+                }
+            } catch (e) { out = r.result; }
+            var list = msbList();
+            list.push(out);
+            var ok = setMyshopDefaultBannerImages(list);
+            inp.value = '';
+            if (!ok) { showToast('সেভ করা যায়নি — storage পূর্ণ হতে পারে।', 'error'); return; }
+            msbRender();
+            showToast('ডিফল্ট ব্যানার যোগ হয়েছে — সব রিসেলারের My Shop-এ দেখাবে।', 'success');
+        };
+        im.onerror = function () { showToast('ছবিটি পড়া যায়নি।', 'error'); inp.value = ''; };
+        im.src = r.result;
+    };
+    r.readAsDataURL(f);
+};
+function msbRemove(idx) {
+    if (!confirm('এই ডিফল্ট ব্যানারটি সরিয়ে দেবেন?\n\nযেসব রিসেলার নিজে কিছু আপলোড করেনি, তাদের শপ থেকেও সরে যাবে।')) return;
+    var list = msbList();
+    if (idx < 0 || idx >= list.length) return;
+    list.splice(idx, 1);
+    if (!setMyshopDefaultBannerImages(list)) { showToast('সরানো যায়নি।', 'error'); return; }
+    msbRender();
+    showToast('ডিফল্ট ব্যানার সরানো হয়েছে।', 'success');
+}
+window.msbClear = function () {
+    if (!confirm('সব ডিফল্ট ব্যানার সরিয়ে দেবেন?\n\nযেসব রিসেলার নিজে কিছু আপলোড করেনি, তাদের শপে আগের ডেমো ব্যানার দেখাবে।')) return;
+    if (!setMyshopDefaultBannerImages([])) { showToast('সরানো যায়নি।', 'error'); return; }
+    msbRender();
+    showToast('সব ডিফল্ট ব্যানার সরানো হয়েছে।', 'success');
+};
+
+/* =================== 2. DEFAULT HOMEPAGE BLOCKS =================== */
+/* Same 16 icons the reseller's own block editor offers, so a default block and a
+   reseller block are visually identical. */
+var MHB_ICONS = [
+  ['fa-bolt','⚡ বাজ'],['fa-fire','🔥 আগুন'],['fa-star','⭐ তারা'],['fa-crown','👑 ক্রাউন'],
+  ['fa-gift','🎁 গিফট'],['fa-tags','🏷️ ট্যাগ'],['fa-percent','％ ছাড়'],['fa-heart','❤️ হার্ট'],
+  ['fa-bag-shopping','🛍️ ব্যাগ'],['fa-truck-fast','🚚 ডেলিভারি'],['fa-shirt','👕 শার্ট'],
+  ['fa-mobile-screen','📱 মোবাইল'],['fa-baby','🧸 বাচ্চা'],['fa-house','🏠 হোম'],
+  ['fa-clock','⏰ সময়'],['fa-medal','🏅 মেডেল']
+];
+function mhbListData() {
+    try { return (typeof myshopDefaultBlocks === 'function') ? (myshopDefaultBlocks() || []) : []; }
+    catch (e) { return []; }
+}
+function mhbRender() {
+    var box = document.getElementById('mhbList');
+    if (!box) return;
+    var list = mhbListData();
+    var h = '<div class="mhb-box"><div class="mhb-hd"><b><i class="fas fa-layer-group"></i> ডিফল্ট হোমপেজ ব্লক</b>' +
+            '<span>' + list.length + ' টি</span></div>';
+    if (!list.length) {
+        h += '<div class="mhb-empty"><i class="fas fa-layer-group" style="opacity:.5;margin-right:6px"></i> এখনো কোনো ডিফল্ট ব্লক নেই। ' +
+             '<b>“নতুন ব্লক”</b> চেপে প্রথম ব্লকটি বানান — যেমন “Flash Deals”।</div></div>';
+        box.innerHTML = h;
+        return;
+    }
+    for (var i = 0; i < list.length; i++) {
+        var b = list[i];
+        var where = b.cat
+            ? (b.subsub ? (b.cat + ' › ' + b.sub + ' › ' + b.subsub) : (b.sub ? (b.cat + ' › ' + b.sub) : b.cat))
+            : 'ক্যাটাগরি ছাড়া (মিশ্র)';
+        var nPicks = (b.products || []).length;
+        h += '<div class="mhb-row">' +
+          '<span class="mhb-ic"><i class="fas ' + esc(String(b.icon || 'fa-bolt')) + '"></i></span>' +
+          '<span class="mhb-tx"><b>' + esc(String(b.title || '(নাম নেই)')) + '</b>' +
+          '<small>' + esc(String(b.subtitle || '—')) + '</small>' +
+          '<em>' + esc(where) + ' · ' + (nPicks ? (nPicks + 'টি হাতে বাছা') : 'কাস্টমারের পছন্দ অনুযায়ী') +
+          (b.cat ? ' · View All আছে' : ' · View All নেই') + '</em></span>' +
+          '<span class="mhb-ops">' +
+          '<button type="button" title="উপরে" onclick="mhbMove(\'' + mjEsc(b.id) + '\',-1)">\u2191</button>' +
+          '<button type="button" title="নিচে" onclick="mhbMove(\'' + mjEsc(b.id) + '\',1)">\u2193</button>' +
+          '<button type="button" class="ed" title="সম্পাদনা" onclick="mhbOpen(\'' + mjEsc(b.id) + '\')"><i class="fas fa-pen"></i></button>' +
+          '<button type="button" class="del" title="ব্লক মুছুন" onclick="mhbDel(\'' + mjEsc(b.id) + '\')"><i class="fas fa-trash-can"></i></button>' +
+          '</span></div>';
+    }
+    h += '</div>';
+    box.innerHTML = h;
+}
+window.mhbMove = function (id, dir) {
+    if (myshopDefaultBlockMove(id, dir) === false) { showToast('সরানো যায়নি।', 'error'); return; }
+    mhbRender();
+};
+window.mhbDel = function (id) {
+    if (!confirm('এই ডিফল্ট ব্লকটি মুছে ফেলা হবে।\n\nযেসব রিসেলার নিজে কিছু বদলায়নি, তাদের My Shop হোমপেজ থেকেও সরে যাবে। প্রোডাক্ট মুছবে না।')) return;
+    if (myshopDefaultBlockRemove(id) === false) { showToast('মুছা যায়নি।', 'error'); return; }
+    mhbRender();
+    showToast('ডিফল্ট ব্লক মুছে ফেলা হয়েছে ✓', 'success');
+};
+window.mhbOpen = function (id) {
+    window._mhbEdit = id || null;
+    var b = null;
+    if (id) {
+        var list = mhbListData();
+        for (var i = 0; i < list.length; i++) if (String(list[i].id) === String(id)) b = list[i];
+    }
+    b = b || { icon: 'fa-bolt', title: '', subtitle: '', cat: '', sub: '', subsub: '', products: [] };
+
+    /* the PLATFORM category tree and the PLATFORM catalog — see the app.js note */
+    var mains = (typeof myshopDefaultMainCategories === 'function') ? asArray(myshopDefaultMainCategories()) : [];
+    var mainOpts = '<option value="">— বেছে নিন —</option>';
+    for (var m = 0; m < mains.length; m++) {
+        var mn = String(mains[m].name || '');
+        mainOpts += '<option value="' + esc(mn) + '"' + (b.cat === mn ? ' selected' : '') + '>' + esc(mn) + '</option>';
+    }
+    var icons = '';
+    for (var ic = 0; ic < MHB_ICONS.length; ic++) {
+        icons += '<option value="' + MHB_ICONS[ic][0] + '"' + (b.icon === MHB_ICONS[ic][0] ? ' selected' : '') + '>' + MHB_ICONS[ic][1] + '</option>';
+    }
+    var prods = (typeof myshopDefaultProducts === 'function') ? asArray(myshopDefaultProducts()) : [];
+    var picks = {};
+    for (var p = 0; p < (b.products || []).length; p++) picks[String(b.products[p])] = 1;
+    var groups = {}, order = [];
+    for (var q = 0; q < prods.length; q++) {
+        var g = String(prods[q].category || 'অন্যান্য');
+        if (!groups[g]) { groups[g] = []; order.push(g); }
+        groups[g].push(prods[q]);
+    }
+    var pickHTML = '';
+    if (!prods.length) {
+        pickHTML = '<div class="mhb-none">কোনো প্রোডাক্ট নেই — আগে Products থেকে প্রোডাক্ট যোগ করুন।</div>';
+    } else {
+        for (var o = 0; o < order.length; o++) {
+            pickHTML += '<div class="mhb-grp" data-g="' + esc(order[o]) + '"><div class="mhb-grp-h">' + esc(order[o]) + '</div>';
+            var arr = groups[order[o]];
+            for (var z = 0; z < arr.length; z++) {
+                var pid = String(arr[z].id), nm2 = String(arr[z].name || '');
+                pickHTML += '<label class="mhb-pk" data-n="' + esc(nm2.toLowerCase()) + '">' +
+                  '<input type="checkbox" class="mhb-cb" value="' + esc(pid) + '"' + (picks[pid] ? ' checked' : '') + '>' +
+                  '<span class="mhb-pk-n">' + esc(nm2) + '</span>' +
+                  '<span class="mhb-pk-t">৳' + (Number(arr[z].customer_price) || Number(arr[z].price) || 0) + '</span></label>';
+            }
+            pickHTML += '</div>';
+        }
+    }
+
+    var html = '<div class="mhb-ov"><div class="mhb-modal">' +
+      '<div class="mhb-modal-hd"><b><i class="fas fa-layer-group"></i> ' + (id ? 'ডিফল্ট ব্লক সম্পাদনা' : 'নতুন ডিফল্ট ব্লক') + '</b>' +
+      '<button type="button" class="mhb-modal-x" onclick="mhbClose()">&times;</button></div>' +
+      '<div class="mhb-modal-bd">' +
+      '<div class="mhb-f"><label>ব্লকের নাম <i>*</i></label>' +
+      '<input id="mhbTitle" class="mhb-in" value="' + esc(String(b.title || '')) + '" placeholder="যেমন: Flash Deals"></div>' +
+      '<div class="mhb-f"><label>সাবটাইটেল <em>নামের নিচে ছোট লেখা</em></label>' +
+      '<input id="mhbSub" class="mhb-in" value="' + esc(String(b.subtitle || '')) + '" placeholder="যেমন: LIMITED TIME GRAB IT FAST"></div>' +
+      '<div class="mhb-f"><label>আইকন</label><select id="mhbIcon" class="mhb-in">' + icons + '</select></div>' +
+      '<div class="mhb-f"><label>ক্যাটাগরি <em>না দিলে মিশ্র ব্লক — View All থাকবে না</em></label>' +
+      '<div class="mhb-3">' +
+      '<select id="mhbMain" class="mhb-in" onchange="mhbFillSubs()">' + mainOpts + '</select>' +
+      '<select id="mhbSub2" class="mhb-in" onchange="mhbFillSubSubs()" disabled><option value="">— সাব —</option></select>' +
+      '<select id="mhbSubSub" class="mhb-in" disabled><option value="">— সাব-সাব —</option></select>' +
+      '</div></div>' +
+      '<div class="mhb-f"><label>প্রোডাক্ট <em>না বাছলে কাস্টমারের পছন্দ অনুযায়ী দেখাবে</em>' +
+      '<span class="mhb-cnt" id="mhbCnt"></span></label>' +
+      '<input id="mhbSearch" class="mhb-in" placeholder="🔍 প্রোডাক্ট খুঁজুন…" oninput="mhbFilter(this.value)" style="margin-bottom:7px">' +
+      '<div class="mhb-list" id="mhbPickList">' + pickHTML + '</div></div>' +
+      '</div><div class="mhb-modal-ft">' +
+      '<button type="button" class="mhb-btn gh" onclick="mhbClose()">বাতিল</button>' +
+      '<button type="button" class="mhb-btn pri" onclick="mhbSave()"><i class="fas fa-check"></i> সেভ করুন</button>' +
+      '</div></div></div>';
+
+    var host = document.createElement('div');
+    host.id = 'mhbModal';
+    host.innerHTML = html;
+    document.body.appendChild(host);
+
+    try {
+        if (b.cat) { document.getElementById('mhbMain').value = b.cat; mhbFillSubs(b.sub || '', b.subsub || ''); }
+        else mhbFillSubs('', '');
+    } catch (e) { }
+    mhbCount();
+};
+window.mhbFillSubs = function (wantSub, wantSS) {
+    var m = document.getElementById('mhbMain'), mn = m ? String(m.value || '') : '';
+    var s2 = document.getElementById('mhbSub2'), s3 = document.getElementById('mhbSubSub');
+    if (!s2 || !s3) return;
+    var subs = (mn && typeof myshopDefaultSubCategories === 'function') ? asArray(myshopDefaultSubCategories(mn)) : [];
+    s2.innerHTML = '<option value="">— সাব —</option>';
+    for (var i = 0; i < subs.length; i++) {
+        var sn = String(subs[i].name || '');
+        s2.innerHTML += '<option value="' + esc(sn) + '"' + (wantSub === sn ? ' selected' : '') + '>' + esc(sn) + '</option>';
+    }
+    s2.disabled = !subs.length;
+    mhbFillSubSubs(wantSS);
+};
+window.mhbFillSubSubs = function (wantSS) {
+    var m = document.getElementById('mhbMain'), s2 = document.getElementById('mhbSub2');
+    var mn = m ? String(m.value || '') : '', sn = s2 ? String(s2.value || '') : '';
+    var s3 = document.getElementById('mhbSubSub');
+    if (!s3) return;
+    var sss = (mn && sn && typeof myshopDefaultSubSubCategories === 'function') ? asArray(myshopDefaultSubSubCategories(mn, sn)) : [];
+    s3.innerHTML = '<option value="">— সাব-সাব —</option>';
+    for (var i = 0; i < sss.length; i++) {
+        var tn = String(sss[i].name || '');
+        s3.innerHTML += '<option value="' + esc(tn) + '"' + (wantSS === tn ? ' selected' : '') + '>' + esc(tn) + '</option>';
+    }
+    s3.disabled = !sss.length;
+};
+window.mhbFilter = function (q) {
+    q = String(q || '').toLowerCase().trim();
+    var list = document.getElementById('mhbPickList');
+    if (!list) return;
+    var grps = [].slice.call(list.querySelectorAll('.mhb-grp')), total = 0;
+    for (var i = 0; i < grps.length; i++) {
+        var rows = [].slice.call(grps[i].querySelectorAll('.mhb-pk')), hit = 0;
+        for (var j = 0; j < rows.length; j++) {
+            var ok = !q || String(rows[j].getAttribute('data-n') || '').indexOf(q) !== -1;
+            rows[j].style.display = ok ? '' : 'none';
+            if (ok) hit++;
+        }
+        grps[i].style.display = hit ? '' : 'none';
+        total += hit;
+    }
+    var c = document.getElementById('mhbCnt');
+    if (c) c.textContent = total + 'টি';
+};
+window.mhbCount = function () {
+    var cbs = [].slice.call(document.querySelectorAll('#mhbModal .mhb-cb'));
+    var n = 0;
+    for (var i = 0; i < cbs.length; i++) if (cbs[i].checked) n++;
+    var c = document.getElementById('mhbCnt');
+    if (c) c.textContent = n ? (n + 'টি বাছা হয়েছে') : 'কাস্টমারের পছন্দ';
+};
+window.mhbClose = function () {
+    var m = document.getElementById('mhbModal');
+    if (m && m.parentNode) m.parentNode.removeChild(m);
+    window._mhbEdit = null;
+};
+window.mhbSave = function () {
+    var g = function (id) { var e = document.getElementById(id); return e ? e.value : ''; };
+    var title = String(g('mhbTitle') || '').trim();
+    if (!title) { showToast('ব্লকের নাম দিন!', 'error'); return; }
+    var cbs = [].slice.call(document.querySelectorAll('#mhbModal .mhb-cb'));
+    var picks = [];
+    for (var i = 0; i < cbs.length; i++) if (cbs[i].checked) picks.push(String(cbs[i].value));
+    var data = {
+        title: title, subtitle: String(g('mhbSub') || '').trim(), icon: String(g('mhbIcon') || 'fa-bolt'),
+        cat: String(g('mhbMain') || ''), sub: String(g('mhbSub2') || ''), subsub: String(g('mhbSubSub') || ''),
+        products: picks
+    };
+    var r;
+    if (window._mhbEdit) r = myshopDefaultBlockUpdate(window._mhbEdit, data);
+    else r = !!myshopDefaultBlockAdd(data);
+    if (r === false) { showToast('সেভ করা যায়নি — storage ভর্তি।', 'error'); return; }
+    mhbClose();
+    showToast('ডিফল্ট ব্লক সেভ হয়েছে ✓', 'success');
+    mhbRender();
+};
+</script>
+<script>document.addEventListener('DOMContentLoaded',function(){var p=location.pathname.split('/').pop();var sel=null;if(p==='add-reseller.html')sel='resellers.html';else if(p==='supplier-products.html')sel='suppliers.html';else sel=p;document.querySelectorAll('.smenu a,.sidebar a,.sidebar-menu a').forEach(function(a){if(a.getAttribute('href')===sel){a.classList.add('active');a.style.background='#10b981';a.style.color='#fff';a.style.fontWeight='800'}})});</script>
+
+<script>
+/* Admin sidebar toggle (additive) */
+if (!window.toggleSidebar) {
+    window.toggleSidebar = function(open) {
+        var sb = document.querySelector('.sidebar');
+        if (!sb) return;
+        if (open === undefined) open = !sb.classList.contains('open');
+        sb.classList.toggle('open', open);
+        var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+        if (ov) ov.classList.toggle('show', open);
+    };
+}
+</script>
+
+
+<script id="lx-auto-active">
+(function() {
+    var page = location.pathname.split('/').pop();
+    document.querySelectorAll('.sb-item').forEach(function(a) {
+        var href = (a.getAttribute('href') || '').split('?')[0];
+        if (href === page) a.classList.add('on');
+    });
+    /* ADMIN ONLY (this request) — a moderator must not see the Moderators page,
+       which is the one screen that could let them recruit another moderator.
+       The page itself also bounces a moderator; this hides the door as well. */
+    try {
+        if (sessionStorage.getItem('user_type') !== 'admin') {
+            document.querySelectorAll('.sb-item[href="moderators.html"]').forEach(function (a) { a.style.display = 'none'; });
+        }
+    } catch (e) {}
+})();
+</script>
+</body>
+</html>

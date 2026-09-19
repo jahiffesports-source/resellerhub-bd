@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resellers - Admin - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#f1f5f9; color:#1e293b; }
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:240px; background:#1e293b; color:#cbd5e1; z-index:100; overflow-y:auto; }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid #334155; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:38px; height:38px; background:linear-gradient(135deg,#dc2626,#b91c1c); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; }
+        .sidebar-logo h3 { color:white; font-size:1rem; }
+        .sidebar-logo small { color:#94a3b8; font-size:0.7rem; display:block; }
+        .sidebar-menu { list-style:none; padding:12px 0; }
+        .sidebar-menu li { margin:2px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:10px 20px; color:#cbd5e1; text-decoration:none; font-size:0.88rem; }
+        .sidebar-menu a:hover { background:rgba(255,255,255,0.05); color:white; }
+        .sidebar-menu a.active { background:#dc2626; color:white; }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 20px 5px; color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+        .main { margin-left:240px; min-height:100vh; }
+        .topbar { background:white; padding:14px 25px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:sticky; top:0; z-index:50; }
+        .topbar h2 { font-size:1.2rem; font-weight:600; }
+        .topbar h2 i { color:#dc2626; margin-right:8px; }
+        .topbar-right { display:flex; align-items:center; gap:12px; }
+        .user-pill { display:flex; align-items:center; gap:8px; padding:6px 14px; background:#fee2e2; border-radius:30px; font-size:0.85rem; color:#991b1b; font-weight:600; }
+        .btn-logout { background:#dc2626; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:500; }
+        .content { padding:25px; }
+        .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px; }
+        .stat-card { background:white; border-radius:12px; padding:18px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+        .stat-card .label { color:#64748b; font-size:0.78rem; margin-bottom:4px; }
+        .stat-card .value { font-size:1.5rem; font-weight:800; }
+        .card { background:white; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:20px; }
+        .card-header { padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+        .card-header h4 { font-size:0.95rem; font-weight:600; }
+        .card-header h4 i { color:#dc2626; margin-right:6px; }
+        .card-header input { padding:7px 12px; border:1px solid #e2e8f0; border-radius:6px; font-size:0.85rem; }
+        .data-table { width:100%; border-collapse:collapse; }
+        .data-table th { text-align:left; padding:11px 20px; background:#f8fafc; font-weight:600; font-size:0.72rem; color:#64748b; text-transform:uppercase; }
+        .data-table td { padding:12px 20px; border-bottom:1px solid #f1f5f9; font-size:0.85rem; }
+        .data-table tr:hover { background:#f8fafc; }
+        .badge { padding:3px 9px; border-radius:20px; font-size:0.7rem; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+        .badge-success { background:#d1fae5; color:#065f46; }
+        .badge-warning { background:#fef3c7; color:#92400e; }
+        .badge-danger { background:#fee2e2; color:#991b1b; }
+        .badge-info { background:#dbeafe; color:#1e40af; }
+        .btn { padding:7px 12px; border:none; border-radius:7px; font-size:0.82rem; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:5px; }
+        .btn-primary { background:#2563eb; color:white; }
+        .btn-success { background:#10b981; color:white; }
+        .btn-danger { background:#dc2626; color:white; }
+        .btn-warning { background:#f59e0b; color:white; }
+        .btn-sm { padding:4px 9px; font-size:0.75rem; }
+        .empty { text-align:center; padding:50px 20px; color:#64748b; }
+        .empty i { font-size:3rem; margin-bottom:12px; opacity:0.4; }
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+        .modal-overlay.show { display:flex; }
+        .modal { background:white; border-radius:14px; width:100%; max-width:750px; max-height:92vh; overflow-y:auto; }
+        .modal-header { padding:16px 22px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:white; z-index:2; }
+        .modal-close { background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b; line-height:1; }
+        .modal-body { padding:0; }
+        .modal-footer { padding:14px 22px; border-top:1px solid #e2e8f0; display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; background:white; border-radius:0 0 14px 14px; }
+        .profile-banner { background:linear-gradient(135deg,#2563eb,#1e40af); color:white; padding:22px; display:flex; gap:16px; align-items:center; }
+        .profile-banner .avatar { width:70px; height:70px; background:white; color:#2563eb; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.8rem; font-weight:700; overflow:hidden; flex-shrink:0; }
+        .profile-banner .avatar img { width:100%; height:100%; object-fit:cover; }
+        .profile-banner h3 { font-size:1.25rem; margin-bottom:3px; }
+        .profile-banner p { font-size:0.85rem; opacity:0.92; }
+        .profile-section { padding:18px 22px; border-bottom:1px solid #f1f5f9; }
+        .profile-section h5 { font-size:0.92rem; margin-bottom:12px; font-weight:600; }
+        .profile-section h5 i { color:#2563eb; margin-right:6px; }
+        .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+        .info-cell { padding:10px; background:#f8fafc; border-radius:6px; }
+        .info-cell .lbl { font-size:0.7rem; color:#64748b; margin-bottom:2px; text-transform:uppercase; }
+        .info-cell .val { font-size:0.9rem; font-weight:500; word-break:break-word; }
+        .nid-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .nid-img { text-align:center; padding:12px; background:#f8fafc; border-radius:6px; }
+        .nid-img .lbl { font-size:0.78rem; color:#64748b; margin-bottom:6px; text-transform:uppercase; font-weight:600; }
+        .nid-img img { max-width:100%; max-height:220px; border-radius:4px; }
+        .nid-img .no-img { padding:30px 10px; color:#94a3b8; }
+        .nid-img .no-img i { font-size:2rem; opacity:0.5; display:block; margin-bottom:6px; }
+        @media (max-width:768px) { .sidebar { width:240px; } .sidebar-logo h3, .sidebar-logo small, .sidebar-menu a span, .sidebar-divider { display:initial; } .main { margin-left:70px; } .stats-row { grid-template-columns:repeat(2,1fr); } .info-grid, .nid-grid { grid-template-columns:1fr; } }
+    </style>
+
+
+
+
+<style id="lx-sb-final">
+/* ===== ADMIN SIDEBAR v4 — fresh premium design (authoritative) ===== */
+body .lx-sidebar { position:fixed !important; left:0 !important; top:0 !important; bottom:0 !important; width:264px !important; background:linear-gradient(180deg,#0d1226 0%,#171233 100%) !important; border-right:1px solid rgba(129,140,248,.14) !important; z-index:600 !important; overflow-y:auto !important; overflow-x:hidden !important; display:flex !important; flex-direction:column !important; transform:none !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; font-family:'Inter','Hind Siliguri',sans-serif !important; }
+body .lx-sidebar::before { content:'' !important; position:absolute !important; top:-80px !important; right:-60px !important; width:260px !important; height:260px !important; background:radial-gradient(circle,rgba(99,102,241,.18),transparent 70%) !important; pointer-events:none !important; }
+body .lx-brand { display:flex !important; align-items:center !important; gap:12px !important; padding:20px 18px !important; border-bottom:1px solid rgba(129,140,248,.14) !important; position:relative !important; }
+body .lx-brand-ic { width:42px !important; height:42px !important; border-radius:13px !important; background:linear-gradient(135deg,#6366f1,#a855f7) !important; display:flex !important; align-items:center !important; justify-content:center !important; color:#fff !important; font-size:1.05rem !important; box-shadow:0 8px 20px rgba(99,102,241,.4) !important; flex-shrink:0 !important; }
+body .lx-brand-tx b { color:#fff !important; font-size:1.02rem !important; font-weight:900 !important; display:block !important; line-height:1.2 !important; }
+body .lx-brand-tx small { color:#818cf8 !important; font-size:.6rem !important; font-weight:800 !important; letter-spacing:2px !important; }
+body .lx-close { margin-left:auto !important; background:rgba(255,255,255,.06) !important; border:none !important; color:#94a3b8 !important; width:30px !important; height:30px !important; border-radius:9px !important; cursor:pointer !important; font-size:1rem !important; display:none !important; align-items:center !important; justify-content:center !important; }
+body .lx-close:hover { background:#fee2e2 !important; color:#dc2626 !important; }
+body .lx-menu { padding:14px 12px !important; flex:1 !important; }
+body .sec-label { font-size:.6rem !important; font-weight:900 !important; letter-spacing:2.2px !important; color:#6b7280 !important; text-transform:uppercase !important; padding:14px 12px 6px !important; display:flex !important; align-items:center !important; gap:8px !important; }
+body .sec-label::before { content:'' !important; width:14px !important; height:2px !important; background:linear-gradient(90deg,#6366f1,#a855f7) !important; border-radius:2px !important; }
+body .sb-item { position:relative !important; display:flex !important; align-items:center !important; gap:11px !important; padding:9px 12px !important; margin:3px 0 !important; border-radius:12px !important; color:#b6c2e2 !important; text-decoration:none !important; font-size:.86rem !important; font-weight:600 !important; transition:all .2s !important; border:1px solid transparent !important; background:transparent !important; opacity:1 !important; visibility:visible !important; pointer-events:auto !important; box-shadow:none !important; transform:none !important; }
+body .sb-item .sb-ico { width:30px !important; height:30px !important; border-radius:9px !important; background:rgba(255,255,255,.05) !important; display:flex !important; align-items:center !important; justify-content:center !important; font-size:.82rem !important; flex-shrink:0 !important; transition:all .2s !important; }
+body .sb-item .sb-txt { flex:1 !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; display:block !important; }
+body .sb-item:hover { background:rgba(99,102,241,.13) !important; color:#fff !important; }
+body .sb-item:hover .sb-ico { background:rgba(99,102,241,.3) !important; }
+body .sb-item.on { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; border-color:rgba(129,140,248,.35) !important; }
+body .sb-item.on::before { content:'' !important; position:absolute !important; left:-12px !important; top:50% !important; transform:translateY(-50%) !important; width:3.5px !important; height:60% !important; background:linear-gradient(180deg,#818cf8,#c084fc) !important; border-radius:3px !important; }
+body .sb-item.on .sb-ico { background:linear-gradient(135deg,#6366f1,#a855f7) !important; color:#fff !important; }
+/* page-এর নিচের inline-highlight script সবসময় হারাবে */
+body .sb-item[style] { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; }
+body .sb-badge { background:#fbbf24 !important; color:#1e293b !important; font-size:.62rem !important; padding:1px 8px !important; border-radius:10px !important; font-weight:800 !important; margin-left:auto !important; }
+body .main { margin-left:264px !important; min-height:100vh !important; }
+body .side-overlay { display:none !important; position:fixed !important; inset:0 !important; background:rgba(7,10,26,.6) !important; z-index:590 !important; backdrop-filter:blur(2px) !important; }
+body .side-overlay.show { display:block !important; pointer-events:auto !important; }
+body .hamburger { display:none !important; }
+/* ===== মোবাইল/ট্যাবলেট: slide drawer ===== */
+@media (max-width:1024px) {
+    body .main { margin-left:0 !important; }
+    body .lx-sidebar { transform:translateX(-100%) !important; box-shadow:none !important; }
+    body .lx-sidebar.open { transform:none !important; box-shadow:30px 0 70px rgba(7,10,26,.6) !important; }
+    body .lx-close { display:flex !important; }
+    body .hamburger { display:inline-flex !important; }
+    body { overflow-x:hidden !important; }
+}
+</style>
+
+
+
+
+
+<style id="lx-ovf-fix">
+@media(max-width:768px){ body{overflow-x:hidden !important} }
+</style>
+<style id="lx-orders-badge-n">.orders-badge-n{color:#fbbf24;font-weight:900;font-size:.72rem}.orders-badge-n:empty{display:none}</style>
+<style id="admin-mobile-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   The admin topbar measured about 474px across on a 390px phone (25px padding, an
+   h2 at 1.2rem, 12px gaps, a wide user pill), so the logout button was pushed past
+   the right edge. Several admin tables are also built by JS with NO .table-scroll
+   wrapper, so they widened the whole page instead of scrolling.
+   EVERY rule below sits inside a max-width query, so the DESKTOP LAYOUT IS
+   UNCHANGED. This is an ADDED block — no existing rule is modified or removed. */
+@media (max-width:768px){
+  .topbar { padding:10px 12px; gap:8px; }
+  .topbar h2 { font-size:.92rem; }
+  .topbar h2 i { margin-right:4px; }
+  .topbar-right { gap:6px; }
+  .user-pill { padding:5px 9px; font-size:.72rem; }
+  .btn-logout { padding:7px 10px; }
+  /* a table without a scroll wrapper would otherwise push the page wide */
+  .data-table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%; }
+}
+</style>
+<style id="panel-fullwidth-fix">
+/* 2026-09-16 — FULL-WIDTH FIX for the admin and supplier panels (this request).
+   The whole page sat in a narrow column with empty space on the right, because the
+   base rule reserves the sidebar with `margin-left`, and a block element with
+   margin-left and width:auto is only (100% - that) wide. A LATER rule in the same
+   file re-asserted the margin with !important, so the earlier mobile override lost.
+   This block is the LAST thing in the document, so it wins, and it resets width as
+   well as margin. Desktop is untouched — everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<aside class="lx-sidebar sidebar" id="sidebar">
+    <div class="lx-brand">
+        <span class="lx-brand-ic"><i class="fas fa-user-shield"></i></span>
+        <div class="lx-brand-tx"><b>AdminHub</b><small>CONTROL PANEL</small></div>
+        <button class="lx-close" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+    <nav class="lx-menu">
+        <div class="sec-label">Main</div>
+        <a href="dashboard.html" class="sb-item"><span class="sb-ico"><i class="fas fa-chart-line"></i></span><span class="sb-txt">Dashboard</span></a>
+        <a href="orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-shopping-cart"></i></span><span class="sb-txt">All Orders<span class="orders-badge-n" id="ordersBadgeN"></span></span><span class="orders-badge" style="display:none;margin-left:auto;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:.62rem;font-weight:800"></span></a>
+        <a href="multi-supplier-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-people-arrows"></i></span><span class="sb-txt">Multi-Supplier Orders<span class="orders-badge-n" id="msCount"></span></span></a>
+        <a href="products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box"></i></span><span class="sb-txt">Products</span></a>
+        <div class="sec-label">Users</div>
+        <a href="resellers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-users"></i></span><span class="sb-txt">Resellers</span></a>
+        <a href="suppliers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-warehouse"></i></span><span class="sb-txt">Suppliers</span></a>
+        <a href="supplier-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-boxes-stacked"></i></span><span class="sb-txt">Supplier Products</span></a>
+        <a href="add-reseller.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Add Reseller</span></a>
+        <a href="add-supplier.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck"></i></span><span class="sb-txt">Add Supplier</span></a>
+        <a href="approvals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-check"></i></span><span class="sb-txt">Approvals</span></a>
+        <a href="withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-money-bill-wave"></i></span><span class="sb-txt">Withdrawals</span></a>
+        <a href="supplier-withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-hand-holding-dollar"></i></span><span class="sb-txt">Supplier Withdraw</span></a>
+        <a href="transactions.html" class="sb-item"><span class="sb-ico"><i class="fas fa-receipt"></i></span><span class="sb-txt">Transaction History</span></a>
+        <a href="moderators.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-shield"></i></span><span class="sb-txt">Moderators</span></a>
+        <div class="sec-label">Referral</div>
+        <a href="referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Reseller Referral</span></a>
+        <a href="supplier-referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck-arrow-right"></i></span><span class="sb-txt">Supplier Referral</span></a>
+                <a href="myshop-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-bag-shopping"></i></span><span class="sb-txt">My Shop Orders</span></a>
+        <a href="myshop-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box-open"></i></span><span class="sb-txt">My Shop Products</span></a>
+        <div class="sec-label">Offers &amp; Banners</div>
+        <a href="add-offer.html" class="sb-item"><span class="sb-ico"><i class="fas fa-plus-circle"></i></span><span class="sb-txt">Add Offers</span></a>
+        <a href="manage-offers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-gift"></i></span><span class="sb-txt">Manage Offers</span></a>
+        <a href="add-banner.html" class="sb-item"><span class="sb-ico"><i class="fas fa-image"></i></span><span class="sb-txt">Add Banners</span></a>
+        <a href="manage-banners.html" class="sb-item"><span class="sb-ico"><i class="fas fa-images"></i></span><span class="sb-txt">Manage Banners</span></a>
+        <div class="sec-label">System</div>
+        <a href="messages.html" class="sb-item"><span class="sb-ico"><i class="fas fa-comments"></i></span><span class="sb-txt">Messages<span class="orders-badge-n" id="msgBadgeN"></span></span></a>
+        <a href="settings.html" class="sb-item"><span class="sb-ico"><i class="fas fa-cog"></i></span><span class="sb-txt">Settings</span></a>
+        <a href="../index.html" class="sb-item"><span class="sb-ico"><i class="fas fa-globe"></i></span><span class="sb-txt">Visit Site</span></a>
+    </nav>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<main class="main">
+    <div class="topbar">
+            <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h2><i class="fas fa-users"></i> Resellers</h2>
+        <div class="topbar-right">
+            <div class="user-pill"><i class="fas fa-user-shield"></i> Admin</div>
+            <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="stats-row">
+            <div class="stat-card"><div class="label">Total Resellers</div><div class="value" id="stTotal">0</div></div>
+            <div class="stat-card"><div class="label">Active</div><div class="value" id="stActive">0</div></div>
+            <div class="stat-card"><div class="label">Pending</div><div class="value" id="stPending">0</div></div>
+            <div class="stat-card"><div class="label">Online Now</div><div class="value" id="stOnline" style="color:#10b981;">0</div></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-users"></i> All Resellers</h4>
+                <input type="text" id="searchBox" placeholder="Search name / email / phone..." oninput="loadResellers()">
+            </div>
+            <div id="resellersTable"></div>
+        </div>
+    </div>
+</main>
+
+<!-- PROFILE MODAL -->
+<div class="modal-overlay" id="profileModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Reseller Profile</h3>
+            <button class="modal-close" type="button" onclick="closeModal('profileModal')">&times;</button>
+        </div>
+        <div class="modal-body" id="profileBody"></div>
+        <div class="modal-footer" id="profileActions"></div>
+    </div>
+</div>
+
+<!-- EDIT RESELLER MODAL -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal" style="max-width:520px;">
+        <div class="modal-header" style="padding:16px 20px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
+            <h3 style="font-size:1.05rem;">Edit Reseller Profile</h3>
+            <button class="modal-close" type="button" onclick="closeModal('editModal')" style="background:none;border:none;font-size:1.4rem;cursor:pointer;">&times;</button>
+        </div>
+        <div class="modal-body" style="padding:20px;">
+            <input type="hidden" id="edId">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="form-group" style="margin-bottom:12px;"><label>Name</label><input type="text" id="edName" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;"></div>
+                <div class="form-group" style="margin-bottom:12px;"><label>Phone</label><input type="tel" id="edPhone" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;"></div>
+                <div class="form-group" style="margin-bottom:12px;"><label>Email</label><input type="email" id="edEmail" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;"></div>
+                <div class="form-group" style="margin-bottom:12px;"><label>Business Name</label><input type="text" id="edBusiness" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;"></div>
+            </div>
+            <div class="form-group" style="margin-bottom:12px;"><label>Address</label><input type="text" id="edAddress" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="form-group" style="margin-bottom:12px;"><label>NID Number</label><input type="text" id="edNid" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;"></div>
+                <div class="form-group" style="margin-bottom:12px;"><label>Reset Password</label><input type="text" id="edPassword" placeholder="New password (optional)" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;"></div>
+            </div>
+        </div>
+        <div class="modal-footer" style="padding:14px 20px;border-top:1px solid #e2e8f0;display:flex;gap:10px;justify-content:flex-end;">
+            <button class="btn" style="background:#e2e8f0;color:#1e293b;" onclick="closeModal('editModal')">Cancel</button>
+            <button class="btn btn-success" onclick="saveEditReseller()"><i class="fas fa-save"></i> Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<!-- BALANCE ADJUST MODAL -->
+<div class="modal-overlay" id="balModal">
+    <div class="modal" style="max-width:440px;">
+        <div class="modal-header" style="padding:16px 20px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
+            <h3 style="font-size:1.05rem;">Adjust Balance</h3>
+            <button class="modal-close" type="button" onclick="closeModal('balModal')" style="background:none;border:none;font-size:1.4rem;cursor:pointer;">&times;</button>
+        </div>
+        <div class="modal-body" style="padding:20px;">
+            <div style="background:#f8fafc;padding:14px;border-radius:10px;margin-bottom:16px;line-height:1.8;">
+                <div><strong>Reseller:</strong> <span id="balName">-</span></div>
+                <div><strong>Current Balance:</strong> <span id="balCurrent" style="color:#10b981;font-weight:700;">0</span></div>
+            </div>
+            <input type="hidden" id="balResellerId">
+            <div class="form-group" style="margin-bottom:14px;">
+                <label>Amount (৳) *</label>
+                <input type="number" id="balAmount" min="1" placeholder="e.g. 500" style="width:100%;padding:12px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:1.1rem;font-weight:700;">
+            </div>
+            <div class="form-group">
+                <label>Note (optional)</label>
+                <input type="text" id="balNote" placeholder="Reason for adjustment" style="width:100%;padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;">
+            </div>
+        </div>
+        <div class="modal-footer" style="padding:14px 20px;border-top:1px solid #e2e8f0;display:flex;gap:10px;">
+            <button class="btn" style="background:#e2e8f0;color:#1e293b;flex:1;justify-content:center;padding:12px;" onclick="closeModal('balModal')">Cancel</button>
+            <button class="btn" style="background:#fee2e2;color:#dc2626;flex:1;justify-content:center;padding:12px;" onclick="doBalanceChange(-1)"><i class="fas fa-minus"></i> Deduct (Fine)</button>
+            <button class="btn" style="background:#10b981;color:white;flex:1;justify-content:center;padding:12px;" onclick="doBalanceChange(1)"><i class="fas fa-plus"></i> Add Money</button>
+            <button class="btn" style="background:#2563eb;color:white;flex:1 1 100%;justify-content:center;padding:12px;" onclick="openAcctView()"><i class="fas fa-chart-simple"></i> View Full Account (Sales / Profit / Returns)</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="acctModal">
+    <div class="modal" style="max-width:520px;">
+        <div class="modal-header"><h3>Account Overview</h3><button class="modal-close" onclick="closeModal('acctModal')">&times;</button></div>
+        <div class="modal-body" id="acctBody"></div>
+    </div>
+</div>
+<script src="../app.js"></script>
+<script>
+(function() {
+    var userId = sessionStorage.getItem('user_id');
+    var userType = sessionStorage.getItem('user_type');
+    if (!userId || (userType !== 'admin' && userType !== 'moderator')) { sessionStorage.clear(); window.location.replace('login.html'); return; } setInterval(function(){ var t=sessionStorage.getItem('user_type'); if(t && (t!=='admin' && t!=='moderator')){ sessionStorage.clear(); window.location.replace('login.html'); } },3000);
+
+    function statusBadge(s) {
+        var c = 'warning';
+        if (s === 'approved') c = 'success';
+        else if (s === 'pending') c = 'warning';
+        else c = 'danger';
+        return '<span class="badge badge-' + c + '">' + s + '</span>';
+    }
+
+    function onlineBadge(id) {
+        var on = isResellerOnline(id);
+        if (on) return '<span class="badge badge-success"><i class="fas fa-circle" style="font-size:0.5rem;"></i> Online</span>';
+        return '<span class="badge badge-danger"><i class="fas fa-circle" style="font-size:0.5rem;"></i> Offline</span>';
+    }
+
+    /* ===== My Shop enable/disable (#15, #45) — storefront availability only.
+       Turning it OFF never deletes products, orders or any other data. ===== */
+    function myShopToggle(id) {
+        var on = true;
+        try { on = isShopEnabled(id); } catch (e) { on = true; }
+        return '<span title="My Shop ON/OFF" onclick="toggleMyShop(' + id + ')" style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-size:.72rem;font-weight:800;color:' + (on ? '#15803d' : '#b91c1c') + '">' +
+               '<span class="sptoggle' + (on ? '' : ' off') + '" style="width:40px;height:22px;"></span>' + (on ? 'ON' : 'OFF') + '</span>';
+    }
+    window.toggleMyShop = function (id) {
+        var on = true;
+        try { on = isShopEnabled(id); } catch (e) { on = true; }
+        try { setShopEnabled(id, !on); } catch (e) {}
+        var list = getData(DB_KEYS.RESELLERS) || [];
+        var nm = '#' + id;
+        for (var i = 0; i < list.length; i++) { if (String(list[i].id) === String(id)) { nm = list[i].businessName || list[i].name || nm; break; } }
+        try { logActivity('admin_myshop_toggle', 'Admin turned My Shop ' + (on ? 'OFF' : 'ON') + ' for ' + nm); } catch (e) {}
+        showToast('My Shop ' + (on ? 'disabled' : 'enabled') + ' — ' + nm, on ? 'warning' : 'success');
+        loadResellers();
+    };
+
+    /* ===== ITEM 6 (spec, 2026-09-14) — per-reseller PRODUCT UPLOAD switch.
+       "অ্যাডমিন চাইলে যেকোনো রিসেলারের মাই শপে প্রোডাক্ট আপলোড করার যে ফিচারটা অফ
+       করে দিতে পারে ... আর এই বাটনটা অফ করে দিলে অটোমেটিকলি মাই শপ অর্ডারটা হাইড হয়ে
+       যাবে রিসেলার প্যানেল থেকে।"
+       SEPARATE from the My Shop ON/OFF toggle above: that one closes the
+       storefront, this one only stops the reseller ADDING products. Nothing is
+       deleted — existing products keep selling, and their orders keep arriving in
+       Admin -> My Shop Orders. */
+    function uploadToggle(id) {
+        var on = true;
+        try { on = isShopUploadEnabled(id); } catch (e) { on = true; }
+        return '<span title="Product Upload ON/OFF" onclick="toggleUpload(' + id + ')" style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-size:.72rem;font-weight:800;color:' + (on ? '#15803d' : '#b91c1c') + '">' +
+               '<span class="sptoggle' + (on ? '' : ' off') + '" style="width:40px;height:22px;"></span>Upload ' + (on ? 'ON' : 'OFF') + '</span>';
+    }
+    window.toggleUpload = function (id) {
+        var on = true;
+        try { on = isShopUploadEnabled(id); } catch (e) { on = true; }
+        try { setShopUploadEnabled(id, !on); } catch (e) {}
+        var list = getData(DB_KEYS.RESELLERS) || [];
+        var nm = '#' + id;
+        for (var i = 0; i < list.length; i++) { if (String(list[i].id) === String(id)) { nm = list[i].businessName || list[i].name || nm; break; } }
+        try { logActivity('admin_upload_toggle', 'Admin turned product upload ' + (on ? 'OFF' : 'ON') + ' for ' + nm); } catch (e) {}
+        /* the reseller must be told WHY their Add Product button vanished */
+        if (on) {
+            try { addNotification(id, 'system', 'Admin আপনার My Shop-এ product upload বন্ধ করে দিয়েছেন। আগের product গুলো আগের মতোই থাকবে।', true); } catch (e) {}
+        } else {
+            try { addNotification(id, 'system', 'Admin আপনার My Shop-এ product upload আবার চালু করে দিয়েছেন।', true); } catch (e) {}
+        }
+        showToast('Product upload ' + (on ? 'disabled' : 'enabled') + ' — ' + nm, on ? 'warning' : 'success');
+        loadResellers();
+    };
+
+    function loadResellers() {
+        var resellers = getData(DB_KEYS.RESELLERS);
+        var search = (document.getElementById('searchBox').value || '').toLowerCase();
+        var list = [];
+        for (var i = 0; i < resellers.length; i++) {
+            var r = resellers[i];
+            if (!search || r.name.toLowerCase().indexOf(search) !== -1 || (r.email && r.email.toLowerCase().indexOf(search) !== -1) || r.phone.indexOf(search) !== -1) list.push(r);
+        }
+        list.reverse();
+
+        var total = 0, active = 0, pending = 0, online = 0;
+        for (var t = 0; t < resellers.length; t++) {
+            total++;
+            if (resellers[t].status === 'approved') active++;
+            if (resellers[t].status === 'pending') pending++;
+            if (isResellerOnline(resellers[t].id)) online++;
+        }
+        document.getElementById('stTotal').textContent = total;
+        document.getElementById('stActive').textContent = active;
+        document.getElementById('stPending').textContent = pending;
+        document.getElementById('stOnline').textContent = online;
+
+        if (!list.length) {
+            document.getElementById('resellersTable').innerHTML = '<div class="empty"><i class="fas fa-users"></i><br>No resellers found</div>';
+            return;
+        }
+
+        var html = '<table class="data-table"><thead><tr><th>Name</th><th>Contact</th><th>Password</th><th>Business</th><th>Online</th><th>Last Seen</th><th>Balance</th><th>Orders</th><th>My Shop / Upload</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+        for (var j = 0; j < list.length; j++) {
+            var r = list[j];
+            var avatar = r.profilePicture ? '<img src="' + r.profilePicture + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;">' : '';
+            html += '<tr>' +
+                '<td>' + avatar + '<strong>' + r.name + '</strong>' + (r.isPermanent ? ' <span class="badge badge-warning"><i class="fas fa-crown"></i> OWNER</span>' : '') + '</td>' +
+                '<td style="font-size:0.8rem;">' + r.phone + '<br>' + (r.email || '') + '</td>' +
+                /* 2026-09-17 — the password used to be printed in the table for anyone looking over
+                       the admin's shoulder. It is now masked, and a small eye button reveals it
+                       on demand. The code cell still opens the edit box as before. */
+                '<td><code style="background:#eff6ff;padding:2px 8px;border-radius:4px;color:#1d4ed8;font-weight:700;cursor:pointer;" title="Click করে password edit করুন" onclick="editResPass(' + r.id + ')">🔑 <span class="pw-mask" data-pw="' + String(r.password || '').replace(/"/g,'&quot;') + '">••••••••</span></code> ' +
+                '<button class="btn btn-sm" style="padding:2px 7px;font-size:.68rem" title="Show / hide password" onclick="event.stopPropagation();revealResPass(' + r.id + ',this)"><i class="fas fa-eye"></i></button></td>' +
+                '<td>' + (r.businessName || '-') + '</td>' +
+                '<td>' + onlineBadge(r.id) + '</td>' +
+                '<td style="font-size:0.78rem;color:#64748b;">' + getLastSeenText(r.id) + '</td>' +
+                '<td style="color:#10b981;font-weight:600;">' + formatCurrency(r.balance) + '</td>' +
+                '<td>' + (r.totalOrders || 0) + '</td>' +
+                '<td>' + myShopToggle(r.id) + '<div style="margin-top:6px">' + uploadToggle(r.id) + '</div></td>' +
+                '<td>' + statusBadge(r.status) + '</td>' +
+                /* PART 5, 6 — jump straight to this reseller's own My Shop products */
+                '<td><button class="btn btn-sm btn-primary" onclick="viewProfile(' + r.id + ')"><i class="fas fa-eye"></i></button> ' +
+                '<button class="btn btn-sm" style="background:#0d9488;color:#fff" title="View Products" onclick="window.location.href=\'myshop-products.html?rid=' + r.id + '\'"><i class="fas fa-box-open"></i> View Products</button>' +
+                (r.status === 'pending' ? ' <button class="btn btn-sm btn-success" onclick="approve(' + r.id + ')"><i class="fas fa-check"></i></button>' : '') +
+                (!r.isPermanent ? ' <button class="btn btn-sm btn-warning" onclick="toggleBan(' + r.id + ')"><i class="fas fa-ban"></i></button>' : '') +
+                '</td></tr>';
+        }
+        html += '</tbody></table>';
+        document.getElementById('resellersTable').innerHTML = html;
+    }
+
+    function viewProfile(id) {
+        var resellers = getData(DB_KEYS.RESELLERS);
+        var r = null;
+        for (var i = 0; i < resellers.length; i++) { if (resellers[i].id === id) { r = resellers[i]; break; } }
+        if (!r) return;
+
+        var initial = (r.name || 'U').charAt(0).toUpperCase();
+        var avatar = r.profilePicture ? '<img src="' + r.profilePicture + '">' : initial;
+
+        var html = '<div class="profile-banner">' +
+            '<div class="avatar">' + avatar + '</div>' +
+            '<div style="flex:1;">' +
+            '<h3>' + r.name + '</h3>' +
+            '<p><i class="fas fa-envelope"></i> ' + (r.email || 'N/A') + '</p>' +
+            '<p><i class="fas fa-phone"></i> ' + r.phone + '</p>' +
+            '<p style="margin-top:5px;">' + statusBadge(r.status) + ' ' + onlineBadge(r.id) + '</p>' +
+            '</div></div>';
+
+        html += '<div class="profile-section"><h5><i class="fas fa-id-badge"></i> Account Info</h5><div class="info-grid">' +
+            '<div class="info-cell"><div class="lbl">User ID</div><div class="val">#' + r.id + '</div></div>' +
+            '<div class="info-cell"><div class="lbl">Role</div><div class="val">' + (r.role || 'Reseller') + '</div></div>' +
+            '<div class="info-cell"><div class="lbl">Joined</div><div class="val">' + formatDate(r.joinDate) + '</div></div>' +
+            '<div class="info-cell"><div class="lbl">Last Seen</div><div class="val">' + getLastSeenText(r.id) + '</div></div>' +
+            '<div class="info-cell"><div class="lbl">Current Balance</div><div class="val" style="color:#10b981;font-weight:700;">' + formatCurrency(r.balance) + '</div></div>' +
+            '<div class="info-cell"><div class="lbl">Total Earning</div><div class="val">' + formatCurrency(r.totalEarning) + '</div></div>' +
+            '</div></div>';
+
+        html += '<div class="profile-section"><h5><i class="fas fa-briefcase"></i> Business Details</h5><div class="info-grid">' +
+            '<div class="info-cell"><div class="lbl">Business Name</div><div class="val">' + (r.businessName || '—') + '</div></div>' +
+            '<div class="info-cell"><div class="lbl">Address</div><div class="val">' + (r.address || '—') + '</div></div>' +
+            '<div class="info-cell"><div class="lbl">Facebook</div><div class="val">' + (r.facebookUrl || '—') + '</div></div>' +
+            '<div class="info-cell"><div class="lbl">Website</div><div class="val">' + (r.websiteUrl || '—') + '</div></div>' +
+            '<div class="info-cell"><div class="lbl">NID Number</div><div class="val">' + (r.nid || '—') + '</div></div>' +
+            '<div class="info-cell"><div class="lbl">Referral Code</div><div class="val"><code style="background:#fef3c7;padding:2px 6px;border-radius:4px;">' + (r.referralCode || '—') + '</code></div></div>' +
+            '</div></div>';
+
+        html += '<div class="profile-section"><h5><i class="fas fa-id-card"></i> NID Documents</h5><div class="nid-grid">' +
+            '<div class="nid-img"><div class="lbl">NID Front</div>';
+        if (r.nidFrontImage) html += '<img src="' + r.nidFrontImage + '">';
+        else html += '<div class="no-img"><i class="fas fa-image"></i>Not uploaded</div>';
+        html += '</div><div class="nid-img"><div class="lbl">NID Back</div>';
+        if (r.nidBackImage) html += '<img src="' + r.nidBackImage + '">';
+        else html += '<div class="no-img"><i class="fas fa-image"></i>Not uploaded</div>';
+        html += '</div></div></div>';
+
+        document.getElementById('profileBody').innerHTML = html;
+
+        var actions = '<button class="btn" style="background:#e2e8f0;color:#1e293b;" onclick="closeModal(\'profileModal\')">Close</button>';
+        actions += '<button class="btn btn-primary" onclick="openEditReseller(' + r.id + ')"><i class="fas fa-edit"></i> Edit Profile</button>';
+        actions += '<button class="btn btn-warning" onclick="adjustBalance(' + r.id + ')"><i class="fas fa-coins"></i> Balance</button>';
+        if (r.status === 'pending') actions += '<button class="btn btn-success" onclick="approve(' + r.id + ')"><i class="fas fa-check"></i> Approve</button>';
+        if (r.status !== 'banned' && !r.isPermanent) actions += '<button class="btn btn-warning" onclick="toggleBan(' + r.id + ')"><i class="fas fa-ban"></i> Ban</button>';
+        document.getElementById('profileActions').innerHTML = actions;
+        document.getElementById('profileModal').classList.add('show');
+    }
+
+    function approve(id) {
+        var resellers = getData(DB_KEYS.RESELLERS);
+        for (var i = 0; i < resellers.length; i++) {
+            if (resellers[i].id === id) { resellers[i].status = 'approved'; resellers[i].banUntil = null; break; }
+        }
+        setData(DB_KEYS.RESELLERS, resellers);
+        addNotification(id, 'approval', 'Congratulations! Your account has been approved. You can now login and start earning!', true);
+        logActivity('reseller_approved', 'Approved reseller #' + id);
+        showToast('Reseller approved!', 'success');
+        closeModal('profileModal');
+        loadResellers();
+    }
+
+    function toggleBan(id) {
+        var resellers = getData(DB_KEYS.RESELLERS);
+        for (var i = 0; i < resellers.length; i++) {
+            if (resellers[i].id === id && !resellers[i].isPermanent) {
+                if (resellers[i].status === 'banned') {
+                    resellers[i].status = 'approved';
+                    resellers[i].banUntil = null;
+                    showToast('Reseller unbanned!', 'success');
+                } else {
+                    resellers[i].status = 'banned';
+                    showToast('Reseller banned!', 'warning');
+                }
+                break;
+            }
+        }
+        setData(DB_KEYS.RESELLERS, resellers);
+        closeModal('profileModal');
+        loadResellers();
+    }
+
+    function adjustBalance(id) {
+        var resellers = getData(DB_KEYS.RESELLERS);
+        var r = null;
+        for (var i = 0; i < resellers.length; i++) { if (resellers[i].id === id) { r = resellers[i]; break; } }
+        if (!r) return;
+        document.getElementById('balResellerId').value = id;
+        document.getElementById('balName').textContent = r.name;
+        document.getElementById('balCurrent').textContent = formatCurrency(r.balance);
+        document.getElementById('balAmount').value = '';
+        document.getElementById('balNote').value = '';
+        document.getElementById('balModal').classList.add('show');
+    }
+
+    function doBalanceChange(sign) {
+        var id = parseInt(document.getElementById('balResellerId').value);
+        var amt = parseInt(document.getElementById('balAmount').value);
+        var note = document.getElementById('balNote').value.trim();
+        if (!amt || amt < 1) { showToast('Enter a valid amount!', 'error'); return; }
+        /* MODERATOR (this request) — a moderator may not move money directly.
+           The change is filed as a REQUEST; only the real admin can approve it.
+           Approving applies it, rejecting removes it and changes NO balance. */
+        if (typeof isModerator === 'function' && isModerator()) {
+            var rName = 'Reseller #' + id;
+            var rs0 = getData(DB_KEYS.RESELLERS) || [];
+            for (var r0 = 0; r0 < rs0.length; r0++) {
+                if (String(rs0[r0].id) === String(id)) { rName = rs0[r0].businessName || rs0[r0].name || rName; break; }
+            }
+            if (typeof addModRequest !== 'function') { showToast('Request system unavailable.', 'error'); return; }
+            addModRequest({
+                kind: 'balance', party: 'reseller', partyId: id, partyName: rName,
+                sign: sign, amount: amt, note: note || (sign === 1 ? 'Balance add request' : 'Balance deduct request'),
+                requestedBy: sessionStorage.getItem('user_id'),
+                requestedByName: (typeof currentAdminLabel === 'function') ? currentAdminLabel() : 'Moderator'
+            });
+            closeModal('balModal');
+            showToast('Request পাঠানো হয়েছে — Admin approve করলে ' + formatCurrency(amt) + ' ' + (sign === 1 ? 'যোগ' : 'কাটা') + ' হবে।', 'success');
+            return;
+        }
+        var resellers = getData(DB_KEYS.RESELLERS);
+        for (var i = 0; i < resellers.length; i++) {
+            if (resellers[i].id === id) {
+                if (sign === 1) {
+                    resellers[i].balance = (resellers[i].balance || 0) + amt;
+                    addTransaction(id, 'credit', amt, note || 'Admin added money to your account', 'admin');
+                    addNotification(id, 'balance', 'আপনার একাউন্টে ' + formatCurrency(amt) + ' টাকা যোগ করা হয়েছে।' + (note ? ' কারণ: ' + note : '') + ' নতুন ব্যালেন্স: ' + formatCurrency(resellers[i].balance), true);
+                    logActivity('balance_added', 'Added ' + formatCurrency(amt) + ' to ' + resellers[i].name + (note ? ' - ' + note : ''));
+                    showToast(amt + '৳ added to ' + resellers[i].name + '!', 'success');
+                } else {
+                    if (amt > (resellers[i].balance || 0)) { showToast('Deduct amount is bigger than balance!', 'error'); return; }
+                    resellers[i].balance = (resellers[i].balance || 0) - amt;
+                    addTransaction(id, 'debit', amt, note || 'Admin deducted money (Fine)', 'admin');
+                    addNotification(id, 'balance', 'আপনার একাউন্ট থেকে ' + formatCurrency(amt) + ' টাকা কাটা হয়েছে (Fine)।' + (note ? ' কারণ: ' + note : '') + ' নতুন ব্যালেন্স: ' + formatCurrency(resellers[i].balance), true);
+                    logActivity('balance_deducted', 'Deducted ' + formatCurrency(amt) + ' from ' + resellers[i].name + (note ? ' - ' + note : ''));
+                    showToast(amt + '৳ deducted from ' + resellers[i].name + '!', 'warning');
+                }
+                break;
+            }
+        }
+        setData(DB_KEYS.RESELLERS, resellers);
+        closeModal('balModal');
+        closeModal('profileModal');
+        loadResellers();
+    }
+
+    function openEditReseller(id) {
+        var resellers = getData(DB_KEYS.RESELLERS);
+        var r = null;
+        for (var i = 0; i < resellers.length; i++) { if (resellers[i].id === id) { r = resellers[i]; break; } }
+        if (!r) return;
+        document.getElementById('edId').value = id;
+        document.getElementById('edName').value = r.name || '';
+        document.getElementById('edPhone').value = r.phone || '';
+        document.getElementById('edEmail').value = r.email || '';
+        document.getElementById('edBusiness').value = r.businessName || '';
+        document.getElementById('edAddress').value = r.address || '';
+        document.getElementById('edNid').value = r.nid || '';
+        document.getElementById('edPassword').value = '';
+        document.getElementById('editModal').classList.add('show');
+    }
+
+    function saveEditReseller() {
+        var id = parseInt(document.getElementById('edId').value);
+        var resellers = getData(DB_KEYS.RESELLERS);
+        for (var i = 0; i < resellers.length; i++) {
+            if (resellers[i].id === id) {
+                resellers[i].name = document.getElementById('edName').value.trim();
+                resellers[i].phone = document.getElementById('edPhone').value.trim();
+                resellers[i].email = document.getElementById('edEmail').value.trim();
+                resellers[i].businessName = document.getElementById('edBusiness').value.trim();
+                resellers[i].address = document.getElementById('edAddress').value.trim();
+                resellers[i].nid = document.getElementById('edNid').value.trim();
+                var np = document.getElementById('edPassword').value.trim();
+                if (np) { resellers[i].password = np; addNotification(id, 'account', 'Admin ????? password reset ?????? ???? password ????? login ????: ' + np, true); }
+                break;
+            }
+        }
+        setData(DB_KEYS.RESELLERS, resellers);
+        logActivity('reseller_edited', 'Admin edited reseller profile #' + id);
+        showToast('Profile updated!', 'success');
+        closeModal('editModal');
+        closeModal('profileModal');
+        loadResellers();
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+    window.loadResellers = loadResellers;
+    window.viewProfile = viewProfile;
+    window.approve = approve;
+    window.toggleBan = toggleBan;
+    window.adjustBalance = adjustBalance;
+    /* 2026-09-17 — Show / hide ONE reseller's password. Default state is masked;
+       the eye button reveals it on demand. Nothing else about the row changes. */
+    window.revealResPass = function (id, btn) {
+        try {
+            var cell = btn && btn.closest ? btn.closest('td') : null;
+            var span = cell ? cell.querySelector('.pw-mask') : null;
+            if (!span) return;
+            var masked = span.textContent.indexOf('\u2022') === 0;
+            span.textContent = masked ? (span.getAttribute('data-pw') || '\u2014') : '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+            var ic = btn.querySelector('i');
+            if (ic) ic.className = masked ? 'fas fa-eye-slash' : 'fas fa-eye';
+        } catch (e) { }
+    };
+    window.editResPass = function(id) {
+        var resellers = getData(DB_KEYS.RESELLERS) || [];
+        var r = null;
+        for (var i = 0; i < resellers.length; i++) { if (String(resellers[i].id) === String(id)) { r = resellers[i]; break; } }
+        if (!r) return;
+        var np = prompt('Reseller "' + (r.name || '') + '"-এর নতুন password দিন (min 8 অক্ষর):', r.password || '');
+        if (np === null) return;
+        np = np.trim();
+        if (np.length < 8) { showToast('Password কমপক্ষে 8 অক্ষরের হতে হবে!', 'error'); return; }
+        r.password = np;
+        for (var j = 0; j < resellers.length; j++) { if (String(resellers[j].id) === String(id)) { resellers[j] = r; break; } }
+        setData(DB_KEYS.RESELLERS, resellers);
+        addNotification(r.id, 'account', 'Admin আপনার password পরিবর্তন করেছেন। নতুন password: ' + np, true);
+        logActivity('reseller_pass_changed', 'Admin changed password of reseller: ' + (r.name || r.id));
+        showToast('✓ Password updated!', 'success');
+        loadResellers();
+    };
+    window.openAcctView = function() {
+        var id = document.getElementById('balResellerId').value;
+        var resellers = getData(DB_KEYS.RESELLERS);
+        var r = null;
+        for (var i = 0; i < resellers.length; i++) { if (String(resellers[i].id) === String(id)) { r = resellers[i]; break; } }
+        if (!r) return;
+        var orders = getData(DB_KEYS.ORDERS);
+        var tO = 0, dC = 0, dS = 0, rC = 0, rA = 0, pft = 0, qty = 0;
+        for (var j = 0; j < orders.length; j++) {
+            var o = orders[j];
+            if (String(o.resellerId) !== String(id)) continue;
+            tO++;
+            var st = o.status || 'new';
+            if (st === 'delivered') { dC++; dS += o.amount || 0; pft += o.profit || 0; qty += o.qty || 1; }
+            if (st === 'returned' || st === 'wfr') { rC++; rA += o.amount || 0; }
+        }
+        var wds = getData(DB_KEYS.WITHDRAWALS);
+        var wSum = 0;
+        for (var k = 0; k < wds.length; k++) { if (String(wds[k].resellerId) === String(id) && wds[k].status === 'approved') wSum += wds[k].amount || 0; }
+        var row = function(l, v, c) { return '<div style="display:flex;justify-content:space-between;gap:10px;padding:9px 12px;border-bottom:1px solid #f1f5f9;font-size:.85rem;"><span>' + l + '</span><b style="' + (c || '') + '">' + v + '</b></div>'; };
+        document.getElementById('acctBody').innerHTML =
+            '<h3 style="margin-bottom:12px;color:#2563eb;">' + (r.businessName || r.business || r.shop_name || r.shopName || r.name) + '</h3>' +
+            row('Current Balance', formatCurrency(r.balance || 0), 'color:#059669') +
+            row('Total Orders', tO) +
+            row('Delivered Orders', dC) +
+            row('Products Sold (pcs)', qty) +
+            row('Delivered Sales', formatCurrency(dS), 'color:#2563eb') +
+            row('Total Profit Earned', formatCurrency(pft), 'color:#059669') +
+            row('Returned Orders', rC) +
+            row('Returned Amount', formatCurrency(rA), 'color:#dc2626') +
+            row('Approved Withdrawals', formatCurrency(wSum)) +
+            '<div style="background:#f8fafc;padding:10px 12px;border-radius:8px;margin-top:12px;font-size:.75rem;color:#64748b;"><i class="fas fa-lock"></i> View-only — password hidden</div>';
+        document.getElementById('acctModal').classList.add('show');
+    };
+
+    window.doBalanceChange = doBalanceChange;
+    window.openEditReseller = openEditReseller;
+    window.saveEditReseller = saveEditReseller;
+    window.closeModal = closeModal;
+    window.doLogout = doLogout;
+
+    loadResellers();
+    // Real-time refresh every 8 seconds
+    setInterval(function() { loadResellers(); }, 8000);
+})();
+</script>
+    <script src="assistant.js"></script><script>(function(){function paint(){try{var n=(typeof adminNewOrderCount==="function")?adminNewOrderCount():(typeof adminOrderBadgeCount==="function"?adminOrderBadgeCount():0);var els=document.querySelectorAll(".orders-badge");for(var i=0;i<els.length;i++){els[i].textContent=n;els[i].style.display=n>0?"inline-block":"none";}}catch(e){}var lb=document.getElementById("ordersBadgeN");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>\r\n<script>document.addEventListener('DOMContentLoaded',function(){var p=location.pathname.split('/').pop();var sel=null;if(p==='add-reseller.html')sel='resellers.html';else if(p==='supplier-products.html')sel='suppliers.html';else sel=p;document.querySelectorAll('.smenu a,.sidebar a,.sidebar-menu a').forEach(function(a){if(a.getAttribute('href')===sel){a.classList.add('active');a.style.background='#10b981';a.style.color='#fff';a.style.fontWeight='800'}})});</script>
+
+<script>
+/* Admin sidebar toggle (additive) */
+if (!window.toggleSidebar) {
+    window.toggleSidebar = function(open) {
+        var sb = document.querySelector('.sidebar');
+        if (!sb) return;
+        if (open === undefined) open = !sb.classList.contains('open');
+        sb.classList.toggle('open', open);
+        var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+        if (ov) ov.classList.toggle('show', open);
+    };
+}
+</script>
+
+
+<script id="lx-auto-active">
+(function() {
+    var page = location.pathname.split('/').pop();
+    document.querySelectorAll('.sb-item').forEach(function(a) {
+        var href = (a.getAttribute('href') || '').split('?')[0];
+        if (href === page) a.classList.add('on');
+    });
+    /* ADMIN ONLY (this request) — a moderator must not see the Moderators page,
+       which is the one screen that could let them recruit another moderator.
+       The page itself also bounces a moderator; this hides the door as well. */
+    try {
+        if (sessionStorage.getItem('user_type') !== 'admin') {
+            document.querySelectorAll('.sb-item[href="moderators.html"]').forEach(function (a) { a.style.display = 'none'; });
+        }
+    } catch (e) {}
+})();
+</script>
+</body>
+</html>
+

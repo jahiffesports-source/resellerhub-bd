@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; overflow-x:hidden; }
+        .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 240px; background: #1e293b; color: #cbd5e1; z-index: 100; overflow-y: auto; }
+        .sidebar-header { padding: 18px 20px; border-bottom: 1px solid #334155; }
+        .sidebar-logo { display: flex; align-items: center; gap: 10px; }
+        .sidebar-logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, #2563eb, #1e40af); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; }
+        .sidebar-logo h3 { color: white; font-size: 1rem; }
+        .sidebar-logo small { color: #94a3b8; font-size: 0.7rem; display: block; }
+        .sidebar-menu { list-style: none; padding: 12px 0; }
+        .sidebar-menu li { margin: 2px 0; }
+        .sidebar-menu a { display: flex; align-items: center; gap: 12px; padding: 10px 20px; color: #cbd5e1; text-decoration: none; font-size: 0.88rem; }
+        .sidebar-menu a:hover { background: rgba(255,255,255,0.05); color: white; }
+        .sidebar-menu a.active { background: #2563eb; color: white; }
+        .sidebar-menu a i { width: 18px; text-align: center; }
+        .sidebar-divider { padding: 15px 20px 5px; color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        .main { margin-left: 240px; min-height: 100vh; }
+        .topbar { background: white; padding: 14px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 50; }
+        .topbar h2 { font-size: 1.2rem; font-weight: 600; }
+        .topbar-right { display: flex; align-items: center; gap: 15px; }
+        .topbar-balance { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; padding: 6px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; }
+        .topbar-user { display: flex; align-items: center; gap: 8px; padding: 6px 14px; background: #f1f5f9; border-radius: 20px; font-size: 0.88rem; }
+        .btn-logout { background: #ef4444; color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
+        .content { padding: 25px; }
+        .contact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 25px; }
+        .contact-card { background: white; border-radius: 12px; padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); text-align: center; }
+        .contact-icon { width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 12px; }
+        .contact-card h4 { font-size: 1rem; margin-bottom: 4px; }
+        .contact-card p { font-size: 0.85rem; color: #64748b; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card-header { padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .card-header h4 { font-size: 0.95rem; font-weight: 600; }
+        .btn { padding: 8px 16px; border: none; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { text-align: left; padding: 11px 20px; background: #f8fafc; font-weight: 600; font-size: 0.72rem; color: #64748b; text-transform: uppercase; }
+        .data-table td { padding: 12px 20px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
+        .badge { padding: 3px 9px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .empty { text-align: center; padding: 30px; color: #64748b; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: white; border-radius: 12px; width: 100%; max-width: 500px; padding: 22px; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.85rem; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; font-family: inherit; }
+        @media (max-width: 1024px) { .contact-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .sidebar { width: 70px; } .sidebar-logo h3, .sidebar-logo small, .sidebar-menu a span, .sidebar-divider { display: none; } .main { margin-left: 70px; } }
+    </style>
+<link rel="stylesheet" href="rstyle.css">
+<style id="lx-theme">
+/* ============ ResellerHub Premium Theme (visual-only overrides) ============ */
+:root { --lx-pri:#4f46e5; --lx-prid:#4338ca; --lx-vio:#7c3aed; --lx-grn:#10b981; }
+@keyframes lxPgUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+@keyframes lxPop { from{opacity:0;transform:scale(.94)} to{opacity:1;transform:none} }
+@keyframes lxRow { from{opacity:0;transform:translateX(-14px)} to{opacity:1;transform:none} }
+
+body { background:#eef1f9 !important; }
+
+/* ---- Sidebar + Topbar (synced with dashboard v3) ---- */
+/* ===== SIDEBAR ===== */
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:248px !important; background:linear-gradient(180deg,#0b1029 0%,#151a3a 100%); color:#c7d2fe; z-index:200; overflow-y:auto; transition:transform 0.3s; box-shadow:4px 0 24px rgba(11,16,41,.35); }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; justify-content:space-between; align-items:center; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:40px; height:40px; background:linear-gradient(135deg,var(--pri),var(--vio)); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .sidebar-logo h3 { color:white; font-size:1rem; font-weight:900; }
+        .sidebar-logo small { color:#818cf8; font-size:0.66rem; display:block; font-weight:700; letter-spacing:1px; }
+        .sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; }
+        .sidebar-menu { list-style:none; padding:12px 10px; }
+        .sidebar-menu li { margin:3px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:11px 15px; color:#c7d2fe; text-decoration:none; font-size:0.88rem; font-weight:600; border-radius:11px; transition:all .22s; }
+        .sidebar-menu a:hover { background:rgba(129,140,248,.14); color:white; transform:translateX(4px); }
+        .sidebar-menu a.active { background:linear-gradient(135deg,var(--pri),var(--vio)); color:white; box-shadow:0 8px 20px rgba(79,70,229,.4); }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 15px 5px; color:#6366f1; font-size:0.66rem; text-transform:uppercase; letter-spacing:1.4px; font-weight:800; }
+        .menu-badge { background:var(--gold); color:#1e293b; font-size:0.68rem; padding:1px 8px; border-radius:10px; font-weight:800; margin-left:auto; }
+        .menu-badge-n { color:var(--gold); font-weight:900; }
+
+        .side-overlay { display:none; position:fixed; inset:0; background:rgba(11,16,41,.55); z-index:150; backdrop-filter:blur(2px); }
+
+        /* ===== MAIN ===== */
+        .main { margin-left:248px !important; min-height:100vh; }
+@media(max-width:768px){
+    .main{margin-left:0 !important}
+    .sidebar{transform:translateX(-100%) !important;transition:transform .3s ease}
+    .sidebar.open{transform:translateX(0) !important;box-shadow:20px 0 60px rgba(11,16,41,.4)}
+    .sidebar-close-m{display:block !important}
+    .side-overlay{position:fixed;inset:0;background:rgba(11,16,41,.55);z-index:150;backdrop-filter:blur(2px)}
+    .side-overlay.show{display:block !important}
+    .status-cards{display:grid !important;grid-template-columns:1fr 1fr !important;gap:10px !important}
+}
+
+        .topbar { background:rgba(255,255,255,.88); backdrop-filter:blur(12px); padding:12px 22px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 14px rgba(15,23,42,.06); position:sticky; top:0; z-index:100; }
+            /* 2026-09-16 — MOBILE FIX (this request). The topbar measured about 440px
+               across on a 390px phone, so the logout button was pushed past the right
+               edge and looked cut off. These rules tighten the SAME header so it fits a
+               narrow screen. Nothing is hidden and nothing outside this media query is
+               touched, so the desktop layout is unchanged. */
+            .topbar { padding:10px 12px; }
+            .topbar-left { gap:8px; }
+            .topbar h2 { font-size:.98rem; }
+            .topbar-right { gap:6px; }
+            .topbar-balance { padding:6px 10px; font-size:.78rem; }
+            .topbar-user { padding:5px 10px; font-size:.78rem; }
+            .topbar-user span { max-width:52px; }
+
+        .topbar-left { display:flex; align-items:center; gap:12px; }
+        .hamburger { display:none; background:none; border:none; font-size:1.3rem; color:#1e293b; cursor:pointer; padding:4px; }
+        .topbar h2 { font-size:1.12rem; font-weight:800; }
+        .topbar-right { display:flex; align-items:center; gap:8px; }
+        .topbar-balance { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#7c2d12; padding:7px 15px; border-radius:22px; font-weight:800; font-size:0.84rem; white-space:nowrap; box-shadow:0 4px 12px rgba(245,158,11,.35); }
+        .topbar-user { display:flex; align-items:center; gap:7px; padding:6px 14px; background:#eef2ff; color:var(--pri); border-radius:22px; font-size:0.84rem; font-weight:700; }
+        .btn-logout { background:#fee2e2; color:#dc2626; border:none; padding:8px 12px; border-radius:10px; cursor:pointer; font-size:0.85rem; transition:all .25s; }
+        .btn-logout:hover { background:#dc2626; color:#fff; transform:translateY(-1px); }
+
+
+        /* ---- Stats / status cards ---- */
+.stat-card { border-radius:18px !important; border:1px solid #eef2f7 !important; box-shadow:0 3px 14px rgba(15,23,42,.05) !important; transition:all .28s !important; animation:lxPgUp .5s ease both; }
+.stat-card:hover { transform:translateY(-4px) !important; box-shadow:0 16px 32px rgba(15,23,42,.11) !important; }
+.status-cards .stat-card:nth-child(1), .stats-row .stat-card:nth-child(1) { animation-delay:.08s; }
+.status-cards .stat-card:nth-child(2), .stats-row .stat-card:nth-child(2) { animation-delay:.16s; }
+.status-cards .stat-card:nth-child(3), .stats-row .stat-card:nth-child(3) { animation-delay:.24s; }
+.status-cards .stat-card:nth-child(4), .stats-row .stat-card:nth-child(4) { animation-delay:.32s; }
+.stat-icon.green { background:linear-gradient(135deg,#d1fae5,#a7f3d0) !important; color:#059669 !important; }
+.stat-icon.blue { background:linear-gradient(135deg,#e0e7ff,#c7d2fe) !important; color:#4f46e5 !important; }
+.stat-icon.orange { background:linear-gradient(135deg,#fef3c7,#fde68a) !important; color:#d97706 !important; }
+.stat-icon.purple { background:linear-gradient(135deg,#ede9fe,#ddd6fe) !important; color:#7c3aed !important; }
+
+/* ---- Inputs ---- */
+input,select,textarea { border-radius:10px !important; transition:border-color .2s, box-shadow .2s !important; }
+input:focus,select:focus,textarea:focus { border-color:#4f46e5 !important; box-shadow:0 0 0 3px rgba(79,70,229,.12) !important; outline:none !important; }
+
+/* ---- Modals ---- */
+.modal-overlay.show .modal { animation:lxPop .32s cubic-bezier(.2,.9,.3,1.15) both; }
+
+/* ---- Content entrance ---- */
+.content > * { animation:lxPgUp .5s ease both; }
+.content > *:nth-child(2) { animation-delay:.08s; }
+.content > *:nth-child(3) { animation-delay:.16s; }
+.content > *:nth-child(4) { animation-delay:.24s; }
+.content > *:nth-child(5) { animation-delay:.32s; }
+
+/* ---- Floating bottom nav (products page) ---- */
+.bottom-nav { background:rgba(255,255,255,.92) !important; backdrop-filter:blur(14px); border:1px solid #eef2f7 !important; border-radius:20px !important; bottom:10px !important; left:12px !important; right:12px !important; box-shadow:0 10px 30px rgba(15,23,42,.16) !important; }
+.bottom-nav a.active { color:#4f46e5 !important; background:#eef2ff !important; }
+
+/* ---- Page-specific polish ---- */
+.products-grid { animation:lxPgUp .5s .2s ease both; }
+.section-head h2 { font-weight:900 !important; }
+.courier-card, .contact-card { border-radius:18px !important; transition:all .28s !important; }
+.courier-card:hover, .contact-card:hover { transform:translateY(-4px); box-shadow:0 16px 34px rgba(15,23,42,.12) !important; }
+.profile-header { border-radius:20px !important; overflow:hidden; }
+.panel { border-radius:20px !important; border:1px solid #eef2f7 !important; box-shadow:0 4px 16px rgba(15,23,42,.05) !important; }
+.balcard { border-radius:20px !important; }
+.fchip { transition:all .2s !important; }
+.fchip:hover { transform:translateY(-2px); }
+.tx { transition:background .2s !important; }
+.tx:hover { background:#f8faff !important; }
+.welcome { border-radius:22px !important; }
+</style>
+
+<style id="lx-theme-2">/* ---- Sidebar: text ALWAYS visible + full-width sidebar ---- */
+.sidebar-menu a span { display:inline !important; }
+.sidebar-divider { display:block !important; }
+.sidebar-logo h3, .sidebar-logo small { display:block !important; }
+.sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.25rem; cursor:pointer; }
+@media (min-width:769px) {
+    .sidebar { width:250px !important; }
+    .main { margin-left:250px !important; }
+    .sidebar-close-m { display:none !important; }
+}
+@media (max-width:768px) {
+    .sidebar { width:272px !important; transform:translateX(-100%); transition:transform .3s ease; }
+    .sidebar.open { transform:translateX(0) !important; box-shadow:20px 0 60px rgba(11,16,41,.4); }
+    .main { margin-left:0 !important; }
+    .sidebar-close-m { display:block !important; }
+    .side-overlay.show { display:block !important; }
+    .status-cards { display:grid !important; grid-template-columns:1fr 1fr !important; gap:10px !important; }
+}
+.bn-menu { background:linear-gradient(135deg,#4f46e5,#7c3aed) !important; color:#fff !important; border-radius:14px !important; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+.bn-menu i, .bn-menu span { color:#fff !important; }
+</style>
+
+<style>
+@media(max-width:768px){
+    body{padding-bottom:86px !important}
+    .bottom-nav{display:flex !important}
+    .bn-menu{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.62rem;font-weight:700;padding:6px 6px;flex:1;border:none;cursor:pointer}
+    .bn-menu i{font-size:1.12rem}
+    .bn-menu span{color:#fff !important}
+}
+</style>
+
+<style id="lx-nav-force">
+@media(max-width:768px){
+    .bottom-nav{display:flex !important;position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;opacity:1 !important;visibility:visible !important;transform:none !important}
+    body{padding-bottom:86px !important}
+}
+</style>
+
+<style id="lx-bnav">
+/* ===== Complete bottom-nav styling ===== */
+.bottom-nav{position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;display:flex !important;align-items:stretch;background:rgba(255,255,255,.97) !important;backdrop-filter:blur(14px);border:1px solid #e8ecf4 !important;border-radius:18px !important;box-shadow:0 -4px 24px rgba(15,23,42,.14) !important;padding:7px 6px calc(7px + env(safe-area-inset-bottom)) !important}
+.bottom-nav a,.bottom-nav button{flex:1 !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;gap:3px !important;padding:7px 2px !important;border:none !important;background:none !important;color:#7b879c !important;font-size:.62rem !important;font-weight:700 !important;text-decoration:none !important;cursor:pointer !important;border-radius:12px !important;font-family:inherit !important;line-height:1.2 !important}
+.bottom-nav a i,.bottom-nav button i{font-size:1.18rem !important;line-height:1 !important}
+.bottom-nav a span,.bottom-nav button span{display:block !important}
+.bottom-nav a:hover,.bottom-nav button:hover{color:#4f46e5 !important;background:#eef2ff !important;transform:translateY(-2px)}
+.bottom-nav a.active{color:#4f46e5 !important;background:#eef2ff !important}
+.bottom-nav .bn-menu{color:#4f46e5 !important;background:#eef2ff !important;box-shadow:none !important;border-radius:12px !important}
+.bottom-nav .bn-menu:hover{background:#e0e7ff !important}
+.bottom-nav .bn-menu i,.bottom-nav .bn-menu span{color:#4f46e5 !important}
+body{padding-bottom:86px !important}
+@media(min-width:769px){
+    .bottom-nav{display:none !important}
+    body{padding-bottom:0 !important}
+}
+</style>
+
+<style>
+@media(max-width:768px){
+    .sidebar{transform:translateX(-100%) !important;transition:transform .32s cubic-bezier(.2,.8,.3,1) !important;display:block !important}
+    .sidebar.open{transform:translateX(0) !important;box-shadow:24px 0 60px rgba(11,16,41,.45) !important}
+}
+</style>
+
+<style id="lx-logout-fix">
+/* Logout fix: the open sidebar must paint ABOVE the fixed mobile bottom-nav,
+   otherwise the last menu item (Logout) is covered and un-tappable. */
+.sidebar{ z-index:900 !important; }
+.side-overlay{ z-index:880 !important; }
+.sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+@supports selector(:has(*)){
+  body:has(.sidebar.open) .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+}
+@media(min-width:769px){ .sidebar-menu{ padding-bottom:12px !important; } }
+</style>
+
+<style id="lx-sidebar-fix">
+/* ===== Reseller sidebar — canonical & stable (do not mutate at runtime) ===== */
+/* 1) Labels and section headings are ALWAYS visible. The old template hid
+      .sidebar-menu a span and .sidebar-divider under 768px, which made menu
+      text disappear and the "Account" heading vanish on some pages. */
+.sidebar .sidebar-menu a span{ display:inline !important; }
+.sidebar .sidebar-menu .sidebar-divider,
+.sidebar .sidebar-divider{ display:block !important; }
+.sidebar .sidebar-logo h3{ display:block !important; }
+.sidebar .sidebar-logo small{ display:block !important; }
+
+/* 2) Fixed geometry — the sidebar is never collapsed to a 70px icon rail. */
+.sidebar{ width:248px !important; z-index:900 !important; overflow-y:auto !important; }
+.side-overlay{ z-index:880 !important; }
+@media(min-width:769px){
+    .main{ margin-left:248px !important; }
+    .sidebar{ transform:none !important; }
+}
+@media(max-width:768px){
+    .main{ margin-left:0 !important; }
+    .sidebar{ transform:translateX(-100%) !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; display:block !important; }
+    .sidebar.open{ transform:translateX(0) !important; box-shadow:24px 0 60px rgba(11,16,41,.45) !important; }
+}
+
+/* 3) Row geometry is locked: the "All Orders" counter is absolutely positioned
+      so a changing number can never push the rows below it up or down. */
+.sidebar .sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.sidebar .sidebar-menu li{ position:relative; display:block; margin:3px 0; }
+.sidebar .sidebar-menu a{ display:flex !important; align-items:center; gap:12px; padding:11px 15px; }
+.sidebar .menu-badge{ position:absolute; right:12px; top:50%; transform:translateY(-50%); margin-left:0 !important; }
+
+/* 4) Mobile: hide the bottom nav while the drawer is open so the last item
+      (Logout) is never covered. */
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+
+/* 5) Close button inside the drawer on mobile. */
+.sidebar .sidebar-close-m{ display:none; }
+@media(max-width:768px){ .sidebar .sidebar-close-m{ display:block !important; } }
+</style>
+
+<style id="reseller-hamburger-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   Every reseller page hides the hamburger with ".hamburger{display:none}", but most
+   pages never turn it back ON at mobile width — only products.html did. So on a phone
+   there was no way to open the sidebar on Products, Orders, Wallet, Withdrawals,
+   Courier, Messages, Support, Profile, Referral or Website Integration.
+   This shows the SAME existing button (onclick="menuToggle()") at mobile width only.
+   It is an ADDED block and lives entirely inside a max-width query, so the DESKTOP
+   LAYOUT IS UNCHANGED. */
+@media (max-width:768px){
+  .hamburger { display:block !important; }
+}
+</style>
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+    <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon"><i class="fas fa-store"></i></div><div><h3>ResellerHub</h3><small>Reseller Panel</small></div>
+        </div>
+        <button class="sidebar-close-m" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+        <ul class="sidebar-menu">
+        <li class="sidebar-divider">Main</li>
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+        <li><a href="products.html"><i class="fas fa-box"></i> <span>Products</span></a></li>
+        <li><a href="my-shop.html"><i class="fas fa-store"></i> <span>My Shop</span></a></li>
+        <li><a href="transactions.html"><i class="fas fa-right-left"></i> <span>Transactions</span></a></li>
+        <li class="sidebar-divider">Orders</li>
+        <li><a href="my-orders.html"><i class="fas fa-list"></i> <span>All Orders<span class="menu-badge-n" id="ordersBadgeLabel"></span></span></a></li>
+        <li><a href="order.html"><i class="fas fa-cart-plus"></i> <span>Add New Order</span></a></li>
+        <li><a href="offers.html"><i class="fas fa-gift"></i> <span>Offers</span></a></li>
+        <li><a href="shop-categories.html"><i class="fas fa-sitemap"></i> <span>Shop Categories</span></a></li>
+        <li class="sidebar-divider">My Shop</li>
+        <li><a href="my-shop-settings.html"><i class="fas fa-sliders"></i> <span>Shop Settings</span></a></li>
+        <li><a href="my-products.html"><i class="fas fa-box-open"></i> <span>My Products</span></a></li>
+        <li><a href="my-shop-orders.html"><i class="fas fa-bag-shopping"></i> <span>My Shop Orders</span></a></li>
+        <li><a href="customer-messages.html"><i class="fas fa-comment-dots"></i> <span>Customer Messages<span class="menu-badge-n" id="cmsgBadgeLabel"></span></span></a></li>
+        <li class="sidebar-divider">Account</li>
+        <li><a href="wallet.html"><i class="fas fa-wallet"></i> <span>Wallet</span></a></li>
+        <li><a href="withdrawals.html"><i class="fas fa-money-bill-wave"></i> <span>Withdrawals</span></a></li>
+        <li><a href="courier.html"><i class="fas fa-truck"></i> <span>Courier</span></a></li>
+        <li><a href="messages.html" class="active"><i class="fas fa-comments"></i> <span>Messages<span class="menu-badge-n" id="msgBadgeLabel"></span></span></a></li>
+        <li><a href="support.html"><i class="fas fa-headset"></i> <span>Support</span></a></li>
+        <li><a href="profile.html"><i class="fas fa-user-cog"></i> <span>Profile</span></a></li>
+        <li><a href="referral.html"><i class="fas fa-user-plus"></i> <span>Referral</span></a></li>
+        <li><a href="website-integration.html"><i class="fas fa-plug"></i> <span>Website Integration</span></a></li>
+        <li><a href="../index.html"><i class="fas fa-globe"></i> <span>Visit Site</span></a></li>
+        <li><a href="javascript:void(0)" onclick="resellerLogout()" style="color:#dc2626"><i class="fas fa-right-from-bracket"></i> <span>Logout</span></a></li>
+    </ul>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="menuToggle()"></div>
+<main class="main">
+    <div class="topbar">
+        <h2><i class="fas fa-comments" style="color:#2563eb;margin-right:8px;"></i> Messages</h2>
+        <div class="topbar-right">
+            <div class="topbar-balance"><i class="fas fa-coins"></i> <span id="topBalance">0</span></div>
+            <div class="topbar-user"><i class="fas fa-user"></i> <span id="userName">User</span></div>
+            <button class="btn-logout" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>    <div class="content">
+        <!-- items 5-9: Message the admin, optionally attaching ONE product -->
+        <style id="lx-msg">
+            .msg-wrap{display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start}
+            @media(max-width:980px){.msg-wrap{grid-template-columns:1fr}}
+            .msg-side{background:#fff;border-radius:16px;box-shadow:0 2px 14px rgba(15,23,42,.07);overflow:hidden}
+            .msg-side-h{padding:15px 18px;border-bottom:1px solid #eef2f7;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,#fff,#fcfdfe)}
+            .msg-side-h h4{font-size:.92rem;font-weight:800}
+            .msg-thread{background:#fff;border-radius:16px;box-shadow:0 2px 14px rgba(15,23,42,.07);display:flex;flex-direction:column;min-height:520px;overflow:hidden}
+            .msg-thread-h{padding:14px 18px;border-bottom:1px solid #eef2f7;display:flex;gap:12px;align-items:center;background:linear-gradient(180deg,#fff,#fcfdfe)}
+            .msg-thread-h h4{font-size:.97rem;font-weight:900}
+            .msg-thread-h p{font-size:.76rem;color:#64748b;margin-top:3px}
+            .msg-adm-av{width:42px;height:42px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.05rem;background:linear-gradient(135deg,#2563eb,#1d4ed8)}
+            .msg-body{padding:20px;overflow-y:auto;flex:1;max-height:58vh;background:linear-gradient(180deg,#f8fafc,#f6f9fb)}
+            .bub{max-width:78%;padding:11px 15px;border-radius:16px;margin-bottom:14px;font-size:.87rem;line-height:1.55;word-break:break-word;box-shadow:0 1px 2px rgba(15,23,42,.05)}
+            .bub.me{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;margin-left:auto;border-bottom-right-radius:5px}
+            .bub.them{background:#fff;color:#1e293b;border:1px solid #e8edf3;border-bottom-left-radius:5px}
+            .bub .meta{font-size:.68rem;opacity:.72;margin-top:7px;display:block}
+            .bub .pctx{margin-top:8px;padding:9px 12px;border-radius:11px;background:rgba(255,255,255,.18);font-size:.74rem;line-height:1.65}
+            .bub.them .pctx{background:#eef2ff;color:#3730a3}
+            .bub img{max-width:200px;border-radius:11px;margin-top:8px;display:block;cursor:zoom-in;border:1px solid rgba(15,23,42,.08)}
+            /* order context card (#6) */
+            .bub .octx{margin-top:8px;border-radius:11px;overflow:hidden;border:1px solid #fed7aa;background:#fffbeb}
+            .bub .octx .oh{padding:7px 12px;background:#fef3c7;font-size:.72rem;font-weight:900;color:#92400e;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+            .bub .octx .ob{padding:9px 12px;font-size:.73rem;color:#78350f;line-height:1.7}
+            .bub.me .octx{background:rgba(255,255,255,.17);border-color:rgba(255,255,255,.35)}
+            .bub.me .octx .oh{background:rgba(255,255,255,.2);color:#fff}
+            .bub.me .octx .ob{color:#fff}
+            .msg-form{padding:14px 18px;border-top:1px solid #eef2f7;background:#fff}
+            .msg-prod{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:9px}
+            .msg-prod select{flex:1;min-width:190px;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:11px;font-size:.84rem;font-family:inherit;min-height:44px}
+            .msg-row{display:flex;gap:9px;align-items:flex-end}
+            .msg-row textarea{flex:1;padding:11px 15px;border:1.5px solid #e2e8f0;border-radius:12px;font-size:.88rem;font-family:inherit;resize:vertical;min-height:46px}
+            .msg-row textarea:focus{outline:none;border-color:#2563eb}
+            .msg-send{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;padding:11px 22px;border-radius:12px;font-weight:800;cursor:pointer;font-size:.86rem;min-height:46px}
+            .msg-send:disabled{opacity:.55;cursor:not-allowed}
+            .msg-att{background:#eef2ff;color:#4338ca;border:none;padding:11px 15px;border-radius:12px;font-weight:800;cursor:pointer;font-size:.85rem;min-height:44px}
+            .msg-ord-btn{background:#fff7ed;color:#c2410c;border:1.5px solid #fed7aa;padding:10px 15px;border-radius:12px;font-weight:800;cursor:pointer;font-size:.85rem;min-height:44px;white-space:nowrap}
+            .msg-pill{display:inline-flex;align-items:center;gap:6px;background:#eef2ff;color:#4338ca;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:800}
+            .msg-pill.general{background:#f1f5f9;color:#475569}
+            .msg-empty{padding:42px 20px;text-align:center;color:#64748b;font-size:.86rem}
+            .msg-conv{padding:14px 18px;border-bottom:1px solid #f1f5f9}
+            .msg-conv .t{font-weight:800;font-size:.88rem;display:flex;gap:7px;align-items:center}
+            .msg-conv .s{font-size:.76rem;color:#64748b;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+            .msg-unread{background:#ef4444;color:#fff;font-size:.66rem;font-weight:900;padding:1px 7px;border-radius:10px;margin-left:auto}
+            /* ---- #5 order search ---- */
+            .msg-ordbox{border:1.5px solid #fed7aa;background:#fffbf5;border-radius:13px;padding:12px;margin-bottom:10px}
+            .msg-ordbox input{width:100%;padding:10px 13px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.85rem;font-family:inherit;box-sizing:border-box;min-height:44px}
+            .msg-ordbox .hint{font-size:.71rem;color:#92400e;margin-top:7px;font-weight:700}
+            .msg-ordres{max-height:190px;overflow-y:auto;margin-top:9px}
+            .msg-orditem{padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;background:#fff;margin-bottom:7px;cursor:pointer}
+            .msg-orditem:hover{border-color:#2563eb}
+            .msg-orditem.on{border-color:#2563eb;background:#eff6ff}
+            .msg-orditem .l{display:flex;gap:8px;align-items:center;font-size:.84rem;font-weight:800}
+            .msg-orditem .s{font-size:.73rem;color:#64748b;margin-top:4px}
+            .msg-ordempty{padding:14px;text-align:center;color:#94a3b8;font-size:.8rem}
+            .msg-ordchip{border:1.5px solid #fed7aa;background:#fffbeb;border-radius:12px;padding:10px 12px;margin-bottom:10px}
+            .msg-ordchip .hd{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;font-weight:900;color:#92400e}
+            .msg-ordchip .hd a{color:#dc2626;text-decoration:none;font-size:1.1rem;line-height:1;padding:0 4px}
+            .msg-ordchip .ln{margin-top:9px;display:flex;gap:6px;flex-wrap:wrap}
+            .msg-ln{display:inline-block;padding:6px 11px;border-radius:9px;font-size:.73rem;font-weight:800;text-decoration:none;border:1.5px solid #e2e8f0;background:#fff;color:#334155;cursor:pointer}
+            .msg-ln.on{background:#2563eb;border-color:#2563eb;color:#fff}
+            .msg-ln.blocked{background:#fee2e2;border-color:#fecaca;color:#b91c1c;cursor:not-allowed;opacity:.85}
+            /* #3 — responsive: nothing shrinks away */
+            @media(max-width:640px){
+                .msg-wrap{gap:12px}
+                .msg-body{max-height:none;padding:14px}
+                .bub{max-width:90%}
+                .msg-prod select{min-width:100%}
+                .msg-ord-btn,.msg-att{flex:1;justify-content:center}
+                .msg-row textarea{min-height:52px}
+            }
+        </style>
+
+        <div class="msg-wrap">
+            <!-- left: the tenant's own conversation(s) with the admin -->
+            <div class="msg-side">
+                <div class="msg-side-h"><h4><i class="fas fa-inbox"></i> My Conversation</h4>
+                    <span class="msg-pill" id="msgUnreadPill">0</span></div>
+                <div id="msgConvList"></div>
+            </div>
+
+            <!-- right: the thread + compose -->
+            <div class="msg-thread">
+                <div class="msg-thread-h">
+                    <div class="msg-adm-av"><i class="fas fa-headset"></i></div>
+                    <div style="min-width:0">
+                        <h4>ResellerHub Admin</h4>
+                        <p>প্রোডাক্ট বা অর্ডার সিলেক্ট করে মেসেজ দিলে অ্যাডমিন সেই context দেখতে পাবে। কিছুই সিলেক্ট না করলে এটি General Message হবে।</p>
+                    </div>
+                </div>
+                <div class="msg-body" id="msgBody"></div>
+                <div class="msg-form">
+                    <div class="msg-prod">
+                        <!-- items 5-7: optional product = Product / Product ID / Product owner -->
+                        <select id="msgProduct" onchange="msgProductChanged()">
+                            <option value="">— General Message (কোনো প্রোডাক্ট নেই) —</option>
+                        </select>
+                        <input type="file" id="msgFile" accept="image/*" style="display:none" onchange="msgPickImage(this)">
+                        <button type="button" class="msg-ord-btn" onclick="msgToggleOrderBox()"><i class="fas fa-receipt"></i> Select Order</button>
+                        <button type="button" class="msg-att" onclick="document.getElementById('msgFile').click()"><i class="fas fa-image"></i> Image</button>
+                    </div>
+                    <!-- #5 — order number search; results are already scoped to this user -->
+                    <div class="msg-ordbox" id="msgOrdBox" style="display:none">
+                        <input id="msgOrdQ" placeholder="Order number লিখুন — যেমন: Order #12345" oninput="msgSearchOrders()">
+                        <div class="msg-ordres" id="msgOrdRes"></div>
+                        <div class="hint"><i class="fas fa-shield-halved"></i> শুধু আপনার নিজের অর্ডারগুলোই দেখা যাবে।</div>
+                    </div>
+                    <div id="msgOrdWrap" style="display:none"></div>
+                    <div id="msgAttWrap" style="display:none;margin-bottom:9px;">
+                        <span class="msg-pill"><i class="fas fa-paperclip"></i> <span id="msgAttName"></span>
+                            <a href="javascript:void(0)" onclick="msgClearImage()" style="color:#dc2626;font-weight:900;">&times;</a></span>
+                    </div>
+                    <div class="msg-row">
+                        <textarea id="msgText" placeholder="আপনার মেসেজ লিখুন..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();msgSend();}"></textarea>
+                        <button class="msg-send" id="msgSendBtn" onclick="msgSend()"><i class="fas fa-paper-plane"></i> Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="../app.js"></script>
+<script>(function(){function paint(){try{var b=document.getElementById("ordersBadge");var uid=sessionStorage.getItem("user_id");if(!uid)return;if(sessionStorage.getItem("user_type")!=="reseller")return;var n=(typeof resellerNewOrderCount==="function")?resellerNewOrderCount(uid):0;if(b){b.textContent=n;b.style.display=n>0?"inline-block":"none";}var lb=document.getElementById("ordersBadgeLabel");if(lb)lb.textContent=n>0?(" ("+n+")"):"";var mb=document.getElementById("msgBadgeLabel");if(mb){var u=(typeof unreadForUser==="function")?unreadForUser("reseller",uid):0;mb.textContent=u>0?(" ("+u+")"):"";}}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key.indexOf("rh_messages")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+(function () {
+    /* ---------- items 5-9: reseller -> admin messages ---------- */
+    var userId = sessionStorage.getItem('user_id');
+    if (!userId || sessionStorage.getItem('user_type') !== 'reseller') { window.location.replace('login.html'); return; }
+    var user = findResellerById(parseInt(userId));
+    if (!user) { sessionStorage.clear(); window.location.replace('login.html'); return; }
+
+    document.getElementById('userName').textContent = user.name || user.businessName || 'User';
+    document.getElementById('topBalance').textContent = formatCurrency(user.balance);
+    var USER_TYPE = 'reseller';
+    var pendingImage = '';
+
+    function esc(s) { return String(s === undefined || s === null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+
+    /* the product picker only ever lists THIS reseller's own products */
+    function fillProductSelect() {
+        var sel = document.getElementById('msgProduct');
+        var ps = msgAttachableProducts(USER_TYPE, user.id);
+        var h = '<option value="">— General Message (কোনো প্রোডাক্ট নেই) —</option>';
+        for (var i = 0; i < ps.length; i++) {
+            h += '<option value="' + esc(ps[i].id) + '">' + esc(ps[i].name) + ' · #' + esc(ps[i].id) + '</option>';
+        }
+        sel.innerHTML = h;
+    }
+    /* ---------- #4/#5/#8 — optional ORDER context ----------
+       Selection stays OPTIONAL: no product and no order = General Message.
+       The search list comes from msgSearchableOrders(), which is already
+       scoped to this tenant at the data layer, so another reseller's order
+       can never be reached — not even by guessing its number. */
+    var pickedOrder = '', pickedItem = '';
+
+    window.msgToggleOrderBox = function () {
+        var b = document.getElementById('msgOrdBox');
+        if (!b) return;
+        var open = (b.style.display === 'block');
+        b.style.display = open ? 'none' : 'block';
+        if (!open) {
+            var q = document.getElementById('msgOrdQ');
+            if (q) { q.value = ''; q.focus(); }
+            msgSearchOrders();
+        }
+    };
+    window.msgSearchOrders = function () {
+        var q = (document.getElementById('msgOrdQ') || {}).value || '';
+        var res = document.getElementById('msgOrdRes');
+        if (!res) return;
+        var list = (typeof msgSearchableOrders === 'function') ? msgSearchableOrders(USER_TYPE, user.id, q) : [];
+        if (!list.length) {
+            res.innerHTML = '<div class="msg-ordempty"><i class="fas fa-magnifying-glass"></i><br>কোনো অর্ডার পাওয়া যায়নি।</div>';
+            return;
+        }
+        var h = '';
+        for (var i = 0; i < list.length; i++) {
+            var o = list[i];
+            h += '<div class="msg-orditem' + (String(o.id) === String(pickedOrder) ? ' on' : '') + '" onclick="msgPickOrder(\'' + esc(o.id).replace(/'/g, "\\'") + '\')">' +
+                 '<div class="l"><b>' + esc(o.id) + '</b><span class="msg-pill">' + esc(o.status || '-') + '</span></div>' +
+                 '<div class="s">' + esc(o.date || '') + ' · ' + esc(formatCurrency(o.amount || 0)) + (o.customer ? ' · ' + esc(o.customer) : '') + '</div>' +
+                 '</div>';
+        }
+        res.innerHTML = h;
+    };
+    window.msgPickOrder = function (id) {
+        pickedOrder = String(id || '');
+        pickedItem = '';
+        msgRenderOrderChip();
+        msgSearchOrders();
+        renderThread();
+    };
+    window.msgPickItem = function (idx) {
+        pickedItem = String(idx);
+        msgRenderOrderChip();
+        renderThread();
+    };
+    window.msgClearOrder = function () {
+        pickedOrder = ''; pickedItem = '';
+        msgRenderOrderChip();
+        msgSearchOrders();
+        renderThread();
+    };
+    function msgRenderOrderChip() {
+        var w = document.getElementById('msgOrdWrap');
+        if (!w) return;
+        if (!pickedOrder) { w.style.display = 'none'; w.innerHTML = ''; return; }
+        w.style.display = 'block';
+        var lines = (typeof msgAttachableOrderItems === 'function') ? msgAttachableOrderItems(USER_TYPE, user.id, pickedOrder) : [];
+        var h = '<div class="msg-ordchip"><div class="hd"><span><i class="fas fa-receipt"></i> Order ' + esc(pickedOrder) + '</span>' +
+                '<a href="javascript:void(0)" onclick="msgClearOrder()" title="সরিয়ে দিন">&times;</a></div>';
+        if (lines.length > 1) {
+            h += '<div class="ln">';
+            for (var i = 0; i < lines.length; i++) {
+                var L = lines[i];
+                if (!L.allowed) {
+                    h += '<span class="msg-ln blocked" title="' + esc(L.blockedReason) + '"><i class="fas fa-ban"></i> ' + esc(L.productName) + '</span>';
+                } else {
+                    h += '<a href="javascript:void(0)" class="msg-ln' + (String(pickedItem) === String(L.index) ? ' on' : '') + '" onclick="msgPickItem(\'' + esc(String(L.index)) + '\')">' +
+                         esc(L.productName) + (L.variant ? ' · ' + esc(L.variant) : '') + ' · ' + esc(L.qty) + ' pcs</a>';
+                }
+            }
+            h += '</div>';
+        } else if (lines.length === 1 && lines[0].allowed) {
+            pickedItem = String(lines[0].index);
+        }
+        h += '</div>';
+        w.innerHTML = h;
+    }
+    window.msgProductChanged = function () { /* the compose line shows the resolved owner inline */ renderThread(); };
+    window.msgPickImage = function (inp) {
+        var f = inp.files && inp.files[0];
+        if (!f) return;
+        if (f.size > 800 * 1024) { showToast('ছবির সাইজ ৮০০KB এর কম হতে হবে।', 'error'); inp.value = ''; return; }
+        var r = new FileReader();
+        r.onload = function () {
+            pendingImage = r.result;
+            document.getElementById('msgAttWrap').style.display = 'block';
+            document.getElementById('msgAttName').textContent = f.name;
+        };
+        r.readAsDataURL(f);
+    };
+    window.msgClearImage = function () {
+        pendingImage = '';
+        document.getElementById('msgAttWrap').style.display = 'none';
+        document.getElementById('msgFile').value = '';
+    };
+
+    function renderConvList() {
+        var t = getThread(USER_TYPE, user.id);
+        var n = t ? (t.messages || []).length : 0;
+        var unread = unreadForUser(USER_TYPE, user.id);
+        document.getElementById('msgUnreadPill').textContent = unread > 0 ? (unread + ' new') : 'No unread';
+        var el = document.getElementById('msgConvList');
+        if (!n) {
+            el.innerHTML = '<div class="msg-empty"><i class="fas fa-comment-dots" style="font-size:1.6rem;color:#cbd5e1;"></i><br><br>এখনো কোনো মেসেজ নেই।<br>নিচে লিখে অ্যাডমিনকে মেসেজ পাঠান।</div>';
+            return;
+        }
+        var last = t.messages[t.messages.length - 1];
+        var ctx = last.productId
+            ? '<span class="msg-pill"><i class="fas fa-box"></i> ' + esc(last.productName || ('#' + last.productId)) + '</span>'
+            : '<span class="msg-pill general">General Message</span>';
+        el.innerHTML = '<div class="msg-conv" style="cursor:default;background:#f8fafc">' +
+            '<div class="t">ResellerHub Admin ' + (unread > 0 ? '<span class="msg-unread">' + unread + '</span>' : '') + '</div>' +
+            '<div class="s">' + esc(last.text || (last.image ? '[image]' : '')) + '</div>' +
+            '<div style="margin-top:7px">' + ctx + '</div>' +
+            '<div class="s" style="margin-top:6px">' + n + ' message' + (n > 1 ? 's' : '') + '</div>' +
+            '</div>';
+    }
+
+    function renderThread() {
+        var t = getThread(USER_TYPE, user.id);
+        var el = document.getElementById('msgBody');
+        if (!t || !(t.messages || []).length) {
+            el.innerHTML = '<div class="msg-empty"><i class="fas fa-paper-plane" style="font-size:1.8rem;color:#cbd5e1;"></i><br><br>অ্যাডমিনের সাথে আপনার কথোপকথন এখানে দেখা যাবে।</div>';
+            return;
+        }
+        var ps = msgAttachableProducts(USER_TYPE, user.id);
+        var byId = {};
+        for (var i = 0; i < ps.length; i++) byId[String(ps[i].id)] = ps[i];
+        var chosen = document.getElementById('msgProduct').value;
+        var h = '';
+        /* a live preview of the context that WILL be attached (#8: product,
+           order, both, or neither) */
+        if (chosen || pickedOrder) {
+            h += '<div style="margin-bottom:14px;padding:10px 14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;font-size:.78rem;color:#1e40af;line-height:1.7">' +
+                 '<b><i class="fas fa-paperclip"></i> Attaching:</b><br>';
+            if (chosen) {
+                var ctx = msgProductContext(chosen, USER_TYPE, user.id);
+                h += '<i class="fas fa-box"></i> Product: <b>' + esc(ctx.productName) + '</b> · ID #' + esc(ctx.productId) +
+                     ' · Owner: ' + esc(ctx.productOwnerName || ctx.productOwnerType) + '<br>';
+            }
+            if (pickedOrder) {
+                h += '<i class="fas fa-receipt"></i> Order: <b>' + esc(pickedOrder) + '</b>';
+                var pl = (typeof msgAttachableOrderItems === 'function') ? msgAttachableOrderItems(USER_TYPE, user.id, pickedOrder) : [];
+                for (var pi = 0; pi < pl.length; pi++) {
+                    if (String(pl[pi].index) === String(pickedItem)) {
+                        h += ' · ' + esc(pl[pi].productName) + (pl[pi].variant ? ' (' + esc(pl[pi].variant) + ')' : '') + ' · ' + esc(pl[pi].qty) + ' pcs';
+                    }
+                }
+            }
+            if (!chosen && !pickedOrder) h += 'General Message';
+            h += '</div>';
+        }
+        for (var m = 0; m < t.messages.length; m++) {
+            var x = t.messages[m];
+            var mine = x.from === 'user';
+            var inner = '';
+            /* #6 — the order context the admin sees, shown here too */
+            var oc = x.orderContext;
+            if (x.orderId) {
+                if (!oc && typeof msgOrderContext === 'function') oc = msgOrderContext(x.orderId, USER_TYPE, user.id, x.orderItemIndex);
+                if (!oc) oc = { orderNumber: x.orderId, status: '', amount: 0, date: '' };
+                inner += '<div class="octx"><div class="oh"><span><i class="fas fa-receipt"></i> Order ID: #' + esc(oc.orderNumber || x.orderId) + '</span>' +
+                         (oc.status ? '<span>' + esc(oc.status) + '</span>' : '') + '</div><div class="ob">' +
+                         (oc.itemProductName ? '<b>Product:</b> ' + esc(oc.itemProductName) + '<br>' : '') +
+                         ((oc.itemProductOwnerName || oc.itemProductOwnerType) ? '<b>Product Owner:</b> ' + esc(oc.itemProductOwnerName || oc.itemProductOwnerType) + '<br>' : '') +
+                         (oc.itemVariant ? '<b>Variant:</b> ' + esc(oc.itemVariant) + '<br>' : '') +
+                         (oc.itemQty ? '<b>Quantity:</b> ' + esc(oc.itemQty) + '<br>' : '') +
+                         (oc.status ? '<b>Order Status:</b> ' + esc(oc.status) + '<br>' : '') +
+                         (oc.date ? '<b>Date:</b> ' + esc(oc.date) + '<br>' : '') +
+                         (oc.amount ? '<b>Amount:</b> ' + esc(formatCurrency(oc.amount)) : '') +
+                         '</div></div>';
+            }
+            if (x.productId) {
+                inner += '<div class="pctx"><b><i class="fas fa-box"></i> ' + esc(x.productName || ('#' + x.productId)) + '</b><br>' +
+                         'ID: ' + esc(x.productId) + '<br>Owner: ' + esc(x.productOwnerName || x.productOwnerType || '-') + '</div>';
+            } else if (!x.orderId) {
+                inner += '<div class="pctx" style="opacity:.85">General Message</div>';
+            }
+            if (x.text) inner += '<div style="margin-top:6px">' + esc(x.text) + '</div>';
+            if (x.image) inner += '<img src="' + x.image + '" alt="attachment" onclick="msgZoom(this.src)" onerror="rhImgLost(this)" onload="rhImgBack(this)">';
+            inner += '<span class="meta">' + (mine ? 'You' : 'Admin') + ' · ' + formatDate(x.at) + '</span>';
+            h += '<div class="bub ' + (mine ? 'me' : 'them') + '">' + inner + '</div>';
+        }
+        el.innerHTML = h;
+        el.scrollTop = el.scrollHeight;
+    }
+    window.msgZoom = function (src) {
+        var w = window.open('', '_blank');
+        if (w) w.document.write('<img src="' + src + '" style="max-width:100%">');
+    };
+
+    window.msgSend = function () {
+        var ta = document.getElementById('msgText');
+        var txt = ta.value.trim();
+        if (!txt && !pendingImage) { showToast('মেসেজ লিখুন বা ছবি দিন।', 'error'); return; }
+        var pid = document.getElementById('msgProduct').value;
+        var btn = document.getElementById('msgSendBtn');
+        btn.disabled = true;
+        var r = sendChatMessage(USER_TYPE, user.id, 'user', txt, pendingImage, '', {
+            userName: user.name || '', businessName: user.businessName || '',
+            productId: pid, senderType: USER_TYPE,
+            /* #6/#8 — product, order, both, or neither */
+            orderId: pickedOrder, orderItemIndex: pickedItem
+        });
+        btn.disabled = false;
+        if (!r.ok) { showToast(r.message || 'পাঠানো যায়নি।', 'error'); return; }
+        ta.value = '';
+        pendingImage = '';
+        pickedOrder = ''; pickedItem = '';
+        msgRenderOrderChip();
+        document.getElementById('msgAttWrap').style.display = 'none';
+        document.getElementById('msgFile').value = '';
+        var ms = document.getElementById('msgProduct'); if (ms) ms.value = '';
+        markThreadRead(USER_TYPE, user.id, 'user');
+        renderConvList(); renderThread();
+        showToast('অ্যাডমিনকে মেসেজ পাঠানো হয়েছে।', 'success');
+    };
+
+    window.logoutUser = function () { doLogout(); };
+
+    fillProductSelect();
+    markThreadRead(USER_TYPE, user.id, 'user');
+    renderConvList();
+    renderThread();
+    setInterval(function () { renderConvList(); }, 5000);
+})();
+</script>
+
+<script>
+window.menuToggle = function() {
+    var sb = document.querySelector('.sidebar');
+    if (!sb) return;
+    var open = !sb.classList.contains('open');
+    sb.classList.toggle('open', open);
+    var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+    if (ov) ov.classList.toggle('show', open);
+};
+</script>
+</body>
+</html>

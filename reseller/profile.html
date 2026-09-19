@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; overflow-x:hidden; }
+        .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 240px; background: #1e293b; color: #cbd5e1; z-index: 100; overflow-y: auto; }
+        .sidebar-header { padding: 18px 20px; border-bottom: 1px solid #334155; }
+        .sidebar-logo { display: flex; align-items: center; gap: 10px; }
+        .sidebar-logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, #2563eb, #1e40af); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; }
+        .sidebar-logo h3 { color: white; font-size: 1rem; }
+        .sidebar-logo small { color: #94a3b8; font-size: 0.7rem; display: block; }
+        .sidebar-menu { list-style: none; padding: 12px 0; }
+        .sidebar-menu li { margin: 2px 0; }
+        .sidebar-menu a { display: flex; align-items: center; gap: 12px; padding: 10px 20px; color: #cbd5e1; text-decoration: none; font-size: 0.88rem; }
+        .sidebar-menu a:hover { background: rgba(255,255,255,0.05); color: white; }
+        .sidebar-menu a.active { background: #2563eb; color: white; }
+        .sidebar-menu a i { width: 18px; text-align: center; }
+        .sidebar-divider { padding: 15px 20px 5px; color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        .main { margin-left: 240px; min-height: 100vh; }
+        .topbar { background: white; padding: 14px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 50; }
+        .topbar h2 { font-size: 1.2rem; font-weight: 600; }
+        .topbar-right { display: flex; align-items: center; gap: 15px; }
+        .topbar-balance { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; padding: 6px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; }
+        .topbar-user { display: flex; align-items: center; gap: 8px; padding: 6px 14px; background: #f1f5f9; border-radius: 20px; font-size: 0.88rem; }
+        .btn-logout { background: #ef4444; color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
+        .content { padding: 25px; max-width: 1000px; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; overflow: hidden; }
+        .card-header { padding: 16px 22px; border-bottom: 1px solid #e2e8f0; }
+        .card-header h4 { font-size: 0.95rem; font-weight: 600; }
+        .card-header h4 i { color: #2563eb; margin-right: 6px; }
+        .card-body { padding: 22px; }
+
+        .profile-header { display: flex; gap: 20px; align-items: center; padding: 22px; background: linear-gradient(135deg, #2563eb, #1e40af); color: white; border-radius: 12px; margin-bottom: 20px; }
+        .profile-avatar { width: 90px; height: 90px; background: white; color: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 700; flex-shrink: 0; }
+        .profile-info h2 { font-size: 1.5rem; margin-bottom: 4px; }
+        .profile-info p { opacity: 0.9; font-size: 0.9rem; }
+        .profile-info .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; background: #10b981; color: white; margin-top: 6px; }
+
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        .info-item { padding: 12px; background: #f8fafc; border-radius: 8px; }
+        .info-item .lbl { font-size: 0.78rem; color: #64748b; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .info-item .val { font-size: 0.95rem; color: #1e293b; font-weight: 600; word-break: break-word; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.85rem; color: #334155; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; font-family: inherit; box-sizing: border-box; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #2563eb; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .nid-preview { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+        .nid-card { background: #f8fafc; border-radius: 8px; padding: 12px; text-align: center; }
+        .nid-card img { max-width: 100%; max-height: 180px; border-radius: 6px; }
+        .nid-card .lbl { font-size: 0.78rem; color: #64748b; margin-bottom: 6px; text-transform: uppercase; }
+        .nid-card .no-img { padding: 30px 10px; color: #94a3b8; font-size: 0.88rem; }
+        .nid-card .no-img i { font-size: 2rem; margin-bottom: 6px; opacity: 0.5; }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 70px; } .sidebar-logo h3, .sidebar-logo small, .sidebar-menu a span, .sidebar-divider { display: none; } .main { margin-left: 70px; }
+            .info-grid, .form-row, .nid-preview { grid-template-columns: 1fr; } .profile-header { flex-direction: column; text-align: center; }
+        }
+    </style>
+<link rel="stylesheet" href="rstyle.css">
+<style id="lx-theme">
+/* ============ ResellerHub Premium Theme (visual-only overrides) ============ */
+:root { --lx-pri:#4f46e5; --lx-prid:#4338ca; --lx-vio:#7c3aed; --lx-grn:#10b981; }
+@keyframes lxPgUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+@keyframes lxPop { from{opacity:0;transform:scale(.94)} to{opacity:1;transform:none} }
+@keyframes lxRow { from{opacity:0;transform:translateX(-14px)} to{opacity:1;transform:none} }
+
+body { background:#eef1f9 !important; }
+
+/* ---- Sidebar + Topbar (synced with dashboard v3) ---- */
+/* ===== SIDEBAR ===== */
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:248px !important; background:linear-gradient(180deg,#0b1029 0%,#151a3a 100%); color:#c7d2fe; z-index:200; overflow-y:auto; transition:transform 0.3s; box-shadow:4px 0 24px rgba(11,16,41,.35); }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; justify-content:space-between; align-items:center; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:40px; height:40px; background:linear-gradient(135deg,var(--pri),var(--vio)); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+        .sidebar-logo h3 { color:white; font-size:1rem; font-weight:900; }
+        .sidebar-logo small { color:#818cf8; font-size:0.66rem; display:block; font-weight:700; letter-spacing:1px; }
+        .sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; }
+        .sidebar-menu { list-style:none; padding:12px 10px; }
+        .sidebar-menu li { margin:3px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:11px 15px; color:#c7d2fe; text-decoration:none; font-size:0.88rem; font-weight:600; border-radius:11px; transition:all .22s; }
+        .sidebar-menu a:hover { background:rgba(129,140,248,.14); color:white; transform:translateX(4px); }
+        .sidebar-menu a.active { background:linear-gradient(135deg,var(--pri),var(--vio)); color:white; box-shadow:0 8px 20px rgba(79,70,229,.4); }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 15px 5px; color:#6366f1; font-size:0.66rem; text-transform:uppercase; letter-spacing:1.4px; font-weight:800; }
+        .menu-badge { background:var(--gold); color:#1e293b; font-size:0.68rem; padding:1px 8px; border-radius:10px; font-weight:800; margin-left:auto; }
+        .menu-badge-n { color:var(--gold); font-weight:900; }
+
+        .side-overlay { display:none; position:fixed; inset:0; background:rgba(11,16,41,.55); z-index:150; backdrop-filter:blur(2px); }
+
+        /* ===== MAIN ===== */
+        .main { margin-left:248px !important; min-height:100vh; }
+@media(max-width:768px){
+    .main{margin-left:0 !important}
+    .sidebar{transform:translateX(-100%) !important;transition:transform .3s ease}
+    .sidebar.open{transform:translateX(0) !important;box-shadow:20px 0 60px rgba(11,16,41,.4)}
+    .sidebar-close-m{display:block !important}
+    .side-overlay{position:fixed;inset:0;background:rgba(11,16,41,.55);z-index:150;backdrop-filter:blur(2px)}
+    .side-overlay.show{display:block !important}
+    .status-cards{display:grid !important;grid-template-columns:1fr 1fr !important;gap:10px !important}
+}
+
+        .topbar { background:rgba(255,255,255,.88); backdrop-filter:blur(12px); padding:12px 22px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 14px rgba(15,23,42,.06); position:sticky; top:0; z-index:100; }
+            /* 2026-09-16 — MOBILE FIX (this request). The topbar measured about 440px
+               across on a 390px phone, so the logout button was pushed past the right
+               edge and looked cut off. These rules tighten the SAME header so it fits a
+               narrow screen. Nothing is hidden and nothing outside this media query is
+               touched, so the desktop layout is unchanged. */
+            .topbar { padding:10px 12px; }
+            .topbar-left { gap:8px; }
+            .topbar h2 { font-size:.98rem; }
+            .topbar-right { gap:6px; }
+            .topbar-balance { padding:6px 10px; font-size:.78rem; }
+            .topbar-user { padding:5px 10px; font-size:.78rem; }
+            .topbar-user span { max-width:52px; }
+
+        .topbar-left { display:flex; align-items:center; gap:12px; }
+        .hamburger { display:none; background:none; border:none; font-size:1.3rem; color:#1e293b; cursor:pointer; padding:4px; }
+        .topbar h2 { font-size:1.12rem; font-weight:800; }
+        .topbar-right { display:flex; align-items:center; gap:8px; }
+        .topbar-balance { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#7c2d12; padding:7px 15px; border-radius:22px; font-weight:800; font-size:0.84rem; white-space:nowrap; box-shadow:0 4px 12px rgba(245,158,11,.35); }
+        .topbar-user { display:flex; align-items:center; gap:7px; padding:6px 14px; background:#eef2ff; color:var(--pri); border-radius:22px; font-size:0.84rem; font-weight:700; }
+        .btn-logout { background:#fee2e2; color:#dc2626; border:none; padding:8px 12px; border-radius:10px; cursor:pointer; font-size:0.85rem; transition:all .25s; }
+        .btn-logout:hover { background:#dc2626; color:#fff; transform:translateY(-1px); }
+
+
+        /* ---- Stats / status cards ---- */
+.stat-card { border-radius:18px !important; border:1px solid #eef2f7 !important; box-shadow:0 3px 14px rgba(15,23,42,.05) !important; transition:all .28s !important; animation:lxPgUp .5s ease both; }
+.stat-card:hover { transform:translateY(-4px) !important; box-shadow:0 16px 32px rgba(15,23,42,.11) !important; }
+.status-cards .stat-card:nth-child(1), .stats-row .stat-card:nth-child(1) { animation-delay:.08s; }
+.status-cards .stat-card:nth-child(2), .stats-row .stat-card:nth-child(2) { animation-delay:.16s; }
+.status-cards .stat-card:nth-child(3), .stats-row .stat-card:nth-child(3) { animation-delay:.24s; }
+.status-cards .stat-card:nth-child(4), .stats-row .stat-card:nth-child(4) { animation-delay:.32s; }
+.stat-icon.green { background:linear-gradient(135deg,#d1fae5,#a7f3d0) !important; color:#059669 !important; }
+.stat-icon.blue { background:linear-gradient(135deg,#e0e7ff,#c7d2fe) !important; color:#4f46e5 !important; }
+.stat-icon.orange { background:linear-gradient(135deg,#fef3c7,#fde68a) !important; color:#d97706 !important; }
+.stat-icon.purple { background:linear-gradient(135deg,#ede9fe,#ddd6fe) !important; color:#7c3aed !important; }
+
+/* ---- Inputs ---- */
+input,select,textarea { border-radius:10px !important; transition:border-color .2s, box-shadow .2s !important; }
+input:focus,select:focus,textarea:focus { border-color:#4f46e5 !important; box-shadow:0 0 0 3px rgba(79,70,229,.12) !important; outline:none !important; }
+
+/* ---- Modals ---- */
+.modal-overlay.show .modal { animation:lxPop .32s cubic-bezier(.2,.9,.3,1.15) both; }
+
+/* ---- Content entrance ---- */
+.content > * { animation:lxPgUp .5s ease both; }
+.content > *:nth-child(2) { animation-delay:.08s; }
+.content > *:nth-child(3) { animation-delay:.16s; }
+.content > *:nth-child(4) { animation-delay:.24s; }
+.content > *:nth-child(5) { animation-delay:.32s; }
+
+/* ---- Floating bottom nav (products page) ---- */
+.bottom-nav { background:rgba(255,255,255,.92) !important; backdrop-filter:blur(14px); border:1px solid #eef2f7 !important; border-radius:20px !important; bottom:10px !important; left:12px !important; right:12px !important; box-shadow:0 10px 30px rgba(15,23,42,.16) !important; }
+.bottom-nav a.active { color:#4f46e5 !important; background:#eef2ff !important; }
+
+/* ---- Page-specific polish ---- */
+.products-grid { animation:lxPgUp .5s .2s ease both; }
+.section-head h2 { font-weight:900 !important; }
+.courier-card, .contact-card { border-radius:18px !important; transition:all .28s !important; }
+.courier-card:hover, .contact-card:hover { transform:translateY(-4px); box-shadow:0 16px 34px rgba(15,23,42,.12) !important; }
+.profile-header { border-radius:20px !important; overflow:hidden; }
+.panel { border-radius:20px !important; border:1px solid #eef2f7 !important; box-shadow:0 4px 16px rgba(15,23,42,.05) !important; }
+.balcard { border-radius:20px !important; }
+.fchip { transition:all .2s !important; }
+.fchip:hover { transform:translateY(-2px); }
+.tx { transition:background .2s !important; }
+.tx:hover { background:#f8faff !important; }
+.welcome { border-radius:22px !important; }
+</style>
+
+<style id="lx-theme-2">/* ---- Sidebar: text ALWAYS visible + full-width sidebar ---- */
+.sidebar-menu a span { display:inline !important; }
+.sidebar-divider { display:block !important; }
+.sidebar-logo h3, .sidebar-logo small { display:block !important; }
+.sidebar-close-m { display:none; background:none; border:none; color:#94a3b8; font-size:1.25rem; cursor:pointer; }
+@media (min-width:769px) {
+    .sidebar { width:250px !important; }
+    .main { margin-left:250px !important; }
+    .sidebar-close-m { display:none !important; }
+}
+@media (max-width:768px) {
+    .sidebar { width:272px !important; transform:translateX(-100%); transition:transform .3s ease; }
+    .sidebar.open { transform:translateX(0) !important; box-shadow:20px 0 60px rgba(11,16,41,.4); }
+    .main { margin-left:0 !important; }
+    .sidebar-close-m { display:block !important; }
+    .side-overlay.show { display:block !important; }
+    .status-cards { display:grid !important; grid-template-columns:1fr 1fr !important; gap:10px !important; }
+}
+.bn-menu { background:linear-gradient(135deg,#4f46e5,#7c3aed) !important; color:#fff !important; border-radius:14px !important; box-shadow:0 6px 16px rgba(79,70,229,.4); }
+.bn-menu i, .bn-menu span { color:#fff !important; }
+</style>
+
+<style>
+@media(max-width:768px){
+    body{padding-bottom:86px !important}
+    .bottom-nav{display:flex !important}
+    .bn-menu{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.62rem;font-weight:700;padding:6px 6px;flex:1;border:none;cursor:pointer}
+    .bn-menu i{font-size:1.12rem}
+    .bn-menu span{color:#fff !important}
+}
+</style>
+
+<style id="lx-nav-force">
+@media(max-width:768px){
+    .bottom-nav{display:flex !important;position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;opacity:1 !important;visibility:visible !important;transform:none !important}
+    body{padding-bottom:86px !important}
+}
+</style>
+
+<style id="lx-bnav">
+/* ===== Complete bottom-nav styling ===== */
+.bottom-nav{position:fixed !important;bottom:10px !important;left:12px !important;right:12px !important;z-index:400 !important;display:flex !important;align-items:stretch;background:rgba(255,255,255,.97) !important;backdrop-filter:blur(14px);border:1px solid #e8ecf4 !important;border-radius:18px !important;box-shadow:0 -4px 24px rgba(15,23,42,.14) !important;padding:7px 6px calc(7px + env(safe-area-inset-bottom)) !important}
+.bottom-nav a,.bottom-nav button{flex:1 !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;gap:3px !important;padding:7px 2px !important;border:none !important;background:none !important;color:#7b879c !important;font-size:.62rem !important;font-weight:700 !important;text-decoration:none !important;cursor:pointer !important;border-radius:12px !important;font-family:inherit !important;line-height:1.2 !important}
+.bottom-nav a i,.bottom-nav button i{font-size:1.18rem !important;line-height:1 !important}
+.bottom-nav a span,.bottom-nav button span{display:block !important}
+.bottom-nav a:hover,.bottom-nav button:hover{color:#4f46e5 !important;background:#eef2ff !important;transform:translateY(-2px)}
+.bottom-nav a.active{color:#4f46e5 !important;background:#eef2ff !important}
+.bottom-nav .bn-menu{color:#4f46e5 !important;background:#eef2ff !important;box-shadow:none !important;border-radius:12px !important}
+.bottom-nav .bn-menu:hover{background:#e0e7ff !important}
+.bottom-nav .bn-menu i,.bottom-nav .bn-menu span{color:#4f46e5 !important}
+body{padding-bottom:86px !important}
+@media(min-width:769px){
+    .bottom-nav{display:none !important}
+    body{padding-bottom:0 !important}
+}
+</style>
+
+<style>
+@media(max-width:768px){
+    .sidebar{transform:translateX(-100%) !important;transition:transform .32s cubic-bezier(.2,.8,.3,1) !important;display:block !important}
+    .sidebar.open{transform:translateX(0) !important;box-shadow:24px 0 60px rgba(11,16,41,.45) !important}
+}
+</style>
+
+<style id="lx-logout-fix">
+/* Logout fix: the open sidebar must paint ABOVE the fixed mobile bottom-nav,
+   otherwise the last menu item (Logout) is covered and un-tappable. */
+.sidebar{ z-index:900 !important; }
+.side-overlay{ z-index:880 !important; }
+.sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+@supports selector(:has(*)){
+  body:has(.sidebar.open) .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+}
+@media(min-width:769px){ .sidebar-menu{ padding-bottom:12px !important; } }
+</style>
+
+<style id="lx-sidebar-fix">
+/* ===== Reseller sidebar — canonical & stable (do not mutate at runtime) ===== */
+/* 1) Labels and section headings are ALWAYS visible. The old template hid
+      .sidebar-menu a span and .sidebar-divider under 768px, which made menu
+      text disappear and the "Account" heading vanish on some pages. */
+.sidebar .sidebar-menu a span{ display:inline !important; }
+.sidebar .sidebar-menu .sidebar-divider,
+.sidebar .sidebar-divider{ display:block !important; }
+.sidebar .sidebar-logo h3{ display:block !important; }
+.sidebar .sidebar-logo small{ display:block !important; }
+
+/* 2) Fixed geometry — the sidebar is never collapsed to a 70px icon rail. */
+.sidebar{ width:248px !important; z-index:900 !important; overflow-y:auto !important; }
+.side-overlay{ z-index:880 !important; }
+@media(min-width:769px){
+    .main{ margin-left:248px !important; }
+    .sidebar{ transform:none !important; }
+}
+@media(max-width:768px){
+    .main{ margin-left:0 !important; }
+    .sidebar{ transform:translateX(-100%) !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; display:block !important; }
+    .sidebar.open{ transform:translateX(0) !important; box-shadow:24px 0 60px rgba(11,16,41,.45) !important; }
+}
+
+/* 3) Row geometry is locked: the "All Orders" counter is absolutely positioned
+      so a changing number can never push the rows below it up or down. */
+.sidebar .sidebar-menu{ padding-bottom:calc(30px + env(safe-area-inset-bottom)) !important; }
+.sidebar .sidebar-menu li{ position:relative; display:block; margin:3px 0; }
+.sidebar .sidebar-menu a{ display:flex !important; align-items:center; gap:12px; padding:11px 15px; }
+.sidebar .menu-badge{ position:absolute; right:12px; top:50%; transform:translateY(-50%); margin-left:0 !important; }
+
+/* 4) Mobile: hide the bottom nav while the drawer is open so the last item
+      (Logout) is never covered. */
+.bottom-nav{ transition:transform .28s cubic-bezier(.2,.8,.3,1), opacity .28s ease !important; }
+body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; transform:translateY(150%) !important; }
+
+/* 5) Close button inside the drawer on mobile. */
+.sidebar .sidebar-close-m{ display:none; }
+@media(max-width:768px){ .sidebar .sidebar-close-m{ display:block !important; } }
+</style>
+
+<style id="reseller-hamburger-fix">
+/* 2026-09-16 — MOBILE FIX (this request).
+   Every reseller page hides the hamburger with ".hamburger{display:none}", but most
+   pages never turn it back ON at mobile width — only products.html did. So on a phone
+   there was no way to open the sidebar on Products, Orders, Wallet, Withdrawals,
+   Courier, Messages, Support, Profile, Referral or Website Integration.
+   This shows the SAME existing button (onclick="menuToggle()") at mobile width only.
+   It is an ADDED block and lives entirely inside a max-width query, so the DESKTOP
+   LAYOUT IS UNCHANGED. */
+@media (max-width:768px){
+  .hamburger { display:block !important; }
+}
+</style>
+<style id="reseller-fullwidth-fix">
+/* 2026-09-16 — ANDROID FULL-WIDTH FIX (this request).
+   On Android the whole page rendered as a ~60%-wide column with a large empty gap on
+   the right. Cause: the base rule reserves the sidebar with
+   `.main{margin-left:248px}`, and a block element with margin-left and width:auto is
+   only (100% - 248px) wide. The page DID have a mobile override
+   `.main{margin-left:0 !important}` — but a LATER rule in the same file re-asserted
+   `.main{margin-left:248px !important}`, and with equal specificity the later one wins.
+   This block sits at the very END of the document, so it beats both, and it resets
+   width as well as margin. Desktop is untouched: everything is inside a max-width query. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+    <div class="sidebar-header"><div class="sidebar-logo"><div class="sidebar-logo-icon"><i class="fas fa-store"></i></div><div><h3>ResellerHub</h3><small>Reseller Panel</small></div>
+        </div>
+        <button class="sidebar-close-m" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+        <ul class="sidebar-menu">
+        <li class="sidebar-divider">Main</li>
+        <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+        <li><a href="products.html"><i class="fas fa-box"></i> <span>Products</span></a></li>
+        <li><a href="my-shop.html"><i class="fas fa-store"></i> <span>My Shop</span></a></li>
+        <li><a href="transactions.html"><i class="fas fa-right-left"></i> <span>Transactions</span></a></li>
+        <li class="sidebar-divider">Orders</li>
+        <li><a href="my-orders.html"><i class="fas fa-list"></i> <span>All Orders<span class="menu-badge-n" id="ordersBadgeLabel"></span></span></a></li>
+        <li><a href="order.html"><i class="fas fa-cart-plus"></i> <span>Add New Order</span></a></li>
+        <li><a href="offers.html"><i class="fas fa-gift"></i> <span>Offers</span></a></li>
+        <li><a href="shop-categories.html"><i class="fas fa-sitemap"></i> <span>Shop Categories</span></a></li>
+        <li class="sidebar-divider">My Shop</li>
+        <li><a href="my-shop-settings.html"><i class="fas fa-sliders"></i> <span>Shop Settings</span></a></li>
+        <li><a href="my-products.html"><i class="fas fa-box-open"></i> <span>My Products</span></a></li>
+        <li><a href="my-shop-orders.html"><i class="fas fa-bag-shopping"></i> <span>My Shop Orders</span></a></li>
+        <li><a href="customer-messages.html"><i class="fas fa-comment-dots"></i> <span>Customer Messages<span class="menu-badge-n" id="cmsgBadgeLabel"></span></span></a></li>
+        <li class="sidebar-divider">Account</li>
+        <li><a href="wallet.html"><i class="fas fa-wallet"></i> <span>Wallet</span></a></li>
+        <li><a href="withdrawals.html"><i class="fas fa-money-bill-wave"></i> <span>Withdrawals</span></a></li>
+        <li><a href="courier.html"><i class="fas fa-truck"></i> <span>Courier</span></a></li>
+        <li><a href="messages.html"><i class="fas fa-comments"></i> <span>Messages<span class="menu-badge-n" id="msgBadgeLabel"></span></span></a></li>
+        <li><a href="support.html"><i class="fas fa-headset"></i> <span>Support</span></a></li>
+        <li><a href="profile.html" class="active"><i class="fas fa-user-cog"></i> <span>Profile</span></a></li>
+        <li><a href="referral.html"><i class="fas fa-user-plus"></i> <span>Referral</span></a></li>
+        <li><a href="website-integration.html"><i class="fas fa-plug"></i> <span>Website Integration</span></a></li>
+        <li><a href="../index.html"><i class="fas fa-globe"></i> <span>Visit Site</span></a></li>
+        <li><a href="javascript:void(0)" onclick="resellerLogout()" style="color:#dc2626"><i class="fas fa-right-from-bracket"></i> <span>Logout</span></a></li>
+    </ul>
+</aside>
+<div class="side-overlay" id="sideOverlay" onclick="menuToggle()"></div>
+<main class="main">
+    <div class="topbar">
+        <h2><i class="fas fa-user-cog" style="color:#2563eb;margin-right:8px;"></i> My Profile</h2>
+        <div class="topbar-right">
+            <div class="topbar-balance"><i class="fas fa-coins"></i> <span id="topBalance">0</span></div>
+            <div class="topbar-user"><i class="fas fa-user"></i> <span id="userName">User</span></div>
+            <button class="btn-logout" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+    <div class="content" id="mainContent"></div>
+</main>
+
+<nav class="bottom-nav">
+    <a href="dashboard.html"><i class="fas fa-home"></i>Home</a>
+    <a href="products.html"><i class="fas fa-box"></i>Products</a>
+    <a href="order.html"><i class="fas fa-cart-plus"></i>Order</a>
+    <button class="bn-menu" onclick="menuToggle()"><i class="fas fa-bars"></i><span>Menu</span></button>
+    <a href="profile.html"><i class="fas fa-user"></i>Profile</a>
+</nav><script src="../app.js"></script><script>(function(){function paint(){try{var b=document.getElementById("ordersBadge");var uid=sessionStorage.getItem("user_id");if(!uid)return;if(sessionStorage.getItem("user_type")!=="reseller")return;var n=(typeof resellerNewOrderCount==="function")?resellerNewOrderCount(uid):0;if(b){b.textContent=n;b.style.display=n>0?"inline-block":"none";}var lb=document.getElementById("ordersBadgeLabel");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}catch(e){}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script>
+(function() {
+    var userId = sessionStorage.getItem('user_id');
+    if (!userId || sessionStorage.getItem('user_type') !== 'reseller') { window.location.replace('login.html'); return; }
+    var resellers = getData(DB_KEYS.RESELLERS);
+    var user = null;
+    for (var i = 0; i < resellers.length; i++) { if (resellers[i].id === parseInt(userId)) { user = resellers[i]; break; } }
+    if (!user) { sessionStorage.clear(); window.location.replace('login.html'); return; }
+
+    document.getElementById('userName').textContent = user.name;
+    document.getElementById('topBalance').textContent = formatCurrency(user.balance);
+
+    var initial = (user.name || 'U').charAt(0).toUpperCase();
+    var statusColor = user.status === 'approved' ? '#10b981' : user.status === 'pending' ? '#f59e0b' : user.status === 'banned' ? '#ef4444' : '#64748b';
+    var avatarContent = user.profilePicture ? '<img src="' + user.profilePicture + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">' : initial;
+
+    var html = '<div class="profile-header">' +
+        '<div class="profile-avatar">' + avatarContent + '</div>' +
+        '<div class="profile-info">' +
+        '<h2>' + user.name + '</h2>' +
+        '<p><i class="fas fa-envelope"></i> ' + user.email + ' | <i class="fas fa-phone"></i> ' + user.phone + '</p>' +
+        '<p style="margin-top:4px;"><i class="fas fa-building"></i> ' + (user.businessName || 'N/A') + ' | <i class="fas fa-calendar"></i> Joined: ' + formatDate(user.joinDate) + '</p>' +
+        '<span class="status-badge" style="background:' + statusColor + ';"><i class="fas fa-circle"></i> ' + user.status.toUpperCase() + '</span>' +
+        (user.isPermanent ? ' <span class="status-badge" style="background:#fbbf24;color:#1e293b;margin-left:5px;"><i class="fas fa-crown"></i> OWNER</span>' : '') +
+        '</div></div>';
+
+    html += '<div class="card"><div class="card-header"><h4><i class="fas fa-camera"></i> Profile Picture</h4></div><div class="card-body" style="text-align:center;">' +
+        '<div style="width:120px;height:120px;margin:0 auto 15px;border-radius:50%;overflow:hidden;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:2.5rem;font-weight:700;">' +
+        (user.profilePicture ? '<img src="' + user.profilePicture + '" style="width:100%;height:100%;object-fit:cover;">' : initial) +
+        '</div>' +
+        '<input type="file" id="profilePicInput" accept="image/*" style="display:none;" onchange="uploadProfilePic(event)">' +
+        '<button type="button" class="btn btn-primary" onclick="document.getElementById(\'profilePicInput\').click()"><i class="fas fa-upload"></i> Upload Profile Picture</button>' +
+        '</div></div>';
+
+    html += '<div class="card"><div class="card-header"><h4><i class="fas fa-info-circle"></i> Quick Information</h4></div><div class="card-body"><div class="info-grid">';
+    html += '<div class="info-item"><div class="lbl">User ID</div><div class="val">#' + user.id + '</div></div>';
+    html += '<div class="info-item"><div class="lbl">Username</div><div class="val">' + (user.email || user.phone) + '</div></div>';
+    html += '<div class="info-item"><div class="lbl">Role</div><div class="val">' + (user.role || 'Reseller') + '</div></div>';
+    html += '<div class="info-item"><div class="lbl">Status</div><div class="val">' + user.status + '</div></div>';
+    html += '<div class="info-item"><div class="lbl">Current Balance</div><div class="val">' + formatCurrency(user.balance) + '</div></div>';
+    html += '<div class="info-item"><div class="lbl">Total Earning</div><div class="val">' + formatCurrency(user.totalEarning) + '</div></div>';
+    html += '</div></div></div>';
+
+    html += '<div class="card"><div class="card-header"><h4><i class="fas fa-address-book"></i> Contact & Business Details</h4></div><div class="card-body"><div class="info-grid">';
+    html += '<div class="info-item"><div class="lbl">Business Name</div><div class="val">' + (user.businessName || 'N/A') + '</div></div>';
+    html += '<div class="info-item"><div class="lbl">Phone</div><div class="val">' + (user.phone || 'N/A') + '</div></div>';
+    html += '<div class="info-item"><div class="lbl">Email</div><div class="val">' + (user.email || 'N/A') + '</div></div>';
+    html += '<div class="info-item"><div class="lbl">Address</div><div class="val">' + (user.address || 'N/A') + '</div></div>';
+    html += '<div class="info-item"><div class="lbl">Facebook URL</div><div class="val">' + (user.facebookUrl || '—') + '</div></div>';
+    html += '<div class="info-item"><div class="lbl">Website URL</div><div class="val">' + (user.websiteUrl || '—') + '</div></div>';
+    html += '<div class="info-item"><div class="lbl">NID Number</div><div class="val">' + (user.nid || 'N/A') + '</div></div>';
+    /* Same rule as referral.html / dashboard.html: this is THIS reseller's own
+       code, never a stale one that belongs to somebody else. */
+    html += '<div class="info-item"><div class="lbl">Referral Code</div><div class="val"><code style="background:#fef3c7;padding:3px 8px;border-radius:4px;">' + (resellerOwnRefCode(user) || 'N/A') + '</code></div></div>';
+    html += '</div></div></div>';
+
+    html += '<div class="card"><div class="card-header"><h4><i class="fas fa-id-card"></i> Identity Documents (NID)</h4></div><div class="card-body"><div class="nid-preview">';
+    html += '<div class="nid-card"><div class="lbl">NID Front</div>';
+    if (user.nidFrontImage) html += '<img src="' + user.nidFrontImage + '" alt="NID Front">';
+    else html += '<div class="no-img"><i class="fas fa-image"></i><br>Not uploaded</div>';
+    html += '</div>';
+    html += '<div class="nid-card"><div class="lbl">NID Back</div>';
+    if (user.nidBackImage) html += '<img src="' + user.nidBackImage + '" alt="NID Back">';
+    else html += '<div class="no-img"><i class="fas fa-image"></i><br>Not uploaded</div>';
+    html += '</div></div></div></div>';
+
+    html += '<div class="card"><div class="card-header"><h4><i class="fas fa-edit"></i> Edit Profile</h4></div><div class="card-body"><form onsubmit="saveProfile(event)">';
+    html += '<div class="form-row">';
+    html += '<div class="form-group"><label>Full Name</label><input type="text" id="pName" required></div>';
+    html += '<div class="form-group"><label>Phone</label><input type="tel" id="pPhone" required></div>';
+    html += '</div>';
+    html += '<div class="form-row">';
+    html += '<div class="form-group"><label>Email</label><input type="email" id="pEmail" required></div>';
+    html += '<div class="form-group"><label>Business Name</label><input type="text" id="pBusiness"></div>';
+    html += '</div>';
+    html += '<div class="form-group"><label>Address</label><textarea id="pAddress" rows="2"></textarea></div>';
+    html += '<div class="form-row">';
+    html += '<div class="form-group"><label>Facebook URL</label><input type="url" id="pFacebook"></div>';
+    html += '<div class="form-group"><label>Website URL</label><input type="url" id="pWebsite"></div>';
+    html += '</div>';
+    html += '<div class="form-group"><label>NID Number</label><input type="text" id="pNid"></div>';
+    html += '<div class="form-group"><label>NID Front Image</label><div style="display:flex;align-items:center;gap:10px;">';
+    html += '<div style="width:70px;height:70px;border:2px dashed #cbd5e1;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#94a3b8;cursor:pointer;" id="nidFPrev" onclick="document.getElementById(\'nidFFile\').click()">' + (user.nidFrontImage ? '<img src="' + user.nidFrontImage + '" style="width:100%;height:100%;object-fit:cover;">' : '<i class="fas fa-image"></i>') + '</div>';
+    html += '<input type="file" id="nidFFile" accept="image/*" style="display:none;" onchange="uploadNid(event,\'front\')"><small style="color:#64748b;">Click box to upload</small></div></div>';
+    html += '<div class="form-group"><label>NID Back Image</label><div style="display:flex;align-items:center;gap:10px;">';
+    html += '<div style="width:70px;height:70px;border:2px dashed #cbd5e1;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#94a3b8;cursor:pointer;" id="nidBPrev" onclick="document.getElementById(\'nidBFile\').click()">' + (user.nidBackImage ? '<img src="' + user.nidBackImage + '" style="width:100%;height:100%;object-fit:cover;">' : '<i class="fas fa-image"></i>') + '</div>';
+    html += '<input type="file" id="nidBFile" accept="image/*" style="display:none;" onchange="uploadNid(event,\'back\')"><small style="color:#64748b;">Click box to upload</small></div></div>';
+    html += '<div class="form-group"><label>New Password (leave blank to keep current)</label><input type="password" id="pPassword" placeholder="Min 8 characters"></div>';
+    html += '<button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>';
+    html += '</form></div></div>';
+
+    document.getElementById('mainContent').innerHTML = html;
+
+    document.getElementById('pName').value = user.name || '';
+    document.getElementById('pPhone').value = user.phone || '';
+    document.getElementById('pEmail').value = user.email || '';
+    document.getElementById('pBusiness').value = user.businessName || '';
+    document.getElementById('pAddress').value = user.address || '';
+    document.getElementById('pFacebook').value = user.facebookUrl || '';
+    document.getElementById('pWebsite').value = user.websiteUrl || '';
+    document.getElementById('pNid').value = user.nid || '';
+
+    function saveProfile(e) {
+        e.preventDefault();
+        var rs = getData(DB_KEYS.RESELLERS);
+        for (var i = 0; i < rs.length; i++) {
+            if (rs[i].id === user.id) {
+                rs[i].name = document.getElementById('pName').value;
+                rs[i].phone = document.getElementById('pPhone').value;
+                rs[i].email = document.getElementById('pEmail').value;
+                rs[i].businessName = document.getElementById('pBusiness').value;
+                rs[i].address = document.getElementById('pAddress').value;
+                rs[i].facebookUrl = document.getElementById('pFacebook').value;
+                rs[i].websiteUrl = document.getElementById('pWebsite').value;
+                rs[i].nid = document.getElementById('pNid').value;
+                var newP = document.getElementById('pPassword').value;
+                if (newP && newP.length >= 8) rs[i].password = newP;
+                break;
+            }
+        }
+        setData(DB_KEYS.RESELLERS, rs);
+        showToast('Profile updated successfully!', 'success');
+        setTimeout(function() { location.reload(); }, 1000);
+    }
+
+    window.logoutUser = function() { doLogout(); };
+    window.saveProfile = saveProfile;
+    window.uploadProfilePic = function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) { showToast('Image too large! Max 2MB.', 'error'); return; }
+        fileToBase64(file).then(function(b64) {
+            var rs = getData(DB_KEYS.RESELLERS);
+            for (var i = 0; i < rs.length; i++) {
+                if (rs[i].id === user.id) { rs[i].profilePicture = b64; break; }
+            }
+            setData(DB_KEYS.RESELLERS, rs);
+            showToast('Profile picture updated!', 'success');
+            setTimeout(function() { location.reload(); }, 1000);
+        });
+    };
+
+    window.uploadNid = function(e, side) {
+        var file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) { showToast('Max 2MB!', 'error'); return; }
+        fileToBase64(file).then(function(b64) {
+            var rs = getData(DB_KEYS.RESELLERS);
+            for (var i = 0; i < rs.length; i++) {
+                if (rs[i].id === user.id) {
+                    if (side === 'front') rs[i].nidFrontImage = b64;
+                    else rs[i].nidBackImage = b64;
+                    break;
+                }
+            }
+            setData(DB_KEYS.RESELLERS, rs);
+            logActivity('nid_uploaded', 'Reseller uploaded NID ' + side);
+            showToast('NID ' + side + ' image uploaded!', 'success');
+            setTimeout(function() { location.reload(); }, 900);
+        });
+    };
+
+    setOnline(user.id, true);
+    setInterval(function() { setOnline(user.id, true); }, 60000);
+    window.addEventListener('beforeunload', function() { setOnline(user.id, false); });
+})();
+</script>
+
+<script>
+/* Menu button: toggle sidebar open/close (mobile) */
+window.menuToggle = function() {
+    var sb = document.querySelector('.sidebar');
+    if (!sb) return;
+    var open = !sb.classList.contains('open');
+    sb.classList.toggle('open', open);
+    var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+    if (ov) ov.classList.toggle('show', open);
+};
+</script>
+
+
+<script>
+/* Robust menu toggle */
+if (!window.menuToggle) {
+    window.menuToggle = function() {
+        var sb = document.querySelector('.sidebar');
+        if (!sb) return;
+        var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+        var open = !sb.classList.contains('open');
+        sb.classList.toggle('open', open);
+        if (ov) ov.classList.toggle('show', open);
+        document.body.classList.toggle('sb-open', open);
+    };
+}
+</script>
+
+
+<script>
+/* Logout fix: keep the mobile bottom-nav in sync with the drawer state. */
+(function () {
+    function sync(open) {
+        try {
+            var sb = document.querySelector('.sidebar');
+            var ov = document.getElementById('sideOverlay') || document.querySelector('.side-overlay');
+            if (sb) sb.classList.toggle('open', !!open);
+            if (ov) ov.classList.toggle('show', !!open);
+            document.body.classList.toggle('sb-open', !!open);
+        } catch (e) {}
+    }
+    var orig = window.toggleSidebar;
+    window.toggleSidebar = function (open) {
+        try { if (typeof orig === 'function') orig(open); } catch (e) {}
+        sync(open);
+    };
+    window.menuToggle = function () {
+        var sb = document.querySelector('.sidebar');
+        var open = !(sb && sb.classList.contains('open'));
+        window.toggleSidebar(open);
+    };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Supplier Orders - Admin - ResellerHub BD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#f1f5f9; color:#1e293b; }
+        .sidebar { position:fixed; left:0; top:0; bottom:0; width:240px; background:#1e293b; color:#cbd5e1; z-index:100; overflow-y:auto; }
+        .sidebar-header { padding:18px 20px; border-bottom:1px solid #334155; }
+        .sidebar-logo { display:flex; align-items:center; gap:10px; }
+        .sidebar-logo-icon { width:38px; height:38px; background:linear-gradient(135deg,#dc2626,#b91c1c); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; }
+        .sidebar-logo h3 { color:white; font-size:1rem; }
+        .sidebar-logo small { color:#94a3b8; font-size:0.7rem; display:block; }
+        .sidebar-menu { list-style:none; padding:12px 0; }
+        .sidebar-menu li { margin:2px 0; }
+        .sidebar-menu a { display:flex; align-items:center; gap:12px; padding:10px 20px; color:#cbd5e1; text-decoration:none; font-size:0.88rem; }
+        .sidebar-menu a:hover { background:rgba(255,255,255,0.05); color:white; }
+        .sidebar-menu a.active { background:#dc2626; color:white; }
+        .sidebar-menu a i { width:18px; text-align:center; }
+        .sidebar-divider { padding:15px 20px 5px; color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+        .main { margin-left:240px; min-height:100vh; }
+        .topbar { background:white; padding:14px 25px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,0.05); position:sticky; top:0; z-index:50; }
+        .topbar h2 { font-size:1.2rem; font-weight:600; }
+        .topbar h2 i { color:#dc2626; margin-right:8px; }
+        .topbar-right { display:flex; align-items:center; gap:12px; }
+        .user-pill { display:flex; align-items:center; gap:8px; padding:6px 14px; background:#fee2e2; border-radius:30px; font-size:0.85rem; color:#991b1b; font-weight:600; }
+        .btn-logout { background:#dc2626; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:500; }
+        .content { padding:25px; }
+        .card { background:white; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:20px; }
+        .card-header { padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+        .card-header h4 { font-size:0.95rem; font-weight:600; }
+        .card-header h4 i { color:#dc2626; margin-right:6px; }
+        .card-header select, .card-header input { padding:7px 12px; border:1px solid #e2e8f0; border-radius:6px; font-size:0.85rem; }
+        .data-table { width:100%; border-collapse:collapse; }
+        .data-table th { text-align:left; padding:11px 16px; background:#f8fafc; font-weight:600; font-size:0.7rem; color:#64748b; text-transform:uppercase; }
+        .data-table td { padding:12px 16px; border-bottom:1px solid #f1f5f9; font-size:0.83rem; }
+        .data-table tr:hover { background:#f8fafc; }
+        .badge { padding:3px 9px; border-radius:20px; font-size:0.7rem; font-weight:600; }
+        .badge-success { background:#d1fae5; color:#065f46; }
+        .badge-warning { background:#fef3c7; color:#92400e; }
+        .badge-info { background:#dbeafe; color:#1e40af; }
+        .badge-danger { background:#fee2e2; color:#991b1b; }
+        .btn { padding:7px 12px; border:none; border-radius:7px; font-size:0.82rem; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:5px; }
+        .btn-primary { background:#2563eb; color:white; }
+        .btn-warning { background:#f59e0b; color:white; }
+        .btn-sm { padding:4px 9px; font-size:0.75rem; }
+        .empty { text-align:center; padding:50px 20px; color:#64748b; }
+        .empty i { font-size:3rem; margin-bottom:12px; opacity:0.4; }
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+        .modal-overlay.show { display:flex; }
+        .modal { background:white; border-radius:14px; width:100%; max-width:700px; max-height:92vh; overflow-y:auto; }
+        .modal-header { padding:16px 22px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:white; }
+        .modal-close { background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b; line-height:1; }
+        .modal-body { padding:20px; }
+        .modal-footer { padding:14px 22px; border-top:1px solid #e2e8f0; display:flex; gap:10px; justify-content:flex-end; }
+        .form-group { margin-bottom:14px; }
+        .form-group label { display:block; font-weight:600; margin-bottom:5px; font-size:0.85rem; }
+        .form-group input, .form-group select, .form-group textarea { width:100%; padding:10px 14px; border:2px solid #e2e8f0; border-radius:8px; font-size:0.9rem; font-family:inherit; }
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .detail-row { display:flex; padding:8px 0; border-bottom:1px solid #f1f5f9; }
+        .detail-row strong { min-width:120px; color:#64748b; font-size:0.83rem; }
+        .detail-row span { font-size:0.88rem; }
+        @media (max-width:768px) { .sidebar { width:240px; } .sidebar-logo h3, .sidebar-logo small, .sidebar-menu a span, .sidebar-divider { display:initial; } .main { margin-left:70px; } .form-row { grid-template-columns:1fr; } }
+    </style>
+
+
+
+
+<style id="lx-sb-final">
+/* ===== ADMIN SIDEBAR v4 — fresh premium design (authoritative) ===== */
+body .lx-sidebar { position:fixed !important; left:0 !important; top:0 !important; bottom:0 !important; width:264px !important; background:linear-gradient(180deg,#0d1226 0%,#171233 100%) !important; border-right:1px solid rgba(129,140,248,.14) !important; z-index:600 !important; overflow-y:auto !important; overflow-x:hidden !important; display:flex !important; flex-direction:column !important; transform:none !important; transition:transform .32s cubic-bezier(.2,.8,.3,1) !important; font-family:'Inter','Hind Siliguri',sans-serif !important; }
+body .lx-sidebar::before { content:'' !important; position:absolute !important; top:-80px !important; right:-60px !important; width:260px !important; height:260px !important; background:radial-gradient(circle,rgba(99,102,241,.18),transparent 70%) !important; pointer-events:none !important; }
+body .lx-brand { display:flex !important; align-items:center !important; gap:12px !important; padding:20px 18px !important; border-bottom:1px solid rgba(129,140,248,.14) !important; position:relative !important; }
+body .lx-brand-ic { width:42px !important; height:42px !important; border-radius:13px !important; background:linear-gradient(135deg,#6366f1,#a855f7) !important; display:flex !important; align-items:center !important; justify-content:center !important; color:#fff !important; font-size:1.05rem !important; box-shadow:0 8px 20px rgba(99,102,241,.4) !important; flex-shrink:0 !important; }
+body .lx-brand-tx b { color:#fff !important; font-size:1.02rem !important; font-weight:900 !important; display:block !important; line-height:1.2 !important; }
+body .lx-brand-tx small { color:#818cf8 !important; font-size:.6rem !important; font-weight:800 !important; letter-spacing:2px !important; }
+body .lx-close { margin-left:auto !important; background:rgba(255,255,255,.06) !important; border:none !important; color:#94a3b8 !important; width:30px !important; height:30px !important; border-radius:9px !important; cursor:pointer !important; font-size:1rem !important; display:none !important; align-items:center !important; justify-content:center !important; }
+body .lx-close:hover { background:#fee2e2 !important; color:#dc2626 !important; }
+body .lx-menu { padding:14px 12px !important; flex:1 !important; }
+body .sec-label { font-size:.6rem !important; font-weight:900 !important; letter-spacing:2.2px !important; color:#6b7280 !important; text-transform:uppercase !important; padding:14px 12px 6px !important; display:flex !important; align-items:center !important; gap:8px !important; }
+body .sec-label::before { content:'' !important; width:14px !important; height:2px !important; background:linear-gradient(90deg,#6366f1,#a855f7) !important; border-radius:2px !important; }
+body .sb-item { position:relative !important; display:flex !important; align-items:center !important; gap:11px !important; padding:9px 12px !important; margin:3px 0 !important; border-radius:12px !important; color:#b6c2e2 !important; text-decoration:none !important; font-size:.86rem !important; font-weight:600 !important; transition:all .2s !important; border:1px solid transparent !important; background:transparent !important; opacity:1 !important; visibility:visible !important; pointer-events:auto !important; box-shadow:none !important; transform:none !important; }
+body .sb-item .sb-ico { width:30px !important; height:30px !important; border-radius:9px !important; background:rgba(255,255,255,.05) !important; display:flex !important; align-items:center !important; justify-content:center !important; font-size:.82rem !important; flex-shrink:0 !important; transition:all .2s !important; }
+body .sb-item .sb-txt { flex:1 !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; display:block !important; }
+body .sb-item:hover { background:rgba(99,102,241,.13) !important; color:#fff !important; }
+body .sb-item:hover .sb-ico { background:rgba(99,102,241,.3) !important; }
+body .sb-item.on { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; border-color:rgba(129,140,248,.35) !important; }
+body .sb-item.on::before { content:'' !important; position:absolute !important; left:-12px !important; top:50% !important; transform:translateY(-50%) !important; width:3.5px !important; height:60% !important; background:linear-gradient(180deg,#818cf8,#c084fc) !important; border-radius:3px !important; }
+body .sb-item.on .sb-ico { background:linear-gradient(135deg,#6366f1,#a855f7) !important; color:#fff !important; }
+/* page-এর নিচের inline-highlight script সবসময় হারাবে */
+body .sb-item[style] { background:linear-gradient(90deg,rgba(79,70,229,.32),rgba(124,58,237,.1)) !important; color:#fff !important; }
+body .sb-badge { background:#fbbf24 !important; color:#1e293b !important; font-size:.62rem !important; padding:1px 8px !important; border-radius:10px !important; font-weight:800 !important; margin-left:auto !important; }
+body .main { margin-left:264px !important; min-height:100vh !important; }
+body .side-overlay { display:none !important; position:fixed !important; inset:0 !important; background:rgba(7,10,26,.6) !important; z-index:590 !important; backdrop-filter:blur(2px) !important; }
+body .side-overlay.show { display:block !important; pointer-events:auto !important; }
+body .hamburger { display:none !important; }
+/* ===== মোবাইল/ট্যাবলেট: slide drawer ===== */
+@media (max-width:1024px) {
+    body .main { margin-left:0 !important; }
+    body .lx-sidebar { transform:translateX(-100%) !important; box-shadow:none !important; }
+    body .lx-sidebar.open { transform:none !important; box-shadow:30px 0 70px rgba(7,10,26,.6) !important; }
+    body .lx-close { display:flex !important; }
+    body .hamburger { display:inline-flex !important; }
+    body { overflow-x:hidden !important; }
+}
+</style>
+
+
+
+
+
+<style id="lx-ovf-fix">
+@media(max-width:768px){ body{overflow-x:hidden !important} }
+</style>
+<style id="lx-orders-badge-n">.orders-badge-n{color:#fbbf24;font-weight:900;font-size:.72rem}.orders-badge-n:empty{display:none}</style>
+<aside class="lx-sidebar sidebar" id="sidebar">
+    <div class="lx-brand">
+        <span class="lx-brand-ic"><i class="fas fa-user-shield"></i></span>
+        <div class="lx-brand-tx"><b>AdminHub</b><small>CONTROL PANEL</small></div>
+        <button class="lx-close" onclick="toggleSidebar(false)"><i class="fas fa-times"></i></button>
+    </div>
+    <nav class="lx-menu">
+        <div class="sec-label">Main</div>
+        <a href="dashboard.html" class="sb-item"><span class="sb-ico"><i class="fas fa-chart-line"></i></span><span class="sb-txt">Dashboard</span></a>
+        <a href="orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-shopping-cart"></i></span><span class="sb-txt">All Orders<span class="orders-badge-n" id="ordersBadgeN"></span></span><span class="orders-badge" style="display:none;margin-left:auto;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:.62rem;font-weight:800"></span></a>
+        <a href="multi-supplier-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-people-arrows"></i></span><span class="sb-txt">Multi-Supplier Orders<span class="orders-badge-n" id="msCount"></span></span></a>
+        <a href="products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box"></i></span><span class="sb-txt">Products</span></a>
+        <div class="sec-label">Users</div>
+        <a href="resellers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-users"></i></span><span class="sb-txt">Resellers</span></a>
+        <a href="suppliers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-warehouse"></i></span><span class="sb-txt">Suppliers</span></a>
+        <a href="supplier-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-boxes-stacked"></i></span><span class="sb-txt">Supplier Products</span></a>
+        <a href="add-reseller.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Add Reseller</span></a>
+        <a href="add-supplier.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck"></i></span><span class="sb-txt">Add Supplier</span></a>
+        <a href="approvals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-check"></i></span><span class="sb-txt">Approvals</span></a>
+        <a href="withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-money-bill-wave"></i></span><span class="sb-txt">Withdrawals</span></a>
+        <a href="supplier-withdrawals.html" class="sb-item"><span class="sb-ico"><i class="fas fa-hand-holding-dollar"></i></span><span class="sb-txt">Supplier Withdraw</span></a>
+        <a href="transactions.html" class="sb-item"><span class="sb-ico"><i class="fas fa-receipt"></i></span><span class="sb-txt">Transaction History</span></a>
+        <a href="moderators.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-shield"></i></span><span class="sb-txt">Moderators</span></a>
+        <div class="sec-label">Referral</div>
+        <a href="referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-user-plus"></i></span><span class="sb-txt">Reseller Referral</span></a>
+        <a href="supplier-referral.html" class="sb-item"><span class="sb-ico"><i class="fas fa-truck-arrow-right"></i></span><span class="sb-txt">Supplier Referral</span></a>
+                <a href="myshop-orders.html" class="sb-item"><span class="sb-ico"><i class="fas fa-bag-shopping"></i></span><span class="sb-txt">My Shop Orders</span></a>
+        <a href="myshop-products.html" class="sb-item"><span class="sb-ico"><i class="fas fa-box-open"></i></span><span class="sb-txt">My Shop Products</span></a>
+        <div class="sec-label">Offers &amp; Banners</div>
+        <a href="add-offer.html" class="sb-item"><span class="sb-ico"><i class="fas fa-plus-circle"></i></span><span class="sb-txt">Add Offers</span></a>
+        <a href="manage-offers.html" class="sb-item"><span class="sb-ico"><i class="fas fa-gift"></i></span><span class="sb-txt">Manage Offers</span></a>
+        <a href="add-banner.html" class="sb-item"><span class="sb-ico"><i class="fas fa-image"></i></span><span class="sb-txt">Add Banners</span></a>
+        <a href="manage-banners.html" class="sb-item"><span class="sb-ico"><i class="fas fa-images"></i></span><span class="sb-txt">Manage Banners</span></a>
+        <div class="sec-label">System</div>
+        <a href="messages.html" class="sb-item"><span class="sb-ico"><i class="fas fa-comments"></i></span><span class="sb-txt">Messages<span class="orders-badge-n" id="msgBadgeN"></span></span></a>
+        <a href="settings.html" class="sb-item"><span class="sb-ico"><i class="fas fa-cog"></i></span><span class="sb-txt">Settings</span></a>
+        <a href="../index.html" class="sb-item"><span class="sb-ico"><i class="fas fa-globe"></i></span><span class="sb-txt">Visit Site</span></a>
+    </nav>
+</aside>
+
+<div class="side-overlay" id="sideOverlay" onclick="toggleSidebar(false)"></div>
+
+<style id="lx-msup">
+.ms-grid{display:grid;grid-template-columns:1fr;gap:18px}
+.ms-card{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(15,23,42,.07);overflow:hidden;margin-bottom:16px}
+.ms-head{padding:15px 18px;border-bottom:1px solid #eef2f6;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:linear-gradient(180deg,#fff,#fcfdfe)}
+.ms-head h4{font-size:.95rem;font-weight:800}
+.ms-n{display:inline-flex;align-items:center;gap:6px;background:#eef2ff;color:#4338ca;padding:3px 11px;border-radius:20px;font-size:.72rem;font-weight:900}
+.ms-n.warn{background:#fef3c7;color:#92400e}
+.ms-body{padding:16px 18px}
+.ms-empty{padding:46px 20px;text-align:center;color:#64748b;font-size:.88rem}
+.ms-oid{font-weight:900;font-size:.9rem}
+.ms-meta{font-size:.75rem;color:#64748b;margin-top:4px}
+.ms-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:800}
+.ms-tag.sup{background:#ede9fe;color:#5b21b6}
+.ms-tag.res{background:#dbeafe;color:#1e40af}
+.ms-tag.adm{background:#e0f2fe;color:#0369a1}
+.ms-tag.lock{background:#fee2e2;color:#b91c1c}
+.ms-grp{border:1px solid #eef2f6;border-radius:12px;margin-top:12px;overflow:hidden}
+.ms-grp.own{border-color:#a7f3d0;background:#f0fdfa}
+.ms-grp.other{border-color:#f1f5f9;background:#fafafa}
+.ms-gh{padding:9px 13px;font-size:.8rem;font-weight:900;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.ms-grp.own .ms-gh{background:#ecfdf5;color:#065f46}
+.ms-grp.other .ms-gh{background:#f8fafc;color:#64748b}
+.ms-it{display:flex;justify-content:space-between;gap:12px;padding:8px 13px;border-top:1px solid #f1f5f9;font-size:.79rem;align-items:center}
+.ms-it .n{font-weight:700}
+.ms-it .v{color:#64748b;font-size:.73rem}
+.ms-it .q{font-weight:900;color:#ea580c;white-space:nowrap}
+.ms-thumb{width:46px;height:46px;border-radius:9px;object-fit:cover;border:1px solid #e2e8f0;background:#f8fafc;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:.85rem}
+.ms-sold{font-weight:900;color:#047857;white-space:nowrap}
+.ms-note{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:11px;padding:11px 14px;font-size:.79rem;font-weight:700;line-height:1.65;margin-top:12px}
+.ms-note i{margin-right:6px}
+.ms-search{width:220px;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.84rem;font-family:inherit}
+@media(max-width:640px){ .ms-search{width:100%} .ms-body{padding:12px} }
+</style>
+
+<main class="main">
+    <div class="topbar">
+        <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <h2><i class="fas fa-people-arrows"></i> Multi-Supplier Orders</h2>
+        <div class="topbar-right">
+            <div class="user-pill"><i class="fas fa-user-shield"></i> Admin</div>
+            <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="card" style="margin-bottom:18px">
+            <div class="card-header">
+                <h4><i class="fas fa-people-arrows"></i> Multi-Supplier Orders</h4>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                    <span class="ms-n" id="msTotal">0 orders</span>
+                    <input id="msQ" class="ms-search" placeholder="Order ID / supplier খুঁজুন..." oninput="msPaint()">
+                </div>
+            </div>
+            <div style="padding:14px 18px;font-size:.79rem;color:#64748b;line-height:1.7">
+                <i class="fas fa-circle-info"></i> এখানে শুধুমাত্র সেই parent orders দেখা যাবে যেখানে <b>২ বা তার বেশি ভিন্ন Supplier</b>-এর product আছে।
+                Reseller-এর নিজের product ও Admin product Supplier হিসেবে গণনা হয় না। এখানে কোনো নতুন order তৈরি হয় না — এটি existing order data-এর উপর একটি grouping view।
+            </div>
+            <div class="ms-tools">
+                <input type="checkbox" id="msSelAll" onclick="msToggleAll(this.checked)" title="Select / unselect all listed orders" style="width:17px;height:17px;cursor:pointer;accent-color:#4f46e5">
+                <button class="btn" style="background:#e2e8f0;color:#1e293b" onclick="msToggleAll(true)"><i class="fas fa-check-double"></i> Select All</button>
+                <button class="btn" style="background:#f1f5f9;color:#475569" onclick="msToggleAll(false)"><i class="fas fa-xmark"></i> Unselect All</button>
+                <button class="btn" id="msBookBtn" style="background:#2563eb;color:#fff" onclick="msBookSelected()" disabled><i class="fas fa-truck-fast"></i> Book Selected → Steadfast</button>
+                <button class="btn" id="msPrintBtn" style="background:#0d9488;color:#fff" onclick="msPrintSelected()" disabled><i class="fas fa-print"></i> Print Supplier Invoices</button>
+                <button class="btn" id="msDelBtn" style="background:#dc2626;color:#fff" onclick="msDeleteSelected()" disabled><i class="fas fa-trash-can"></i> Delete Selected</button>
+                <span id="msSelCount" style="font-size:.8rem;color:#64748b;font-weight:700"></span>
+                <small style="font-size:.72rem;color:#94a3b8;margin-left:auto">Steadfast: <a href="settings.html" style="color:#2563eb;font-weight:700">Settings → Steadfast Courier</a></small>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom:18px">
+            <div class="card-header">
+                <h4><i class="fas fa-chart-bar"></i> Product-wise Order Summary</h4>
+                <small style="color:#64748b;font-weight:600;">Multi-Supplier orders only — pending to ship</small>
+            </div>
+            <div class="table-scroll">
+            <table class="data-table"><thead><tr><th>Image</th><th>Product (Size / Color অনুযায়ী)</th><th>Total Qty</th><th>Resellers</th><th>Revenue</th></tr></thead><tbody id="msProdSum"></tbody></table>
+            </div>
+        </div>
+
+        <div id="msList"></div>
+    </div>
+</main>
+
+<div class="ms-modal" id="msModal" onclick="if(event.target===this)msClose()">
+    <div class="ms-modal-box">
+        <div class="ms-modal-h"><h4 id="msModalTitle">Order</h4><button onclick="msClose()">&times;</button></div>
+        <div class="ms-modal-b" id="msModalBody"></div>
+    </div>
+</div>
+
+<style>
+.ms-modal{position:fixed;inset:0;background:rgba(15,23,42,.7);display:none;align-items:center;justify-content:center;z-index:1200;padding:16px}
+.ms-modal.show{display:flex}
+.ms-modal-box{background:#fff;border-radius:16px;max-width:760px;width:100%;max-height:88vh;overflow:auto;box-shadow:0 24px 60px rgba(15,23,42,.3)}
+.ms-modal-h{padding:15px 18px;border-bottom:1px solid #eef2f6;display:flex;justify-content:space-between;align-items:center}
+.ms-modal-h h4{font-size:1rem;font-weight:900}
+.ms-modal-h button{background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;line-height:1}
+.ms-modal-b{padding:16px 18px}
+</style>
+
+<style id="lx-msup-actions">
+/* ---- bulk toolbar ---- */
+.ms-tools{display:flex;gap:9px;align-items:center;flex-wrap:wrap;padding:12px 18px;background:#f8fafc;border-top:1px solid #eef2f6}
+.ms-tools .btn{border:none;border-radius:8px;padding:8px 13px;font-size:.76rem;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+.ms-tools .btn:disabled{opacity:.45;cursor:not-allowed}
+.ms-sel{width:17px;height:17px;cursor:pointer;accent-color:#4f46e5;flex:0 0 auto;margin-top:3px}
+/* ---- stage strip (shared look with the supplier panel) ---- */
+.ostage{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.ostep{font-size:.63rem;font-weight:800;padding:3px 9px;border-radius:20px;background:#f1f5f9;color:#94a3b8;white-space:nowrap}
+.ostep.done{background:#dcfce7;color:#15803d}
+.ostep.cur{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff}
+.ostep.cur.bad{background:#fee2e2;color:#b91c1c}
+.ostage.off .ostep.done{background:#f1f5f9;color:#94a3b8}
+.ms-stagebox{display:flex;gap:9px;align-items:center;flex-wrap:wrap;padding:10px 13px;background:#f8fafc;border:1px solid #eef2f6;border-radius:11px;margin-bottom:12px}
+.ms-stagebox select{padding:7px 10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.79rem;font-family:inherit;font-weight:700;color:#334155}
+.ms-stagebox .hint{font-size:.71rem;color:#64748b;font-weight:700}
+.ms-stagetag{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;font-weight:900;padding:3px 10px;border-radius:20px;background:#eef2ff;color:#4338ca}
+/* ---- supplier invoice print dialog ---- */
+.ms-print{position:fixed;inset:0;background:rgba(15,23,42,.72);display:none;align-items:center;justify-content:center;z-index:1500;padding:16px}
+.ms-print.show{display:flex}
+.ms-print-box{background:#fff;border-radius:16px;width:100%;max-width:780px;max-height:94vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(15,23,42,.35)}
+.ms-print-h{padding:14px 18px;border-bottom:1px solid #eef2f6;display:flex;justify-content:space-between;align-items:center}
+.ms-print-h h4{font-size:.95rem;font-weight:900}
+.ms-print-h button{background:none;border:none;font-size:1.4rem;cursor:pointer;color:#64748b;line-height:1}
+.ms-print-bar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;padding:12px 18px;border-bottom:1px solid #eef2f6}
+.ms-print-b{flex:1;overflow:auto;background:#eef1f9;padding:14px;display:flex;justify-content:center;align-items:flex-start;min-height:220px}
+.ms-print-f{padding:13px 18px;border-top:1px solid #eef2f6;display:flex;gap:9px;justify-content:flex-end}
+.ms-print-f .btn{border:none;border-radius:11px;padding:11px 20px;font-weight:800;font-size:.8rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:8px}
+.ms-fmt{border:1.5px solid #e2e8f0;background:#f8fafc;border-radius:10px;padding:8px 15px;font-size:.76rem;font-weight:800;cursor:pointer;font-family:inherit;color:#334155}
+.ms-fmt.on{background:linear-gradient(135deg,#0d9488,#0f766e);border-color:transparent;color:#fff}
+.ms-scale{background:#fff;box-shadow:0 4px 18px rgba(15,23,42,.18);overflow:hidden}
+.ms-inv-note{font-size:.76rem;color:#475569;font-weight:700}
+.ms-emptyrow{text-align:center;padding:26px 14px;color:#64748b;font-size:.85rem}
+</style>
+
+<div class="ms-print" id="msPrint" onclick="if(event.target===this)msInvClose()">
+    <div class="ms-print-box">
+        <div class="ms-print-h"><h4><i class="fas fa-print"></i> Supplier Invoices</h4><button onclick="msInvClose()">&times;</button></div>
+        <div class="ms-print-bar">
+            <span id="msInvInfo" class="ms-inv-note"></span>
+            <div id="msInvBar" style="display:flex;gap:9px;margin-left:auto"></div>
+        </div>
+        <div class="ms-print-b" id="msInvBody"></div>
+        <div class="ms-print-f">
+            <button class="btn" style="background:#f1f5f9;color:#475569" onclick="msInvClose()">Cancel</button>
+            <button class="btn" style="background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff" onclick="msInvDoPrint()"><i class="fas fa-print"></i> Print</button>
+        </div>
+    </div>
+</div>
+
+<script src="../app.js"></script>
+<script>
+(function () {
+    if (sessionStorage.getItem('user_type') !== 'admin' && sessionStorage.getItem('user_type') !== 'moderator') { window.location.replace('login.html'); return; }
+
+    function esc(s) { return String(s === undefined || s === null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+    function kindTag(k) {
+        if (k === 'supplier') return '<span class="ms-tag sup"><i class="fas fa-warehouse"></i> Supplier</span>';
+        if (k === 'reseller') return '<span class="ms-tag res"><i class="fas fa-store"></i> Reseller</span>';
+        return '<span class="ms-tag adm"><i class="fas fa-shield-halved"></i> Admin</span>';
+    }
+    function stB(s) {
+        s = String(s || '');
+        if (s === 'delivered') return '<span class="badge b-ap">' + esc(s) + '</span>';
+        if (s === 'cancel' || s === 'cancelled' || s === 'returned') return '<span class="badge b-da">' + esc(s) + '</span>';
+        return '<span class="badge b-pe">' + esc(s) + '</span>';
+    }
+    /* Product thumbnail. A missing/broken image shows the box icon instead of a
+       broken-image glyph (rhImgLost is the shared app.js fallback). */
+    function msThumb(src) {
+        var s = String(src || '');
+        if (!s) return '<div class="ms-thumb"><i class="fas fa-box"></i></div>';
+        return '<img class="ms-thumb" src="' + esc(s) + '" alt="" onerror="rhImgLost(this)" onload="rhImgBack(this)">';
+    }
+    /* What ONE group sold for, summed from the lines actually rendered. A group
+       with no visible lines therefore totals 0 — which is exactly right, since
+       nothing else may be inferred from it. */
+    function msGroupSold(G) {
+        var t = 0;
+        for (var i = 0; i < G.items.length; i++) t += Number(G.items[i].lineTotal) || 0;
+        return Math.round(t);
+    }
+
+    function rows() {
+        var list = (typeof multiSupplierOrders === 'function') ? multiSupplierOrders() : [];
+        var q = String((document.getElementById('msQ') || {}).value || '').trim().toLowerCase();
+        if (q) {
+            list = list.filter(function (o) {
+                var ids = (typeof orderSupplierIds === 'function') ? orderSupplierIds(o) : [];
+                var names = ids.map(function (i) { return supplierLabelById(i); }).join(' ');
+                return (String(o.id) + ' ' + String(o.customer || '') + ' ' + names).toLowerCase().indexOf(q) !== -1;
+            });
+        }
+        list.sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')); });
+        return list;
+    }
+
+    /* ---------- selection registry (kept OUTSIDE the DOM) ----------
+       msPaint() rebuilds #msList with innerHTML and the 8-second refresh below
+       runs it again — so a tick that lived only in the DOM would be silently
+       dropped while the admin is mid-task. The ticks live HERE and are
+       re-applied on every repaint. Same pattern as Admin → All Orders. */
+    var msSel = {};
+    function msSelList() {
+        var out = [];
+        for (var id in msSel) { if (Object.prototype.hasOwnProperty.call(msSel, id) && msSel[id]) out.push(id); }
+        return out;
+    }
+    function msHas(id) { return msSel[String(id)] === true; }
+    function msPrune(list) {
+        var keep = {};
+        for (var i = 0; i < list.length; i++) keep[String(list[i].id)] = true;
+        for (var id in msSel) { if (Object.prototype.hasOwnProperty.call(msSel, id) && !keep[id]) delete msSel[id]; }
+    }
+    function msSync() {
+        var n = msSelList().length;
+        var c = document.getElementById('msSelCount');
+        if (c) c.textContent = n ? (n + ' selected') : '';
+        var btns = ['msBookBtn', 'msPrintBtn', 'msDelBtn'];
+        for (var i = 0; i < btns.length; i++) {
+            var b = document.getElementById(btns[i]);
+            if (b) b.disabled = (n === 0);
+        }
+        var boxes = document.querySelectorAll('.ms-sel');
+        var all = document.getElementById('msSelAll');
+        if (all) {
+            all.checked = (boxes.length > 0 && n >= boxes.length);
+            all.indeterminate = (n > 0 && n < boxes.length);
+        }
+    }
+    window.msToggle = function (id, on) {
+        id = String(id);
+        if (on) msSel[id] = true; else delete msSel[id];
+        msSync();
+    };
+    window.msToggleAll = function (on) {
+        var list = rows();
+        for (var i = 0; i < list.length; i++) {
+            var id = String(list[i].id);
+            if (on) msSel[id] = true; else delete msSel[id];
+        }
+        var boxes = document.querySelectorAll('.ms-sel');
+        for (var j = 0; j < boxes.length; j++) boxes[j].checked = !!on;
+        msSync();
+    };
+
+    /* ---------- the stage setter ----------
+       The admin drives the parcel through the SAME stage vocabulary the
+       supplier and the reseller read, so all three panels report one answer.
+       Only rh_orders.status, a tracking entry and a notification are touched —
+       see the change report for why payout accounting is left alone here. */
+    function msStageSelect(o) {
+        var cur = String(o.status || 'new');
+        var h = '<select onchange="msSetStage(\'' + esc(o.id) + '\',this.value)">';
+        for (var i = 0; i < ORDER_STAGES.length; i++) {
+            var s = ORDER_STAGES[i];
+            h += '<option value="' + esc(s.k) + '"' + (orderStageKey(cur) === s.k ? ' selected' : '') + '>' + esc(s.l) + '</option>';
+        }
+        /* an off-pipeline status (returned / cancel / wfr) must stay selectable,
+           otherwise merely opening the dropdown would rewrite the status */
+        if (ORDER_STAGE_OFF[orderStageKey(cur)]) {
+            h += '<option value="' + esc(cur) + '" selected>' + esc(orderStageLabel(cur)) + '</option>';
+        }
+        /* Failed delivery + return (2026-09-15). These carry the reseller charge
+           (Inside Dhaka 80 / Outside Dhaka 130), so they have to be reachable
+           here too — the multi-supplier page drives the same orders. */
+        h += '<option value="failed_delivery"' + (cur === 'failed_delivery' ? ' selected' : '') + '>Failed Delivery</option>';
+        h += '<option value="return"' + (cur === 'return' ? ' selected' : '') + '>Return</option>';
+        /* the four supplier-view statuses, same as All Orders */
+        for (var j = 0; j < SUPPLIER_RETURN_STAGES.length; j++) {
+            var r = SUPPLIER_RETURN_STAGES[j];
+            h += '<option value="' + esc(r.k) + '"' + (cur === r.k ? ' selected' : '') + '>' + esc(r.l) + '</option>';
+        }
+        return h + '</select>';
+    }
+    window.msSetStage = function (id, stage) {
+        var orders = getData(DB_KEYS.ORDERS) || [], o = null;
+        for (var i = 0; i < orders.length; i++) { if (String(orders[i].id) === String(id)) { o = orders[i]; break; } }
+        if (!o) return;
+        var st = String(stage || '');
+        if (!st || st === String(o.status || '')) return;
+        var was = String(o.status || '');
+        o.status = st;
+        if (st === 'delivered' && !o.deliveryDate) o.deliveryDate = new Date().toISOString().split('T')[0];
+        /* Financial effects BEFORE the write, so the flags (failedDeducted,
+           failedFee, supplierPackagingCredited) are persisted with the status.
+           My Shop orders are exempt inside chargeFailedDelivery(). */
+        try { if (orderTriggersResellerCharge(st) && !orderTriggersResellerCharge(was)) chargeFailedDelivery(o); } catch (e) {}
+        try { if (st === 'delivered' && orderTriggersResellerCharge(was)) refundFailedDelivery(o); } catch (e) {}
+        try { creditSupplierPackaging(o); } catch (e) {}
+        setData(DB_KEYS.ORDERS, orders);
+        try { addTracking(o.id, orderStageLabel(st), 'Admin', 'Multi-Supplier order — stage set to ' + orderStageLabel(st)); } catch (e) {}
+        try { addNotification(o.resellerId, 'order', 'Order ' + o.id + ' — stage: ' + orderStageLabel(st), true); } catch (e) {}
+        try { logActivity('multi_order_stage', o.id + ' stage ' + was + ' -> ' + st); } catch (e) {}
+        showToast('Order ' + o.id + ' — ' + orderStageLabel(st), 'success');
+        msPaint();
+    };
+
+    /* ---------- delete (single + bulk) ----------
+       Removes the order from rh_orders ONLY, exactly like the All Orders bulk
+       delete: no tracking, no balance and no other record is touched. */
+    function msDeleteIds(ids, preConfirmed) {
+        var all = getData(DB_KEYS.ORDERS) || [], seen = {}, found = [];
+        for (var i = 0; i < all.length; i++) {
+            if (ids.indexOf(String(all[i].id)) !== -1) { found.push(all[i]); seen[String(all[i].id)] = true; }
+        }
+        if (!found.length) { showToast('সিলেক্ট করা order পাওয়া যায়নি!', 'error'); return 0; }
+        if (!preConfirmed) {
+            var msg = found.length + 'টা Multi-Supplier order ডিলিট করবেন?\n\n' +
+                found.slice(0, 8).map(function (o) { return '• ' + o.id + ' — ' + (o.customer || ''); }).join('\n') +
+                (found.length > 8 ? '\n… আরও ' + (found.length - 8) + 'টা' : '') +
+                '\n\n⚠️ এই কাজটি ফেরানো যাবে না।';
+            if (!confirm(msg)) return -1;
+        }
+        var out = [];
+        for (var j = 0; j < all.length; j++) { if (!seen[String(all[j].id)]) out.push(all[j]); }
+        setData(DB_KEYS.ORDERS, out);
+        for (var k = 0; k < found.length; k++) {
+            try { addNotification(found[k].resellerId, 'order', 'Order ' + found[k].id + ' admin কর্তৃক ডিলিট করা হয়েছে', false); } catch (e) {}
+            delete msSel[String(found[k].id)];
+        }
+        try { logActivity('admin_multi_orders_deleted', found.length + ' multi-supplier order(s) deleted: ' + found.map(function (o) { return o.id; }).join(', ')); } catch (e) {}
+        return found.length;
+    }
+    window.msDeleteOne = function (id) {
+        /* MODERATOR (this request) — no order delete permission, ever. */
+        if (typeof blockIfModerator === 'function' && blockIfModerator('অর্ডার ডিলিট')) return;
+        if (!confirm('Order ' + id + ' ডিলিট করবেন?\n\n⚠️ এই কাজটি ফেরানো যাবে না।')) return;
+        var n = msDeleteIds([String(id)], true);
+        if (n > 0) showToast('Order ' + id + ' ডিলিট হয়েছে', 'success');
+        msPaint();
+    };
+    window.msDeleteSelected = function () {
+        /* MODERATOR (this request) — no order delete permission, ever. */
+        if (typeof blockIfModerator === 'function' && blockIfModerator('অর্ডার ডিলিট')) return;
+        var ids = msSelList();
+        if (!ids.length) { showToast('অন্তত একটা order সিলেক্ট করুন!', 'error'); return; }
+        var n = msDeleteIds(ids, false);
+        if (n > 0) showToast(n + 'টা order ডিলিট হয়েছে', 'success');
+        msPaint();
+    };
+
+    /* ---------- bulk Steadfast booking ----------
+       A Multi-Supplier order is collected by the platform as ONE consignment,
+       so the COD amount is the whole order total — the same payload the All
+       Orders bulk booking sends. Booking goes through the shared backend
+       bridge (sfBackendCreate), which uses the Admin-configured proxy and
+       therefore never reads an API key into the browser. */
+    window.msBookSelected = function () {
+        var ids = msSelList();
+        if (!ids.length) { showToast('অন্তত একটা order সিলেক্ট করুন!', 'error'); return; }
+        if (typeof sfBackendReady === 'function' && !sfBackendReady()) {
+            showToast('আগে Settings → Steadfast Courier-এ Backend Proxy URL সেট করুন!', 'error');
+            return;
+        }
+        var _cn = (typeof rhAdminCourierName === 'function') ? rhAdminCourierName() : 'Steadfast';
+        if (!confirm(ids.length + 'টা Multi-Supplier order ' + _cn + '-এ একসাথে book করবেন?')) return;
+        msBookList(ids);
+    };
+    function msBookList(ids) {
+        var orders = getData(DB_KEYS.ORDERS) || [], done = 0, fail = 0;
+        /* 2026-09-19 — book to the courier the ADMIN chose (this request).
+           Steadfast keeps its existing proxy-based path; any other courier goes
+           through the shared admin-courier layer. */
+        var CN = (typeof rhAdminCourierName === 'function') ? rhAdminCourierName() : 'Steadfast';
+        var _book = (typeof rhAdminCourierActive === 'function' && rhAdminCourierActive() !== 'steadfast')
+            ? function (pl, cb) { rhAdminCourierBook(pl, cb); }
+            : sfBackendCreate;
+        function next(idx) {
+            if (idx >= ids.length) {
+                setData(DB_KEYS.ORDERS, orders);
+                showToast(CN + ' booking done! ✓ ' + done + (fail ? ' | ✗ ' + fail + ' failed' : ''), fail ? 'warning' : 'success');
+                if (done) { try { logActivity('courier_bulk_multi', done + ' multi-supplier order(s) booked to ' + CN); } catch (e) {} }
+                msPaint();
+                return;
+            }
+            var o = null;
+            for (var i = 0; i < orders.length; i++) { if (String(orders[i].id) === String(ids[idx])) { o = orders[i]; break; } }
+            if (!o || o.sf_booked || o.status === 'delivered' || o.status === 'cancel' || o.status === 'cancelled') { next(idx + 1); return; }
+            var payload = {
+                invoice: o.id, recipient_name: o.customer, recipient_phone: o.phone,
+                recipient_address: o.address, cod_amount: Number(o.amount) || 0, note: o.note || ''
+            };
+            _book(payload, function (err, j) {
+                if (err) { fail++; o.sf_error = 'network/CORS error'; next(idx + 1); return; }
+                var tc = (j && (j.tracking_code || (j.consignment && j.consignment.tracking_code))) || '';
+                if (tc) {
+                    o.courier = CN;
+                    o.trackingId = tc;
+                    o.sf_booked = true;
+                    try { addTracking(o.id, 'Handed to Courier', CN, 'Consignment ID: ' + ((j && j.consignment_id) || tc)); } catch (e) {}
+                    try { addNotification(o.resellerId, 'order', 'Order ' + o.id + ' booked to ' + CN + ' — Tracking: ' + tc, true); } catch (e) {}
+                    done++;
+                } else { fail++; o.sf_error = (j && j.message) || 'booking failed'; }
+                next(idx + 1);
+            });
+        }
+        next(0);
+    }
+
+    /* ---------- product-wise order summary ----------
+       The SAME view as Admin → All Orders, but over MULTI-SUPPLIER orders only.
+       The aggregation itself lives in the data layer (productWiseOrderSummary)
+       so the admin and supplier panels cannot drift apart. */
+    function msProdSummary() {
+        var body = document.getElementById('msProdSum');
+        if (!body) return;
+        var list = (typeof multiSupplierOrders === 'function') ? multiSupplierOrders() : [];
+        var rs = (typeof productWiseOrderSummary === 'function') ? productWiseOrderSummary(list, { multi: true }) : [];
+        var h = '';
+        for (var i = 0; i < rs.length; i++) {
+            var r = rs[i];
+            var im = r.img
+                ? '<img src="' + esc(r.img) + '" style="width:44px;height:44px;border-radius:6px;object-fit:cover">'
+                : '<div style="width:44px;height:44px;background:#f1f5f9;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#cbd5e1"><i class="fas fa-box"></i></div>';
+            h += '<tr><td>' + im + '</td><td><b>' + esc(r.name) + '</b></td>' +
+                 '<td><b style="color:#dc2626">' + esc(r.qty) + ' pcs</b></td>' +
+                 '<td>' + Object.keys(r.resellers).length + ' reseller(s)</td>' +
+                 '<td style="color:#10b981;font-weight:600">' + esc(formatCurrency(r.revenue)) + '</td></tr>';
+        }
+        body.innerHTML = h || '<tr><td colspan="5" class="ms-emptyrow">কোনো pending Multi-Supplier order নেই</td></tr>';
+    }
+
+    /* ---------- supplier invoices — ONE PER SUPPLIER ----------
+       2 suppliers -> 2 invoices, 3 -> 3. Selecting several orders and pressing
+       Print produces a single document with every supplier invoice in it, so
+       bulk printing needs no extra machinery. */
+    var msInvOrders = [], msInvFormat = 'a4';
+    window.msPrintOne = function (id) {
+        var all = (typeof multiSupplierOrders === 'function') ? multiSupplierOrders() : [], o = null;
+        for (var i = 0; i < all.length; i++) { if (String(all[i].id) === String(id)) { o = all[i]; break; } }
+        if (!o) return;
+        if (!multiSupplierInvoiceCount(o)) { showToast('এই order-এ কোনো Supplier invoice নেই!', 'error'); return; }
+        msInvOrders = [o];
+        msInvOpen();
+    };
+    window.msPrintSelected = function () {
+        var ids = msSelList();
+        if (!ids.length) { showToast('অন্তত একটা order সিলেক্ট করুন!', 'error'); return; }
+        var all = (typeof multiSupplierOrders === 'function') ? multiSupplierOrders() : [], picked = [];
+        for (var i = 0; i < all.length; i++) { if (ids.indexOf(String(all[i].id)) !== -1) picked.push(all[i]); }
+        if (!picked.length) { showToast('Order পাওয়া যায়নি!', 'error'); return; }
+        msInvOrders = picked;
+        msInvOpen();
+    };
+    function msInvOpen() {
+        msInvFormat = 'a4';
+        msInvPaint();
+        var m = document.getElementById('msPrint');
+        if (m) m.classList.add('show');
+    }
+    window.msInvClose = function () {
+        var m = document.getElementById('msPrint');
+        if (m) m.classList.remove('show');
+        msInvOrders = [];
+    };
+    window.msInvFmt = function (f) { msInvFormat = (f === 'a5') ? 'a5' : 'a4'; msInvPaint(); };
+    function msInvPaint() {
+        var n = 0;
+        for (var i = 0; i < msInvOrders.length; i++) n += multiSupplierInvoiceCount(msInvOrders[i]);
+        var info = document.getElementById('msInvInfo');
+        if (info) {
+            info.innerHTML = '<b>' + msInvOrders.length + '</b> order' + (msInvOrders.length > 1 ? 's' : '') +
+                ' → <b>' + n + '</b> supplier invoice' + (n > 1 ? 's' : '') + ' (প্রতি supplier-এর জন্য একটি)';
+        }
+        var bar = document.getElementById('msInvBar');
+        if (bar) {
+            var fmts = [{ k: 'a4', l: 'A4', s: '210 × 297 mm' }, { k: 'a5', l: 'A5', s: '148 × 210 mm' }], bh = '';
+            for (var j = 0; j < fmts.length; j++) {
+                bh += '<button class="ms-fmt' + (msInvFormat === fmts[j].k ? ' on' : '') + '" onclick="msInvFmt(\'' + fmts[j].k + '\')">' +
+                    fmts[j].l + ' <small style="font-weight:700;opacity:.8">' + fmts[j].s + '</small></button>';
+            }
+            bar.innerHTML = bh;
+        }
+        var body = document.getElementById('msInvBody');
+        if (!body) return;
+        var html = (typeof multiSupplierInvoiceHtml === 'function') ? multiSupplierInvoiceHtml(msInvOrders, msInvFormat) : '';
+        if (!html) { body.innerHTML = '<div class="ms-emptyrow">কোনো supplier invoice নেই।</div>'; return; }
+        var inner = html.replace(/^[\s\S]*<body>/, '').replace(/<\/body>[\s\S]*$/, '');
+        var css = (html.match(/<style>([\s\S]*?)<\/style>/) || [, ''])[1];
+        var dim = (msInvFormat === 'a5') ? [559, 794] : [794, 1123];
+        var scale = Math.min(1, 620 / dim[0]);
+        body.innerHTML = '<style>' + css + '</style>' +
+            '<div class="ms-scale" style="width:' + Math.round(dim[0] * scale) + 'px;height:' + Math.round(dim[1] * scale) + 'px">' +
+            '<div style="width:' + dim[0] + 'px;transform:scale(' + scale + ');transform-origin:top left">' + inner + '</div></div>';
+    }
+    window.msInvDoPrint = function () {
+        if (!msInvOrders.length) return;
+        var html = multiSupplierInvoiceHtml(msInvOrders, msInvFormat);
+        if (!html) return;
+        /* 2026-09-18 (this request) — A4/A5 invoices use web fonts; rhPrintFrame
+           waits for them (max 1.2s) rather than guessing a delay.
+           Printing still mutates nothing — no setData(), no API call. */
+        rhPrintFrame(html);
+        try { logActivity('multi_supplier_invoice_printed', 'Printed supplier invoices for ' + msInvOrders.length + ' order(s) as ' + msInvFormat); } catch (e) {}
+        msInvClose();
+    };
+
+    window.msPaint = function () {
+        var list = rows();
+        var el = document.getElementById('msList');
+        var t = document.getElementById('msTotal');
+        var badge = document.getElementById('msCount');
+        if (t) t.textContent = list.length + ' orders';
+        if (badge) badge.textContent = list.length ? (' (' + list.length + ')') : '';
+        msPrune(list);
+        if (!list.length) {
+            el.innerHTML = '<div class="ms-card"><div class="ms-empty"><i class="fas fa-people-arrows" style="font-size:1.9rem;color:#cbd5e1"></i><br><br>কোনো Multi-Supplier order নেই।<br><small>একই order-এ ২+ ভিন্ন Supplier থাকলেই শুধু এখানে আসবে।</small></div></div>';
+            msProdSummary();
+            msSync();
+            return;
+        }
+        var h = '';
+        for (var i = 0; i < list.length; i++) {
+            var o = list[i];
+            var ids = orderSupplierIds(o);
+            var groups = orderSupplierGroups(o, 'admin', '');
+            var invN = (typeof multiSupplierInvoiceCount === 'function') ? multiSupplierInvoiceCount(o) : 0;
+            h += '<div class="ms-card"><div class="ms-head">' +
+                 '<div style="display:flex;gap:11px;align-items:flex-start;min-width:0">' +
+                 '<input type="checkbox" class="ms-sel" value="' + esc(o.id) + '"' + (msHas(o.id) ? ' checked' : '') + ' onclick="msToggle(\'' + esc(o.id) + '\',this.checked)" title="Select this order">' +
+                 '<div><div class="ms-oid"><i class="fas fa-receipt"></i> Order #' + esc(o.id) + '</div>' +
+                 '<div class="ms-meta">' + esc(o.date || '') + ' · ' + esc(o.customer || '') + ' · ' + esc(formatCurrency(Number(o.amount) || 0)) + '</div>' +
+                 '<div class="ms-meta"><span class="ms-stagetag"><i class="fas fa-truck-fast"></i> ' + esc(orderStageLabel(o.status)) + '</span></div>' +
+                 '</div></div>' +
+                 '<div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">' +
+                 '<span class="ms-n warn"><i class="fas fa-warehouse"></i> ' + ids.length + ' Suppliers</span>' +
+                 stB(o.status) +
+                 '<button class="btn bp" style="padding:8px 14px;font-size:.78rem" onclick="msOpen(\'' + esc(o.id) + '\')"><i class="fas fa-eye"></i> View</button>' +
+                 '<button class="btn" style="background:#0d9488;color:#fff;padding:8px 12px;font-size:.78rem" onclick="msPrintOne(\'' + esc(o.id) + '\')" title="Supplier invoices"><i class="fas fa-print"></i> ' + invN + '</button>' +
+                 '<button class="btn" style="background:#dc2626;color:#fff;padding:8px 12px;font-size:.78rem" onclick="msDeleteOne(\'' + esc(o.id) + '\')" title="Delete this order"><i class="fas fa-trash-can"></i></button>' +
+                 '</div></div><div class="ms-body">';
+            h += orderStageStripHtml(o.status);
+            h += '<div class="ms-stagebox"><b style="font-size:.76rem;color:#475569">Order Stage:</b>' + msStageSelect(o) +
+                 '<span class="hint">এই stage supplier ও reseller — দুজনেই দেখতে পাবে।</span></div>';
+            for (var g = 0; g < groups.length; g++) {
+                var G = groups[g];
+                /* #18 — supplier list with photo / product / variant / qty / sold price */
+                h += '<div class="ms-grp' + (G.kind === 'supplier' ? ' own' : '') + '">' +
+                     '<div class="ms-gh"><span>' + kindTag(G.kind) + ' ' + esc(G.label) + '</span>' +
+                     '<span style="font-size:.73rem;font-weight:800">' + G.lines + ' line(s) · ' + G.qty + ' pcs' +
+                     (msGroupSold(G) ? ' · <span class="ms-sold">' + esc(formatCurrency(msGroupSold(G))) + '</span>' : '') +
+                     '</span></div>';
+                for (var k = 0; k < G.items.length; k++) {
+                    var it = G.items[k];
+                    h += '<div class="ms-it">' +
+                         '<div style="display:flex;gap:10px;align-items:center;min-width:0">' + msThumb(it.image) +
+                         '<div style="min-width:0"><span class="n">' + esc(it.name) + '</span>' +
+                         (it.variant ? ' <span class="v">· ' + esc(it.variant) + '</span>' : '') +
+                         '<div class="v">' + esc(formatCurrency(Number(it.price) || 0)) + ' × ' + esc(it.qty) + ' = ' +
+                         '<b class="ms-sold">' + esc(formatCurrency(Number(it.lineTotal) || 0)) + '</b></div></div></div>' +
+                         '<span class="q">' + esc(it.qty) + ' pcs</span></div>';
+                }
+                h += '</div>';
+            }
+            /* #17 — collection is done by the platform, never by a supplier */
+            h += '<div class="ms-note"><i class="fas fa-truck-arrow-right"></i> ' + esc((typeof MULTI_SUPPLIER_NOTICE === 'string') ? MULTI_SUPPLIER_NOTICE : '') + '</div>';
+            h += '</div></div>';
+        }
+        el.innerHTML = h;
+        msProdSummary();
+        msSync();
+    };
+
+    window.msOpen = function (id) {
+        var all = (typeof multiSupplierOrders === 'function') ? multiSupplierOrders() : [];
+        var o = null;
+        for (var i = 0; i < all.length; i++) if (String(all[i].id) === String(id)) { o = all[i]; break; }
+        if (!o) return;
+        var ids = orderSupplierIds(o);
+        var groups = orderSupplierGroups(o, 'admin', '');
+        var h = '<div style="font-size:.8rem;color:#64748b;margin-bottom:12px">' +
+                'Customer: <b>' + esc(o.customer || '-') + '</b> · Phone: <b>' + esc(o.phone || '-') + '</b> · ' +
+                'Date: <b>' + esc(o.date || '-') + '</b> · Amount: <b>' + esc(formatCurrency(Number(o.amount) || 0)) + '</b> · ' +
+                'Status: ' + stB(o.status) + '</div>' +
+                '<div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
+                '<span class="ms-n warn"><i class="fas fa-warehouse"></i> Total Suppliers: ' + ids.length + '</span>' +
+                '<button class="btn" style="background:#0d9488;color:#fff;padding:7px 12px;font-size:.76rem" onclick="msInvClose();msPrintOne(\'' + esc(o.id) + '\')"><i class="fas fa-print"></i> ' +
+                ((typeof multiSupplierInvoiceCount === 'function') ? multiSupplierInvoiceCount(o) : 0) + ' Supplier Invoice(s)</button>' +
+                '</div>' +
+                orderStageStripHtml(o.status) +
+                '<div class="ms-stagebox"><b style="font-size:.76rem;color:#475569">Order Stage:</b>' + msStageSelect(o) +
+                '<span class="hint">এই stage supplier ও reseller — দুজনেই দেখতে পাবে।</span></div>';
+        for (var g = 0; g < groups.length; g++) {
+            var G = groups[g];
+            h += '<div class="ms-grp' + (G.kind === 'supplier' ? ' own' : '') + '">' +
+                 '<div class="ms-gh"><span>' + kindTag(G.kind) + ' ' + esc(G.label) + '</span>' +
+                 '<span style="font-size:.73rem;font-weight:800">' + G.lines + ' line(s) · ' + G.qty + ' pcs' +
+                 (msGroupSold(G) ? ' · <span class="ms-sold">' + esc(formatCurrency(msGroupSold(G))) + '</span>' : '') +
+                 '</span></div>';
+            for (var k = 0; k < G.items.length; k++) {
+                var it = G.items[k];
+                h += '<div class="ms-it">' +
+                     '<div style="display:flex;gap:10px;align-items:center;min-width:0">' + msThumb(it.image) +
+                     '<div style="min-width:0"><span class="n">' + esc(it.name) + '</span>' +
+                     (it.variant ? ' <span class="v">· ' + esc(it.variant) + '</span>' : '') +
+                     '<div class="v">Product ID: ' + esc(it.productId) + '</div>' +
+                     '<div class="v">' + esc(formatCurrency(Number(it.price) || 0)) + ' × ' + esc(it.qty) + ' = ' +
+                     '<b class="ms-sold">' + esc(formatCurrency(Number(it.lineTotal) || 0)) + '</b></div></div></div>' +
+                     '<span class="q">' + esc(it.qty) + ' pcs</span></div>';
+            }
+            h += '</div>';
+        }
+        h += '<div class="ms-note"><i class="fas fa-truck-arrow-right"></i> ' + esc((typeof MULTI_SUPPLIER_NOTICE === 'string') ? MULTI_SUPPLIER_NOTICE : '') + '</div>';
+        document.getElementById('msModalTitle').innerHTML = '<i class="fas fa-receipt"></i> Order #' + esc(o.id);
+        document.getElementById('msModalBody').innerHTML = h;
+        document.getElementById('msModal').classList.add('show');
+    };
+    window.msClose = function () { document.getElementById('msModal').classList.remove('show'); };
+
+    msPaint();
+    /* 2026-09-19 — the bulk-book button names the courier the admin chose */
+    try {
+        var _mb = document.getElementById('msBookBtn');
+        if (_mb && typeof rhAdminCourierName === 'function') {
+            _mb.innerHTML = '<i class="fas fa-truck-fast"></i> Book Selected → ' + rhAdminCourierName();
+        }
+    } catch (e0) {}
+    setInterval(function () { msPaint(); }, 8000);
+})();
+</script>
+<script>
+/* ADMIN ONLY (this request) — hide the Moderators entry from a moderator session.
+   The Moderators page itself also bounces a moderator, so this is the second
+   layer, not the only one. */
+(function () {
+    try {
+        if (sessionStorage.getItem('user_type') !== 'admin') {
+            document.querySelectorAll('.sb-item[href="moderators.html"]').forEach(function (a) { a.style.display = 'none'; });
+        }
+    } catch (e) {}
+})();
+</script>
+<style id="admin-mobile-fix">
+/* 2026-09-16 — MOBILE FIX (this request). Same rules as every other admin page.
+   This file never closes its <head>, so the block is placed at the end of the
+   document instead — a <style> works from anywhere. Everything is inside a
+   max-width query, so the DESKTOP LAYOUT IS UNCHANGED. */
+@media (max-width:768px){
+  .topbar { padding:10px 12px; gap:8px; }
+  .topbar h2 { font-size:.92rem; }
+  .topbar h2 i { margin-right:4px; }
+  .topbar-right { gap:6px; }
+  .user-pill { padding:5px 9px; font-size:.72rem; }
+  .btn-logout { padding:7px 10px; }
+  .data-table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%; }
+}
+</style>
+<style id="panel-fullwidth-fix">
+/* 2026-09-16 — FULL-WIDTH FIX (this request). Same rules as every other admin page.
+   This file never closes its <head>, so the block goes at the end of the document —
+   a <style> works from anywhere. Desktop is untouched. */
+@media (max-width:1024px){
+  html, body { overflow-x:hidden !important; max-width:100% !important; }
+  .main { margin-left:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box; }
+  .content { width:100% !important; max-width:100% !important; box-sizing:border-box; }
+}
+</style>
+</body>
+</html>
