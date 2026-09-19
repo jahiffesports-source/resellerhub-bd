@@ -2390,9 +2390,29 @@ function adminLedger() {
         return 'Supplier #' + id;
     }
     function push(e) {
-        e.ts = orderTimeMs({ date: e.date });
+        /* 2026-09-20 — e.ts may now be supplied by the caller. A withdrawal row
+           needs a stamp that survives being stored as a bare date (see below);
+           every other row keeps deriving it from e.date exactly as before. */
+        if (e.ts === undefined || e.ts === null || e.ts === '') e.ts = orderTimeMs({ date: e.date });
         e.amount = Number(e.amount) || 0;
         out.push(e);
+    }
+    /* 2026-09-20 — BUG FIX: a withdrawal was stored as a bare DATE ("2026-09-19"),
+       so it sorted at midnight of its own day — BEFORE the order profits credited
+       later that same day. The withdrawal-breakdown FIFO walk therefore never put
+       those credits in its pool and reported far less than the amount withdrawn
+       (a ৳900 withdrawal showed only ৳410 from one order, and the rest of the
+       orders were missing from the list entirely).
+       A date-only stamp is really "sometime during that day", so it is treated as
+       the END of that day. Same-day earnings then land in the pool where they
+       belong. Rows that already carry a clock time are left untouched. */
+    function withdrawalStampMs(dateStr) {
+        var t = orderTimeMs({ date: dateStr });
+        if (!t) return t;
+        var s = String(dateStr || '').trim();
+        /* exactly YYYY-MM-DD and nothing else -> no clock time was stored */
+        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return t + 86399999;   /* 23:59:59.999 */
+        return t;
     }
 
     /* 1. reseller wallet transactions */
@@ -2420,7 +2440,11 @@ function adminLedger() {
             date: x.date, party: 'reseller', partyId: x.resellerId,
             partyName: String(x.resellerName || '') || rName(x.resellerId),
             type: 'withdrawal', label: ledgerLabelOf('withdrawal'), direction: 'debit',
-            amount: x.amount, status: String(x.status || ''), note: xNote.join(' · '), source: 'withdrawals', ref: String(x.id || '')
+            amount: x.amount, status: String(x.status || ''), note: xNote.join(' · '), source: 'withdrawals', ref: String(x.id || ''),
+            /* 2026-09-20 — a bare date is treated as the END of that day, so the
+               earnings banked earlier the same day are inside this withdrawal's
+               window instead of sorting after it (see withdrawalStampMs). */
+            ts: withdrawalStampMs(x.date)
         });
     }
 
@@ -7592,7 +7616,21 @@ function offerProgress(o, resellerId) {
     var st = getOfferState(o.id, resellerId);
     var count = 0, deadline = 0;
     if (st && st.startedAt) {
-        var from = new Date(st.startedAt).getTime();
+        /* 2026-09-20 — BUG FIX: an offer read 0/2 while the reseller had ALREADY
+           delivered 2 orders, so the Claim button never appeared.
+           ROOT CAUSE: the lower bound was st.startedAt, the moment the reseller
+           pressed "Start". A reseller who delivered BEFORE pressing Start — the
+           normal case, you deliver and then look at your offers — had every one
+           of those orders silently dropped, so progress stayed at 0 forever.
+           FIX: the window opens at the OFFER's own publish date when there is
+           one, so anything delivered since the offer existed counts. Falling
+           back to startedAt keeps old rows without a createdAt unchanged. */
+        var fromRaw = new Date(st.startedAt).getTime();
+        var pub = offerStartMs(o);
+        var from = fromRaw;
+        if (!isNaN(fromRaw) && pub > 0) from = Math.min(fromRaw, pub);
+        else if (!isNaN(fromRaw)) from = fromRaw;
+        else from = pub;
         deadline = offerDeadlineMs(o, st);
         var now = Date.now();
         var to = deadline ? Math.min(deadline, now) : now;
