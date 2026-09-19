@@ -198,17 +198,38 @@ function ensureDir() {
    exact but costs a few stat calls. A 304 can then be answered without reading a
    single byte of file content. */
 let STORE_REV = 0;
-async function storeSignature() {
-    if (DB) return dbSignature();
-    return jsonSignature();
+/* 2026-09-19 — TWO separate change counters, and this is the whole point of the
+   split. STORE_REV is bumped on every write, so it made ONE signature for both
+   doors: upload one photo and every client's *data* response went stale too, and
+   place one order and every client's *image* response went stale too. With a
+   thousand resellers that meant the multi-megabyte image payload was re-sent on
+   every unrelated write.
+   DATA_REV moves only when a NON-image key is written, IMG_REV only when an
+   `rh_img_*` key is written. Each door now has its own exact signature. */
+let DATA_REV = 0;
+let IMG_REV = 0;
+
+function isImgKey(k) { return String(k).indexOf('rh_img_') === 0; }
+
+/* opts: { onlyImages: true } -> signature over the image keys only
+         { skipImages: true } -> signature over everything EXCEPT the image keys
+         (no opts)            -> everything, exactly as before */
+async function storeSignature(opts) {
+    if (DB) return dbSignature(opts);
+    return jsonSignature(opts);
 }
 
-function jsonSignature() {
-    const parts = [String(STORE_REV)];
+function jsonSignature(opts) {
+    const onlyImages = !!(opts && opts.onlyImages);
+    const skipImages = !!(opts && opts.skipImages);
+    const parts = [String(onlyImages ? IMG_REV : skipImages ? DATA_REV : STORE_REV)];
     try {
         const names = fs.readdirSync(DATA_DIR).sort();
         for (const n of names) {
             if (!n.endsWith('.json')) continue;
+            const img = n.indexOf('rh_img_') === 0;
+            if (onlyImages && !img) continue;
+            if (skipImages && img) continue;
             try {
                 const st = fs.statSync(path.join(DATA_DIR, n));
                 parts.push(n + ':' + st.size + ':' + Math.round(st.mtimeMs));
@@ -218,21 +239,29 @@ function jsonSignature() {
     return '"' + crypto.createHash('sha1').update(parts.join('|')).digest('hex').slice(0, 20) + '"';
 }
 
-async function dbSignature() {
+async function dbSignature(opts) {
+    const onlyImages = !!(opts && opts.onlyImages);
+    const skipImages = !!(opts && opts.skipImages);
     try {
-        const [rows] = await DB.query(
-            'SELECT COUNT(*) AS c, MAX(updated_at) AS m FROM rh_store');
+        let sql = 'SELECT COUNT(*) AS c, MAX(updated_at) AS m FROM rh_store';
+        const args = [];
+        if (onlyImages) { sql += ' WHERE k LIKE ?'; args.push('rh_img_%'); }
+        else if (skipImages) { sql += ' WHERE k NOT LIKE ?'; args.push('rh_img_%'); }
+        const [rows] = await DB.query(sql, args);
         const r = rows && rows[0] ? rows[0] : {};
-        const s = String(r.c || 0) + ':' + String(r.m || '') + ':' + String(DB_REV);
+        const rev = onlyImages ? IMG_REV : skipImages ? DATA_REV : DB_REV;
+        const s = String(r.c || 0) + ':' + String(r.m || '') + ':' + String(rev);
         return '"' + crypto.createHash('sha1').update(s).digest('hex').slice(0, 20) + '"';
     } catch (e) {
         return '"rev' + DB_REV + '"';
     }
 }
 
-/* Send a store payload, but check the cheap signature BEFORE building anything. */
-async function sendStoreJson(req, res, build) {
-    const etag = await storeSignature();
+/* Send a store payload, but check the cheap signature BEFORE building anything.
+   `sigOpts` narrows WHICH keys the signature covers, so one door going stale does
+   not drag the other one with it (see storeSignature). */
+async function sendStoreJson(req, res, build, sigOpts) {
+    const etag = await storeSignature(sigOpts);
     const headers = {
         'Content-Type': 'application/json; charset=utf-8',
         'ETag': etag,
@@ -312,6 +341,8 @@ function jsonPut(key, value) {
         fs.writeFileSync(tmp, JSON.stringify(value), 'utf8');
         fs.renameSync(tmp, file);
         STORE_REV++;
+        /* 2026-09-19 — keep the two doors' counters honest (see storeSignature). */
+        if (isImgKey(key)) IMG_REV++; else DATA_REV++;
         return true;
     } catch (e) {
         try { fs.unlinkSync(tmp); } catch (e2) { }
@@ -329,6 +360,8 @@ function jsonReset() {
         try { fs.unlinkSync(path.join(DATA_DIR, f)); n++; } catch (e) { }
     }
     STORE_REV++;
+    DATA_REV++;   /* a reset invalidates both doors */
+    IMG_REV++;
     return n;
 }
 
@@ -357,6 +390,7 @@ async function dbPut(key, value) {
             'ON DUPLICATE KEY UPDATE v = VALUES(v)',
             [key, JSON.stringify(value === undefined ? null : value)]);
         DB_REV++;
+        if (isImgKey(key)) IMG_REV++; else DATA_REV++;
         return true;
     } catch (e) {
         return false;
@@ -437,7 +471,11 @@ async function handleStore(req, res, query) {
            therefore came back EMPTY — every page booted with no shared data at all
            (single-key reads were fine, which is why it went unnoticed).
            `build` must await it, and sendStoreJson already awaits `build`. */
-        return sendStoreJson(req, res, async () => ({ ok: true, data: await storeGetAll({ noimg: query.get('noimg') === '1' }) }));
+        /* 2026-09-19 — the data door now has its OWN signature: uploading a photo
+           bumps IMG_REV only, so this response stays 304 (0 bytes) for everyone.
+           It used to be invalidated by every image upload as well. */
+        return sendStoreJson(req, res, async () => ({ ok: true, data: await storeGetAll({ noimg: query.get('noimg') === '1' }) }),
+            query.get('noimg') === '1' ? { skipImages: true } : null);
     }
 
     if (req.method !== 'POST') return sendJson(res, 405, { ok: false, message: 'GET or POST only' });
@@ -480,6 +518,33 @@ async function handleStore(req, res, query) {
 
         sendJson(res, 400, { ok: false, message: 'send {key,value} or {bulk:{...}}' });
     });
+}
+
+/* ------------------------------------------------------------- /api/images
+   2026-09-19 — THE IMAGE DOOR.
+   Until now every page asked /api/store (WITHOUT noimg) just to get the pictures,
+   which meant it downloaded the orders, the products and everything else a second
+   time — and because both shared one signature, ANY write (one new order) made the
+   multi-megabyte image payload stale for every client at once.
+   This route returns ONLY the `rh_img_*` keys and carries its OWN ETag, so:
+     * an order or a product edit leaves the image response at 304 / 0 bytes
+     * only an actual image upload forces the images to be sent again
+   The bytes are IDENTICAL to what /api/store returned before — the same base64
+   strings in the same keys. Nothing is converted, moved or migrated, and the old
+   route is left exactly as it was, so anything not yet switched keeps working.
+   Read-only: it never accepts POST. */
+async function handleImages(req, res) {
+    if (req.method !== 'GET') return sendJson(res, 405, { ok: false, message: 'GET only' });
+    return sendStoreJson(req, res, async () => {
+        const all = await storeGetAll({ noimg: false });
+        const out = {};
+        for (const k in all) {
+            if (!Object.prototype.hasOwnProperty.call(all, k)) continue;
+            if (String(k).indexOf('rh_img_') !== 0) continue;
+            out[k] = all[k];
+        }
+        return { ok: true, data: out };
+    }, { onlyImages: true });
 }
 
 /* ------------------------------------------------------------ /api/steadfast */
@@ -634,6 +699,11 @@ http.createServer((req, res) => {
 
     if (pathname === '/api/store') {
         return handleStore(req, res, query).catch(function (e) {
+            sendJson(res, 500, { ok: false, message: String(e && e.message || e) });
+        });
+    }
+    if (pathname === '/api/images') {
+        return handleImages(req, res).catch(function (e) {
             sendJson(res, 500, { ok: false, message: String(e && e.message || e) });
         });
     }

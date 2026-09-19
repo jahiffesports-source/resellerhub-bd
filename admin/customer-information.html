@@ -430,7 +430,9 @@ body .hamburger { display:none !important; }
         if (!e.key) return;
         if (e.key.indexOf('rh_') === 0) ciPaint();
     });
-    setInterval(ciPaint, 15000);
+    /* 2026-09-19 — was 15000. Four refreshes a minute -> one. Nothing else changes:
+       a new record still shows up on its own, just within a minute instead of 15s. */
+    setInterval(ciPaint, 60000);
 })();
 </script>
 

@@ -316,7 +316,8 @@ body .hamburger { display:none !important; }
         if (!e.key) return;
         if (e.key.indexOf('rh_') === 0) render();
     });
-    setInterval(render, 15000);
+    /* 2026-09-19 — was 15000 (see customer-information.html): one refresh a minute. */
+    setInterval(render, 60000);
 })();
 </script>
 

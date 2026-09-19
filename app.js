@@ -1543,8 +1543,20 @@ function rhLoadImagesAsync() {
     if (window.__rhImgAsyncStarted) return;
     window.__rhImgAsyncStarted = true;
     try {
-        fetch('/api/store', { method: 'GET' })
-            .then(function (r) { return r.json(); })
+        /* 2026-09-19 — ask the image door, not the whole store.
+           /api/images returns the same `rh_img_*` bytes but carries its own ETag,
+           so a new order no longer forces every phone to re-download every photo.
+           SAFETY: if that route is missing (an older server, or static hosting),
+           we silently fall back to the old /api/store call. The images then arrive
+           exactly as they always did — this can never make a picture disappear. */
+        fetch('/api/images', { method: 'GET' })
+            .then(function (r) {
+                if (!r || !r.ok) throw new Error('no image route');
+                return r.json();
+            })
+            .catch(function () {
+                return fetch('/api/store', { method: 'GET' }).then(function (r) { return r.json(); });
+            })
             .then(function (j) {
                 var data = (j && j.data) || {};
                 var pending = [];

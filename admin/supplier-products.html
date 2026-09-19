@@ -1212,7 +1212,8 @@ approveBtn.classList.remove('ap-approve');
 // Initial render
 renderGrid();
 renderStats();
-setInterval(function(){renderGrid();renderStats();},15000);
+/* 2026-09-19 — was 15000 (see customer-information.html): one refresh a minute. */
+setInterval(function(){renderGrid();renderStats();},60000);
 })();
 
 // Global re-exports for legacy inline-onclick references (closeAppr, etc.)
