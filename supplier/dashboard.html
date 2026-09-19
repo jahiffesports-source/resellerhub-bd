@@ -1995,7 +1995,10 @@ function shipCard(name,qty,img,sz,cl){var meta='';if(sz)meta+='<div style="font-
    variants that carry ONLY a variant_id (no size/colour text) collapsed into a
    single card here while the merge table correctly kept them apart — so the
    supplier would pack the wrong items. One key, one answer. */
-function renderShipStats(){var o=allOrdersList(),m={},any=false;for(var i=0;i<o.length;i++){var x=o[i];if(supSent(x))continue;var s=(x.status||'').toLowerCase();if(s==='delivered'||s==='cancel'||s==='cancelled'||s==='returned'||s==='shipped')continue;if(x.items){for(var j=0;j<x.items.length;j++){var it=x.items[j];if(!isMyLine(it))continue;any=true;var sz=it.size||(it.sizeQty&&it.sizeQty[0]&&it.sizeQty[0].size)||'';var cl=it.color||'';var key=supVarKey(it);if(!m[key])m[key]={name:it.name||'Product',qty:0,img:it.image||pImgOf(it.productId),sz:sz,cl:cl};m[key].qty+=(it.qty||1)}}else if(isMyLine({productId:x.productId,supplierId:x.supplierId})){any=true;var sz2=x.size||(x.sizeQty&&x.sizeQty[0]&&x.sizeQty[0].size)||'';var synth={productId:x.productId,variant_id:x.variant_id,size:sz2,color:x.color||''};var k2=supVarKey(synth);if(!m[k2])m[k2]={name:x.productName||'Product',qty:0,img:pImgOf(x.productId),sz:sz2,cl:x.color||''};m[k2].qty+=(x.qty||1)}}
+function renderShipStats(){var o=allOrdersList(),m={},any=false;for(var i=0;i<o.length;i++){var x=o[i];if(supSent(x))continue;var s=(x.status||'').toLowerCase();if(s==='delivered'||s==='cancel'||s==='cancelled'||s==='returned'||s==='shipped')continue;/* 2026-09-20 — the "Ship করতে হবে" card now agrees with the Order List:
+   a row the supplier has already started (packaging / ready_to_ship /
+   steadfast_created) is no longer "to be shipped", so it drops out here too. */
+if(typeof shipStageOf==='function'&&shipStageOf(x,sup.id)!=='none')continue;if(x.items){for(var j=0;j<x.items.length;j++){var it=x.items[j];if(!isMyLine(it))continue;any=true;var sz=it.size||(it.sizeQty&&it.sizeQty[0]&&it.sizeQty[0].size)||'';var cl=it.color||'';var key=supVarKey(it);if(!m[key])m[key]={name:it.name||'Product',qty:0,img:it.image||pImgOf(it.productId),sz:sz,cl:cl};m[key].qty+=(it.qty||1)}}else if(isMyLine({productId:x.productId,supplierId:x.supplierId})){any=true;var sz2=x.size||(x.sizeQty&&x.sizeQty[0]&&x.sizeQty[0].size)||'';var synth={productId:x.productId,variant_id:x.variant_id,size:sz2,color:x.color||''};var k2=supVarKey(synth);if(!m[k2])m[k2]={name:x.productName||'Product',qty:0,img:pImgOf(x.productId),sz:sz2,cl:x.color||''};m[k2].qty+=(x.qty||1)}}
 var h='';for(var k in m){h+=shipCard(m[k].name,m[k].qty,m[k].img,m[k].sz,m[k].cl)}
 var el=document.getElementById('shipStats');if(el)el.innerHTML=h||'<div style="display:flex;align-items:center;gap:8px;color:#16a34a;font-weight:800;font-size:.82rem"><i class="fas fa-check-circle"></i> সব অর্ডার শিপিং-এ পাঠানো হয়েছে ✓</div>'}
 function varMeta(it,x){var o=it||x||{};var sz=o.size||(o.sizeQty&&o.sizeQty[0]&&o.sizeQty[0].size)||'';var cl=o.color||'';var m='';if(sz)m+='<div style="font-size:.56rem;background:#eef2ff;color:#3730a3;font-weight:800;border-radius:6px;padding:1px 5px;margin-top:2px;display:inline-block">📐 ' +escH(sz)+'</div>';if(cl)m+='<div style="font-size:.56rem;background:#fdf2f8;color:#9d174d;font-weight:800;border-radius:6px;padding:1px 5px;margin-top:2px;display:inline-block;margin-left:2px">🎨 '+escH(cl)+'</div>';return m}
@@ -2069,6 +2072,10 @@ var o=allOrdersList(),q=(document.getElementById('oq')||{value:''}).value.toLowe
 o=supSortNewestFirst(o);
 var shown=[];
 for(var i=0;i<o.length;i++){var x=o[i];
+/* 2026-09-20 — hide rows the supplier has nothing left to do for (packaging,
+   ready_to_ship, steadfast_created, delivered, cancelled, returned). Same
+   guard the Ship করতে হবে card uses, so the two lists agree. */
+if(!supActionable(x))continue;
 if(q&&String(x.id).toLowerCase().indexOf(q)===-1)continue;
 shown.push(x);
 var serial=Number(x.__supSer)||0;
@@ -2189,6 +2196,22 @@ function supSummaryStatusIncluded(x) {
    'none' and bulk Ready to Ship skips any order that already has a Parcel ID.
    Reuses supLineCounts() for the void half instead of a second list. */
 var SUP_GONE_STATUS = { 'delivered': 1 };
+/* 2026-09-20 — BUG FIX. The Order List kept showing orders the supplier had
+   already started processing (packaging, ready_to_ship, steadfast_created),
+   and kept showing delivered / cancelled / returned rows too, so the "Order
+   List" never matched the actual work the supplier still had to do. After
+   moving a row to Packaging it stayed on the table, then the 10-second
+   setInterval re-render apparently flickered it back on again. The fix is
+   a single guard that the table, the bulk buttons, the Ship করতে হবে
+   product card and the count strip all agree on. */
+function supActionable(x) {
+  if (!x) return false;
+  if (!supLineCounts(x)) return false;                                      /* cancelled/rejected/failed/returned */
+  if (SUP_GONE_STATUS[String((x && x.status) || '').toLowerCase()]) return false; /* delivered */
+  if (typeof isMultiSupplierOrder === 'function' && isMultiSupplierOrder(x)) return false;
+  if (typeof shipStageOf === 'function' && shipStageOf(x, sup.id) !== 'none') return false; /* packaging/ready_to_ship/steadfast_created */
+  return true;
+}
 function supSelectable(x) {
   if (!supLineCounts(x)) return false;
   /* #15/#16 — a Multi-Supplier order can never be ticked for a ship/print
