@@ -1014,6 +1014,14 @@ function render(){
     if(!rid&&shop){rid=String(shop.id);try{history.replaceState(null,'',location.pathname+'?rid='+rid)}catch(e){}}
     applyTheme();
     applyHomepageBlock();
+    /* 2026-09-20 (this request) — the home-page BLOCKS (the admin's default
+       My Shop Homepage design) are rendered by renderCatSections(), which
+       was previously only called by refreshView() — i.e. on user action.
+       A brand-new reseller opening their My Shop for the first time
+       therefore saw an empty #catSections until they clicked something.
+       Paint it here too so the admin's default blocks (and the "All
+       Products" fallback when there are none) appear at initial load. */
+    try{renderCatSections()}catch(e){}
     /* Part 9 — the reseller's ON/OFF switch for the "Shop Smart Lifestyles"
        promo banner. Read from THIS shop's settings (default ON), so switching it
        OFF only ever affects this shop and survives refresh / logout / login. */
