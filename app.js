@@ -7616,22 +7616,23 @@ function offerProgress(o, resellerId) {
     var st = getOfferState(o.id, resellerId);
     var count = 0, deadline = 0;
     if (st && st.startedAt) {
-        /* 2026-09-20 — BUG FIX v3 (revert the v2 mistake).
-           v2 dropped the lower bound entirely ("all eligible delivered orders
-           count"). That meant a reseller with 5 delivered orders from a year
-           ago could create a brand-new offer today with target=1 and immediately
-           Claim — a clean exploit of the bonus program.
-           v3: lower bound = when the offer became available (createdAt). Orders
-           delivered BEFORE the offer existed do not count (the reseller could
-           not have known about the bonus). Orders delivered between createdAt
-           and the deadline DO count — that's the original spec, and it's also
-           what fixes the original bug ("orders delivered before pressing Start
-           but after the offer was published").
-           For legacy offers with no createdAt, fall back to startedAt — the
-           original behaviour, kept so the existing offers don't change. */
-        var pub = offerStartMs(o);
-        var started = new Date(st.startedAt).getTime();
-        var from = pub > 0 ? pub : (isNaN(started) ? 0 : started);
+        /* 2026-09-20 — FINAL RULE, confirmed by the owner (04:05).
+           Two answers, both explicit:
+             1. "Offer-এ কোন orders গণনা হবে?"      -> "Start চাপার পরের orders"
+             2. "কোন status-এর order ধরা হবে?"      -> "শুধু Delivered"
+           So: the window is [startedAt, startedAt + windowDays] and ONLY
+           status 'delivered' counts (OFFER_COMPLETED_STATUS, enforced inside
+           resellerDeliveredOrdersBetween).
+           Everything before the Start tap is ignored — including orders
+           delivered after the offer was published. That is what makes the
+           program non-exploitable: a reseller cannot bank a year of old
+           deliveries and then claim a brand new offer for free.
+           Three earlier attempts were wrong in one direction or the other:
+             v1 min(startedAt, createdAt)  -> still counted pre-Start orders
+             v2 no lower bound             -> counted EVERY past order (exploit)
+             v3 createdAt                  -> counted pre-Start orders again
+           The original spec was right. This restores it verbatim. */
+        var from = new Date(st.startedAt).getTime();
         deadline = offerDeadlineMs(o, st);
         var now = Date.now();
         var to = deadline ? Math.min(deadline, now) : now;
