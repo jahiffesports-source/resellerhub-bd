@@ -108,6 +108,22 @@ function rhStorePush(key) {
         }, 400);
     } catch (e) { }
 }
+/* 2026-09-19 — POLL COST (option 1: the three small, low-risk changes).
+   1. 15s -> 60s. Every open tab used to ask the server four times a minute;
+      with a thousand resellers online that is most of the load on its own.
+   2. `cache: 'no-store'` forced a FULL re-download on every single poll. The
+      server already sends an ETag plus `Cache-Control: no-cache`, so switching
+      to 'no-cache' makes the browser revalidate: when nothing changed the
+      server answers 304 with NO body. Data can still never go stale — 'no-cache'
+      means "you may keep it, but you MUST ask every time".
+   3. A tab the user is not looking at no longer reloads. It still merges the
+      new data, and reloads the moment the tab becomes visible again.
+   Nothing else changes: a change made on another device STILL shows up on its
+   own, and F5 / the browser refresh button are untouched — this only governs
+   the automatic background refresh.
+   RH_WATCH_MS is left as a variable so the interval can be tuned (or put back
+   to 15000) without editing this function again. */
+var RH_WATCH_MS = 60000;
 /* Pull the store and reload only when something actually changed, so a second
    device's registration appears here without the user touching anything. */
 function rhStoreWatch() {
@@ -129,8 +145,9 @@ function rhStoreWatch() {
                reload the page the moment the store changed, which wiped a half-typed
                email or password (and looked like a random refresh). The data is still
                merged below; only the re-render is held back until the field is idle. */
-            if (pendingReload && !rhTypingNow()) { location.reload(); return; }
-            fetch('/api/store?noimg=1', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
+            /* 2026-09-19 — a tab nobody is looking at must not spend a reload. */
+            if (pendingReload && !rhTypingNow() && !document.hidden) { location.reload(); return; }
+            fetch('/api/store?noimg=1', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (j) {
                 if (!j || !j.ok || !j.data) return;
                 var sig = JSON.stringify(j.data);
                 if (last === null) { last = sig; return; }     /* first read = baseline */
@@ -150,11 +167,25 @@ function rhStoreWatch() {
                     }
                 }
                 if (!changed) return;
-                if (rhTypingNow()) pendingReload = true;   /* hold the reload, retry later */
-                else location.reload();
+                if (rhTypingNow()) { pendingReload = true; return; }   /* hold the reload, retry later */
+                /* 2026-09-19 — hold it while the tab is in the background too. The
+                   data above is already merged, so the reload only has to repaint —
+                   and a background tab repainting is pure waste. */
+                if (document.hidden) { pendingReload = true; return; }
+                location.reload();
             }).catch(function () { });
         } catch (e) { }
-    }, 15000);
+    }, RH_WATCH_MS);
+    /* 2026-09-19 — come back to the tab and the held-back reload happens at once,
+       instead of waiting for the next poll tick. */
+    try {
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden && pendingReload && !rhTypingNow()) {
+                pendingReload = false;
+                try { location.reload(); } catch (e) { }
+            }
+        });
+    } catch (e) { }
 }
 /* start the watcher once the page has settled, so it never competes with the
    first paint. It no-ops entirely when there is no shared store. */

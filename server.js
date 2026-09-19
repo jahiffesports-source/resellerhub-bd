@@ -431,7 +431,13 @@ async function handleStore(req, res, query) {
         /* ?noimg=1 — everything except the spilled image bytes (see storeGetAll).
            sendStoreJson answers a matching If-None-Match from the cheap directory
            signature, so a repeat page load never reads or serialises the ~6MB. */
-        return sendStoreJson(req, res, () => ({ ok: true, data: storeGetAll({ noimg: query.get('noimg') === '1' }) }));
+        /* 2026-09-19 — BUG FIX. storeGetAll() became async when the optional MySQL
+           backend was added, and this call site was never updated: `data` held a
+           PENDING PROMISE, and JSON.stringify(Promise) is `{}`. The whole store
+           therefore came back EMPTY — every page booted with no shared data at all
+           (single-key reads were fine, which is why it went unnoticed).
+           `build` must await it, and sendStoreJson already awaits `build`. */
+        return sendStoreJson(req, res, async () => ({ ok: true, data: await storeGetAll({ noimg: query.get('noimg') === '1' }) }));
     }
 
     if (req.method !== 'POST') return sendJson(res, 405, { ok: false, message: 'GET or POST only' });
