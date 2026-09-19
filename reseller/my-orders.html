@@ -473,6 +473,32 @@ setInterval(paint,4000);
     ];
     var currentFilter = '';
 
+    /* 2026-09-19 — "the Shipping icon shows nothing and clicking it shows nothing".
+       ROOT CAUSE: this card's key is `shipping`, but the app WRITES `shipped`
+       (grep the status assignments: `shipped` x3, `shipping` x0). `counts[]` keyed
+       on the raw status and `loadOrders()` compared the raw status, so a shipped
+       order was counted on no card AND listed by no card — the count read 0 and
+       the click looked dead. `badge()` right below already treats these as one
+       state (`'shipping'` and `'shipped'` share `b-shipping`); the counting and
+       filtering simply never learned that.
+       The same mismatch exists for `processing`/`new` and `cancelled`/`cancel`,
+       and the courier hand-off states (`ready_to_ship`, `courier_created`,
+       `steadfast_created`) belong to Shipping too. One canonical mapping now
+       feeds BOTH the badge count and the filter, so the number on a card always
+       equals the number of rows clicking it reveals. */
+    var STATUS_ALIAS = {
+        'processing': 'new',
+        'shipped': 'shipping',
+        'ready_to_ship': 'shipping',
+        'courier_created': 'shipping',
+        'steadfast_created': 'shipping',
+        'cancelled': 'cancel'
+    };
+    function canonStatus(s) {
+        s = String(s || 'new').toLowerCase();
+        return STATUS_ALIAS[s] || s;
+    }
+
     function badge(status) {
         var map = { 'new':'b-new', 'processing':'b-new', 'pending':'b-pending', 'confirmed':'b-confirmed', 'packaging':'b-packaging', 'shipping':'b-shipping', 'shipped':'b-shipping', 'delivered':'b-delivered', 'wfr':'b-wfr', 'returned':'b-returned', 'cancel':'b-cancelled', 'cancelled':'b-cancelled' };
         var label = status === 'cancel' ? 'Cancel' : status.charAt(0).toUpperCase() + status.slice(1);
@@ -497,7 +523,7 @@ setInterval(paint,4000);
         var orders = getMyOrders();
         var counts = {};
         for (var i = 0; i < orders.length; i++) {
-            var s = orders[i].status;
+            var s = canonStatus(orders[i].status);
             counts[s] = (counts[s] || 0) + 1;
         }
         var html = '';
@@ -559,7 +585,7 @@ setInterval(paint,4000);
         for (var i = 0; i < orders.length; i++) {
             var o = orders[i];
             var match = true;
-            if (currentFilter && o.status !== currentFilter) match = false;
+            if (currentFilter && canonStatus(o.status) !== currentFilter) match = false;
             if (search && o.id.toLowerCase().indexOf(search) === -1 && o.customer.toLowerCase().indexOf(search) === -1 && o.phone.indexOf(search) === -1) match = false;
             if (match) list.push(o);
         }
@@ -696,8 +722,34 @@ setInterval(paint,4000);
                 '<button onclick="cancelMyShopOrder(\'' + o.id + '\')" style="flex:1;min-width:100px;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;border:none;padding:13px;border-radius:10px;font-weight:800;cursor:pointer;font-size:.9rem;"><i class="fas fa-ban"></i> Cancel</button>' +
                 '</div>';
         }
-        html += '<div style="display:flex;gap:10px;margin-top:10px;"><button onclick="sfViewFraud(\'' + o.id + '\')" style="width:100%;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;padding:11px;border-radius:10px;font-weight:800;cursor:pointer;font-size:.85rem;"><i class="fas fa-shield"></i> 🛡 Customer Fraud Check (Steadfast)</button></div><div id="sfVOOut"></div>';
-        html += '<div style="margin-top:10px"><button onclick="resSfSend(\'' + o.id + '\')" style="width:100%;background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;border:none;padding:11px;border-radius:8px;font-weight:800;font-size:.8rem;cursor:pointer;margin-top:10px"><i class="fas fa-paper-plane"></i> Send to Steadfast</button></div>';
+        /* 2026-09-19 — FRAUD CHECK now covers every courier, not just Steadfast
+           (this request). A picker selects the courier and the value travels to the
+           backend proxy as `action: fraud_<courier>`.
+           IMPORTANT: Paperfly / RedX / Pathao / Carrybee expose NO public fraud
+           API. Each one is a merchant-portal login + query, so every courier needs
+           its OWN merchant credentials stored server-side (see the fraud_* actions
+           in backend/steadfast-proxy.php). A courier whose credentials are missing
+           answers with a clear "not configured" message — never a fabricated
+           result. Steadfast keeps working exactly as before via its official
+           Api-Key/Secret-Key endpoint. */
+        html += '<div style="display:flex;gap:8px;margin-top:10px;align-items:stretch;">' +
+            '<select id="sfFraudCourier" title="Courier" style="flex:0 0 116px;border:1.5px solid #ddd6fe;border-radius:10px;padding:0 8px;font-weight:800;font-size:.78rem;color:#5b21b6;background:#f5f3ff;cursor:pointer;">' +
+            '<option value="steadfast">Steadfast</option>' +
+            '<option value="paperfly">Paperfly</option>' +
+            '<option value="redx">RedX</option>' +
+            '<option value="pathao">Pathao</option>' +
+            '<option value="carrybee">Carrybee</option>' +
+            '</select>' +
+            '<button onclick="sfViewFraud(\'' + o.id + '\')" style="flex:1;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;padding:11px;border-radius:10px;font-weight:800;cursor:pointer;font-size:.85rem;"><i class="fas fa-shield"></i> 🛡 Customer Fraud Check</button></div><div id="sfVOOut"></div>';
+        /* 2026-09-19 — REMOVED: "Send to Steadfast" (this request).
+           An All Orders order is NOT the reseller's own product — it is an
+           admin/supplier catalogue line, so the reseller must not be able to push
+           it to a courier from here. Courier hand-off belongs to My Shop Orders
+           ONLY, where the goods are the reseller's own (the button there is now
+           labelled "Send to Courier").
+           `resSfSend` is left defined (guarded, see below) rather than deleted so
+           nothing that might still reference it breaks; My Shop Orders does NOT
+           call it — that page has its own moSendSteadfast()/moSendOne(). */
 
         document.getElementById('viewBody').innerHTML = html;
         document.getElementById('viewModal').classList.add('show');
@@ -912,6 +964,16 @@ setInterval(paint,4000);
         var o = null;
         for (var i = 0; i < orders.length; i++) { if (String(orders[i].id) === String(orderId)) { o = orders[i]; break; } }
         if (!o) { try { showToast('Order পাওয়া যায়নি', 'error'); } catch (e) {} return; }
+        /* 2026-09-19 — the RULE, not just a hidden button (this request).
+           The All Orders modal no longer renders the courier button, but hiding a
+           control is a UI change, not a permission. Enforce it here as well: only
+           a My Shop order (the reseller's OWN product) may be sent to a courier.
+           Mirrors the existing precedent in chargeFailedDelivery(), where the rule
+           lives in the function rather than in the caller. */
+        if (!isMyShopOrder(o) && !orderHasResellerOwnedLine(o)) {
+            try { showToast('All Orders-এর order কুরিয়ারে পাঠানো যাবে না — শুধু My Shop Orders থেকে পাঠানো যাবে।', 'error'); } catch (e) {}
+            return;
+        }
         var st = {}; try { st = getOne(DB_KEYS.SETTINGS) || {}; } catch (e) {}
         var px = st.sf_proxy || '';
         if (!px && (!st.sf_api_key || !st.sf_secret_key)) {
@@ -956,25 +1018,47 @@ setInterval(paint,4000);
         for (var i = 0; i < orders.length; i++) { if (orders[i].id === orderId) { o = orders[i]; break; } }
         if (!o) return;
         var out = document.getElementById('sfVOOut');
+        /* 2026-09-19 — which courier to check (this request). */
+        var sel = document.getElementById('sfFraudCourier');
+        var courier = (sel && sel.value) ? String(sel.value) : 'steadfast';
+        var COURIER_NAME = { steadfast: 'Steadfast', paperfly: 'Paperfly', redx: 'RedX', pathao: 'Pathao', carrybee: 'Carrybee' };
         var px = '';
         try { px = (getOne(DB_KEYS.SETTINGS).sf_proxy || ''); } catch (e) {}
         if (!px) { if (out) out.innerHTML = '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px;margin-top:10px;font-size:.8rem;color:#991b1b">Fraud check এখনো সক্রিয় না — admin Settings → Steadfast Courier-এ Backend Proxy URL সেট করলে চালু হবে।</div>'; return; }
-        if (out) out.innerHTML = '<div style="text-align:center;padding:10px"><i class="fas fa-spinner fa-spin" style="color:#7c3aed"></i> ' + o.phone + ' চেক হচ্ছে...</div>';
+        if (out) out.innerHTML = '<div style="text-align:center;padding:10px"><i class="fas fa-spinner fa-spin" style="color:#7c3aed"></i> ' + (COURIER_NAME[courier] || courier) + '-এ ' + o.phone + ' চেক হচ্ছে...</div>';
         /* 2026-09-17 — BUG FIX. This call sent NO credentials, but the server proxy requires
            them, so every reseller fraud check came back 400 and the UI always showed
            "Fraud check failed". The admin's saved keys now travel with the request,
            exactly as admin/orders.html does it. No key is stored in this file. */
         var _st = {}; try { _st = getOne(DB_KEYS.SETTINGS) || {}; } catch (e) {}
-        fetch(px, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'fraud', phone: o.phone, apiKey: _st.sf_api_key || '', secretKey: _st.sf_secret_key || '' }) })
+        fetch(px, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'fraud_' + courier, phone: o.phone, apiKey: _st.sf_api_key || '', secretKey: _st.sf_secret_key || '' }) })
         .then(function(r) { return r.json(); })
         .then(function(j) {
+            /* 2026-09-19 — the proxy answers in two shapes now: Steadfast's own
+               response (total_delivered / successful_delivery / cancelled_delivery)
+               and the normalised one the other couriers return
+               (total / success / cancel / success_ratio). Accept both.
+               A courier with no credentials answers { notConfigured: true } — say
+               so plainly instead of painting a fake "SAFE". */
             var d = j.data || j;
-            var tot = d.total_delivered || d.total_delivery || 0;
-            var ok = d.successful_delivery || d.total_success || 0;
-            var cn = d.cancelled_delivery || d.total_cancel || 0;
+            if (j && j.notConfigured) {
+                if (out) out.innerHTML = '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px;margin-top:10px;font-size:.8rem;color:#92400e"><b>' + (COURIER_NAME[courier] || courier) + ' fraud check এখনো সেট করা হয়নি।</b><br>' + String(j.message || '') + '</div>';
+                return;
+            }
+            var tot = d.total_delivered || d.total_delivery || d.total || 0;
+            var ok = d.successful_delivery || d.total_success || d.success || 0;
+            var cn = d.cancelled_delivery || d.total_cancel || d.cancel || 0;
             var rate = tot ? Math.round(ok * 100 / tot) : 0;
+            /* 2026-09-19 — SAFETY. A zero total means the courier returned no
+               history (or the field names differ from what we read). Painting that
+               as "✓ SAFE" would be a false all-clear on a money decision, so it is
+               reported as "no data" instead. Only a real history can be SAFE. */
+            if (!tot) {
+                if (out) out.innerHTML = '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px;margin-top:10px;font-size:.8rem;color:#92400e"><b>' + (COURIER_NAME[courier] || courier) + '</b> — এই নম্বরের কোনো ডেলিভারি হিস্ট্রি পাওয়া যায়নি, তাই রিস্ক বলা যাচ্ছে না। <span style="opacity:.8">(রেসপন্সে total=0)</span></div>';
+                return;
+            }
             var risk = cn > ok;
-            if (out) out.innerHTML = '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-top:10px;font-size:.85rem"><b>' + o.customer + '</b> (' + o.phone + ')<div style="display:flex;gap:14px;flex-wrap:wrap;margin:6px 0"><span>Total: <b>' + tot + '</b></span><span>Success: <b style="color:#16a34a">' + ok + '</b></span><span>Cancelled: <b style="color:#dc2626">' + cn + '</b></span><span style="font-weight:900;color:' + (risk ? '#dc2626' : '#16a34a') + '">' + (risk ? '🚨 HIGH RISK' : '✓ SAFE') + '</span></div><div style="height:8px;background:#e2e8f0;border-radius:6px;overflow:hidden"><div style="height:100%;width:' + rate + '%;background:' + (rate >= 70 ? '#16a34a' : rate >= 50 ? '#f59e0b' : '#dc2626') + '"></div></div></div>';
+            if (out) out.innerHTML = '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-top:10px;font-size:.85rem"><b>' + o.customer + '</b> (' + o.phone + ') <span style="color:#7c3aed;font-weight:800">' + (COURIER_NAME[courier] || courier) + '</span><div style="display:flex;gap:14px;flex-wrap:wrap;margin:6px 0"><span>Total: <b>' + tot + '</b></span><span>Success: <b style="color:#16a34a">' + ok + '</b></span><span>Cancelled: <b style="color:#dc2626">' + cn + '</b></span><span style="font-weight:900;color:' + (risk ? '#dc2626' : '#16a34a') + '">' + (risk ? '🚨 HIGH RISK' : '✓ SAFE') + '</span></div><div style="height:8px;background:#e2e8f0;border-radius:6px;overflow:hidden"><div style="height:100%;width:' + rate + '%;background:' + (rate >= 70 ? '#16a34a' : rate >= 50 ? '#f59e0b' : '#dc2626') + '"></div></div></div>';
         })
         .catch(function() { if (out) out.innerHTML = '<div style="color:#dc2626;padding:8px">Fraud check failed — proxy সমস্যা।</div>'; });
     };

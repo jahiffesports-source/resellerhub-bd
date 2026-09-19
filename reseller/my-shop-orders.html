@@ -540,7 +540,7 @@ body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; 
 <div class="mo-bar">
     <button class="mo-btn gh" onclick="moSelectAll()"><i class="fas fa-check-double"></i> Select All</button>
     <button class="mo-btn gh" onclick="moUnselectAll()"><i class="fas fa-xmark"></i> Unselect All</button>
-    <button class="mo-btn pri" onclick="moSendSteadfast()" id="moSfBtn" disabled><i class="fas fa-truck"></i> Send to Steadfast</button>
+    <button class="mo-btn pri" onclick="moSendSteadfast()" id="moSfBtn" disabled><i class="fas fa-truck"></i> Send to Courier</button>
     <button class="mo-btn gh" onclick="moPrintBulk()" id="moPrBtn" disabled><i class="fas fa-print"></i> Bulk Print</button>
     <button class="mo-btn del" onclick="moDeleteSelected()" id="moDelBtn" disabled><i class="fas fa-trash-can"></i> Delete Selected</button>
     <div class="sp"></div>
@@ -694,7 +694,7 @@ function moSelected() {
 function moSyncBar() {
     var n = moSelected().length;
     var a = document.getElementById('moSfBtn'), b = document.getElementById('moPrBtn'), c = document.getElementById('moDelBtn');
-    if (a) { a.disabled = n === 0; a.innerHTML = '<i class="fas fa-truck"></i> Send to Steadfast' + (n ? ' (' + n + ')' : ''); }
+    if (a) { a.disabled = n === 0; a.innerHTML = '<i class="fas fa-truck"></i> Send to Courier' + (n ? ' (' + n + ')' : ''); }
     if (b) { b.disabled = n === 0; b.innerHTML = '<i class="fas fa-print"></i> Bulk Print' + (n ? ' (' + n + ')' : ''); }
     if (c) { c.disabled = n === 0; c.innerHTML = '<i class="fas fa-trash-can"></i> Delete Selected' + (n ? ' (' + n + ')' : ''); }
 }
@@ -935,7 +935,7 @@ function moRender() {
             moStageBlock(o) +
             '<div class="mo-acts">' +
             '<button class="mo-btn vio" onclick="moFraud(\'' + sEsc(o.id) + '\')"><i class="fas fa-shield"></i> Fraud Check</button>' +
-            '<button class="mo-btn ok" onclick="moSendOne(\'' + sEsc(o.id) + '\')"><i class="fas fa-truck"></i> ' + (cons ? 'Already sent' : 'Send to Steadfast') + '</button>' +
+            '<button class="mo-btn ok" onclick="moSendOne(\'' + sEsc(o.id) + '\')"><i class="fas fa-truck"></i> ' + (cons ? 'Already sent' : 'Send to Courier') + '</button>' +
             '<button class="mo-btn gh" onclick="moPrint(\'' + sEsc(o.id) + '\')"><i class="fas fa-print"></i> Print</button>' +
             '</div></div>';
     }

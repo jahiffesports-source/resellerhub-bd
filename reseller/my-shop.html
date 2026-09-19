@@ -64,6 +64,10 @@ img{max-width:100%;display:block}
 .srch button i{color:#000;margin-right:0}
 .srch button:hover{background:#f1f5f9}
 .hcta{display:flex;align-items:center;gap:11px}
+/* 2026-09-19 — the MOBILE-ONLY search toggle. Hidden here on purpose: at desktop
+   width the real search bar (`.srch`) is already in the header, so a second
+   control would be redundant. It is shown only inside the <=600px block below. */
+.hcta .chip.srch-btn{display:none}
 .chip{display:flex;align-items:center;gap:9px;border:1.5px solid #fff;border-radius:12px;padding:9px 14px;color:#fff;font-weight:800;font-size:.82rem;cursor:pointer;background:transparent;flex:none;transition:background .15s}
 /* Customer Account chip, matching the Cart chip styling */
 .chip.acc{gap:7px}
@@ -417,6 +421,15 @@ img{max-width:100%;display:block}
   .ms-cart-empty{display:none!important}
   .hcta .chip.acc{width:40px;height:40px;justify-content:center;padding:0}
   .hcta .chip.acc i{font-size:1.05rem}
+  /* 2026-09-19 — MOBILE SEARCH (this request).
+     `.srch` is `display:none` at this width (see above), so a phone had NO way
+     to search at all. A search chip now sits immediately left of Account, and
+     tapping it opens the bar on its own wrapped row. Same 40x40 footprint as the
+     Account chip so the header row keeps its height and the right-edge pinning.
+     Nothing here is reachable above 600px. */
+  .hcta .chip.srch-btn{display:flex;width:40px;height:40px;justify-content:center;padding:0}
+  .hcta .chip.srch-btn i{font-size:1.05rem}
+  .hdr-in.ms-search-open .srch{display:flex;order:3;flex:1 1 100%;max-width:100%;margin:0}
 }
 /* Part 6/7 — the centred name is MOBILE ONLY. Declared inside a min-width query
    rather than as a bare rule placed after the mobile block: a later
@@ -593,6 +606,9 @@ img{max-width:100%;display:block}
         </div>
         <div class="hcta">
             <div onclick="goCart()" class="chip" id="msCartChip"><span>TK <b id="chipTot">0</b></span><span class="cb"><i class="fas fa-bag-shopping"></i><span class="ct" id="cartCt">0</span></span></div>
+            <!-- Mobile-only search toggle — opens the search bar that is display:none <=600px.
+                 Hidden above 600px by CSS; the desktop search bar is untouched. -->
+            <div onclick="msSearchToggle()" class="chip srch-btn" id="msSearchBtn" title="Search" role="button" aria-label="Search products"><i class="fas fa-search"></i></div>
             <!-- Customer Account — this shop only -->
             <div onclick="goAccount()" class="chip acc" title="My Account"><i class="fas fa-user"></i><span class="acc-t" id="accLbl">Account</span></div>
         </div>
@@ -1098,6 +1114,9 @@ function setPrice(mx){priceMax=mx;activeCat='';activeSub='';activeSubSub='';rend
 function refreshView(){applySeo();renderTabs();renderSubChips();renderSubSubChips();renderCatPage();renderGrid();renderCatSections()}
 /* Parse #/category/a/b/c and apply it as the active 3-level selection. */
 function routeFromHash(){
+    /* 2026-09-19 — opening a category restores the normal view; the mobile
+       "Product" button's all-products override must not survive it. */
+    window._msShowAll=false;
     var h=String(location.hash||'').replace(/^#\/?/,'');
     var m=h.match(/^category\/(.+)$/i);
     if(!m){activeCat='';activeSub='';activeSubSub='';refreshView();return}
@@ -1511,9 +1530,13 @@ function renderGrid(){
     try{
         var _blk=document.getElementById('allProdBlock');
         var _searching=!!q;
+        /* 2026-09-19 — `_msShowAll` is set by the MOBILE bottom-bar "Product"
+           button (msShowAllProducts). It reveals the same block a search reveals,
+           because #pgrid lives inside it and is otherwise display:none. */
+        var _forceAll=!!window._msShowAll;
         if(_blk){
             var _hp=(typeof shopHomepage==='function')?shopHomepage(shop?shop.id:rid):{showAll:false};
-            _blk.style.display=(_searching||_hp.showAll)?'':'none';
+            _blk.style.display=(_searching||_forceAll||_hp.showAll)?'':'none';
         }
         if(_searching){
             var _ids=['catSections','homeDeals','deals','heroBox','catGrid'];
@@ -1521,7 +1544,7 @@ function renderGrid(){
                 var _e=document.getElementById(_ids[_i]);
                 if(_e) _e.style.display='none';
             }
-        }else{
+        }else if(!_forceAll){
             try{ renderCatSections(); }catch(e){}
         }
     }catch(e){}
@@ -1554,12 +1577,47 @@ function renderContact(){} /* REMOVED */
 
 /* ---------- #5-#8 My Shop mobile bottom navigation ----------
    Shown on mobile only (CSS <=600px) on BOTH the shop home and the product
-   page. Routes reuse the existing pages: my-shop.html (home), #pgrid (product
-   listing), goCart() (cart) and the shop's existing WhatsApp link (#fwa2). */
+   page. Routes reuse the existing pages: my-shop.html (home), the all-products
+   grid (product listing), goCart() (cart) and the shop's existing WhatsApp
+   link (#fwa2). */
+/* 2026-09-19 — MOBILE SEARCH toggle (this request). `.srch` is `display:none`
+   at <=600px, so this chip is the only way to reach the search box on a phone.
+   It only toggles a class on `.hdr-in`; the desktop header never sees it. */
+function msSearchToggle(){
+  try{
+    var bar=document.querySelector('.hdr-in'); if(!bar)return false;
+    var open=bar.classList.toggle('ms-search-open');
+    if(open){ var q=document.getElementById('q'); if(q)setTimeout(function(){try{q.focus()}catch(e){}},80); }
+    return open;
+  }catch(e){ return false; }
+}
+window.msSearchToggle=msSearchToggle;
+
+/* 2026-09-19 — "the Product button goes nowhere" (this request).
+   ROOT CAUSE: the button only linked to `#pgrid`, and `#pgrid` lives INSIDE
+   `#allProdBlock`, which renderGrid() keeps `display:none` unless the shop owner
+   turned on "show all products" (see the comment inside renderGrid). So the tap
+   scrolled to a HIDDEN grid and looked dead. `window._msShowAll` makes
+   renderGrid() treat that block as visible — exactly the way an active search
+   query already does — and the grid it paints is the shop's full product list
+   (shopSearch(rid,'') returns every visible product of THIS shop). */
+function msShowAllProducts(){
+  try{
+    window._msShowAll=true;
+    var ids=['catSections','homeDeals','deals','heroBox','catGrid'];
+    for(var i=0;i<ids.length;i++){ var e=document.getElementById(ids[i]); if(e)e.style.display='none'; }
+    var q=document.getElementById('q'); if(q)q.value='';
+    try{ renderGrid(); }catch(e){}
+    var g=document.getElementById('pgrid');
+    if(g&&g.scrollIntoView)try{g.scrollIntoView({block:'start'})}catch(e){}
+    return true;
+  }catch(e){ return false; }
+}
+window.msShowAllProducts=msShowAllProducts;
+
 function msBnavInit(){
-  var home='my-shop.html?rid='+rid, prod='my-shop.html?rid='+rid+'#pgrid';
+  var home='my-shop.html?rid='+rid;
   var h=document.getElementById('bnHome'); if(h)h.href=home;
-  var p=document.getElementById('bnProd'); if(p)p.href=prod;
   var w=document.getElementById('bnWa');
   if(w){
     var href='';
@@ -1605,7 +1663,7 @@ window.addEventListener('hashchange', function () { applySeo(); routeFromHash();
 <!-- #5/#6 — mobile-only bottom navigation: Home | Product | Cart | WhatsApp -->
 <nav class="ms-bnav" id="msBnav" aria-label="Shop navigation">
     <a href="my-shop.html" id="bnHome"><i class="fas fa-house"></i><span>Home</span></a>
-    <a href="my-shop.html#pgrid" id="bnProd"><i class="fas fa-box"></i><span>Product</span></a>
+    <a href="javascript:void(0)" onclick="msShowAllProducts()" id="bnProd"><i class="fas fa-box"></i><span>Product</span></a>
     <a href="javascript:void(0)" onclick="goCart()"><i class="fas fa-bag-shopping"></i><span>Cart</span><b class="bn-ct" id="bnCartCt" style="display:none">0</b></a>
     <a href="#" id="bnWa" class="bn-wa" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></a>
 </nav>

@@ -143,13 +143,24 @@
            Now the row scrolls when it needs to, and each column keeps a readable minimum
            width. Short ranges are unaffected: with few buckets the row still fits and no
            scrollbar appears. */
-        .achart { display:flex; align-items:flex-end; gap:10px; height:170px; padding:6px 4px 0; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; }
+        /* 2026-09-19 — "the amount is missing above the BIG bars".
+           `.av` is absolutely positioned at `top:-20px`, i.e. ABOVE its bar. With
+           only 6px of top padding, a tall bar pushed its own label past the
+           container's top edge and `overflow-y:hidden` (which cannot be relaxed —
+           `overflow-x:auto` forces it) silently clipped it. Short bars kept their
+           label, tall ones lost it, which is exactly what was reported.
+           26px of top padding reserves the room, so the label is always inside the
+           box. The card's outer height is unchanged (border-box). */
+        .achart { display:flex; align-items:flex-end; gap:10px; height:170px; padding:26px 4px 0; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; }
         .acol { flex:1 1 0; min-width:30px; }
         .acol { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
         .abar { width:100%; max-width:44px; border-radius:9px 9px 4px 4px; background:linear-gradient(180deg,var(--pri),var(--vio)); min-height:5px; transition:height .8s cubic-bezier(.2,.8,.3,1); box-shadow:0 4px 10px rgba(79,70,229,.25); position:relative; }
         .abar:hover { filter:brightness(1.15); }
         .abar .av { position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-size:.62rem; font-weight:800; color:var(--pri); white-space:nowrap; opacity:0; transition:opacity .3s; }
-        .acol:hover .av { opacity:1; }
+        /* 2026-09-19 — a touch device never fires `:hover`, so the label was
+           unreachable on mobile. A tap now pins it open too (see the click
+           handler at the end of the analytics block). */
+        .acol:hover .av, .acol.show-v .av { opacity:1; }
         .abar.zero { background:#e2e8f0; box-shadow:none; }
         .abar.zero .av { color:#94a3b8; }
         .alab { font-size:.64rem; font-weight:800; color:var(--gray); }
@@ -744,6 +755,9 @@ if (!window.menuToggle) {
     /* Item 2 — period filter: 7 Days / 14 Days / 1 Month / 6 Months / 1 Year / All Time */
     var PERIOD_DAYS = { '7d': 7, '14d': 14, '1m': 30, '6m': 183, '1y': 365, 'all': 0 };
     var PERIOD_LABEL = { '7d': 'গত ৭ দিন', '14d': 'গত ১৪ দিন', '1m': 'গত ১ মাস', '6m': 'গত ৬ মাস', '1y': 'গত ১ বছর', 'all': 'শুরু থেকে আজ পর্যন্ত' };
+    /* 2026-09-19 — which bar's money label the user has tapped open (-1 = none).
+       Kept outside compute() so the 10s re-render does not close it again. */
+    var pickedIdx = -1;
     function periodStart(period) {
         var n = PERIOD_DAYS[period];
         if (!n) return null;                       // All Time -> no lower bound
@@ -847,12 +861,29 @@ if (!window.menuToggle) {
         var h = '';
         for (var x = 0; x < bars.length; x++) {
             var pct = max ? Math.max(8, Math.round(bars[x].sum / max * 100)) : 8;
-            h += '<div class="acol"><div class="abar' + (bars[x].sum ? '' : ' zero') + '" style="height:' + pct + '%" data-v="' + formatCurrency(bars[x].sum) + '"><span class="av">' + formatCurrency(bars[x].sum) + '</span></div><span class="alab">' + bars[x].label + '</span></div>';
+            h += '<div class="acol' + (x === pickedIdx ? ' show-v' : '') + '"><div class="abar' + (bars[x].sum ? '' : ' zero') + '" style="height:' + pct + '%" data-v="' + formatCurrency(bars[x].sum) + '"><span class="av">' + formatCurrency(bars[x].sum) + '</span></div><span class="alab">' + bars[x].label + '</span></div>';
         }
         chart.innerHTML = h;
     }
     var selEl = document.getElementById('anPeriod');
     if (selEl) selEl.addEventListener('change', compute);   // update without page reload
+    /* 2026-09-19 — tap a bar to show its money. `:hover` alone is unreachable on
+       a touch screen, and the label is the only place the amount is printed. */
+    (function () {
+        var box = document.getElementById('anChart');
+        if (!box || !box.addEventListener) return;
+        box.addEventListener('click', function (ev) {
+            var col = (ev.target && ev.target.closest) ? ev.target.closest('.acol') : null;
+            if (!col || !box.contains(col)) return;
+            var cols = box.querySelectorAll('.acol'), idx = -1;
+            for (var i = 0; i < cols.length; i++) { if (cols[i] === col) { idx = i; break; } }
+            pickedIdx = (idx === pickedIdx) ? -1 : idx;      /* tap again to close */
+            for (var j = 0; j < cols.length; j++) {
+                if (j === pickedIdx) cols[j].classList.add('show-v');
+                else cols[j].classList.remove('show-v');
+            }
+        });
+    })();
     compute();
     setInterval(compute, 10000);
 })();

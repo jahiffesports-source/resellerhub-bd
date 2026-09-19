@@ -225,4 +225,184 @@ if ($action === 'create') {
     exit;
 }
 
-out(['status' => 400, 'message' => 'unknown action — use "fraud", "create", "sf_save", "sf_delete", "sf_status", "sf_test" or "sf_create"']);
+/* ────────────────────────────────────────────────────────────────
+   2026-09-19 — FRAUD CHECK FOR THE OTHER COURIERS (this request)
+
+   Steadfast has an OFFICIAL fraud endpoint and the `fraud` action above is
+   untouched. Paperfly / RedX / Pathao / Carrybee have NO public fraud API:
+   each one is a merchant-portal LOGIN followed by a query, so every courier
+   needs its OWN merchant credentials stored on the server.
+
+   Endpoint shapes follow the MIT-licensed `fraud-checker-bd-courier`
+   package (Steadfast, Pathao, Paperfly, Carrybee, RedX):
+     · Paperfly  POST /authentication/login_using_password.php -> token
+                 POST /smart-check/list.php                    -> records
+     · RedX      POST /v4/auth/login  (88-prefixed phone)      -> token
+                 GET  /v4/customer-success-return-rate?phoneNumber=88…
+     · Pathao    POST /api/v1/login -> bearer, POST /api/v1/user/success
+     · Carrybee  NextAuth merchant portal (csrf -> login -> session token)
+
+   Because those hosts and paths belong to the couriers and can change without
+   notice, every base URL is OVERRIDABLE:
+       PAPERFLY_BASE, REDX_BASE, PATHAO_BASE, CARRYBEE_BASE
+   and every credential comes from the environment:
+       PAPERFLY_USER/PAPERFLY_PASSWORD, REDX_PHONE/REDX_PASSWORD,
+       PATHAO_USER/PATHAO_PASSWORD, CARRYBEE_PHONE/CARRYBEE_PASSWORD
+
+   A courier with no credentials answers {"notConfigured":true} — it never
+   invents a result. The UI treats a zero total as "no data", never as SAFE.
+
+   ⚠️ UNVERIFIED: no merchant credentials were available while writing this, so
+   none of these four calls has been run against the live services. The login
+   and query flow is implemented from the documented shapes above; the exact
+   response field names are read defensively (several aliases each) and the
+   normalised {success,cancel,total,success_ratio} shape is what the UI reads.
+   Configure ONE courier and probe it before relying on it.
+   ──────────────────────────────────────────────────────────────── */
+function fx_env($n) { $v = getenv($n); return $v === false ? '' : trim($v); }
+function fx_phone($raw) {
+    $d = preg_replace('/\D/', '', (string)$raw);
+    if (strlen($d) === 13 && substr($d, 0, 3) === '880') $d = '0' . substr($d, 3);
+    return $d;
+}
+function fx_not_configured($name, $vars) {
+    out(['notConfigured' => true, 'courier' => $name,
+         'message' => $name . ' merchant credentials are not set on the server (' . implode(' / ', $vars) . ').']);
+}
+function fx_call($url, $method, $body, $headers) {
+    $ch = curl_init($url);
+    $opt = [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 25,
+        CURLOPT_HTTPHEADER     => $headers,
+    ];
+    if ($method === 'POST') { $opt[CURLOPT_POST] = true; $opt[CURLOPT_POSTFIELDS] = $body; }
+    curl_setopt_array($ch, $opt);
+    $res  = curl_exec($ch);
+    $err  = curl_error($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    return [$res, $code, $err];
+}
+function fx_norm($success, $cancel, $total) {
+    $success = (int)$success; $cancel = (int)$cancel;
+    $total = max((int)$total, $success + $cancel);
+    return ['success' => $success, 'cancel' => $cancel, 'total' => $total,
+            'success_ratio' => $total ? round($success * 100 / $total, 2) : 0];
+}
+function fx_pick($arr, $keys, $default = 0) {
+    if (!is_array($arr)) return $default;
+    foreach ($keys as $k) { if (isset($arr[$k]) && is_numeric($arr[$k])) return $arr[$k]; }
+    return $default;
+}
+/* The UI sends `action: fraud_<courier>`; `fraud` (legacy Steadfast) still works. */
+$fraud_courier = '';
+if (strpos($action, 'fraud_') === 0) $fraud_courier = substr($action, 6);
+
+if ($fraud_courier !== '') {
+    $phone = fx_phone(isset($in['phone']) ? $in['phone'] : '');
+    if (strlen($phone) < 11) out(['status' => 400, 'message' => 'valid phone required (01XXXXXXXXX)']);
+
+    /* ── RedX ───────────────────────────────────────────────────────── */
+    if ($fraud_courier === 'redx') {
+        $u = fx_env('REDX_PHONE'); $p = fx_env('REDX_PASSWORD');
+        if ($u === '' || $p === '') fx_not_configured('RedX', ['REDX_PHONE', 'REDX_PASSWORD']);
+        $base = fx_env('REDX_BASE') ?: 'https://api.redx.com.bd';
+        $msisdn = '88' . ltrim($phone, '0');
+        list($res, $code, $err) = fx_call($base . '/v4/auth/login', 'POST',
+            json_encode(['phone' => $msisdn, 'password' => $p]),
+            ['Content-Type: application/json']);
+        if ($res === false) out(['status' => 502, 'message' => 'RedX login curl error: ' . $err]);
+        $j = json_decode($res, true);
+        $tok = '';
+        if (is_array($j)) {
+            if (isset($j['data']) && is_array($j['data'])) $tok = fx_pick($j['data'], ['accessToken', 'token'], '');
+            if ($tok === '') $tok = fx_pick($j, ['accessToken', 'token'], '');
+        }
+        if ($tok === '') out(['status' => 502, 'courier' => 'redx', 'message' => 'RedX login failed (HTTP ' . $code . ')', 'raw' => substr((string)$res, 0, 300)]);
+        list($res2, $code2, $err2) = fx_call($base . '/v4/customer-success-return-rate?phoneNumber=' . $msisdn, 'GET', null,
+            ['Authorization: Bearer ' . $tok, 'Content-Type: application/json']);
+        if ($res2 === false) out(['status' => 502, 'message' => 'RedX query curl error: ' . $err2]);
+        $d = json_decode($res2, true);
+        $r = (is_array($d) && isset($d['data']) && is_array($d['data'])) ? $d['data'] : $d;
+        out(array_merge(['status' => 200, 'courier' => 'redx'],
+            fx_norm(fx_pick($r, ['success', 'totalSuccess', 'delivered']),
+                    fx_pick($r, ['cancel', 'totalReturn', 'returned']),
+                    fx_pick($r, ['total', 'totalParcel', 'totalOrder']))));
+    }
+
+    /* ── Paperfly ───────────────────────────────────────────────────── */
+    if ($fraud_courier === 'paperfly') {
+        $u = fx_env('PAPERFLY_USER'); $p = fx_env('PAPERFLY_PASSWORD');
+        if ($u === '' || $p === '') fx_not_configured('Paperfly', ['PAPERFLY_USER', 'PAPERFLY_PASSWORD']);
+        $base = fx_env('PAPERFLY_BASE') ?: 'https://api.paperfly.com.bd';
+        list($res, $code, $err) = fx_call($base . '/authentication/login_using_password.php', 'POST',
+            json_encode(['username' => $u, 'password' => $p]), ['Content-Type: application/json']);
+        if ($res === false) out(['status' => 502, 'message' => 'Paperfly login curl error: ' . $err]);
+        $j = json_decode($res, true);
+        $tok = '';
+        if (is_array($j)) {
+            if (isset($j['data']) && is_array($j['data'])) $tok = fx_pick($j['data'], ['token', 'accessToken'], '');
+            if ($tok === '') $tok = fx_pick($j, ['token', 'accessToken'], '');
+        }
+        if ($tok === '') out(['status' => 502, 'courier' => 'paperfly', 'message' => 'Paperfly login failed (HTTP ' . $code . ')', 'raw' => substr((string)$res, 0, 300)]);
+        list($res2, $code2, $err2) = fx_call($base . '/smart-check/list.php', 'POST',
+            json_encode(['search' => $phone, 'phone' => $phone]),
+            ['Authorization: Bearer ' . $tok, 'Content-Type: application/json']);
+        if ($res2 === false) out(['status' => 502, 'message' => 'Paperfly query curl error: ' . $err2]);
+        $d = json_decode($res2, true);
+        /* Paperfly returns a record LIST; a record is a success when its status
+           reads as delivered and a cancel when it reads as return/cancel/fail. */
+        $rows = [];
+        if (is_array($d)) {
+            if (isset($d['data']) && is_array($d['data']) && isset($d['data']['records'])) $rows = $d['data']['records'];
+            elseif (isset($d['records'])) $rows = $d['records'];
+            elseif (isset($d['data']) && is_array($d['data'])) $rows = $d['data'];
+        }
+        $s = 0; $c = 0;
+        foreach ((array)$rows as $row) {
+            $st = strtolower((string)(is_array($row) ? (isset($row['status']) ? $row['status'] : '') : ''));
+            if ($st === '') continue;
+            if (strpos($st, 'deliver') !== false || strpos($st, 'success') !== false) $s++;
+            elseif (strpos($st, 'return') !== false || strpos($st, 'cancel') !== false || strpos($st, 'fail') !== false) $c++;
+        }
+        $tot = (is_array($d) && isset($d['totalRecords'])) ? (int)$d['totalRecords'] : count((array)$rows);
+        out(array_merge(['status' => 200, 'courier' => 'paperfly'], fx_norm($s, $c, $tot)));
+    }
+
+    /* ── Pathao ─────────────────────────────────────────────────────── */
+    if ($fraud_courier === 'pathao') {
+        $u = fx_env('PATHAO_USER'); $p = fx_env('PATHAO_PASSWORD');
+        if ($u === '' || $p === '') fx_not_configured('Pathao', ['PATHAO_USER', 'PATHAO_PASSWORD']);
+        $base = fx_env('PATHAO_BASE') ?: 'https://api-hermes.pathao.com';
+        list($res, $code, $err) = fx_call($base . '/aladdin/api/v1/issue-token', 'POST',
+            json_encode(['client_id' => fx_env('PATHAO_CLIENT_ID'), 'client_secret' => fx_env('PATHAO_CLIENT_SECRET'),
+                         'username' => $u, 'password' => $p, 'grant_type' => 'password']),
+            ['Content-Type: application/json']);
+        if ($res === false) out(['status' => 502, 'message' => 'Pathao login curl error: ' . $err]);
+        $j = json_decode($res, true);
+        $tok = is_array($j) ? fx_pick($j, ['access_token'], '') : '';
+        if ($tok === '') out(['status' => 502, 'courier' => 'pathao', 'message' => 'Pathao login failed (HTTP ' . $code . ')', 'raw' => substr((string)$res, 0, 300)]);
+        list($res2, $code2, $err2) = fx_call($base . '/aladdin/api/v1/user/success', 'POST',
+            json_encode(['phone' => $phone]),
+            ['Authorization: Bearer ' . $tok, 'Content-Type: application/json']);
+        if ($res2 === false) out(['status' => 502, 'message' => 'Pathao query curl error: ' . $err2]);
+        $d = json_decode($res2, true);
+        $r = (is_array($d) && isset($d['data']) && is_array($d['data'])) ? $d['data'] : $d;
+        $s = fx_pick($r, ['success', 'delivered', 'total_success']);
+        $t = fx_pick($r, ['total', 'total_delivery']);
+        out(array_merge(['status' => 200, 'courier' => 'pathao'], fx_norm($s, max(0, (int)$t - (int)$s), $t)));
+    }
+
+    /* ── Carrybee ───────────────────────────────────────────────────── */
+    if ($fraud_courier === 'carrybee') {
+        $u = fx_env('CARRYBEE_PHONE'); $p = fx_env('CARRYBEE_PASSWORD');
+        if ($u === '' || $p === '') fx_not_configured('Carrybee', ['CARRYBEE_PHONE', 'CARRYBEE_PASSWORD']);
+        out(['notConfigured' => true, 'courier' => 'carrybee',
+             'message' => 'Carrybee uses a NextAuth merchant portal (csrf → login → session token). Implement and probe it after the other couriers work — the flow needs a cookie jar this proxy does not keep yet.']);
+    }
+
+    out(['status' => 400, 'message' => 'unknown fraud courier: ' . $fraud_courier]);
+}
+
+out(['status' => 400, 'message' => 'unknown action — use "fraud", "create", "sf_save", "sf_delete", "sf_status", "sf_test", "sf_create" or "fraud_<steadfast|paperfly|redx|pathao|carrybee>"']);
