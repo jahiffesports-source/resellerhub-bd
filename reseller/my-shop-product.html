@@ -59,7 +59,7 @@ img{max-width:100%;display:block}
    transparent) fits centred without stretching or cropping. */
 .brand .bimg img{height:auto;width:auto;max-width:38px;max-height:38px;object-fit:contain;background:transparent;display:block;padding:0}
 .brand .btxt{font-weight:900;font-size:1.05rem;color:#fff}
-.srch{flex:1;max-width:560px;margin:0 auto;display:flex;background:#1d1d1d;border-radius:30px;padding:5px 6px 5px 20px;align-items:center;border:1.5px solid #2a2a2a;transition:border-color .2s}
+.srch{position:relative;flex:1;max-width:560px;margin:0 auto;display:flex;background:#1d1d1d;border-radius:30px;padding:5px 6px 5px 20px;align-items:center;border:1.5px solid #2a2a2a;transition:border-color .2s}
 .srch:focus-within{border-color:var(--ac)}
 /* 2026-09-17 — the small search icon was grey (#8a8a8a) on the dark bar.
    The user asked for it white on every page that has this bar. */
@@ -71,7 +71,38 @@ img{max-width:100%;display:block}
    icon inside the input (`.srch i`) stays white, as requested earlier. */
 .srch button{width:38px;height:38px;border:none;border-radius:50%;background:#fff;color:#fff;cursor:pointer}
 .srch button i{color:#000;margin-right:0}
+/* ===== 2026-09-19 — live search suggestions (this request) =====
+   Anchored under `.srch` on BOTH phone and desktop (the user chose "mobile +
+   PC"). Two kinds of row: a CATEGORY (tap -> that category) and a PRODUCT
+   (tap -> that product page). Enter with a category match jumps straight to the
+   category. The panel is white on the dark header so it reads clearly. */
+.ms-sug{position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:320;display:none;
+  background:#fff;border-radius:14px;box-shadow:0 18px 40px rgba(0,0,0,.3);
+  max-height:62vh;overflow-y:auto;-webkit-overflow-scrolling:touch;text-align:left}
+.ms-sug.on{display:block}
+.ms-sug .sg-h{padding:9px 14px;font-size:.66rem;font-weight:900;color:#64748b;
+  background:#f8fafc;letter-spacing:.06em}
+.ms-sug .sg-r{display:flex;gap:10px;align-items:center;padding:10px 14px;cursor:pointer;
+  border-top:1px solid #f1f5f9}
+.ms-sug .sg-r:hover,.ms-sug .sg-r:active{background:#f8fafc}
+.ms-sug .sg-r .im{width:38px;height:38px;border-radius:8px;background:#f1f5f9;flex:none;
+  overflow:hidden;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:.9rem}
+.ms-sug .sg-r .im img{width:100%;height:100%;object-fit:cover;display:block}
+.ms-sug .sg-r .tx{flex:1;min-width:0}
+.ms-sug .sg-r .nm{font-size:.82rem;font-weight:800;color:#0f172a;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ms-sug .sg-r .sb{font-size:.7rem;color:#64748b;margin-top:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ms-sug .sg-r .pr{font-size:.82rem;font-weight:900;color:var(--ac);flex:none}
+.ms-sug .sg-r.cat .im{background:rgba(233,30,110,.12);color:var(--ac)}
+.ms-sug .sg-e{padding:14px;font-size:.8rem;color:#64748b;text-align:center}
 .hcta{display:flex;align-items:center;gap:11px}
+/* 2026-09-19 — MOBILE-ONLY search chip (this request).
+   On a phone `.srch` is display:none (see the <=600px block), so this product
+   page had NO way to search at all. The chip is hidden here at desktop scope
+   because the real search bar is already visible above 600px — nothing about
+   the desktop header changes. */
+.hcta .chip.srch-btn{display:none}
 .chip{display:flex;align-items:center;gap:8px;border:1.5px solid #fff;border-radius:12px;padding:9px 14px;color:#fff;font-weight:800;font-size:.82rem;cursor:pointer;background:transparent;flex:none}
 .chip.acc{gap:7px}
 .chip.acc .acc-t{font-size:.78rem}
@@ -302,6 +333,13 @@ img{max-width:100%;display:block}
   .ms-cart-empty{display:none!important}
   .hcta .chip.acc{width:40px;height:40px;justify-content:center;padding:0}
   .hcta .chip.acc i{font-size:1.05rem}
+  /* 2026-09-19 — MOBILE SEARCH chip (this request). Same 40x40 footprint as the
+     Account chip, so the header row keeps its height and its right-edge
+     pinning. Tapping it opens the search bar on its own wrapped row. Nothing
+     here is reachable above 600px. */
+  .hcta .chip.srch-btn{display:flex;width:40px;height:40px;justify-content:center;padding:0}
+  .hcta .chip.srch-btn i{font-size:1.05rem}
+  .hdr-in.ms-search-open .srch{display:flex;order:3;flex:1 1 100%;max-width:100%;margin:0}
 }
 /* Part 6/7 — the centred name is MOBILE ONLY. It is declared inside a min-width
    query rather than as a bare rule placed after the mobile block, because a
@@ -387,11 +425,22 @@ img{max-width:100%;display:block}
         </div>
         <div class="srch">
             <i class="fas fa-search"></i>
-            <input placeholder="Search products..." onkeydown="if(event.key==='Enter')goShop()">
-            <button onclick="goShop()"><i class="fas fa-search"></i></button>
+            <input id="q" placeholder="Search products..." autocomplete="off"
+                   oninput="msSuggest()"
+                   onkeydown="if(event.key==='Enter'){event.preventDefault();msSearchGo();}">
+            <button onclick="msSearchGo()" aria-label="Search"><i class="fas fa-search"></i></button>
+            <!-- 2026-09-19 — live suggestions (this request). Filled by
+                 msSuggest(); sits INSIDE .srch so it anchors under the bar. -->
+            <div class="ms-sug" id="msSuggest"></div>
         </div>
         <div class="hcta">
             <div onclick="goCart()" class="chip" id="msCartChip"><span>TK <b id="chipTot">0</b></span><span class="cb"><i class="fas fa-bag-shopping"></i><span class="ct" id="cartCt">0</span></span></div>
+            <!-- 2026-09-19 — MOBILE-ONLY search toggle (this request).
+                 The customer could not search from a product page at all: `.srch`
+                 is display:none <=600px and this header had no search chip (the
+                 shop home got one, this page did not). Hidden above 600px by CSS
+                 — the desktop search bar is already visible there and untouched. -->
+            <div onclick="msSearchToggle()" class="chip srch-btn" id="msSearchBtn" title="Search" role="button" aria-label="Search products"><i class="fas fa-search"></i></div>
             <!-- Customer Account — this shop only -->
             <div onclick="goAccount()" class="chip acc" title="My Account"><i class="fas fa-user"></i><span class="acc-t" id="accLbl">Account</span></div>
         </div>
@@ -560,6 +609,152 @@ function scrollToSec(sec){location.href='my-shop.html?rid='+rid+(sec?('#'+sec):'
 /* kept as an alias so any older link keeps working */
 function backToShop(sec){scrollToSec(sec)}
 function goShop(){location.href='my-shop.html?rid='+rid}
+
+/* ===== 2026-09-19 — SEARCH FROM THE PRODUCT PAGE (this request) =====
+   The customer can now search from a product page as well. This page has no
+   results grid of its own, so the panel only *suggests*:
+     • a PRODUCT row  -> that product's page
+     • a CATEGORY row -> my-shop.html, which opens the category
+   Enter hands the query to my-shop.html too. That keeps the
+   category-vs-results decision in exactly ONE place (my-shop.html's
+   msApplyQueryParam / msSearchGo) instead of duplicating the rule here.
+
+   A category is handed over as a full PATH (`gocat=cat~sub~subsub`) rather than
+   as a bare name, so a sub-sub that happens to share a name with a sub elsewhere
+   still opens the exact one the customer tapped.
+
+   MOBILE: `.srch` is display:none <=600px, so msSearchToggle() reveals it via
+   the same `.ms-search-open` class the shop home already uses. */
+var MS_SUG_CATS=[], MS_SUG_PRODS=[], MS_SUG_PRODMAX=6, MS_SUG_CATMAX=4;
+
+/* Same normalisation shopFilter() uses, so "T-Shirt" / "t shirt" agree. */
+function msSugKey(s){
+    try{ if(typeof catDedupeKey==='function'){ var k=catDedupeKey(s); if(k) return k; } }catch(e){}
+    return String(s===undefined||s===null?'':s).toLowerCase().replace(/[^a-z0-9]+/g,' ').replace(/^\s+|\s+$/g,'');
+}
+/* rid-scoped by construction: the three shop* helpers only ever return THIS
+   shop's categories, and they already drop hidden/deactivated entries. */
+function msSugCats(q){
+    var out=[], seen={}, k=msSugKey(q);
+    if(k.length<2) return out;
+    function add(cat,sub,subsub,label){
+        var key=cat+'|'+(sub||'')+'|'+(subsub||'');
+        if(seen[key]) return;
+        seen[key]=1;
+        out.push({cat:cat,sub:sub||'',subsub:subsub||'',label:label});
+    }
+    var mains=[]; try{ mains=shopMainCategories(rid)||[]; }catch(e){ mains=[]; }
+    for(var i=0;i<mains.length;i++){
+        var m=mains[i]&&mains[i].name; if(!m) continue;
+        if(msSugKey(m).indexOf(k)!==-1) add(m,'','',m);
+        var subs=[]; try{ subs=shopSubCategories(rid,m)||[]; }catch(e){ subs=[]; }
+        for(var j=0;j<subs.length;j++){
+            var s=subs[j]&&subs[j].name; if(!s) continue;
+            if(msSugKey(s).indexOf(k)!==-1) add(m,s,'',s);
+            var sss=[]; try{ sss=shopSubSubCategories(rid,m,s)||[]; }catch(e){ sss=[]; }
+            for(var n=0;n<sss.length;n++){
+                var ss=sss[n]&&sss[n].name; if(!ss) continue;
+                if(msSugKey(ss).indexOf(k)!==-1) add(m,s,ss,ss);
+            }
+        }
+    }
+    return out;
+}
+function msSuggestHide(){
+    var el=document.getElementById('msSuggest');
+    if(el){ el.className='ms-sug'; }
+    return false;
+}
+function msSuggest(){
+    var el=document.getElementById('msSuggest');
+    var inp=document.getElementById('q');
+    if(!el||!inp) return false;
+    var q=String(inp.value||'').trim();
+    MS_SUG_CATS=[]; MS_SUG_PRODS=[];
+    if(!q){ el.innerHTML=''; el.className='ms-sug'; return false; }
+    MS_SUG_CATS=msSugCats(q);
+    try{ MS_SUG_PRODS=shopSearch(rid,q)||[]; }catch(e){ MS_SUG_PRODS=[]; }
+    var h='';
+    if(MS_SUG_CATS.length){
+        h+='<div class="sg-h">CATEGORIES</div>';
+        for(var i=0;i<MS_SUG_CATS.length&&i<MS_SUG_CATMAX;i++){
+            var c=MS_SUG_CATS[i];
+            var trail=(c.sub?(esc(c.cat)+' &rsaquo; '):'');
+            if(c.sub) trail+=esc(c.sub);
+            h+='<div class="sg-r cat" onclick="msGoCat('+i+')">'+
+               '<div class="im"><i class="fas fa-layer-group"></i></div>'+
+               '<div class="tx"><div class="nm">'+esc(c.label)+'</div>'+
+               (trail?'<div class="sb">'+trail+'</div>':'')+
+               '</div><i class="fas fa-chevron-right" style="color:#cbd5e1;font-size:.72rem"></i></div>';
+        }
+    }
+    if(MS_SUG_PRODS.length){
+        h+='<div class="sg-h">PRODUCTS</div>';
+        for(var j=0;j<MS_SUG_PRODS.length&&j<MS_SUG_PRODMAX;j++){
+            var p=MS_SUG_PRODS[j];
+            var img=''; try{ img=prodImgSrc(p.image)||''; }catch(e){ img=''; }
+            h+='<div class="sg-r" onclick="msGoProd('+j+')">'+
+               '<div class="im">'+(img?'<img src="'+esc(img)+'" alt="">':'<i class="fas fa-box"></i>')+'</div>'+
+               '<div class="tx"><div class="nm">'+esc(p.name)+'</div>'+
+               (p.sku?'<div class="sb">SKU: '+esc(p.sku)+'</div>':'')+'</div>'+
+               '<div class="pr">&#2547;'+retail(p)+'</div></div>';
+        }
+    }
+    if(!h) h='<div class="sg-e">No matches for &ldquo;'+esc(q)+'&rdquo;</div>';
+    el.innerHTML=h;
+    el.className='ms-sug on';
+    return true;
+}
+function msGoCat(i){
+    var c=MS_SUG_CATS[i]; if(!c) return false;
+    msSuggestHide();
+    location.href='my-shop.html?rid='+encodeURIComponent(rid)+
+                  '&gocat='+encodeURIComponent([c.cat,c.sub,c.subsub].join('~'));
+    return true;
+}
+function msGoProd(i){
+    var p=MS_SUG_PRODS[i]; if(!p) return false;
+    msSuggestHide();
+    location.href='my-shop-product.html?id='+encodeURIComponent(p.id)+'&rid='+encodeURIComponent(rid);
+    return true;
+}
+/* Enter: this page has nowhere to draw results, so hand the query to the shop
+   page, which decides category-vs-results. */
+function msSearchGo(){
+    var inp=document.getElementById('q');
+    var q=String(inp?inp.value:'').trim();
+    if(!q){ msSuggestHide(); return false; }
+    msSuggestHide();
+    location.href='my-shop.html?rid='+encodeURIComponent(rid)+'&q='+encodeURIComponent(q);
+    return true;
+}
+/* Mobile only: `.srch` is display:none <=600px, so this chip is the only way to
+   reach the search box on a phone. It only toggles a class on `.hdr-in`; the
+   desktop header never sees it. */
+function msSearchToggle(){
+    try{
+        var bar=document.querySelector('.hdr-in'); if(!bar) return false;
+        var open=bar.classList.toggle('ms-search-open');
+        if(open){ var q=document.getElementById('q'); if(q)setTimeout(function(){try{q.focus()}catch(e){}},80); }
+        return open;
+    }catch(e){ return false; }
+}
+window.msSuggest=msSuggest;
+window.msSuggestHide=msSuggestHide;
+window.msSearchGo=msSearchGo;
+window.msSearchToggle=msSearchToggle;
+window.msGoCat=msGoCat;
+window.msGoProd=msGoProd;
+document.addEventListener('click',function(ev){
+    try{
+        var el=document.getElementById('msSuggest');
+        if(!el||el.className.indexOf('on')===-1) return;
+        var t=ev.target;
+        if(t&&t.closest&&t.closest('.srch')) return;
+        msSuggestHide();
+    }catch(e){}
+});
+
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(function(){t.classList.remove('on')},2600)}
 
 function imgs(){
@@ -1373,6 +1568,15 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
     var txt=brand.querySelector('.btxt');
     var d=document.createElement('div'); d.className='hdr-mid';
     d.innerHTML='<span class="bname">'+escH(bizName())+'</span>';
+    /* 2026-09-19 — this is the ONLY brand element a phone ever sees, because
+       `.brand` is display:none at <=600px. It had no click handler, so tapping
+       the brand name on mobile did nothing. It now goes to the SHOP HOME
+       (my-shop.html?rid=…), the same destination as the desktop `.brand`
+       (which already calls goShop()). */
+    d.style.cursor='pointer';
+    d.setAttribute('role','button');
+    d.setAttribute('tabindex','0');
+    d.onclick=function(){ try{ goShop(); }catch(e){} };
     if(brand.nextSibling) brand.parentNode.insertBefore(d,brand.nextSibling);
     else brand.parentNode.appendChild(d);
     return d;

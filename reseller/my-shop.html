@@ -50,7 +50,7 @@ img{max-width:100%;display:block}
 .brand .bimg img{height:auto;width:auto;max-width:38px;max-height:38px;object-fit:contain;background:transparent;display:block;padding:0}
 .brand .btxt{font-weight:900;font-size:1.1rem;letter-spacing:.4px;color:#fff;line-height:1.1}
 .brand .bsub{font-size:.58rem;opacity:.8;font-weight:700;letter-spacing:2.5px;color:#fbbf24}
-.srch{flex:1;max-width:580px;margin:0 auto;display:flex;background:#1d1d1d;border-radius:30px;padding:5px 6px 5px 20px;align-items:center;border:1.5px solid #2a2a2a;transition:border-color .2s}
+.srch{position:relative;flex:1;max-width:580px;margin:0 auto;display:flex;background:#1d1d1d;border-radius:30px;padding:5px 6px 5px 20px;align-items:center;border:1.5px solid #2a2a2a;transition:border-color .2s}
 .srch:focus-within{border-color:var(--ac)}
 /* 2026-09-17 — the small search icon was grey (#8a8a8a) on the dark bar.
    The user asked for it white on every page that has this bar. */
@@ -63,6 +63,31 @@ img{max-width:100%;display:block}
 .srch button{width:38px;height:38px;border:none;border-radius:50%;background:#fff;color:#fff;font-size:.88rem;cursor:pointer}
 .srch button i{color:#000;margin-right:0}
 .srch button:hover{background:#f1f5f9}
+/* ===== 2026-09-19 — live search suggestions (this request) =====
+   Anchored under `.srch` on BOTH phone and desktop (the user chose "mobile +
+   PC"). Two kinds of row: a CATEGORY (tap -> that category) and a PRODUCT
+   (tap -> that product page). Enter with a category match jumps straight to the
+   category. The panel is white on the dark header so it reads clearly. */
+.ms-sug{position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:320;display:none;
+  background:#fff;border-radius:14px;box-shadow:0 18px 40px rgba(0,0,0,.3);
+  max-height:62vh;overflow-y:auto;-webkit-overflow-scrolling:touch;text-align:left}
+.ms-sug.on{display:block}
+.ms-sug .sg-h{padding:9px 14px;font-size:.66rem;font-weight:900;color:#64748b;
+  background:#f8fafc;letter-spacing:.06em}
+.ms-sug .sg-r{display:flex;gap:10px;align-items:center;padding:10px 14px;cursor:pointer;
+  border-top:1px solid #f1f5f9}
+.ms-sug .sg-r:hover,.ms-sug .sg-r:active{background:#f8fafc}
+.ms-sug .sg-r .im{width:38px;height:38px;border-radius:8px;background:#f1f5f9;flex:none;
+  overflow:hidden;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:.9rem}
+.ms-sug .sg-r .im img{width:100%;height:100%;object-fit:cover;display:block}
+.ms-sug .sg-r .tx{flex:1;min-width:0}
+.ms-sug .sg-r .nm{font-size:.82rem;font-weight:800;color:#0f172a;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ms-sug .sg-r .sb{font-size:.7rem;color:#64748b;margin-top:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ms-sug .sg-r .pr{font-size:.82rem;font-weight:900;color:var(--ac);flex:none}
+.ms-sug .sg-r.cat .im{background:rgba(233,30,110,.12);color:var(--ac)}
+.ms-sug .sg-e{padding:14px;font-size:.8rem;color:#64748b;text-align:center}
 .hcta{display:flex;align-items:center;gap:11px}
 /* 2026-09-19 — the MOBILE-ONLY search toggle. Hidden here on purpose: at desktop
    width the real search bar (`.srch`) is already in the header, so a second
@@ -595,14 +620,28 @@ img{max-width:100%;display:block}
 
 <div class="hdr">
     <div class="hdr-in">
-        <div class="brand" onclick="setCat('')">
+        <!-- 2026-09-19 — tapping the brand name must go HOME (this request).
+             It used to call setCat(''), which clears the filters but leaves
+             location.hash at '#/category/...'. The home view painted, but the
+             hash still said "category", so the next hashchange (or a reload)
+             dropped the customer straight back into that category.
+             goHome() is the function that actually resets everything AND the
+             hash. -->
+        <div class="brand" onclick="goHome()">
             <div class="bimg" id="hLogo">S</div>
             <div><div class="btxt" id="hName">MY SHOP</div><div class="bsub">ONLINE MALL</div></div>
         </div>
         <div class="srch">
             <i class="fas fa-search"></i>
-            <input id="q" placeholder="Search products, brands, categories..." oninput="renderGrid()">
-            <button onclick="renderGrid()"><i class="fas fa-search"></i></button>
+            <!-- 2026-09-19 — `oninput` still drives the results grid; msSuggest()
+                 paints the live suggestion panel on top of it. Enter runs
+                 msSearchGo(), which jumps straight to a matching CATEGORY when
+                 there is one (this request) and otherwise leaves the grid. -->
+            <input id="q" placeholder="Search products, brands, categories..." autocomplete="off"
+                   oninput="renderGrid();msSuggest()"
+                   onkeydown="if(event.key==='Enter'){event.preventDefault();msSearchGo();}">
+            <button onclick="msSearchGo()" aria-label="Search"><i class="fas fa-search"></i></button>
+            <div class="ms-sug" id="msSuggest"></div>
         </div>
         <div class="hcta">
             <div onclick="goCart()" class="chip" id="msCartChip"><span>TK <b id="chipTot">0</b></span><span class="cb"><i class="fas fa-bag-shopping"></i><span class="ct" id="cartCt">0</span></span></div>
@@ -1547,6 +1586,25 @@ function renderGrid(){
         }else if(!_forceAll){
             try{ renderCatSections(); }catch(e){}
         }
+        /* 2026-09-19 — a SEARCH RESULTS page must not show the hero image, the
+           same way a category page does not (this request). There are TWO
+           separate heroes and both need handling:
+             · #msPromo — the static "Shop Smart" banner inside #homeWrap. Its
+               display is owned by render(), but renderGrid() runs AFTER render()
+               (see refreshView(), and the image-ready redraw at the foot of this
+               file), so the value set here is the one that survives.
+             · #msHero — the uploaded-image slider. It lives OUTSIDE #homeWrap and
+               is created/removed by msHeroRender(), which consults
+               msHeroShouldShow(); that now also checks the search flag below.
+           The flag is cleared on every non-search pass, so clearing the query (or
+           opening a category) brings the hero straight back. */
+        window._msSearching=_searching;
+        var _promo=document.getElementById('msPromo');
+        if(_promo){
+            var _bOn=false; try{ _bOn=shopBannerOn(rid); }catch(e){ _bOn=false; }
+            _promo.style.display=(_searching||!_bOn)?'none':'';
+        }
+        if(window.msHeroRender){ try{ window.msHeroRender(); }catch(e){} }
     }catch(e){}
     if(!q){ /* nothing to filter; the normal homepage view takes over */ }
     /* (#40, #41, #43) only THIS shop's allowed products are ever searched */
@@ -1573,6 +1631,158 @@ function renderGrid(){
     var pg=document.getElementById('pgrid');if(pg)pg.innerHTML=h||'<div class="empty"><i class="fas fa-box-open"></i>No products in this category. Try another!</div>';
 }
 function goAv(i){var p=window._av[i];if(!p)return;try{rememberViewed(p.subSub||p.section||p.subSection||p.category);}catch(e){}location.href='my-shop-product.html?id='+p.id+'&rid='+rid}
+
+/* ===== 2026-09-19 — LIVE SEARCH SUGGESTIONS (this request) =====
+   Typing in the search box paints a panel under it with two kinds of row:
+     • CATEGORY — matched against this shop's own main / sub / sub-sub names.
+                  Tapping one opens that category.
+     • PRODUCT  — this shop's matches from shopSearch(), which already covers
+                  name, SKU, brand and the whole category chain. Tapping one
+                  opens that product.
+   Enter (msSearchGo) jumps STRAIGHT to the first matching category when there is
+   one — the user asked for "typing t-shirt goes to the t-shirt category" — and
+   otherwise leaves the product grid renderGrid() already painted.
+
+   rid-SCOPED BY CONSTRUCTION: shopMainCategories/shopSubCategories/
+   shopSubSubCategories/shopSearch all take `rid`, so one reseller's catalogue
+   can never appear in another reseller's search. The three category helpers also
+   already drop hidden/deactivated entries, so no extra filter is applied here. */
+var MS_SUG_CATS=[], MS_SUG_PRODS=[], MS_SUG_PRODMAX=6, MS_SUG_CATMAX=4;
+
+/* Same normalisation shopFilter() uses, so "T-Shirt" / "t shirt" / "tshirt"
+   all agree. catDedupeKey() is the app-wide one; the fallback keeps this
+   working even if it is ever renamed. */
+function msSugKey(s){
+    try{ if(typeof catDedupeKey==='function'){ var k=catDedupeKey(s); if(k) return k; } }catch(e){}
+    return String(s===undefined||s===null?'':s).toLowerCase().replace(/[^a-z0-9]+/g,' ').replace(/^\s+|\s+$/g,'');
+}
+function msSugCats(q){
+    var out=[], seen={}, k=msSugKey(q);
+    if(k.length<2) return out;                 /* 1 char matches almost everything */
+    function add(cat,sub,subsub,label){
+        var key=cat+'|'+(sub||'')+'|'+(subsub||'');
+        if(seen[key]) return;
+        seen[key]=1;
+        out.push({cat:cat,sub:sub||'',subsub:subsub||'',label:label});
+    }
+    var mains=[]; try{ mains=shopMainCategories(rid)||[]; }catch(e){ mains=[]; }
+    for(var i=0;i<mains.length;i++){
+        var m=mains[i]&&mains[i].name; if(!m) continue;
+        if(msSugKey(m).indexOf(k)!==-1) add(m,'','',m);
+        var subs=[]; try{ subs=shopSubCategories(rid,m)||[]; }catch(e){ subs=[]; }
+        for(var j=0;j<subs.length;j++){
+            var s=subs[j]&&subs[j].name; if(!s) continue;
+            if(msSugKey(s).indexOf(k)!==-1) add(m,s,'',s);
+            var sss=[]; try{ sss=shopSubSubCategories(rid,m,s)||[]; }catch(e){ sss=[]; }
+            for(var n=0;n<sss.length;n++){
+                var ss=sss[n]&&sss[n].name; if(!ss) continue;
+                if(msSugKey(ss).indexOf(k)!==-1) add(m,s,ss,ss);
+            }
+        }
+    }
+    return out;
+}
+function msSuggestHide(){
+    var el=document.getElementById('msSuggest');
+    if(el){ el.className='ms-sug'; }
+    return false;
+}
+function msSuggest(){
+    var el=document.getElementById('msSuggest');
+    var inp=document.getElementById('q');
+    if(!el||!inp) return false;
+    var q=String(inp.value||'').trim();
+    MS_SUG_CATS=[]; MS_SUG_PRODS=[];
+    if(!q){ el.innerHTML=''; el.className='ms-sug'; return false; }
+    MS_SUG_CATS=msSugCats(q);
+    try{ MS_SUG_PRODS=shopSearch(rid,q)||[]; }catch(e){ MS_SUG_PRODS=[]; }
+    var h='';
+    if(MS_SUG_CATS.length){
+        h+='<div class="sg-h">CATEGORIES</div>';
+        for(var i=0;i<MS_SUG_CATS.length&&i<MS_SUG_CATMAX;i++){
+            var c=MS_SUG_CATS[i];
+            var trail=(c.sub?(esc(c.cat)+' &rsaquo; '):'');
+            if(c.sub) trail+=esc(c.sub);
+            h+='<div class="sg-r cat" onclick="msGoCat('+i+')">'+
+               '<div class="im"><i class="fas fa-layer-group"></i></div>'+
+               '<div class="tx"><div class="nm">'+esc(c.label)+'</div>'+
+               (trail?'<div class="sb">'+trail+'</div>':'')+
+               '</div><i class="fas fa-chevron-right" style="color:#cbd5e1;font-size:.72rem"></i></div>';
+        }
+    }
+    if(MS_SUG_PRODS.length){
+        h+='<div class="sg-h">PRODUCTS</div>';
+        for(var j=0;j<MS_SUG_PRODS.length&&j<MS_SUG_PRODMAX;j++){
+            var p=MS_SUG_PRODS[j];
+            var img=''; try{ img=prodImgSrc(p.image)||''; }catch(e){ img=''; }
+            h+='<div class="sg-r" onclick="msGoProd('+j+')">'+
+               '<div class="im">'+(img?'<img src="'+esc(img)+'" alt="">':'<i class="fas fa-box"></i>')+'</div>'+
+               '<div class="tx"><div class="nm">'+esc(p.name)+'</div>'+
+               (p.sku?'<div class="sb">SKU: '+esc(p.sku)+'</div>':'')+'</div>'+
+               '<div class="pr">&#2547;'+retail(p)+'</div></div>';
+        }
+    }
+    if(!h) h='<div class="sg-e">No matches for &ldquo;'+esc(q)+'&rdquo;</div>';
+    el.innerHTML=h;
+    el.className='ms-sug on';
+    return true;
+}
+/* Navigate to a suggested category. activeCat/Sub/SubSub must be set BEFORE the
+   hash changes, because catHash() reads them through the hash the router parses.
+   If the hash is already the wanted one no hashchange fires, so refreshView()
+   is called directly in that case — otherwise the tap would look dead. */
+function msGoCat(i){
+    var c=MS_SUG_CATS[i]; if(!c) return false;
+    msSuggestHide();
+    var inp=document.getElementById('q'); if(inp) inp.value='';
+    try{
+        window._msShowAll=false;
+        priceMax=0;
+        activeCat=c.cat; activeSub=c.sub||''; activeSubSub=c.subsub||'';
+        var want=catHash(c.cat,c.sub||'',c.subsub||'');
+        if(String(location.hash||'')===want){ refreshView(); }
+        else { location.hash=want; }
+        return true;
+    }catch(e){ try{ refreshView(); }catch(e2){} return false; }
+}
+function msGoProd(i){
+    var p=MS_SUG_PRODS[i]; if(!p) return false;
+    msSuggestHide();
+    try{ rememberViewed(p.subSub||p.section||p.subSection||p.category); }catch(e){}
+    location.href='my-shop-product.html?id='+encodeURIComponent(p.id)+'&rid='+rid;
+    return true;
+}
+/* Enter. A matching CATEGORY wins over the product list — that is what the user
+   asked for ("typing t-shirt goes to the t-shirt category"). With no category
+   match the grid renderGrid() already painted is the result. */
+function msSearchGo(){
+    var inp=document.getElementById('q');
+    var q=String(inp?inp.value:'').trim();
+    if(!q){ msSuggestHide(); return false; }
+    if(!MS_SUG_CATS.length) MS_SUG_CATS=msSugCats(q);
+    if(MS_SUG_CATS.length) return msGoCat(0);
+    msSuggestHide();
+    try{ renderGrid(); }catch(e){}
+    return true;
+}
+window.msSuggest=msSuggest;
+window.msSuggestHide=msSuggestHide;
+window.msSearchGo=msSearchGo;
+window.msGoCat=msGoCat;
+window.msGoProd=msGoProd;
+/* Tapping anywhere outside the panel closes it. Bound once, in the capture
+   phase is NOT needed — the panel's own rows call msSuggestHide() themselves,
+   so a plain bubble listener is enough. */
+document.addEventListener('click',function(ev){
+    try{
+        var el=document.getElementById('msSuggest');
+        if(!el||el.className.indexOf('on')===-1) return;
+        var t=ev.target;
+        if(t&&t.closest&&t.closest('.srch')) return;   /* a click inside the bar */
+        msSuggestHide();
+    }catch(e){}
+});
+
 function renderContact(){} /* REMOVED */
 
 /* ---------- #5-#8 My Shop mobile bottom navigation ----------
@@ -1639,6 +1849,36 @@ function msBnavCart(){
 }
 findShop();
 render();
+/* 2026-09-19 — `?q=` handoff (this request). The PRODUCT page has no results
+   grid of its own, so its search bar sends the customer here with the query
+   instead of trying to render results locally. The same rule Enter uses on this
+   page is applied: if the query names one of THIS shop's categories we open that
+   category, otherwise we prefill the box and let renderGrid() paint the product
+   results. Runs after render() so the shop, the tabs and the hero are ready. */
+(function msApplyQueryParam(){
+    try{
+        /* `gocat` — the product page's category suggestion, sent as an explicit
+           PATH (cat~sub~subsub) so the exact tapped category opens even when a
+           sub-sub shares its name with a sub elsewhere. */
+        var g0=String(QP.get('gocat')||'').trim();
+        if(g0){
+            var parts=g0.split('~');
+            var cat0=parts[0]||'', sub0=parts[1]||'', ss0=parts[2]||'';
+            if(cat0){
+                MS_SUG_CATS=[{cat:cat0,sub:sub0,subsub:ss0,label:ss0||sub0||cat0}];
+                msGoCat(0);
+                return;
+            }
+        }
+        var q0=String(QP.get('q')||'').trim();
+        if(!q0) return;
+        var inp=document.getElementById('q');
+        if(inp) inp.value=q0;
+        var cats=msSugCats(q0);
+        if(cats.length){ MS_SUG_CATS=cats; msGoCat(0); return; }
+        try{ renderGrid(); }catch(e){}
+    }catch(e){}
+})();
 /* 2026-09-16 — FIX: a product image that is big lives in IndexedDB, not in the
    product record (see RH_IMG_SPILL_MIN in app.js). That cache loads
    ASYNCHRONOUSLY, so this first render can run before it is ready — and at that
@@ -1946,6 +2186,14 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
     var txt=brand.querySelector('.btxt');
     var d=document.createElement('div'); d.className='hdr-mid';
     d.innerHTML='<span class="bname">'+escH(bizName())+'</span>';
+    /* 2026-09-19 — this is the ONLY brand element a phone ever sees, because
+       `.brand` is display:none at <=600px (see the mobile header block). It had
+       no click handler, so tapping the brand name on mobile did nothing at all.
+       It now goes HOME, exactly like the desktop `.brand` above. */
+    d.style.cursor='pointer';
+    d.setAttribute('role','button');
+    d.setAttribute('tabindex','0');
+    d.onclick=function(){ try{ goHome(); }catch(e){} };
     if(brand.nextSibling) brand.parentNode.insertBefore(d,brand.nextSibling);
     else brand.parentNode.appendChild(d);
     return d;
@@ -2136,6 +2384,11 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
   function msHeroShouldShow(){
     /* homepage only: no active category filter */
     try { if (typeof activeCat !== 'undefined' && activeCat) return false; } catch(e){}
+    /* 2026-09-19 — nor on a SEARCH RESULTS page (this request). renderGrid()
+       raises this flag whenever the search box has a query. Without this check
+       the slider hero stayed on screen above the results, even though the
+       category view already hid it. */
+    if (window._msSearching) return false;
     var hs=document.getElementById('homeWrap');
     if(hs && hs.style.display==='none') return false;
     return true;
