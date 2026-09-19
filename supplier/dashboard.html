@@ -454,7 +454,7 @@ tr.ord-sel-row{background:#f0fdfa}
 <button type="button" class="sup-warn-btn" onclick="supWarnOpen()">
     <i class="fas fa-triangle-exclamation"></i> সাপ্লায়ারদের জন্য সতর্কবার্তা
 </button>
-<div class="card"><div class="chead"><h4>Orders</h4><input id="oq" placeholder="Search order ID" style="padding:9px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.85rem" oninput="renderOrders()"></div>
+<div class="card"><div class="chead"><h4>Orders</h4><input id="oq" name="orderSearch" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Search order ID" style="padding:9px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.85rem" oninput="renderOrders()"></div>
 <!-- 2026-09-15 — the supplier sees the same Returned / Delivered totals the admin
      does, valued at the ADMIN BUY-IN PRICE (their own payout basis). -->
 <div id="supRetSum" style="display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px">
@@ -2072,10 +2072,15 @@ var o=allOrdersList(),q=(document.getElementById('oq')||{value:''}).value.toLowe
 o=supSortNewestFirst(o);
 var shown=[];
 for(var i=0;i<o.length;i++){var x=o[i];
-/* 2026-09-20 — hide rows the supplier has nothing left to do for (packaging,
-   ready_to_ship, steadfast_created, delivered, cancelled, returned). Same
-   guard the Ship করতে হবে card uses, so the two lists agree. */
-if(!supActionable(x))continue;
+/* 2026-09-20 — REVISED 04:25. The "All Orders" table is the supplier's FULL
+   order history, not a work queue. Every order the supplier has ever
+   received — confirmed, packaging, ready_to_ship, steadfast_created,
+   shipping, delivered, cancelled, returned — stays on screen with its
+   status badge. The Ship করতে হবে product card is the ONLY place where
+   we filter to the in-flight stages; the bulk-action checkbox column
+   uses supSelectable() (which already does the right thing) for the lock
+   icon. A row that disappears from "All Orders" the moment a click
+   changes its status was a bug, not a feature. */
 if(q&&String(x.id).toLowerCase().indexOf(q)===-1)continue;
 shown.push(x);
 var serial=Number(x.__supSer)||0;
