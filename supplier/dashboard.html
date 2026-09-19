@@ -2196,18 +2196,17 @@ function supSummaryStatusIncluded(x) {
    'none' and bulk Ready to Ship skips any order that already has a Parcel ID.
    Reuses supLineCounts() for the void half instead of a second list. */
 var SUP_GONE_STATUS = { 'delivered': 1 };
-/* 2026-09-20 — BUG FIX. The Order List kept showing orders the supplier had
-   already started processing (packaging, ready_to_ship, steadfast_created),
-   and kept showing delivered / cancelled / returned rows too, so the "Order
-   List" never matched the actual work the supplier still had to do. After
-   moving a row to Packaging it stayed on the table, then the 10-second
-   setInterval re-render apparently flickered it back on again. The fix is
-   a single guard that the table, the bulk buttons, the Ship করতে হবে
-   product card and the count strip all agree on. */
+/* 2026-09-20 — BUG FIX (revised 03:55). The first cut hid delivered /
+   cancelled / returned rows too, but the user wants delivered orders to
+   STAY VISIBLE in the "All Orders" table so the row that drives the
+   Delivered: 1 pcs count card is actually on screen, not just in a count.
+   New rule: hide ONLY rows the supplier has no reason to look at any more
+   because they are in the shipping pipeline (packaging / ready_to_ship /
+   steadfast_created). Anything else stays — new / pending / confirmed are
+   actionable, delivered / cancelled / returned are record-keeping rows
+   with the lock icon. The Ship করতে হবে card and the Order List now agree. */
 function supActionable(x) {
   if (!x) return false;
-  if (!supLineCounts(x)) return false;                                      /* cancelled/rejected/failed/returned */
-  if (SUP_GONE_STATUS[String((x && x.status) || '').toLowerCase()]) return false; /* delivered */
   if (typeof isMultiSupplierOrder === 'function' && isMultiSupplierOrder(x)) return false;
   if (typeof shipStageOf === 'function' && shipStageOf(x, sup.id) !== 'none') return false; /* packaging/ready_to_ship/steadfast_created */
   return true;
