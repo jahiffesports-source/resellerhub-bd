@@ -542,7 +542,7 @@ body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; 
     <button class="mo-btn gh" onclick="moUnselectAll()"><i class="fas fa-xmark"></i> Unselect All</button>
     <button class="mo-btn pri" onclick="moSendSteadfast()" id="moSfBtn" disabled><i class="fas fa-truck"></i> Send to Courier</button>
     <button class="mo-btn gh" onclick="moPrintBulk()" id="moPrBtn" disabled><i class="fas fa-print"></i> Bulk Print</button>
-    <span style="display:inline-flex;gap:4px;margin-left:6px;align-items:center"><span style="font-size:.72rem;color:#64748b;font-weight:700">Print:</span><button class="mo-btn gh mo-fmt-btn" data-fmt="a4" onclick="moSetFormat('a4')" style="padding:6px 9px;font-size:.72rem">A4</button><button class="mo-btn gh mo-fmt-btn" data-fmt="label33" onclick="moSetFormat('label33')" style="padding:6px 9px;font-size:.72rem">3 x 3</button><button class="mo-btn gh mo-fmt-btn" data-fmt="label23" onclick="moSetFormat('label23')" style="padding:6px 9px;font-size:.72rem">2 x 3</button></span>
+    <span style="display:inline-flex;gap:4px;margin-left:6px;align-items:center"><span style="font-size:.72rem;color:#64748b;font-weight:700">Print:</span><button class="mo-btn gh mo-fmt-btn" data-fmt="a4" onclick="moSetFormat('a4')" style="padding:6px 9px;font-size:.72rem">A4</button><button class="mo-btn gh mo-fmt-btn" data-fmt="label32" onclick="moSetFormat('label32')" style="padding:6px 9px;font-size:.72rem">3 \u00d7 2</button><button class="mo-btn gh mo-fmt-btn" data-fmt="label23" onclick="moSetFormat('label23')" style="padding:6px 9px;font-size:.72rem">2 \u00d7 3</button></span>
     <button class="mo-btn del" onclick="moDeleteSelected()" id="moDelBtn" disabled><i class="fas fa-trash-can"></i> Delete Selected</button>
     <div class="sp"></div>
     <select id="moStatus" class="mo-btn gh" style="padding:9px 12px" onchange="moRender()">
@@ -1140,9 +1140,9 @@ function moSendSteadfast() {
    unlike the supplier-side label, which is deliberately brand-free so a
    supplier never learns the reseller's details. */
 var MO_FORMATS = {
-    a4:      { label: 'A4',         key: 'a4' },
-    label33: { label: '3 x 3',      key: 'label33', w: '3in', h: '3in', fs: '9px', pad: '3mm' },
-    label23: { label: '2 x 3',      key: 'label23', w: '2in', h: '3in', fs: '8px', pad: '2.2mm' }
+    a4:      { label: 'A4',    key: 'a4' },
+    label32: { label: '3 x 2', key: 'label32', w: '3in', h: '2in', fs: '9px' },
+    label23: { label: '2 x 3', key: 'label23', w: '2in', h: '3in', fs: '8px' }
 };
 var moFormat = 'a4';
 function moSetFormat(f) {
@@ -1170,36 +1170,62 @@ function moShopBrand() {
         try { nm = (typeof resellerBusinessName === 'function') ? resellerBusinessName(r) : ''; } catch (e) { }
         return {
             name: nm || r.businessName || r.shop_name || r.shopName || r.name || '',
-            phone: r.phone || r.shop_phone || ''
+            phone: r.phone || r.shop_phone || '',
+            address: r.address || r.shop_address || r.businessAddress || ''
         };
     } catch (e) { return { name: '', phone: '' }; }
 }
 function moStickerHtml(o, format) {
-    var f = MO_FORMATS[format] || MO_FORMATS.label33;
+    /* Screenshot design (this request): a branded parcel sticker.
+         [dark header]  shop name / phone . address
+         [body]         product name x qty .... price  (+ variant line)
+         [row]          Ship: <delivery>     TOTAL: <goods + delivery>
+         [block]        PARCEL ID / <id or "Not Available"> / Shop ID: <id>
+         [dark footer]  Thank You For Your Order!
+       Parcel ID and consignment ID are the same value, so whichever the order
+       carries is printed. Every reseller prints their OWN shop details. */
+    var f = MO_FORMATS[format] || MO_FORMATS.label32;
     var b = moShopBrand();
-    var cust = o.customer || o.customerName || '';
-    var addr = o.address || o.customerAddress || '';
-    var phone = o.phone || o.customerPhone || '';
-    var amt = '';
-    try {
-        amt = (typeof orderDeliveryCharge === 'function')
-            ? sMoney((Number(o.amount) || 0) + (Number(orderDeliveryCharge(o)) || 0))
-            : sMoney(o.amount || 0);
-    } catch (e) { amt = sMoney(o.amount || 0); }
-    return '<div class="mo-sticker" style="width:' + f.w + ';height:' + f.h +
-        ';padding:' + f.pad + ';font-size:' + f.fs +
-        ';box-sizing:border-box;overflow:hidden;page-break-inside:avoid;' +
-        'display:flex;flex-direction:column;gap:1px">' +
-        (b.name ? '<div style="font-weight:800;font-size:1.15em;line-height:1.1">' +
-            sEsc(String(b.name).slice(0, 34)) + '</div>' : '') +
-        (b.phone ? '<div style="opacity:.75">' + sEsc(b.phone) + '</div>' : '') +
-        '<div style="border-top:1px dashed #999;margin:2px 0;opacity:.6"></div>' +
-        '<div style="font-weight:800">' + sEsc(cust) + '</div>' +
-        '<div style="line-height:1.15">' + sEsc(phone) + '</div>' +
-        '<div style="line-height:1.15;flex:1;overflow:hidden">' + sEsc(String(addr).slice(0, 96)) + '</div>' +
-        '<div style="border-top:1px dashed #999;margin:2px 0;opacity:.6"></div>' +
-        '<div style="display:flex;justify-content:space-between;font-weight:800">' +
-        '<span>' + sEsc(o.id) + '</span><span>' + amt + '</span></div>' +
+    var items = (o && o.items && o.items.length) ? o.items : [];
+    var delivery = 0;
+    try { delivery = (typeof orderDeliveryCharge === 'function') ? Number(orderDeliveryCharge(o) || 0) : 0; } catch (e) { delivery = 0; }
+    var pid = '';
+    try { pid = (typeof shipParcelId === 'function') ? String(shipParcelId(o) || '') : ''; } catch (e) { pid = ''; }
+    if (!pid) pid = String((o && (o.steadfast_parcel_id || o.steadfast_consignment_id || o.consignment_id || o.consignmentId)) || '');
+    var shopId = '';
+    try { shopId = (typeof shipShopId === 'function') ? String(shipShopId() || '') : ''; } catch (e) { shopId = ''; }
+
+    var rows = '', goods = 0;
+    for (var i = 0; i < items.length; i++) {
+        var it = items[i] || {};
+        var q = Number(it.qty) || 1;
+        var pr = Number(it.price !== undefined ? it.price : it.productPrice) || 0;
+        goods += pr * q;
+        var vt = it.variant || [it.color, it.size].filter(Boolean).join(' / ') || '';
+        rows += '<div style="display:flex;justify-content:space-between;gap:6px;align-items:flex-start">' +
+            '<span style="flex:1;min-width:0;overflow:hidden">' + sEsc(it.name || it.productName || 'Product') + ' \u00d7 ' + q + '</span>' +
+            '<b style="white-space:nowrap">' + sMoney(pr * q) + '</b></div>' +
+            (vt ? '<div style="color:#64748b">' + sEsc(vt) + '</div>' : '');
+    }
+    var total = goods + delivery;
+    var dark = '#1e293b';
+    var contact = [b.phone, b.address].filter(Boolean).join(' \u00b7 ');
+    return '<div class="mo-sticker" style="width:' + f.w + ';height:' + f.h + ';box-sizing:border-box;overflow:hidden;' +
+        'display:flex;flex-direction:column;font-family:Inter,Arial,sans-serif;color:#0f172a;background:#fff;border:1px solid #cbd5e1">' +
+        '<div style="background:' + dark + ';color:#fff;padding:4px 6px;line-height:1.15">' +
+            '<div style="font-weight:900;font-size:1.25em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + sEsc(b.name) + '</div>' +
+            '<div style="opacity:.85;font-size:.85em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + sEsc(contact) + '</div>' +
+        '</div>' +
+        '<div style="flex:1;padding:4px 6px;font-size:.95em;overflow:hidden;line-height:1.25">' + rows + '</div>' +
+        '<div style="display:flex;justify-content:space-between;gap:6px;padding:3px 6px;border-top:1px solid #cbd5e1;font-weight:800">' +
+            '<span>Ship: ' + sMoney(delivery) + '</span><span>TOTAL: ' + sMoney(total) + '</span></div>' +
+        '<div style="text-align:center;padding:4px 6px;border-top:1px dashed #cbd5e1">' +
+            '<div style="letter-spacing:2px;font-size:.8em;color:#64748b;font-weight:800">PARCEL ID</div>' +
+            '<div style="font-weight:900;font-size:1.15em;color:#b45309;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
+                (pid ? sEsc(pid) : 'Not Available') + '</div>' +
+            (shopId ? '<div style="font-size:.8em;color:#64748b;font-weight:700">Shop ID: ' + sEsc(shopId) + '</div>' : '') +
+        '</div>' +
+        '<div style="background:' + dark + ';color:#fff;text-align:center;padding:3px;font-weight:800;font-size:.9em">Thank You For Your Order!</div>' +
         '</div>';
 }
 function moDocFor(orders, format) {
