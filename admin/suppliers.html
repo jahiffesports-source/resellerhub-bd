@@ -326,7 +326,7 @@ body .hamburger { display:none !important; }
             html += '<tr><td><div class="shop-cell"><div class="lg">' + lg + '</div><div><strong>' + s.shopName + '</strong><br><small style="color:#64748b;">Owner: ' + s.name + '</small></div></div></td>' +
                 '<td><code style="background:#fef3c7;padding:2px 8px;border-radius:4px;color:#92400e;font-weight:700;">' + s.sid + '</code></td>' +
                 '<td style="font-size:0.8rem;">' + s.email + '<br>' + s.phone + '</td>' +
-                '<td><code style="background:#eff6ff;padding:2px 8px;border-radius:4px;color:#1d4ed8;font-weight:700;cursor:pointer;" title="Click করে password edit করুন" onclick="editSupPass(\'' + s.id + '\')">🔑 ' + (s.password || '—') + '</code></td>' +
+                '<td><code style="background:#eff6ff;padding:2px 8px;border-radius:4px;color:#1d4ed8;font-weight:700;cursor:pointer;" title="Click করে password edit করুন" onclick="editSupPass(\'' + s.id + '\')">🔑 <span class="pw-mask">••••••••</span></code></td>' +
                 '<td style="font-size:0.8rem;">' + (s.tradeLicense || '-') + '</td>' +
                 '<td>' + count + '</td>' +
                 '<td style="cursor:pointer;" onclick="supInfo(\'' + s.id + '\')" title="Click করে বিস্তারিত দেখুন"><b style="color:' + (bal >= 0 ? '#059669' : '#dc2626') + ';">' + formatCurrency(bal) + '</b>' + (adj ? '<br><small style="color:#7c3aed;">adj: ' + (adj > 0 ? '+' : '') + adj + '</small>' : '') + '</td>' +
@@ -531,7 +531,9 @@ body .hamburger { display:none !important; }
         var s = null;
         for (var i = 0; i < sups.length; i++) { if (String(sups[i].id) === String(id)) { s = sups[i]; break; } }
         if (!s) return;
-        var np = prompt('Supplier "' + (s.shopName || '') + '"-এর নতুন password দিন (min 8 অক্ষর):', s.password || '');
+        /* 2026-09-20 - do NOT prefill: the prompt used to show the supplier's
+           existing password in clear. */
+        var np = prompt('Supplier "' + (s.shopName || '') + '"-এর নতুন password দিন (min 8 অক্ষর):');
         if (np === null) return;
         np = np.trim();
         if (np.length < 8) { showToast('Password কমপক্ষে 8 অক্ষরের হতে হবে!', 'error'); return; }

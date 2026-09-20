@@ -425,7 +425,10 @@ body .hamburger { display:none !important; }
                 /* 2026-09-17 — the password used to be printed in the table for anyone looking over
                        the admin's shoulder. It is now masked, and a small eye button reveals it
                        on demand. The code cell still opens the edit box as before. */
-                '<td><code style="background:#eff6ff;padding:2px 8px;border-radius:4px;color:#1d4ed8;font-weight:700;cursor:pointer;" title="Click করে password edit করুন" onclick="editResPass(' + r.id + ')">🔑 <span class="pw-mask" data-pw="' + String(r.password || '').replace(/"/g,'&quot;') + '">••••••••</span></code> ' +
+                /* 2026-09-20 - the plain password is no longer written into the markup:
+               data-pw made it readable with Inspect Element. The reveal
+               button now looks it up only when the admin clicks it. */
+                '<td><code style="background:#eff6ff;padding:2px 8px;border-radius:4px;color:#1d4ed8;font-weight:700;cursor:pointer;" title="Click করে password edit করুন" onclick="editResPass(' + r.id + ')">🔑 <span class="pw-mask">••••••••</span></code> ' +
                 '<button class="btn btn-sm" style="padding:2px 7px;font-size:.68rem" title="Show / hide password" onclick="event.stopPropagation();revealResPass(' + r.id + ',this)"><i class="fas fa-eye"></i></button></td>' +
                 '<td>' + (r.businessName || '-') + '</td>' +
                 '<td>' + onlineBadge(r.id) + '</td>' +
@@ -653,7 +656,19 @@ body .hamburger { display:none !important; }
             var span = cell ? cell.querySelector('.pw-mask') : null;
             if (!span) return;
             var masked = span.textContent.indexOf('\u2022') === 0;
-            span.textContent = masked ? (span.getAttribute('data-pw') || '\u2014') : '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+            if (masked) {
+                /* 2026-09-20 - looked up on demand; it is no longer in the DOM. */
+                var pw = '';
+                try {
+                    var lst = getData(DB_KEYS.RESELLERS) || [];
+                    for (var q = 0; q < lst.length; q++) {
+                        if (String(lst[q].id) === String(id)) { pw = String(lst[q].password || ''); break; }
+                    }
+                } catch (er) { }
+                span.textContent = pw || '\u2014';
+            } else {
+                span.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+            }
             var ic = btn.querySelector('i');
             if (ic) ic.className = masked ? 'fas fa-eye-slash' : 'fas fa-eye';
         } catch (e) { }
@@ -663,7 +678,8 @@ body .hamburger { display:none !important; }
         var r = null;
         for (var i = 0; i < resellers.length; i++) { if (String(resellers[i].id) === String(id)) { r = resellers[i]; break; } }
         if (!r) return;
-        var np = prompt('Reseller "' + (r.name || '') + '"-এর নতুন password দিন (min 8 অক্ষর):', r.password || '');
+        /* 2026-09-20 - no prefill: it showed the reseller's current password. */
+        var np = prompt('Reseller "' + (r.name || '') + '"-এর নতুন password দিন (min 8 অক্ষর):');
         if (np === null) return;
         np = np.trim();
         if (np.length < 8) { showToast('Password কমপক্ষে 8 অক্ষরের হতে হবে!', 'error'); return; }
