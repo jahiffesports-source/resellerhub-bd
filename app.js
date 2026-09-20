@@ -682,14 +682,21 @@ function ensureCategoryStructure() {
        and cheap, and a database can gain legacy rows after the first run (e.g. an
        in-place upgrade), in which case the six mains must be ensured again. */
     var list = asArray(getData(DB_KEYS.CATEGORIES));
+    /* BUG FIX — the lookup key used to be a plain toLowerCase(), which treats
+       "Men's Fashion" and "Men Fashion" as two DIFFERENT categories. This seed
+       spells the mains WITH an apostrophe while MAIN_CATEGORY_TREE spells them
+       without, so a fresh install got BOTH — the admin list showed each main
+       twice (2026-09-21). catDedupeKey() folds case, punctuation and the
+       men/mens + women/womens split, so the apostrophe form now matches the
+       existing record instead of inserting a duplicate. */
     var byName = {};
     for (var i = 0; i < list.length; i++) {
-        if (list[i] && list[i].name) byName[String(list[i].name).trim().toLowerCase()] = list[i];
+        if (list[i] && list[i].name) byName[catDedupeKey(list[i].name)] = list[i];
     }
     var added = 0, flagged = 0;
     for (var main in RH_CATEGORY_STRUCTURE) {
         if (!Object.prototype.hasOwnProperty.call(RH_CATEGORY_STRUCTURE, main)) continue;
-        var key = String(main).trim().toLowerCase();
+        var key = catDedupeKey(main);
         var cat = byName[key];
         if (!cat) {
             cat = { id: 'cat_' + Date.now() + Math.floor(Math.random() * 1000),
@@ -701,8 +708,10 @@ function ensureCategoryStructure() {
         for (var sub in RH_CATEGORY_STRUCTURE[main]) {
             if (!Object.prototype.hasOwnProperty.call(RH_CATEGORY_STRUCTURE[main], sub)) continue;
             var found = null;
+            /* same folding as above: "T-Shirt"/"T-Shirts" and "Men's Accessories"
+               /"Mens Accessories" are one sub, not two. */
             for (var k = 0; k < cat.subs.length; k++) {
-                if (String((cat.subs[k] || {}).name || cat.subs[k]).trim().toLowerCase() === String(sub).trim().toLowerCase()) { found = cat.subs[k]; break; }
+                if (catDedupeKey((cat.subs[k] || {}).name || cat.subs[k]) === catDedupeKey(sub)) { found = cat.subs[k]; break; }
             }
             if (!found) {
                 found = { name: sub, subSubs: [] };
@@ -713,18 +722,23 @@ function ensureCategoryStructure() {
             var want = RH_CATEGORY_STRUCTURE[main][sub] || [];
             for (var w = 0; w < want.length; w++) {
                 var exists = false;
+                /* catKeyMatch() also folds a trailing plural, so a stored
+                   "Polo Shirt" matches the seed's "Polo T-Shirt"/"Shirts"
+                   spelling instead of being pushed in a second time. */
                 for (var q = 0; q < found.subSubs.length; q++) {
-                    if (String(found.subSubs[q] || '').trim().toLowerCase() === String(want[w]).trim().toLowerCase()) { exists = true; break; }
+                    if (catKeyMatch(found.subSubs[q], want[w])) { exists = true; break; }
                 }
                 if (!exists) found.subSubs.push(want[w]);
             }
         }
     }
-    /* keep old records, only drop them out of the active nav */
+    /* keep old records, only drop them out of the active nav.
+       Keys use catDedupeKey() so a record spelled "Men Fashion" is still
+       recognised as the primary "Men's Fashion" and is NOT flagged out. */
     var primaries = {};
-    for (var m in RH_CATEGORY_STRUCTURE) { if (Object.prototype.hasOwnProperty.call(RH_CATEGORY_STRUCTURE, m)) primaries[String(m).trim().toLowerCase()] = 1; }
+    for (var m in RH_CATEGORY_STRUCTURE) { if (Object.prototype.hasOwnProperty.call(RH_CATEGORY_STRUCTURE, m)) primaries[catDedupeKey(m)] = 1; }
     for (var j = 0; j < list.length; j++) {
-        var nm = String((list[j] || {}).name || '').trim().toLowerCase();
+        var nm = catDedupeKey((list[j] || {}).name || '');
         if (nm && !primaries[nm] && list[j].primary !== false) { list[j].primary = false; flagged++; }
     }
     setData(DB_KEYS.CATEGORIES, list);
