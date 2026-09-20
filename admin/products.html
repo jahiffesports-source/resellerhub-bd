@@ -419,7 +419,27 @@ body .hamburger { display:none !important; }
 </div>
 </div>
 
-<script src="../app.js"></script><script>(function(){function paint(){try{var n=(typeof adminNewOrderCount==="function")?adminNewOrderCount():(typeof adminOrderBadgeCount==="function"?adminOrderBadgeCount():0);var els=document.querySelectorAll(".orders-badge");for(var i=0;i<els.length;i++){els[i].textContent=n;els[i].style.display=n>0?"inline-block":"none";}}catch(e){}var lb=document.getElementById("ordersBadgeN");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
+<script src="../app.js"></script><script>
+    /* 2026-09-20 (#2) - who actually owns this product?
+       Admin-uploaded products carry no supplier at all, so the supplier line
+       was simply blank in both the card and the list. It now says "Admin".
+       A supplier product keeps its name (falling back to its id) and a
+       reseller product is labelled too, so nothing is ever mistaken for a
+       platform product. */
+    function prodOwnerTag(p) {
+        try {
+            if (!p) return '';
+            if (p.supplierName) return '<i class="fas fa-warehouse"></i> ' + esc(p.supplierName);
+            var t = (typeof productOwnerType === 'function') ? productOwnerType(p) : 'admin';
+            if (t === 'supplier') {
+                var sid = (p.supplierId !== undefined && p.supplierId !== null) ? p.supplierId : p.supplier_id;
+                return '<i class="fas fa-warehouse"></i> ' + (sid ? ('Supplier #' + sid) : 'Supplier');
+            }
+            if (t === 'reseller') return '<i class="fas fa-store"></i> Reseller product';
+            return '<i class="fas fa-user-shield"></i> Admin';
+        } catch (e) { return ''; }
+    }
+(function(){function paint(){try{var n=(typeof adminNewOrderCount==="function")?adminNewOrderCount():(typeof adminOrderBadgeCount==="function"?adminOrderBadgeCount():0);var els=document.querySelectorAll(".orders-badge");for(var i=0;i<els.length;i++){els[i].textContent=n;els[i].style.display=n>0?"inline-block":"none";}}catch(e){}var lb=document.getElementById("ordersBadgeN");if(lb)lb.textContent=n>0?(" ("+n+")"):"";}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",paint);else paint();window.addEventListener("storage",function(e){if(!e.key||e.key.indexOf("rh_orders")===0||e.key==="rh_db_version")paint();});})();</script>
 <script>
 window.onerror=function(msg,src,line){try{var b=document.getElementById('errBanner');if(!b){b=document.createElement('div');b.id='errBanner';b.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#dc2626;color:#fff;padding:9px 14px;font:12px Inter,sans-serif;z-index:99999';document.body.appendChild(b)}b.textContent='⚠ JS Error (line '+line+'): '+msg;}catch(e){}};
 (function() {
@@ -546,7 +566,7 @@ window.onerror=function(msg,src,line){try{var b=document.getElementById('errBann
                     '<div class="phover"><button onclick="event.stopPropagation();openEdit(' + JSON.stringify(String(p.id)).replace(/"/g, '&quot;') + ')" title="Edit"><i class="fas fa-pencil-alt"></i></button>' +
                     '<button class="del" onclick="event.stopPropagation();delProd(' + JSON.stringify(String(p.id)).replace(/"/g, '&quot;') + ')" title="Delete"><i class="fas fa-trash"></i></button></div></div>' +
                     '<div class="pinfo"><h4 title="' + esc(p.name) + '">' + esc(p.name) + '</h4>' +
-                    (p.supplierName ? '<div style="font-size:.64rem;color:#7c3aed;font-weight:800;margin:2px 0"><i class="fas fa-warehouse"></i> ' + esc(p.supplierName) + '</div>' : '') +
+                    (function(){var _t=prodOwnerTag(p);return _t?'<div style="font-size:.64rem;color:#7c3aed;font-weight:800;margin:2px 0">'+_t+'</div>':'';})() +
                     /* Item 9 — Category › Subcategory › Sub-subcategory */
                     (function () { var ch = (typeof productCategoryChain === 'function') ? productCategoryChain(p) : (p.category || ''); return ch ? '<span class="cat-badge" title="' + esc(ch) + '">' + esc(ch) + '</span>' : ''; })() + sw + sz +
                     '<div class="pr-row"><div><div class="l">Retail</div><div class="retail">' + formatCurrency(cprice) + '</div></div>' +
@@ -575,7 +595,7 @@ window.onerror=function(msg,src,line){try{var b=document.getElementById('errBann
                    UNQUOTED, so a product whose id is a string ('rfP0', 'P1', …)
                    produced onclick="openEdit(rfP0)" -> "ReferenceError: rfP0 is not
                    defined" and the Edit / Delete buttons did nothing. Quote safely. */
-                lh += '<tr><td style="padding:10px 14px">' + (((window._apg - 1) * PAGE_SIZE) + k + 1) + '</td><td style="padding:10px 14px"><div style="display:flex;gap:10px;align-items:center">' + im2 + '<div><b>' + esc(pp.name) + '</b><br><small style="color:#64748b">' + (pp.sku || '') + '</small>' + (chain2 ? '<br><small style="color:#0f766e;font-weight:700">' + esc(chain2) + '</small>' : '') + (pp.supplierName ? '<br><small style="color:#7c3aed;font-weight:700"><i class="fas fa-warehouse"></i> ' + esc(pp.supplierName) + '</small>' : '') + '</div></div></td><td style="padding:10px 14px;color:#2563eb;font-weight:600">' + formatCurrency(pp.reseller_price || 0) + '</td><td style="padding:10px 14px">' + formatCurrency(pp.customer_price || pp.price || 0) + '</td><td style="padding:10px 14px">' + st2 + '</td><td style="padding:10px 14px"><span class="badge badge-success">' + (pp.is_active === false ? 'Inactive' : 'Active') + '</span></td><td style="padding:10px 14px"><button class="btn btn-sm btn-primary" onclick="openEdit(' + JSON.stringify(String(pp.id)).replace(/"/g, '&quot;') + ')"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger" onclick="delProd(' + JSON.stringify(String(pp.id)).replace(/"/g, '&quot;') + ')"><i class="fas fa-trash"></i></button></td></tr>';
+                lh += '<tr><td style="padding:10px 14px">' + (((window._apg - 1) * PAGE_SIZE) + k + 1) + '</td><td style="padding:10px 14px"><div style="display:flex;gap:10px;align-items:center">' + im2 + '<div><b>' + esc(pp.name) + '</b><br><small style="color:#64748b">' + (pp.sku || '') + '</small>' + (chain2 ? '<br><small style="color:#0f766e;font-weight:700">' + esc(chain2) + '</small>' : '') + (function(){var _t=prodOwnerTag(pp);return _t?'<br><small style="color:#7c3aed;font-weight:700">'+_t+'</small>':'';})() + '</div></div></td><td style="padding:10px 14px;color:#2563eb;font-weight:600">' + formatCurrency(pp.reseller_price || 0) + '</td><td style="padding:10px 14px">' + formatCurrency(pp.customer_price || pp.price || 0) + '</td><td style="padding:10px 14px">' + st2 + '</td><td style="padding:10px 14px"><span class="badge badge-success">' + (pp.is_active === false ? 'Inactive' : 'Active') + '</span></td><td style="padding:10px 14px"><button class="btn btn-sm btn-primary" onclick="openEdit(' + JSON.stringify(String(pp.id)).replace(/"/g, '&quot;') + ')"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger" onclick="delProd(' + JSON.stringify(String(pp.id)).replace(/"/g, '&quot;') + ')"><i class="fas fa-trash"></i></button></td></tr>';
             }
             lh += '</tbody></table>' + (list.length === 0 ? '<div class="empty" style="padding:40px 20px;text-align:center"><i class="fas fa-box-open" style="font-size:2rem;color:#cbd5e1;display:block;margin-bottom:10px"></i><h4 style="color:#475569;margin:0 0 6px">No products match current filter</h4><p style="color:#94a3b8;margin:0 0 14px">DB-তে <b style="color:#10b981">'+products.length+'</b> টি product আছে। Filter clear করে try করুন।</p><button onclick="document.getElementById(\'q\').value=\'\';document.getElementById(\'catF\').value=\'\';document.getElementById(\'stF\').value=\'\';renderGrid()" style="padding:8px 16px;background:#10b981;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700">🔄 Clear Filters</button></div>' : '') + '</div></div>';
             document.getElementById('grid').style.display = 'none';
