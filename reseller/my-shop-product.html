@@ -515,7 +515,7 @@ window._im=[];
 
 function findShop(){
     var list=getData(DB_KEYS.RESELLERS)||[];
-    if(!list.length){try{var s=(typeof STYLEX_ACCOUNT!=='undefined')?STYLEX_ACCOUNT:{id:1,name:'Stylex Shopping',email:'stylexshopping@gmail.com',password:'Stylexshopping@26',isPermanent:true,role:'owner',balance:15000,shop_name:'Stylex Shopping',shop_phone:'01997904792',shop_color:'#e91e63'};list=[s];setData(DB_KEYS.RESELLERS,list)}catch(e){}}
+    if(!list.length){try{var s=(typeof STYLEX_ACCOUNT!=='undefined')?STYLEX_ACCOUNT:{id:1,name:'Stylex Shopping',email:'stylexshopping@gmail.com',passHash:'e5ccbf53487d7cba6ac73faa665e8a4ef54897261915c25a72040a83a79a2b50',isPermanent:true,role:'owner',balance:15000,shop_name:'Stylex Shopping',shop_phone:'01997904792',shop_color:'#e91e63'};list=[s];setData(DB_KEYS.RESELLERS,list)}catch(e){}}
     if(!list.length)return;
     /* An explicit ?rid= is AUTHORITATIVE. If it does not resolve we must NOT
        fall through to someone else's shop — that silently turned every

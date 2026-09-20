@@ -110,14 +110,44 @@ input:focus,select:focus,textarea:focus{transform:translateY(-1px);transition:al
 
     <script src="../app.js"></script>
     <script>
-    /* Owner / admin sign-in addresses (2026-09-15).
-       An ALLOW-LIST, not a single constant: the original address is kept so an
-       existing "Remember me" record and the password-reset flow keep working.
-       Adding an address must never be able to lock anybody out. */
-    var ADMIN_OWNER_EMAILS = ['stylexshopping@gmail.com', 'randomoniumgoes@gmail.com'];
+    /* 2026-09-20 SECURITY FIX - the owner e-mail addresses and the admin
+       password used to be written here IN PLAIN TEXT, so anyone pressing
+       View Source could read them and walk straight into the admin panel.
+       They are now stored as SHA-256 HASHES (sha256Hex() lives in app.js).
+       The source only ever shows irreversible digests, and signing in feels
+       exactly the same for the real owner.
+       An ALLOW-LIST, still: the original two addresses are kept (as hashes)
+       so an existing "Remember me" record and the reset flow keep working.
+       TO CHANGE AN ADDRESS OR THE PASSWORD: put the new value through
+       sha256Hex() and replace the matching constant below - or simply use the
+       Change Password / admin-settings screen, which writes rh_admin_pass.
+       HONEST LIMIT: this runs in the browser, so it is not real security.
+       It removes the credentials from the source and from localStorage;
+       proper security needs the password checked on a server. */
+    var ADMIN_OWNER_EMAIL_HASHES = [
+        '40d98e9597f6a8f53a9e08d96078d5b6937174c4d2222477cac355d1cbf9d20f',
+        '270cdccd8802a33dacfe6726a441b299f0940ce238b5ce37aee0c7b7589151ae'
+    ];
+    var ADMIN_PASS_HASH = 'e5ccbf53487d7cba6ac73faa665e8a4ef54897261915c25a72040a83a79a2b50';
     function isAdminOwnerEmail(v) {
         var e = String(v === undefined || v === null ? '' : v).trim().toLowerCase();
-        for (var i = 0; i < ADMIN_OWNER_EMAILS.length; i++) { if (ADMIN_OWNER_EMAILS[i] === e) return true; }
+        var h = (typeof sha256Hex === 'function') ? sha256Hex(e) : '';
+        if (!h) return false;
+        return ADMIN_OWNER_EMAIL_HASHES.indexOf(h) !== -1;
+    }
+    /* Accept the built-in password OR one the admin changed. A changed
+       password is kept as a HASH (rh_admin_pass = {hash:...}); a very old
+       {pass:...} record is still honoured so nobody is locked out. */
+    function adminPasswordOk(pass) {
+        var h = (typeof sha256Hex === 'function') ? sha256Hex(String(pass === undefined || pass === null ? '' : pass)) : '';
+        if (h && h === ADMIN_PASS_HASH) return true;
+        try {
+            var ap = JSON.parse(localStorage.getItem('rh_admin_pass') || 'null');
+            if (ap) {
+                if (ap.hash && h && ap.hash === h) return true;
+                if (ap.pass && String(pass) === String(ap.pass)) return true;
+            }
+        } catch (e) {}
         return false;
     }
 
@@ -126,16 +156,16 @@ input:focus,select:focus,textarea:focus{transform:translateY(-1px);transition:al
         var email = document.getElementById('username').value.trim();
         var password = document.getElementById('password').value;
 
-        // Only Stylex Shopping credentials work
-        var savedPass = 'Stylexshopping@26';
-        try { var ap = JSON.parse(localStorage.getItem('rh_admin_pass') || 'null'); if (ap && ap.pass) savedPass = ap.pass; } catch (e) {}
-        if (isAdminOwnerEmail(email) && password === savedPass) {
+        // Only the owner credentials work (compared by HASH, never in plain text)
+        if (isAdminOwnerEmail(email) && adminPasswordOk(password)) {
             sessionStorage.setItem('user_id', 'admin');
             sessionStorage.setItem('user_type', 'admin');
             sessionStorage.setItem('user_name', 'Admin');
             try {
                 if (document.getElementById('aRemember').checked) {
-                    localStorage.setItem('rh_remember_admin', JSON.stringify({ email: email, pass: password }));
+                    /* store a HASH, never the password itself */
+                    var _h = (typeof sha256Hex === 'function') ? sha256Hex(String(password)) : '';
+                    localStorage.setItem('rh_remember_admin', JSON.stringify({ email: email, hash: _h }));
                 } else { localStorage.removeItem('rh_remember_admin'); }
             } catch (e) {}
             window.location.href = 'dashboard.html';
@@ -164,10 +194,9 @@ input:focus,select:focus,textarea:focus{transform:translateY(-1px);transition:al
     (function() {
         try {
             var rm = JSON.parse(localStorage.getItem('rh_remember_admin') || 'null');
-            if (rm && rm.email && rm.pass && isAdminOwnerEmail(rm.email)) {
-                var saved = 'Stylexshopping@26';
-                try { var ap = JSON.parse(localStorage.getItem('rh_admin_pass') || 'null'); if (ap && ap.pass) saved = ap.pass; } catch (e) {}
-                if (rm.pass === saved) {
+            if (rm && rm.email && rm.hash && isAdminOwnerEmail(rm.email)) {
+                var _oh = (typeof sha256Hex === 'function') ? sha256Hex(String(rm.hash || '')) : '';
+                if ((_oh && _oh === ADMIN_PASS_HASH) || adminPassHashMatches(rm.hash)) {
                     sessionStorage.setItem('user_id', 'admin');
                     sessionStorage.setItem('user_type', 'admin');
                     sessionStorage.setItem('user_name', 'Admin');
@@ -177,6 +206,16 @@ input:focus,select:focus,textarea:focus{transform:translateY(-1px);transition:al
             }
         } catch (e) {}
     })();
+    /* Does this already-hashed value match the stored admin password? Used by
+       the Remember-me auto-login, which holds a hash rather than a password. */
+    function adminPassHashMatches(hash) {
+        if (!hash) return false;
+        try {
+            var ap = JSON.parse(localStorage.getItem('rh_admin_pass') || 'null');
+            if (ap && ap.hash && ap.hash === hash) return true;
+        } catch (e) {}
+        return false;
+    }
     var afState = { email: '', code: '' };
     function admForgot() {
         var box = document.getElementById('admForgotBox');

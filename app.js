@@ -319,7 +319,11 @@ var STYLEX_ACCOUNT = {
     name: "Stylex Shopping",
     phone: "01997904792",
     email: "stylexshopping@gmail.com",
-    password: "Stylexshopping@26",
+    /* 2026-09-20 SECURITY FIX - the password used to sit here in plain text.
+       Only a SHA-256 digest is kept now (sha256Hex() is defined above).
+       A legacy "password" field is still accepted at sign-in so nobody is
+       locked out by this change. */
+    passHash: "e5ccbf53487d7cba6ac73faa665e8a4ef54897261915c25a72040a83a79a2b50",
     balance: 0,
     totalOrders: 0,
     totalWithdraw: 0,
@@ -2565,6 +2569,71 @@ function ledgerSummary(entries) {
    against anyone who opens devtools and rewrites sessionStorage. Real
    enforcement needs a backend this prototype does not have.
    =========================================================================== */
+/* 2026-09-20 - a small SYNCHRONOUS SHA-256.
+   crypto.subtle is async AND needs a secure context (https or localhost),
+   so it is useless the moment this prototype is opened from file:// or
+   served over plain http. This one always works, which is what lets the
+   login screens compare HASHES instead of keeping a readable password in
+   the page source.
+   HONEST LIMIT: this is NOT a substitute for a backend. A check that runs
+   in the visitor's browser can always be bypassed by someone who controls
+   that browser. It exists to take the plain-text credentials OUT of the
+   source and out of localStorage, nothing more. Real security needs the
+   admin password to be verified on a server. */
+function sha256Hex(msg) {
+    try {
+        var K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+                 0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+                 0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+                 0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+                 0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+                 0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+                 0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+                 0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+        var m = String(msg === undefined || msg === null ? '' : msg);
+        var bytes = [];
+        try { bytes = Array.prototype.slice.call(new TextEncoder().encode(m)); }
+        catch (e) { bytes = unescape(encodeURIComponent(m)).split('').map(function (c) { return c.charCodeAt(0); }); }
+        var l = bytes.length, i, j;
+        bytes.push(0x80);
+        while (bytes.length % 64 !== 56) bytes.push(0);
+        var hi = Math.floor((l * 8) / 4294967296), lo = (l * 8) >>> 0;
+        bytes.push((hi >>> 24) & 255, (hi >>> 16) & 255, (hi >>> 8) & 255, hi & 255,
+                   (lo >>> 24) & 255, (lo >>> 16) & 255, (lo >>> 8) & 255, lo & 255);
+        var H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+        var w = new Array(64);
+        for (i = 0; i < bytes.length; i += 64) {
+            for (j = 0; j < 16; j++) {
+                w[j] = ((bytes[i+j*4] << 24) | (bytes[i+j*4+1] << 16) | (bytes[i+j*4+2] << 8) | bytes[i+j*4+3]);
+            }
+            for (j = 16; j < 64; j++) {
+                var s0 = ((w[j-15] >>> 7) | (w[j-15] << 25)) ^ ((w[j-15] >>> 18) | (w[j-15] << 14)) ^ (w[j-15] >>> 3);
+                var s1 = ((w[j-2] >>> 17) | (w[j-2] << 15)) ^ ((w[j-2] >>> 19) | (w[j-2] << 13)) ^ (w[j-2] >>> 10);
+                w[j] = (w[j-16] + s0 + w[j-7] + s1) >>> 0;
+            }
+            var a = H[0], b = H[1], c = H[2], dd = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+            for (j = 0; j < 64; j++) {
+                var S1 = ((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7));
+                var ch = (e & f) ^ ((~e) & g);
+                var t1 = (h + S1 + ch + K[j] + w[j]) >>> 0;
+                var S0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10));
+                var maj = (a & b) ^ (a & c) ^ (b & c);
+                var t2 = (S0 + maj) >>> 0;
+                h = g; g = f; f = e; e = (dd + t1) >>> 0;
+                dd = c; c = b; b = a; a = (t1 + t2) >>> 0;
+            }
+            H[0] = (H[0] + a) >>> 0; H[1] = (H[1] + b) >>> 0; H[2] = (H[2] + c) >>> 0; H[3] = (H[3] + dd) >>> 0;
+            H[4] = (H[4] + e) >>> 0; H[5] = (H[5] + f) >>> 0; H[6] = (H[6] + g) >>> 0; H[7] = (H[7] + h) >>> 0;
+        }
+        var out = '';
+        for (i = 0; i < 8; i++) {
+            var v = H[i].toString(16);
+            while (v.length < 8) v = '0' + v;
+            out += v;
+        }
+        return out;
+    } catch (e) { return ''; }
+}
 function adminSessionRole() {
     try {
         var ut = sessionStorage.getItem('user_type');
@@ -3051,7 +3120,7 @@ ensureStylexAccount();
     var found = false;
     for (var i = 0; i < sups.length; i++) { if (sups[i].email === 'stylexshopping@gmail.com' && sups[i].isSupplier) { found = true; break; } }
     if (!found) {
-        sups.unshift({ id: 5000, name: "Stylex Shopping", shopName: "Stylex Official Store", sid: "SID-00100", email: "stylexshopping@gmail.com", password: "Stylexshopping@26", phone: "01997904792", address: "Dhaka, Bangladesh", shopDescription: "Stylex Shopping official supplier store - best quality products at best price", shopLogo: "", rating: 5.0, reviews: 12, status: "approved", joinDate: "2024-01-01", isSupplier: true, lastSeen: new Date().toISOString() });
+        sups.unshift({ id: 5000, name: "Stylex Shopping", shopName: "Stylex Official Store", sid: "SID-00100", email: "stylexshopping@gmail.com", passHash: "e5ccbf53487d7cba6ac73faa665e8a4ef54897261915c25a72040a83a79a2b50", phone: "01997904792", address: "Dhaka, Bangladesh", shopDescription: "Stylex Shopping official supplier store - best quality products at best price", shopLogo: "", rating: 5.0, reviews: 12, status: "approved", joinDate: "2024-01-01", isSupplier: true, lastSeen: new Date().toISOString() });
         setData(DB_KEYS.SUPPLIERS, sups);
     }
 })();
