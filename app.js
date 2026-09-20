@@ -8739,6 +8739,19 @@ function rhInstallOrderBadges() {
             if (!e.key || e.key.indexOf('rh_shop_settings') === 0) { try { rhApplyShopUploadPolicy(); } catch (e2) {} }
         });
     } catch (e) {}
+    /* 2026-09-20 (#7) - the badges only repainted on load and on a 
+       event, and a storage event fires only in OTHER tabs. So an order that
+       arrived while the admin was sitting on the page never moved the count
+       until a manual reload. Repaint on a light timer instead. Guarded, so a
+       badge can never break the page, and skipped while the tab is hidden.
+       One timer per page, installed once. */
+    try {
+        if (!window.rhBadgeTick) {
+            window.rhBadgeTick = setInterval(function () {
+                try { if (!document.hidden) rhPaintOrderBadges(); } catch (e3) { }
+            }, 10000);
+        }
+    } catch (e4) { }
 }
 if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', rhInstallOrderBadges);
@@ -13217,15 +13230,41 @@ function productWiseOrderSummary(orders, opts) {
 function multiSupplierInvoiceGroups(o) {
     /* Scoped to MULTI-SUPPLIER orders on purpose: an ordinary single-supplier
        order already has its own invoice on the All Orders page, and printing a
-       "supplier invoice" for it would silently duplicate that. Returning [] here
-       makes the contract crisp — this helper only ever answers the question
-       "how many suppliers does this multi-supplier order have to invoice?". */
+       "supplier invoice" for it would silently duplicate that. */
     if (!(typeof isMultiSupplierOrder === 'function' && isMultiSupplierOrder(o))) return [];
     var groups = (typeof orderSupplierGroups === 'function') ? orderSupplierGroups(o, 'admin', '') : [];
-    var out = [];
+    /* 2026-09-20 (#4, this request) - the admin now prints THREE kinds:
+         1. an ADMIN invoice  - the platform's own (admin-uploaded) products
+         2. one invoice PER SUPPLIER
+         3. a COMBINED invoice - every product in the order, one total
+       So admin + 2 suppliers yields 4 invoices. The order of `out` is the
+       order they are printed. Built from orderSupplierGroups(), which is
+       already tested, so the invoices can never disagree with the groups
+       drawn on screen. */
+    var admin = null, sups = [], all = [];
     for (var i = 0; i < groups.length; i++) {
-        if (groups[i].kind !== 'supplier' || !groups[i].items.length) continue;
-        out.push(groups[i]);
+        var g = groups[i];
+        if (!g.items || !g.items.length) continue;
+        for (var j = 0; j < g.items.length; j++) all.push(g.items[j]);
+        if (g.kind === 'supplier') sups.push(g);
+        else if (g.kind === 'admin' && !admin) admin = g;
+    }
+    var out = [];
+    if (admin) out.push(admin);
+    for (var s = 0; s < sups.length; s++) out.push(sups[s]);
+    /* a combined invoice only makes sense once two parties are involved,
+       which is guaranteed here because isMultiSupplierOrder() passed */
+    if (out.length >= 2) {
+        var cTotal = 0, cQty = 0;
+        for (var q = 0; q < all.length; q++) {
+            cTotal += Number(all[q].lineTotal) || 0;
+            cQty += Number(all[q].qty) || 0;
+        }
+        out.push({
+            key: 'combined', label: 'Combined (all products)', kind: 'combined',
+            ownerId: '', items: all, lines: all.length, qty: cQty,
+            mine: false, hidden: false, combinedTotal: cTotal
+        });
     }
     return out;
 }
@@ -13271,7 +13310,12 @@ function multiSupplierInvoiceSheet(o, g, seq, count, format) {
                 items: git,
                 subset: true,
                 shopId: shipShopId(),
-                title: 'SUPPLIER INVOICE \u00b7 ' + supName0 + ' \u00b7 Supplier ' + seq + ' of ' + count
+                /* 2026-09-20 (#4) - name the sheet by what it actually is */
+                title: (g.kind === 'admin')
+                    ? 'ADMIN INVOICE'
+                    : (g.kind === 'combined')
+                        ? ('COMBINED INVOICE \u00b7 all ' + g.items.length + ' product(s)')
+                        : ('SUPPLIER INVOICE \u00b7 ' + supName0 + ' \u00b7 Supplier ' + seq + ' of ' + count)
             }),
             format, {});
     }
@@ -13283,6 +13327,9 @@ function multiSupplierInvoiceSheet(o, g, seq, count, format) {
 
     var sup = (typeof findSupplierById === 'function') ? findSupplierById(g.ownerId) : null;
     var supName = (sup && (sup.shopName || sup.name)) || g.label || ('Supplier #' + g.ownerId);
+    /* 2026-09-20 (#4) - the compact label names the party this slip belongs to */
+    if (g.kind === 'admin') supName = 'Admin (ResellerHub)';
+    else if (g.kind === 'combined') supName = 'Combined (all products)';
     var supPhone = (sup && (sup.phone || sup.shop_phone)) || '';
     var supAddr = (sup && (sup.shop_address || sup.address || sup.businessAddress)) || '';
 
