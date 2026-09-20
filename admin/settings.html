@@ -668,7 +668,7 @@ body .hamburger { display:none !important; }
                 ' ondragend="catDragEnd(event)">' +
                 '<td style="width:40px;cursor:grab;color:#94a3b8;text-align:center" title="Drag করে সাজান"><i class="fas fa-grip-vertical"></i></td>' +
                 '<td>' + (c.image ? '<img src="' + c.image + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover">' : '<i class="fas ' + c.icon + '" style="font-size:1.3rem;color:#2563eb;"></i>') + '</td>' +
-                '<td><strong>' + c.name + '</strong>' + (c.subs && c.subs.length ? '<br><small style="color:#64748b;font-size:.72rem">Subs: ' + c.subs.join(', ') + '</small>' : '') + '</td>' +
+                '<td><strong>' + c.name + '</strong>' + (c.subs && c.subs.length ? '<br><small style="color:#64748b;font-size:.72rem">Subs: ' + c.subs.map(function (s) { return (typeof catEntryName === 'function') ? catEntryName(s) : (s && s.name ? s.name : s); }).filter(Boolean).join(', ') + '</small>' : '') + '</td>' +
                 '<td><button class="btn btn-sm btn-primary" onclick="editCat(\'' + c.id + '\')"><i class="fas fa-edit"></i></button> ' +
                 '<button class="btn btn-sm btn-danger" onclick="deleteCat(\'' + c.id + '\')"><i class="fas fa-trash"></i></button></td></tr>';
         }
