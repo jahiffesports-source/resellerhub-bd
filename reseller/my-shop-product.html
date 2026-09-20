@@ -1521,11 +1521,24 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
    link goes to the homepage's own category hash route. */
 function msNavFill(){
   var box=document.getElementById('hdrNav'); if(!box)return;
-  var cats=[]; try{cats=shopMainCategories(String(rid))}catch(e){cats=[]}
-  var h='<a onclick="msGoHome()">HOME</a>';
-  for(var i=0;i<cats.length;i++){
-    var nm=String(cats[i].name);
-    h+='<a href="my-shop.html?rid='+encodeURIComponent(String(rid))+'#/category/'+encodeURIComponent(nm)+'">'+nm.toUpperCase().replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</a>';
+  /* 2026-09-20 (this request) - the Product page header must show the SAME
+     categories, in the SAME order, with the SAME labels as the My Shop home
+     page header. It previously read shopMainCategories(rid) RAW, while the
+     home page reads it through orderShopNav(): that is what put the two
+     headers in a different sequence and gave them different label text
+     (the home page uses the canonical label from SHOP_NAV_ORDER when there
+     is one). Both pages now go through orderShopNav(). */
+  var navC=[];
+  try{
+    var raw=shopMainCategories(String(rid))||[];
+    navC=(typeof orderShopNav==='function')?orderShopNav(raw):raw;
+  }catch(e){ navC=[]; }
+  var escN=function(v){return String(v===undefined||v===null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
+  var h='<a class="on" onclick="msGoHome()">HOME</a>';
+  for(var i=0;i<navC.length;i++){
+    var nm=String(navC[i].name);
+    var lbl=navC[i].label?String(navC[i].label):nm.toUpperCase();
+    h+='<a href="my-shop.html?rid='+encodeURIComponent(String(rid))+'#/category/'+encodeURIComponent(nm)+'">'+escN(lbl)+'</a>';
   }
   h+='<a class="off" href="my-shop.html?rid='+encodeURIComponent(String(rid))+'">OFFER</a>';
   box.innerHTML=h;
