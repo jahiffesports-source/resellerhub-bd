@@ -193,8 +193,15 @@ input:focus,select:focus,textarea:focus{transform:translateY(-1px);transition:al
             var r = resellers[i];
             var matchEmail = (r.email && r.email.toLowerCase() === email.toLowerCase());
             var matchPhone = (r.phone && r.phone === email);
-            if ((matchEmail || matchPhone) && r.password === password) {
+            /* 2026-09-20 (P0-5) - compare by HASH, never in plain text.
+               A legacy record that only has `password` is still accepted so
+               no existing reseller is locked out; we then store the digest
+               so the next sign-in uses the hash. */
+            if ((matchEmail || matchPhone) && accountPasswordMatches(r, password)) {
                 user = r;
+                try {
+                    if (rememberAccountPassword(r, password)) setData(DB_KEYS.RESELLERS, resellers);
+                } catch (e) {}
                 break;
             }
         }

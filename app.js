@@ -2634,6 +2634,42 @@ function sha256Hex(msg) {
         return out;
     } catch (e) { return ''; }
 }
+/* 2026-09-20 (P0-5) - password check for a STORED account record.
+   Reseller / supplier / moderator sign-in used to compare the typed value
+   against a plain-text `password` field, so the real password sat in
+   localStorage and could be read straight out of DevTools.
+   Now: prefer the SHA-256 digest in `passHash`. A record that still only has
+   a plain `password` is accepted too (otherwise every existing account would
+   be locked out the moment this shipped), and rememberAccountPassword() then
+   converts it so the next sign-in uses the hash.
+   HONEST LIMIT: this is still a browser-side check. It takes the usable
+   password OUT of the comparison and lets accounts migrate to a digest; it
+   is not a substitute for verifying passwords on a server. */
+function accountPasswordMatches(rec, plain) {
+    if (!rec) return false;
+    var p = String(plain === undefined || plain === null ? '' : plain);
+    if (!p) return false;
+    var h = (typeof sha256Hex === 'function') ? sha256Hex(p) : '';
+    if (h && rec.passHash && String(rec.passHash) === h) return true;
+    /* legacy: the record still holds the password in the clear */
+    if (rec.password !== undefined && rec.password !== null && String(rec.password) === p) return true;
+    return false;
+}
+/* Store/refresh the digest for this account. Call AFTER a successful sign-in
+   (or whenever an admin sets a password) so the hash never goes stale.
+   Keeps the legacy `password` field in place: the admin tables still read it
+   to show and edit a reseller's / supplier's password, and removing it here
+   would break those screens. Returns true when it wrote a digest. */
+function rememberAccountPassword(rec, plain) {
+    if (!rec) return false;
+    var p = String(plain === undefined || plain === null ? '' : plain);
+    if (!p) return false;
+    var h = (typeof sha256Hex === 'function') ? sha256Hex(p) : '';
+    if (!h) return false;
+    if (String(rec.passHash || '') === h) return false;
+    rec.passHash = h;
+    return true;
+}
 function adminSessionRole() {
     try {
         var ut = sessionStorage.getItem('user_type');
@@ -2702,8 +2738,12 @@ function findModeratorByLogin(email, password) {
     var list = moderators();
     for (var i = 0; i < list.length; i++) {
         var m = list[i] || {};
-        if (String(m.email || '').trim().toLowerCase() === e && String(m.password || '') === p) {
-            return (m.active === false) ? null : m;
+        /* 2026-09-20 (P0-5) - hashed compare (legacy plain still accepted, then
+           migrated) so a moderator password is no longer matched in the clear. */
+        if (String(m.email || '').trim().toLowerCase() === e && accountPasswordMatches(m, p)) {
+            if (m.active === false) return null;
+            try { if (rememberAccountPassword(m, p)) setData(DB_KEYS.MODERATORS, list); } catch (er) {}
+            return m;
         }
     }
     return null;
