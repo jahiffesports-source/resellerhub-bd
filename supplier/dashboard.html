@@ -525,7 +525,7 @@ tr.ord-sel-row{background:#f0fdfa}
 <table class="dtable"><thead><tr><th>Image</th><th>Product (Size / Color অনুযায়ী)</th><th>Total Qty</th><th>Revenue</th></tr></thead><tbody id="muProdSum"></tbody></table></div>
 
 <div class="card"><div class="chead"><h4>Multi-Supplier Orders (<span id="muCount">0</span>)</h4>
-<input id="muQ" placeholder="Order ID খুঁজুন" style="padding:9px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.85rem" oninput="muPaint()"></div>
+<div id="muQ" contenteditable="true" role="searchbox" aria-label="Order ID search" data-ph="Order ID খুঁজুন" style="min-width:190px;padding:9px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.85rem;background:#fff;outline:none;color:#0f172a" oninput="muPaint()"></div><style>#muQ:empty:before{content:attr(data-ph);color:#94a3b8}#muQ:focus{border-color:#4f46e5}</style></div>
 <div class="cbody" style="padding:14px 18px;font-size:.78rem;color:#64748b;line-height:1.7">
 <i class="fas fa-circle-info"></i> এখানে শুধু সেই parent orders দেখা যাবে যেখানে আপনার পাশাপাশি অন্তত আরও একজন Supplier আছে। অন্য Supplier-এর product-এর বিস্তারিত দেখানো হয় না — শুধু fulfilment context।
 </div>
@@ -1347,7 +1347,11 @@ var MU_BLOCK_MSG='এটি একটি Multi-Supplier Order — Supplier ন�
 function muRows(){
   var id=smgMyId();
   var list=(typeof multiSupplierOrdersFor==='function')?multiSupplierOrdersFor(id):[];
-  var q=String((document.getElementById('muQ')||{}).value||'').trim().toLowerCase();
+  /* 2026-09-20 - #muQ is a contenteditable DIV now (no .value), so read
+           textContent. Keep a .value fallback in case an older theme
+           renders it as an <input>. */
+    var _mq=document.getElementById('muQ')||{};
+    var q=String(_mq.textContent!==undefined&&_mq.textContent!==null?_mq.textContent:(_mq.value||'')).trim().toLowerCase();
   if(q)list=list.filter(function(o){return String(o.id).toLowerCase().indexOf(q)!==-1});
   list.sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))});
   return list;
