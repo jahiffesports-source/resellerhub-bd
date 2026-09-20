@@ -8587,6 +8587,83 @@ function pendingSupplierWithdrawalCount() {
     } catch (e) { return 0; }
     return n;
 }
+/* ==========================================================================
+   2026-09-20 (#2, this request) - STATUS FILTER BAR
+   One compact, single-line, horizontally scrollable chip row showing every
+   order status with its live count. Tapping a chip filters the list to that
+   status; tapping it again (or All) clears the filter. Shared by the three
+   lists that never had one - supplier All Orders, supplier Multi-Supplier
+   Orders and the admin Multi-Supplier Orders page - so they cannot drift.
+   ========================================================================== */
+var RH_ORDER_STATUSES = [
+    { key: 'new',       label: 'New',       icon: 'fa-file',                 color: '#0369a1' },
+    { key: 'pending',   label: 'Pending',   icon: 'fa-clock',                color: '#b45309' },
+    { key: 'confirmed', label: 'Confirmed', icon: 'fa-check-circle',         color: '#1d4ed8' },
+    { key: 'packaging', label: 'Packaging', icon: 'fa-box',                  color: '#6d28d9' },
+    { key: 'shipping',  label: 'Shipping',  icon: 'fa-truck',                color: '#4338ca' },
+    { key: 'delivered', label: 'Delivered', icon: 'fa-share-nodes',          color: '#047857' },
+    { key: 'returned',  label: 'Returned',  icon: 'fa-reply',                color: '#9f1239' },
+    { key: 'cancel',    label: 'Cancelled', icon: 'fa-times-circle',         color: '#b91c1c' },
+    { key: 'failed',    label: 'Failed',    icon: 'fa-triangle-exclamation', color: '#991b1b' }
+];
+/* Which bucket a raw status belongs to. Reuses the page's own canonStatus()
+   when it has one (it folds shipped -> shipping and cancel/cancelled), then
+   falls back to the handful of spellings the app actually writes. Getting
+   this wrong is exactly why the old Shipping card counted 0. */
+function rhStatusKey(raw) {
+    try {
+        if (typeof canonStatus === 'function') { var c = canonStatus(raw); if (c) return String(c); }
+    } catch (e) { }
+    var s = String(raw === undefined || raw === null ? '' : raw).toLowerCase().trim();
+    if (s === 'shipped' || s === 'in_transit' || s === 'intransit' || s === 'ship') return 'shipping';
+    if (s === 'cancelled' || s === 'canceled') return 'cancel';
+    if (s === 'return' || s === 'wfr') return 'returned';
+    if (s === 'processing' || s === 'packed') return 'packaging';
+    return s;
+}
+function rhStatusBarCss() {
+    return '.rh-stbar{display:flex;gap:6px;overflow-x:auto;white-space:nowrap;padding:4px 2px 8px;'
+        + '-webkit-overflow-scrolling:touch;scrollbar-width:thin}'
+        + '.rh-stbar::-webkit-scrollbar{height:5px}'
+        + '.rh-stbar::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:9px}'
+        + '.rh-stchip{flex:0 0 auto;border:1.5px solid #e2e8f0;background:#fff;color:#475569;'
+        + 'border-radius:999px;padding:6px 12px;font-size:.74rem;font-weight:800;cursor:pointer;'
+        + 'font-family:inherit;display:inline-flex;align-items:center;gap:5px;line-height:1}'
+        + '.rh-stchip b{font-weight:900;opacity:.85}'
+        + '.rh-stchip:hover{border-color:#94a3b8}'
+        + '.rh-stchip.on{background:#4f46e5;border-color:#4f46e5;color:#fff}';
+}
+/* list = the FULL set (never the already-filtered one) so the counts stay
+   honest while a filter is active. */
+function rhStatusBarHtml(list, active, fnName) {
+    var counts = {}, total = 0, i;
+    list = (list && list.length) ? list : [];
+    for (i = 0; i < list.length; i++) {
+        var k = rhStatusKey(list[i] && list[i].status);
+        if (!k) continue;
+        counts[k] = (counts[k] || 0) + 1;
+        total++;
+    }
+    var fn = fnName || 'rhStFilter';
+    var h = '<div class="rh-stbar" role="tablist">'
+        + '<button type="button" class="rh-stchip' + (!active ? ' on' : '') + '" onclick="' + fn + '(\'\')">All <b>(' + total + ')</b></button>';
+    for (var s = 0; s < RH_ORDER_STATUSES.length; s++) {
+        var st = RH_ORDER_STATUSES[s];
+        var n = counts[st.key] || 0;
+        h += '<button type="button" class="rh-stchip' + (active === st.key ? ' on' : '') + '" onclick="' + fn + '(\'' + st.key + '\')">'
+            + '<i class="fas ' + st.icon + '"></i> ' + st.label + ' <b>(' + n + ')</b></button>';
+    }
+    h += '</div>';
+    return h;
+}
+function rhFilterByStatus(list, active) {
+    if (!active) return (list && list.length) ? list : [];
+    var out = [], l = (list && list.length) ? list : [];
+    for (var i = 0; i < l.length; i++) {
+        if (rhStatusKey(l[i] && l[i].status) === active) out.push(l[i]);
+    }
+    return out;
+}
 function adminMultiSupplierBadgeCount() { return countBadges(multiSupplierOrders()); }
 function supplierMultiOrderBadgeCount(sid) { return countBadges(multiSupplierOrdersFor(sid)); }
 

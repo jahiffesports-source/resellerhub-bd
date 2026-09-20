@@ -1407,8 +1407,32 @@ function muProdSummary(){
   }
   body.innerHTML=h||'<tr><td colspan="4" class="empty">কোনো pending Multi-Supplier order নেই</td></tr>';
 }
+/* 2026-09-20 (#2) - status filter bar for the two supplier lists.
+   Counts are always computed from the FULL list so they stay honest while a
+   filter is on. `window.ordSt` / `window.muSt` hold the active chip. */
+function supStBarHost(anchorId, hostId){
+  var a=document.getElementById(anchorId); if(!a||!a.parentNode) return null;
+  var h=document.getElementById(hostId);
+  if(!h){
+    h=document.createElement('div'); h.id=hostId;
+    var ref=(a.tagName==='TBODY')?((a.closest&&a.closest('table'))||a):a;
+    ref.parentNode.insertBefore(h, ref);
+  }
+  return h;
+}
+function supPaintStBar(anchorId, hostId, fullList, active, fnName){
+  var h=supStBarHost(anchorId, hostId); if(!h) return;
+  var css=(typeof rhStatusBarCss==='function')?rhStatusBarCss():'';
+  var bar=(typeof rhStatusBarHtml==='function')?rhStatusBarHtml(fullList||[], active||'', fnName):'';
+  h.innerHTML=(css?'<style>'+css+'</style>':'')+bar;
+}
+window.setOrdSt=function(k){ var c=window.ordSt||''; window.ordSt=(c===k)?'':k; renderOrders(); };
+window.setMuSt=function(k){ var c=window.muSt||''; window.muSt=(c===k)?'':k; muPaint(); };
 function muPaint(){
-  var list=muRows();
+  var _all=muRows();
+  /* 2026-09-20 (#2) - draw the status bar from the FULL set, then filter. */
+  supPaintStBar('muList','muStBar',_all,window.muSt||'','setMuSt');
+  var list=(typeof rhFilterByStatus==='function')?rhFilterByStatus(_all,window.muSt||''):_all;
   var c=document.getElementById('muCount');if(c)c.textContent=list.length;
   /* ITEM 4 (spec, 2026-09-14) — the nav badge is a NOTIFICATION, not a total:
      it must count only the multi-supplier orders still New/Pending/Confirmed and
@@ -2134,6 +2158,9 @@ if(!sup){try{loadS()}catch(e){}}
 if(!sup)return;
 var o=allOrdersList(),q=supOrderQuery(),h='';
 o=supSortNewestFirst(o);
+/* 2026-09-20 (#2) - status filter bar. `o` is the supplier's FULL order
+   history; the bar counts every status and the chip narrows `shown`. */
+supPaintStBar('ordBody','ordStBar',o,window.ordSt||'','setOrdSt');
 var shown=[];
 for(var i=0;i<o.length;i++){var x=o[i];
 /* 2026-09-20 — REVISED 04:25. The "All Orders" table is the supplier's FULL
@@ -2146,6 +2173,7 @@ for(var i=0;i<o.length;i++){var x=o[i];
    icon. A row that disappears from "All Orders" the moment a click
    changes its status was a bug, not a feature. */
 if(!supOrderMatches(x,q))continue;
+if(window.ordSt && typeof rhStatusKey==='function' && rhStatusKey(x.status)!==window.ordSt)continue;
 shown.push(x);
 var serial=Number(x.__supSer)||0;
 /* Selection is UNLOCKED — every shippable order can be ticked, whatever stage

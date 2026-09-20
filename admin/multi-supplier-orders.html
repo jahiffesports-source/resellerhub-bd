@@ -657,13 +657,36 @@ body .hamburger { display:none !important; }
         msInvClose();
     };
 
+    /* 2026-09-20 (#2) - the status filter bar. `msSt` holds the active chip.
+       Counts always come from the FULL list so they stay honest while a
+       filter is on. */
+    window.setMsSt = function (k) {
+        var cur = (typeof window.msSt === 'string') ? window.msSt : '';
+        window.msSt = (cur === k) ? '' : k;
+        msPaint();
+    };
     window.msPaint = function () {
-        var list = rows();
+        var all = rows();
+        var _bar = document.getElementById('msList');
+        if (_bar && _bar.parentNode) {
+            var _host = document.getElementById('msStBar');
+            if (!_host) {
+                _host = document.createElement('div');
+                _host.id = 'msStBar';
+                _bar.parentNode.insertBefore(_host, _bar);
+            }
+            var _css = (typeof rhStatusBarCss === 'function') ? rhStatusBarCss() : '';
+            var _html = (typeof rhStatusBarHtml === 'function')
+                ? rhStatusBarHtml(all, window.msSt || '', 'setMsSt') : '';
+            _host.innerHTML = (_css ? '<style>' + _css + '</style>' : '') + _html;
+        }
+        var list = (typeof rhFilterByStatus === 'function')
+            ? rhFilterByStatus(all, window.msSt || '') : all;
         var el = document.getElementById('msList');
         var t = document.getElementById('msTotal');
         var badge = document.getElementById('msCount');
-        if (t) t.textContent = list.length + ' orders';
-        if (badge) badge.textContent = list.length ? (' (' + list.length + ')') : '';
+        if (t) t.textContent = list.length + ' orders' + (window.msSt ? ' \u00b7 filtered' : '');
+        if (badge) badge.textContent = all.length ? (' (' + all.length + ')') : '';
         msPrune(list);
         if (!list.length) {
             el.innerHTML = '<div class="ms-card"><div class="ms-empty"><i class="fas fa-people-arrows" style="font-size:1.9rem;color:#cbd5e1"></i><br><br>কোনো Multi-Supplier order নেই।<br><small>একই order-এ ২+ ভিন্ন Supplier থাকলেই শুধু এখানে আসবে।</small></div></div>';
