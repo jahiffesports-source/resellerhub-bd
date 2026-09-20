@@ -193,15 +193,23 @@ if ($action === 'fraud') {
     $phone = isset($in['phone']) ? preg_replace('/\D/', '', $in['phone']) : '';
     if (strlen($phone) < 11) out(['status' => 400, 'message' => 'valid phone required (01XXXXXXXXX)']);
 
+    /* 2026-09-20 - credentials: environment first, then the pair the admin
+       saved in Settings and sent with the request (same rule as sf_test /
+       sf_create). No credential is stored in this file. */
+    $fKey = $API_KEY !== '' ? $API_KEY : (isset($in['apiKey']) ? trim($in['apiKey']) : '');
+    $fSec = $SECRET !== '' ? $SECRET : (isset($in['secretKey']) ? trim($in['secretKey']) : '');
+    if ($fKey === '' || $fSec === '') {
+        out(['status' => 400, 'message' => 'Steadfast credentials missing. Set STEADFAST_API_KEY / STEADFAST_SECRET_KEY on the server, or save them in Admin -> Settings -> Steadfast Courier.']);
+    }
     $ch = curl_init($FRAUD_URL);
     curl_setopt_array($ch, [
         CURLOPT_POST           => true,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT        => 25,
-        CURLOPT_HTTPHEADER     => ['Content-Type: application/json', 'Api-Key: ' . $API_KEY, 'Secret-Key: ' . $SECRET],
+        CURLOPT_HTTPHEADER     => ['Content-Type: application/json', 'Api-Key: ' . $fKey, 'Secret-Key: ' . $fSec],
         CURLOPT_POSTFIELDS     => json_encode([
-            'api_key'               => $API_KEY,
-            'secret_key'            => $SECRET,
+            'api_key'               => $fKey,
+            'secret_key'            => $fSec,
             'customer_phone_number' => $phone,
         ]),
     ]);
@@ -219,12 +227,18 @@ if ($action === 'create') {
     $order = isset($in['order']) ? $in['order'] : null;
     if (!is_array($order)) out(['status' => 400, 'message' => 'order payload required']);
 
+    /* 2026-09-20 - same credential rule as `fraud` above. */
+    $cKey = $API_KEY !== '' ? $API_KEY : (isset($in['apiKey']) ? trim($in['apiKey']) : '');
+    $cSec = $SECRET !== '' ? $SECRET : (isset($in['secretKey']) ? trim($in['secretKey']) : '');
+    if ($cKey === '' || $cSec === '') {
+        out(['status' => 400, 'message' => 'Steadfast credentials missing. Set STEADFAST_API_KEY / STEADFAST_SECRET_KEY on the server, or save them in Admin -> Settings -> Steadfast Courier.']);
+    }
     $ch = curl_init($CREATE_URL);
     curl_setopt_array($ch, [
         CURLOPT_POST           => true,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT        => 30,
-        CURLOPT_HTTPHEADER     => ['Content-Type: application/json', 'Api-Key: ' . $API_KEY, 'Secret-Key: ' . $SECRET],
+        CURLOPT_HTTPHEADER     => ['Content-Type: application/json', 'Api-Key: ' . $cKey, 'Secret-Key: ' . $cSec],
         CURLOPT_POSTFIELDS     => json_encode($order),
     ]);
     $res = curl_exec($ch);
