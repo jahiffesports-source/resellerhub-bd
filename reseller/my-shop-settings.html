@@ -2015,15 +2015,34 @@ var HS_ICONS = [
 ];
 
 function hsBlocksHTML() {
+    /* 2026-09-20 (#1, this request) - the admin's default homepage blocks are
+       what EVERY shop shows until its owner changes them, and ONLY a premium /
+       trial shop may change them. The storefront already obeyed that
+       (shopBlocksStorefront gates on premiumShopOpen), but this editor offered
+       New / Edit / Delete / Move to every reseller - so a free reseller could
+       "change" the blocks and then see nothing change on their shop.
+       Now: premium/trial open -> the full editor as before; not open -> a
+       read-only list with a clear notice. Nothing saved is ever touched. */
+    var _open = true;
+    try { _open = premiumShopOpen(RID); } catch (e) { _open = true; }
     var list = (typeof shopBlocks === 'function') ? shopBlocks(RID) : [];
     var h = '<div class="hs-blk">' +
       '<div class="hs-blk-hd"><b><i class="fas fa-layer-group"></i> হোমপেজ ব্লক</b>' +
       '<span>' + list.length + ' টি</span>' +
-      '<button class="ms-btn pri" style="margin-left:auto" onclick="hsBlockNew()"><i class="fas fa-plus"></i> নতুন ব্লক</button></div>';
+      (_open
+        ? '<button class="ms-btn pri" style="margin-left:auto" onclick="hsBlockNew()"><i class="fas fa-plus"></i> নতুন ব্লক</button>'
+        : '<span style="margin-left:auto;font-size:.72rem;font-weight:800;color:#b45309;background:#fef3c7;border-radius:999px;padding:4px 10px"><i class="fas fa-lock"></i> প্রিমিয়াম</span>') +
+      '</div>' +
+      (_open ? '' :
+        '<div class="hs-blk-empty" style="background:#fffbeb;border:1px solid #fde68a;color:#92400e">' +
+        '<i class="fas fa-circle-info"></i> এগুলো অ্যাডমিনের ডিফল্ট হোমপেজ ব্লক — আপনার দোকানে এগুলোই দেখাছে। ' +
+        '<b>প্রিমিয়াম নিলে</b> আপনি নিজের মতো বদলাতে পারবেন।</div>');
 
     if (!list.length) {
         h += '<div class="hs-blk-empty"><i class="fas fa-layer-group"></i> এখনো কোনো ব্লক নেই। ' +
-             '<b>“নতুন ব্লক”</b> চেপে প্রথম ব্লকটি বানান — যেমন “Flash Deals”।</div></div>';
+             (_open
+                ? '<b>“নতুন ব্লক”</b> চেপে প্রথম ব্লকটি বানান — যেমন “Flash Deals”।'
+                : 'অ্যাডমিন এখনো কোনো ডিফল্ট ব্লক সেট করেননি।') + '</div></div>';
         return h;
     }
     for (var i = 0; i < list.length; i++) {
@@ -2038,12 +2057,15 @@ function hsBlocksHTML() {
           '<small>' + esc(String(b.subtitle || '—')) + '</small>' +
           '<em>' + esc(where) + ' · ' + (nPicks ? (nPicks + 'টি হাতে বাছা') : 'কাস্টমারের পছন্দ অনুযায়ী') +
           (b.cat ? ' · View All আছে' : ' · View All নেই') + '</em></span>' +
+          /* 2026-09-20 (#1) - a locked shop sees the list but cannot change it. */
+          (_open ?
           '<span class="hs-blk-ops">' +
           '<button title="উপরে" onclick="hsBlockMove(\'' + hsJs(b.id) + '\',-1)">\u2191</button>' +
           '<button title="নিচে" onclick="hsBlockMove(\'' + hsJs(b.id) + '\',1)">\u2193</button>' +
           '<button class="ed" title="সম্পাদনা" onclick="hsBlockNew(\'' + hsJs(b.id) + '\')"><i class="fas fa-pen"></i></button>' +
           '<button class="del" title="ব্লক মুছুন" onclick="hsBlockDel(\'' + hsJs(b.id) + '\')"><i class="fas fa-trash-can"></i></button>' +
-          '</span></div>';
+          '</span>'
+          : '<span class="hs-blk-ops"><i class="fas fa-lock" style="color:#cbd5e1"></i></span>') + '</div>';
     }
     h += '</div>';
     return h;
