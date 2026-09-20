@@ -24,6 +24,24 @@
    localStorage only. Nothing here can break a page.
    ========================================================================== */
 var RH_STORE_ON = false;          /* true once we know the shared store answers */
+/* 2026-09-20 - LIGHT WRITE AUTHENTICATION (optional).
+   The server hands this page a write token when the operator has set
+   RH_WRITE_TOKEN on the host. It is sent with every store write. When the
+   server has no token configured the value stays '' and NOTHING changes. */
+var RH_WRITE_TOKEN = '';
+function rhWriteHeaders() {
+    var h = { 'Content-Type': 'application/json' };
+    try { if (RH_WRITE_TOKEN) h['x-rh-write-token'] = RH_WRITE_TOKEN; } catch (e) { }
+    return h;
+}
+function rhFetchWriteToken() {
+    try {
+        fetch('/api/store?wkey=1', { cache: 'no-store' })
+            .then(function (r) { return r.json(); })
+            .then(function (j) { if (j && j.ok && j.writeToken) RH_WRITE_TOKEN = String(j.writeToken); })
+            .catch(function () { });
+    } catch (e) { }
+}
 
 (function rhStoreBoot() {
     try {
@@ -48,6 +66,8 @@ var RH_STORE_ON = false;          /* true once we know the shared store answers 
             try { localStorage.setItem(k, JSON.stringify(j.data[k])); n++; } catch (e) { }
         }
         RH_STORE_ON = true;
+        /* ask once for the write token; a no-op when the server has none */
+        try { rhFetchWriteToken(); } catch (e) { }
         /* Now put every shared image into IndexedDB, then fix the <img> tags that are
            still showing a placeholder because the bytes were missing. This is what
            makes an image uploaded on one device appear on every other device. */
@@ -101,7 +121,7 @@ function rhStorePush(key) {
                 var val = raw === null ? null : JSON.parse(raw);
                 fetch('/api/store', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: rhWriteHeaders(),
                     body: JSON.stringify({ key: key, value: val })
                 }).catch(function () { });
             } catch (e) { }
@@ -1212,7 +1232,7 @@ function rhImgPut(id, dataUrl) {
 function rhStorePushImg(id, dataUrl) {
     if (!RH_STORE_ON) return;
     try {
-        fetch('/api/store', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        fetch('/api/store', { method: 'POST', headers: rhWriteHeaders(),
             body: JSON.stringify({ key: 'rh_img_' + id, value: dataUrl }) }).catch(function () { });
     } catch (e) { }
 }

@@ -65,6 +65,14 @@ const DATA_DIR = path.join(ROOT, '.rhdata');
 const ADMIN_TOKEN = process.env.RH_ADMIN_TOKEN || '';
 const ALLOW_RESET = process.env.RH_ALLOW_RESET === '1';
 const STRICT_ORIGIN = process.env.RH_STRICT_ORIGIN !== '0';
+/* 2026-09-20 - LIGHT WRITE AUTHENTICATION.
+   Optional: when RH_WRITE_TOKEN is empty every write behaves exactly as
+   before, so an existing deployment cannot break. Set it on the host and
+   every write (single + bulk) must then present the token. The token is
+   given to the page by GET /api/store?wkey=1, which answers a SAME-ORIGIN
+   request only - so the site itself can always write while a curl/bot from
+   outside cannot even obtain the token. */
+const WRITE_TOKEN = process.env.RH_WRITE_TOKEN || '';
 
 const MYSQL_CFG = {
     host: process.env.MYSQL_HOST || '',
@@ -455,8 +463,29 @@ function sameOrigin(req) {
     try { return new URL(o).host === req.headers['host']; } catch (e) { return false; }
 }
 
+/* 2026-09-20 - same-origin, but a MISSING Origin/Referer is REFUSED.
+   Used only to hand out the write token: a real page always sends at least
+   one of the two, while a header-less script (curl / a bot) sends neither.
+   Writes keep using the lenient sameOrigin() above, so nothing else changes. */
+function strictSameOrigin(req) {
+    const o = req.headers['origin'] || req.headers['referer'] || '';
+    if (!o) return false;
+    try { return new URL(o).host === req.headers['host']; } catch (e) { return false; }
+}
+
 async function handleStore(req, res, query) {
     if (req.method === 'GET') {
+        /* 2026-09-20 - hand the write token to THIS SITE only. A cross-origin
+           or header-less (curl/bot) caller is refused, which is what makes
+           the token worth anything in a browser-only app. When no token is
+           configured this returns an empty string and writes stay open. */
+        if (query.get('wkey')) {
+            /* a real page sends Origin or Referer; a bare script sends neither */
+            if (STRICT_ORIGIN && !strictSameOrigin(req)) {
+                return sendJson(res, 403, { ok: false, message: 'cross-origin token request rejected' });
+            }
+            return sendJson(res, 200, { ok: true, writeToken: WRITE_TOKEN, required: !!WRITE_TOKEN });
+        }
         if (query.get('key')) {
             const key = query.get('key');
             if (!keyToFile(key)) return sendJson(res, 400, { ok: false, message: 'bad key' });
@@ -495,6 +524,19 @@ async function handleStore(req, res, query) {
             return sendJson(res, 401, { ok: false, message: 'admin token required' });
         }
         return sendJson(res, 200, { ok: true, removed: await storeReset() });
+    }
+
+    /* 2026-09-20 - LIGHT WRITE AUTHENTICATION. Only active when the operator has
+       set RH_WRITE_TOKEN; otherwise this is skipped entirely and the previous
+       behaviour is preserved exactly. The token may arrive as
+       x-rh-write-token, x-rh-token or ?wtoken=. */
+    if (WRITE_TOKEN) {
+        const presented = String(req.headers['x-rh-write-token'] || '')
+            || clientToken(req, query)
+            || String(query.get('wtoken') || '');
+        if (presented !== WRITE_TOKEN) {
+            return sendJson(res, 401, { ok: false, message: 'write token required' });
+        }
     }
 
     readBody(req, async (err, inb) => {
