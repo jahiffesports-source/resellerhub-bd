@@ -2955,9 +2955,10 @@ function supSfFraud(phone, cb) {
             .then(function (r) { return r.json(); }).then(function (j) { cb(null, j); }).catch(function (e) { cb(e); });
         return;
     }
-    fetch(k.fraud, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Api-Key': k.k, 'Secret-Key': k.sec },
-        body: JSON.stringify({ api_key: k.k, secret_key: k.sec, customer_phone_number: phone }) })
-        .then(function (r) { return r.json(); }).then(function (j) { cb(null, j); }).catch(function (e) { cb(e); });
+    /* 2026-09-20 (P0-4) - this called Steadfast directly from the browser,
+       which put the live Api-Key / Secret-Key in the request headers
+       (Network tab + every log on the way) and hit CORS. Use the proxy. */
+    showToast('Steadfast proxy not configured. Set "Backend Proxy URL" in Settings -> Steadfast Courier, then the key stays on the server.', 'error');
 }
 function supSfCreate(payload, cb) {
     var k = supSfGetK();
@@ -2967,10 +2968,10 @@ function supSfCreate(payload, cb) {
             .then(function (r) { return r.json(); }).then(function (j) { cb(null, j); }).catch(function (e) { cb(e); });
         return;
     }
-    fetch('https://portal.steadfast.com.bd/api/v1/create_order', { method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Api-Key': k.k, 'Secret-Key': k.sec },
-        body: JSON.stringify(payload) })
-        .then(function (r) { return r.json(); }).then(function (j) { cb(null, j); }).catch(function (e) { cb(e); });
+    /* 2026-09-20 (P0-4) - this called Steadfast directly from the browser,
+       which put the live Api-Key / Secret-Key in the request headers
+       (Network tab + every log on the way) and hit CORS. Use the proxy. */
+    showToast('Steadfast proxy not configured. Set "Backend Proxy URL" in Settings -> Steadfast Courier, then the key stays on the server.', 'error');
 }
 function supSfFraudHtml(name, phone, d) {
     d = d || {};

@@ -13865,18 +13865,20 @@ function sfResellerCall(rid, action, body, cb) {
             return;
         }
         if (action === 'test') {
-            fetch('https://check.steadfast.com.bd/api/v1/fraud', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Api-Key': acc.apiKey, 'Secret-Key': acc.secret },
-                body: JSON.stringify({ api_key: acc.apiKey, secret_key: acc.secret, customer_phone_number: '01700000000' })
-            }).then(function (r) { return r.json(); }).then(function (j) { cb(null, j); }).catch(function (e) { cb(e); });
+            /* 2026-09-20 (P0-4) - this used to call Steadfast DIRECTLY from the
+               browser, which put the live Api-Key / Secret-Key in the request
+               headers (Network tab, every proxy log on the way) and was blocked
+               by CORS anyway. The server-side proxy is now the only path: the
+               branch above it already posts to `proxy` when one is configured. */
+            cb(new Error('Steadfast proxy not configured. Set "Backend Proxy URL" in Settings -> Steadfast Courier, then the key stays on the server.'));
             return;
         }
-        fetch('https://portal.steadfast.com.bd/api/v1/create_order', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Api-Key': acc.apiKey, 'Secret-Key': acc.secret },
-            body: JSON.stringify(body.order || {})
-        }).then(function (r) { return r.json(); }).then(function (j) { cb(null, j); }).catch(function (e) { cb(e); });
+        /* 2026-09-20 (P0-4) - this used to call Steadfast DIRECTLY from the
+           browser, which put the live Api-Key / Secret-Key in the request
+           headers (Network tab, every proxy log on the way) and was blocked
+           by CORS anyway. The server-side proxy is now the only path: the
+           branch above it already posts to `proxy` when one is configured. */
+        cb(new Error('Steadfast proxy not configured. Set "Backend Proxy URL" in Settings -> Steadfast Courier, then the key stays on the server.'));
     } catch (e) { cb(e); }
 }
 function sfResellerTest(rid, cb) {

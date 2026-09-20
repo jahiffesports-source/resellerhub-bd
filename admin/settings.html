@@ -1148,7 +1148,12 @@ body .hamburger { display:none !important; }
         if (!phone) { showToast('Phone লিখুন!', 'error'); return; }
         box.style.display = 'block';
         box.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking ' + phone + '...';
-        fetch(k.fraud, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Api-Key': k.k, 'Secret-Key': k.sec }, body: JSON.stringify({ api_key: k.k, secret_key: k.sec, customer_phone_number: phone }) })
+        /* 2026-09-20 (P0-4) - no direct browser call with the live keys.
+           Configure the Backend Proxy URL first; then this check runs
+           through it and the key never leaves the server. */
+        var _px=''; try{_px=(getOne(DB_KEYS.SETTINGS).sf_proxy||'')}catch(e){}
+        if (!_px) { box.innerHTML = '<div style="color:#dc2626;padding:10px">' + 'Steadfast proxy not configured. Set "Backend Proxy URL" in Settings -> Steadfast Courier, then the key stays on the server.' + '</div>'; return; }
+        fetch(_px, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'fraud', phone: phone, apiKey: k.k, secretKey: k.sec }) })
         .then(function(r) { return r.json(); })
         .then(function(j) {
             var d = j.data || j;

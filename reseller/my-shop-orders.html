@@ -999,8 +999,12 @@ function moCallFraud(phone, cb) {
             .then(function (r) { return r.json(); }).then(function (j) { cb(null, j); }).catch(function (e) { cb(e); });
         return;
     }
-    fetch(k.fraud, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Api-Key': k.k, 'Secret-Key': k.sec }, body: JSON.stringify({ api_key: k.k, secret_key: k.sec, customer_phone_number: phone }) })
-        .then(function (r) { return r.json(); }).then(function (j) { cb(null, j); }).catch(function (e) { cb(e); });
+    /* 2026-09-20 (P0-4) - this used to call Steadfast DIRECTLY from the
+       browser, which put the live Api-Key / Secret-Key in the request
+       headers (Network tab, every proxy log on the way) and was blocked
+       by CORS anyway. The server-side proxy is now the only path: the
+       branch above it already posts to `proxy` when one is configured. */
+    cb(new Error('Steadfast proxy not configured. Set "Backend Proxy URL" in Settings -> Steadfast Courier, then the key stays on the server.'));
 }
 function moFindOrder(id) {
     var list = moOrders();
@@ -1039,8 +1043,12 @@ function moCallCreate(payload, cb) {
             .then(function (r) { return r.json(); }).then(function (j) { cb(null, j); }).catch(function (e) { cb(e); });
         return;
     }
-    fetch('https://portal.steadfast.com.bd/api/v1/create_order', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Api-Key': k.k, 'Secret-Key': k.sec }, body: JSON.stringify(payload) })
-        .then(function (r) { return r.json(); }).then(function (j) { cb(null, j); }).catch(function (e) { cb(e); });
+    /* 2026-09-20 (P0-4) - this used to call Steadfast DIRECTLY from the
+       browser, which put the live Api-Key / Secret-Key in the request
+       headers (Network tab, every proxy log on the way) and was blocked
+       by CORS anyway. The server-side proxy is now the only path: the
+       branch above it already posts to `proxy` when one is configured. */
+    cb(new Error('Steadfast proxy not configured. Set "Backend Proxy URL" in Settings -> Steadfast Courier, then the key stays on the server.'));
 }
 function moAlreadySent(o) { return !!shipParcelId(o); }
 function moPayload(o) {

@@ -23,8 +23,19 @@
 
 // ⚙️ আপনার Steadfast credentials (server-side — ব্রাউজারে যাবে না)
 //    Production-এ environment variable ব্যবহার করাই উত্তম; না থাকলে নিচের মান ব্যবহৃত হবে।
-$API_KEY = getenv('STEADFAST_API_KEY') ?: '2mpuec4q7rtapcrhhuxyqrsbvfqlzi8u';
-$SECRET  = getenv('STEADFAST_SECRET_KEY') ?: 'kdshxbfiy4g30lezipdrp399';
+/* 2026-09-20 SECURITY FIX (P0-4)
+   A REAL Steadfast API key / secret used to be written here as the
+   fallback default. This file is committed to a PUBLIC repository, so
+   those credentials were effectively published to the internet.
+   They now come ONLY from environment variables:
+       STEADFAST_API_KEY=...   STEADFAST_SECRET_KEY=...
+   With no env vars the legacy admin-key actions fail loudly instead of
+   silently using a leaked pair. The per-reseller actions below are
+   unaffected - they use the credentials stored for each reseller.
+   >>> ROTATE the old key/secret in your Steadfast dashboard: assume
+       it is compromised. */
+$API_KEY = getenv('STEADFAST_API_KEY') ?: '';
+$SECRET  = getenv('STEADFAST_SECRET_KEY') ?: '';
 
 // ঐচ্ছিক: চাইলে একটি shared token সেট করুন; সেট থাকলে সব request-এ `token` পাঠাতে হবে।
 $PROXY_TOKEN = getenv('STEADFAST_PROXY_TOKEN') ?: '';
