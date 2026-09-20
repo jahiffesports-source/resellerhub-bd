@@ -815,7 +815,22 @@ body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; 
             '</div>' +
             '<div class="pd-info">' +
             '<h1 class="pd-title">' + p.name + '</h1>' +
-            '<div class="badge-row"><span class="pbadge sold"><i class="fas fa-store"></i> Sold by ' + (p.supplierName || 'ResellerHub BD') + '</span><span class="pbadge drop"><i class="fas fa-bolt"></i> Dropshipping</span></div>' +
+            /* 2026-09-20 (this request) — a product created from the admin panel
+               is labelled by the ROLE that uploaded it (Admin / Moderator),
+               NOT by the reseller whose shop is displaying it. Hovering the
+               badge shows the uploader's e-mail, so you can always tell WHICH
+               moderator uploaded it. Products with no stamp (supplier uploads,
+               or saved before this existed) keep the old "Sold by <supplier>". */
+            '<div class="badge-row">' + (function () {
+                var _u = (typeof productUploaderLabel === 'function') ? productUploaderLabel(p) : null;
+                if (!_u) {
+                    return '<span class="pbadge sold"><i class="fas fa-store"></i> Sold by ' + (p.supplierName || 'ResellerHub BD') + '</span>';
+                }
+                var _tip = _u.text + (_u.email ? (' — ' + _u.email) : (''));
+                var _esc = function (v) { return String(v === undefined || v === null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+                return '<span class="pbadge sold" title="' + _esc(_tip) + '">' +
+                       '<i class="fas fa-user-shield"></i> ' + _esc(_u.text) + '</span>';
+            })() + '<span class="pbadge drop"><i class="fas fa-bolt"></i> Dropshipping</span></div>' +
             '<div class="pd-meta">' +
             '<div><strong>Category:</strong> ' + p.category + (p.section ? ' — ' + p.section : '') + '</div>' +
             '<div><strong>Quantity:</strong> ' + stockTxt + '</div>' +

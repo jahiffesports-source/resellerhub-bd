@@ -2575,6 +2575,51 @@ function adminSessionRole() {
 function isModerator() { return adminSessionRole() === 'moderator'; }
 function isRealAdmin() { return adminSessionRole() === 'admin'; }
 
+/* 2026-09-20 (this request) — WHO uploaded a product.
+   An admin-panel product must be labelled by the ROLE that created it
+   (Admin / Moderator), not by the reseller whose shop is showing it, and a
+   moderator's e-mail has to be recoverable later so you can tell WHICH
+   moderator uploaded it. Both needs are served by stamping the product at
+   creation time and reading the stamp back at display time.
+   Older products have no stamp -> productUploaderLabel() returns null and the
+   caller keeps its previous "Sold by <supplier>" text, so nothing regresses. */
+function currentUploader() {
+    try {
+        var ut = adminSessionRole();
+        var uid = sessionStorage.getItem('user_id');
+        if (ut === 'moderator') {
+            var m = (typeof findModeratorById === 'function') ? findModeratorById(uid) : null;
+            return {
+                role: 'moderator',
+                name: (m && (m.name || m.email)) || 'Moderator',
+                email: (m && m.email) || ''
+            };
+        }
+        if (ut === 'admin') {
+            var a = (typeof STYLEX_ACCOUNT !== 'undefined') ? STYLEX_ACCOUNT : null;
+            return {
+                role: 'admin',
+                name: (a && (a.name || a.shop_name)) || 'Admin',
+                email: (a && a.email) || ''
+            };
+        }
+    } catch (e) {}
+    return { role: '', name: '', email: '' };
+}
+/* Read the stamp back. Returns null when the product was NOT created from the
+   admin panel (supplier / reseller upload, or a product saved before this
+   existed) so callers can fall back to their old text. */
+function productUploaderLabel(p) {
+    if (!p) return null;
+    var r = String(p.uploaderRole || p.uploader_role || '').toLowerCase();
+    if (r !== 'admin' && r !== 'moderator') return null;
+    return {
+        role: r,
+        text: r === 'admin' ? 'Admin' : 'Moderator',
+        email: String(p.uploaderEmail || p.uploader_email || ''),
+        name: String(p.uploaderName || p.uploader_name || '')
+    };
+}
 function moderators() { return asArray(getData(DB_KEYS.MODERATORS)); }
 function findModeratorById(id) {
     var list = moderators();

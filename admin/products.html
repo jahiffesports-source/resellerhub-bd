@@ -1112,6 +1112,18 @@ window.onerror=function(msg,src,line){try{var b=document.getElementById('errBann
             data.id = Date.now();
             data.createdAt = new Date().toISOString();
             data.published = true;
+            /* 2026-09-20 (this request) — stamp WHO created it, so the store can
+               later label the product by role (Admin / Moderator) instead of by
+               the reseller whose shop is showing it, and so a moderator's
+               e-mail stays recoverable (hover on the badge shows it). */
+            try {
+                var _up = (typeof currentUploader === 'function') ? currentUploader() : null;
+                if (_up && _up.role) {
+                    data.uploaderRole = _up.role;
+                    data.uploaderEmail = _up.email || '';
+                    data.uploaderName = _up.name || '';
+                }
+            } catch (e) {}
             products.push(data);
             logActivity('product_created', 'Created: ' + name);
         }
