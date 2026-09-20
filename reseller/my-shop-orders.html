@@ -542,6 +542,7 @@ body.sb-open .bottom-nav{ opacity:0 !important; pointer-events:none !important; 
     <button class="mo-btn gh" onclick="moUnselectAll()"><i class="fas fa-xmark"></i> Unselect All</button>
     <button class="mo-btn pri" onclick="moSendSteadfast()" id="moSfBtn" disabled><i class="fas fa-truck"></i> Send to Courier</button>
     <button class="mo-btn gh" onclick="moPrintBulk()" id="moPrBtn" disabled><i class="fas fa-print"></i> Bulk Print</button>
+    <span style="display:inline-flex;gap:4px;margin-left:6px;align-items:center"><span style="font-size:.72rem;color:#64748b;font-weight:700">Print:</span><button class="mo-btn gh mo-fmt-btn" data-fmt="a4" onclick="moSetFormat('a4')" style="padding:6px 9px;font-size:.72rem">A4</button><button class="mo-btn gh mo-fmt-btn" data-fmt="label33" onclick="moSetFormat('label33')" style="padding:6px 9px;font-size:.72rem">3 x 3</button><button class="mo-btn gh mo-fmt-btn" data-fmt="label23" onclick="moSetFormat('label23')" style="padding:6px 9px;font-size:.72rem">2 x 3</button></span>
     <button class="mo-btn del" onclick="moDeleteSelected()" id="moDelBtn" disabled><i class="fas fa-trash-can"></i> Delete Selected</button>
     <div class="sp"></div>
     <select id="moStatus" class="mo-btn gh" style="padding:9px 12px" onchange="moRender()">
@@ -1132,6 +1133,91 @@ function moSendSteadfast() {
 }
 
 /* ---------- Print (#37 - #39) ---------- */
+/* ---------- #8 (2026-09-20) — sticker printing with THIS shop's brand ----
+   Admin/Orders already had A4 + A5 + 3x2 + 3x3; the reseller's own My Shop
+   Orders only had A4. These add the two sticker sizes here, and they print
+   the reseller's OWN business name and phone (their shop, their customer) —
+   unlike the supplier-side label, which is deliberately brand-free so a
+   supplier never learns the reseller's details. */
+var MO_FORMATS = {
+    a4:      { label: 'A4',         key: 'a4' },
+    label33: { label: '3 x 3',      key: 'label33', w: '3in', h: '3in', fs: '9px', pad: '3mm' },
+    label23: { label: '2 x 3',      key: 'label23', w: '2in', h: '3in', fs: '8px', pad: '2.2mm' }
+};
+var moFormat = 'a4';
+function moSetFormat(f) {
+    moFormat = (MO_FORMATS[f] ? f : 'a4');
+    try {
+        var bs = document.querySelectorAll('.mo-fmt-btn');
+        for (var i = 0; i < bs.length; i++) {
+            var on = bs[i].getAttribute('data-fmt') === moFormat;
+            bs[i].style.background = on ? '#4f46e5' : '';
+            bs[i].style.color = on ? '#fff' : '';
+        }
+    } catch (e) {}
+}
+function moShopBrand() {
+    try {
+        var r = (typeof ME !== 'undefined' && ME) ? ME : null;
+        if (!r && typeof RID !== 'undefined' && RID !== null) {
+            var list = getData(DB_KEYS.RESELLERS) || [];
+            for (var i = 0; i < list.length; i++) {
+                if (String(list[i].id) === String(RID)) { r = list[i]; break; }
+            }
+        }
+        if (!r) return { name: '', phone: '' };
+        var nm = '';
+        try { nm = (typeof resellerBusinessName === 'function') ? resellerBusinessName(r) : ''; } catch (e) { }
+        return {
+            name: nm || r.businessName || r.shop_name || r.shopName || r.name || '',
+            phone: r.phone || r.shop_phone || ''
+        };
+    } catch (e) { return { name: '', phone: '' }; }
+}
+function moStickerHtml(o, format) {
+    var f = MO_FORMATS[format] || MO_FORMATS.label33;
+    var b = moShopBrand();
+    var cust = o.customer || o.customerName || '';
+    var addr = o.address || o.customerAddress || '';
+    var phone = o.phone || o.customerPhone || '';
+    var amt = '';
+    try {
+        amt = (typeof orderDeliveryCharge === 'function')
+            ? sMoney((Number(o.amount) || 0) + (Number(orderDeliveryCharge(o)) || 0))
+            : sMoney(o.amount || 0);
+    } catch (e) { amt = sMoney(o.amount || 0); }
+    return '<div class="mo-sticker" style="width:' + f.w + ';height:' + f.h +
+        ';padding:' + f.pad + ';font-size:' + f.fs +
+        ';box-sizing:border-box;overflow:hidden;page-break-inside:avoid;' +
+        'display:flex;flex-direction:column;gap:1px">' +
+        (b.name ? '<div style="font-weight:800;font-size:1.15em;line-height:1.1">' +
+            sEsc(String(b.name).slice(0, 34)) + '</div>' : '') +
+        (b.phone ? '<div style="opacity:.75">' + sEsc(b.phone) + '</div>' : '') +
+        '<div style="border-top:1px dashed #999;margin:2px 0;opacity:.6"></div>' +
+        '<div style="font-weight:800">' + sEsc(cust) + '</div>' +
+        '<div style="line-height:1.15">' + sEsc(phone) + '</div>' +
+        '<div style="line-height:1.15;flex:1;overflow:hidden">' + sEsc(String(addr).slice(0, 96)) + '</div>' +
+        '<div style="border-top:1px dashed #999;margin:2px 0;opacity:.6"></div>' +
+        '<div style="display:flex;justify-content:space-between;font-weight:800">' +
+        '<span>' + sEsc(o.id) + '</span><span>' + amt + '</span></div>' +
+        '</div>';
+}
+function moDocFor(orders, format) {
+    var f = MO_FORMATS[format] || MO_FORMATS.a4;
+    if (format === 'a4') {
+        var pages = [];
+        for (var i = 0; i < orders.length; i++) {
+            var one = moPrintOneHtml(orders[i]);
+            pages.push(one.replace(/^[\s\S]*<body>/, '').replace(/<\/body>[\s\S]*$/, ''));
+        }
+        return rhInvHtml(pages, 'a4', { title: 'My Shop Invoices' });
+    }
+    var body = '';
+    for (var j = 0; j < orders.length; j++) body += moStickerHtml(orders[j], format);
+    return '<!doctype html><html><head><meta charset="utf-8"><title>My Shop Stickers</title>' +
+        '<style>@page{size:' + f.w + ' ' + f.h + ';margin:0}body{margin:0;font-family:Inter,Arial,sans-serif}' +
+        '.mo-sticker{border:1px solid #ccc}</style></head><body>' + body + '</body></html>';
+}
 function moPrintOneHtml(o) {
     /* 2026-09-18 (this request) — the reseller's My Shop Orders invoice now uses
        the SAME sheet as the admin panel (rhInvSheet), and because it is the
@@ -1174,12 +1260,13 @@ function moPrint(id) {
     var o = moFindOrder(id);
     if (!o) return;
     /* rhPrintFrame waits for the sheet's web fonts instead of guessing a delay */
-    rhPrintFrame(moPrintOneHtml(o));
+    rhPrintFrame(moDocFor([o], (typeof moFormat !== 'undefined') ? moFormat : 'a4'));
 }
-function moPrintBulk() {
+function moPrintBulk(fmt) {
     var sel = moSelected();
     if (!sel.length) { showToast('অন্তত একটি order select করুন!', 'error'); return; }
-    rhPrintFrame(moPrintDoc(sel));
+    var f = fmt || ((typeof moFormat !== 'undefined') ? moFormat : 'a4');
+    rhPrintFrame(moDocFor(sel, f));
 }
 
 if (RID !== null) {
