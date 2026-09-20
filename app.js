@@ -8816,6 +8816,17 @@ function rhInstallOrderBadges() {
             if (!e.key || e.key.indexOf('rh_shop_settings') === 0) { try { rhApplyShopUploadPolicy(); } catch (e2) {} }
         });
     } catch (e) {}
+    /* 2026-09-20 (#3, this request) - a `storage` event is only delivered to
+       OTHER tabs, so a badge never moved when the change happened in THIS
+       tab (a new order arrived, an order changed stage). Repaint on a slow
+       timer too: it only reads the data and sets a text node, so it is
+       cheap, and it keeps every count honest without a page reload.
+       Skipped while the tab is hidden, and installed once per page. */
+    if (!window.__rhBadgeTimer) {
+        window.__rhBadgeTimer = setInterval(function () {
+            try { if (!document.hidden) rhPaintOrderBadges(); } catch (e) { }
+        }, 10000);
+    }
     /* 2026-09-20 (#7) - the badges only repainted on load and on a 
        event, and a storage event fires only in OTHER tabs. So an order that
        arrived while the admin was sitting on the page never moved the count
