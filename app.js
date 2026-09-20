@@ -6943,7 +6943,7 @@ function rhInvSheet(d, format, opts) {
     if (admin && d.reseller) {
         resBlock =
             '<div class="rhi-res">' +
-            '<div class="rhi-rest"><i class="fas fa-user-tie"></i> RESELLER DETAILS</div>' +
+            '<div class="rhi-rest"><i class="fas fa-user-tie"></i> SELLER DETAILS</div>' +
             '<div class="rhi-resg">' +
             '<div><span>BRAND NAME</span><b>' + rhInvEsc(d.reseller.name || '\u2014') + '</b></div>' +
             '<div><span>MOBILE</span><b>' + rhInvEsc(d.reseller.phone || '\u2014') + '</b></div>' +
@@ -7338,14 +7338,14 @@ function adminOrderResellerInfo(o) {
     for (var i = 0; i < list.length; i++) { if (String(list[i].id) === String(rid)) { r = list[i]; break; } }
     if (!r) {
         return {
-            name: (o && (o.resellerName || o.reseller_name)) || 'Reseller',
+            name: (o && (o.resellerName || o.reseller_name)) || 'Seller',
             phone: (o && o.resellerPhone) || '',
             address: (o && o.resellerAddress) || '',
             found: false
         };
     }
     return {
-        name: r.businessName || r.business || r.shop_name || r.shopName || r.name || 'Reseller',
+        name: r.businessName || r.business || r.shop_name || r.shopName || r.name || 'Seller',
         phone: r.phone || r.shop_phone || '',
         address: r.shop_address || r.address || r.businessAddress || '',
         found: true
