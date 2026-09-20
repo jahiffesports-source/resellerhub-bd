@@ -12256,9 +12256,36 @@ function orderSupplierIds(o) {
     return out;
 }
 function orderSupplierCount(o) { return orderSupplierIds(o).length; }
-/* THE single source of truth for the whole feature. */
+/* 2026-09-20 (this request) - does this order carry at least one line that
+   belongs to the PLATFORM (an admin-uploaded product)?
+   Uses exactly the same three-way classification as orderSupplierGroups():
+   supplier line -> skip, reseller's OWN product -> skip, everything else is
+   the admin/platform group. Reusing the same rule is what keeps the badge,
+   the group list and the "who collects this order" decision in agreement. */
+function orderHasAdminLine(o) {
+    var items = orderLineItems(o);
+    for (var i = 0; i < items.length; i++) {
+        var it = items[i] || {};
+        if (orderItemSupplierId(it)) continue;          /* supplier line */
+        if (orderItemIsResellerOwned(it)) continue;      /* reseller's own product */
+        return true;                                     /* admin / platform line */
+    }
+    return false;
+}
+/* THE single source of truth for the whole feature.
+   2026-09-20 (this request) - a MIXED order counts as multi-supplier too.
+   If one line is a supplier's product and another is an admin-uploaded
+   product, TWO different parties each have to hand over their own part, so
+   the platform collects it exactly like a 2-supplier order. Both the admin
+   panel and the supplier panel must call it multi-supplier, and neither the
+   supplier nor the admin may ship it alone.
+   Unchanged cases: a single supplier with no admin line is still a normal
+   supplier order; an admin-only order stays a normal order. */
 function isMultiSupplierOrder(o) {
-    return !!o && orderSupplierCount(o) >= MULTI_SUPPLIER_MIN;
+    if (!o) return false;
+    if (orderSupplierCount(o) >= MULTI_SUPPLIER_MIN) return true;
+    /* one supplier + at least one admin line = two parties = multi-supplier */
+    return orderSupplierCount(o) >= 1 && orderHasAdminLine(o);
 }
 /* Every parent order carrying 2+ distinct suppliers (Admin view). */
 function multiSupplierOrders() {
